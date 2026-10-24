@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width: 100%; height: 100%; display: flex; flex-direction: column; background: var(--wbg); background-image: var(--tgl); font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; color: var(--tp); overflow: hidden">
+<div style="height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 13px; font-weight: 600; color: var(--tp)"><span>9:41</span><span>87%</span></div>
+<div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 4px 0 16px">
+<span style="font-size: 18px; font-weight: 600; color: var(--th)">Settings</span>
+</div>
+<div style="flex: 1; min-height: 0; padding: 0 8px; display: flex; flex-direction: column; gap: 8px; overflow: hidden">
+<div style="flex-shrink: 0; background: var(--pbg); border: 1px solid var(--pbd); border-radius: 4px; box-shadow: var(--phl)">
+<div style="height: 36px; box-sizing: border-box; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--pdv)"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: var(--tm)">APPEARANCE</span></div>
+<div style="min-height: 60px; display: flex; align-items: center; gap: 12px; padding: 8px 16px">
+<div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; color: var(--tp)">Theme</span><span style="font-size: 13px; color: var(--tm); display: var(--if-dark)">PS2 Dark</span><span style="font-size: 13px; color: var(--tm); display: var(--if-light)">PS1 Light</span></div>
+<div style="width: 44px; height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: var(--chbg); border: 1px solid var(--chbd); border-radius: 4px; color: var(--tst)">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: var(--if-dark)"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: var(--if-light)"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg>
+</div>
+</div>
+</div>
+<div style="flex-shrink: 0; background: var(--pbg); border: 1px solid var(--pbd); border-radius: 4px; box-shadow: var(--phl)">
+<div style="height: 36px; box-sizing: border-box; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--pdv)"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: var(--tm)">PLAYBACK</span></div>
+<div style="min-height: 60px; display: flex; align-items: center; gap: 12px; padding: 8px 16px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; color: var(--tp)">Bit-Perfect</span><span style="font-size: 13px; color: var(--tm)">Shared · 48 kHz / 32-bit (resampled)</span></div>
+<div style="height: 36px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: var(--chbg); border: 1px solid var(--chbd); border-radius: 4px; font-size: 13px; color: var(--tst); white-space: nowrap">
+<span style="width: 7px; height: 7px; border-radius: 50%; background: var(--off); box-shadow: inset 0 0 0 1px var(--dring)"></span><span>Bit-Perfect</span>
+</div>
+</div>
+</div>
+<div style="flex-shrink: 0; background: var(--pbg); border: 1px solid var(--pbd); border-radius: 4px; box-shadow: var(--phl)">
+<div style="height: 36px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px; border-bottom: 1px solid var(--pdv)">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: var(--tm)">MUSIC FOLDERS</span>
+<div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--tm)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"></path><path d="M20 4v5h-5"></path></svg></div>
+</div>
+<div style="padding: 6px; display: flex; flex-direction: column">
+<sc-for list="{{ folders }}" as="f" hint-placeholder-count="2">
+<div style="min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 4px 10px; border-radius: 3px">
+<div style="width: 20px; height: 20px; flex-shrink: 0; box-sizing: border-box; border-radius: 3px; background: var(--acp); display: flex; align-items: center; justify-content: center; color: var(--pbg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l5 5 9-10.5"></path></svg></div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; color: var(--tp)">{{ f.name }}</span><span style="font-size: 12.5px; color: var(--tm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ f.path }}</span></div>
+</div>
+</sc-for>
+<div style="margin: 4px 10px 6px; height: 36px; align-self: flex-start; box-sizing: border-box; display: flex; align-items: center; padding: 0 16px; background: var(--chbg); border: 1px solid var(--chbd); border-radius: 4px; font-size: 14px; color: var(--tst); white-space: nowrap">Add Folder…</div>
+</div>
+</div>
+<div style="flex-shrink: 0; background: var(--pbg); border: 1px solid var(--pbd); border-radius: 4px; box-shadow: var(--phl)">
+<div style="height: 36px; box-sizing: border-box; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--pdv)"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: var(--tm)">LAST.FM</span></div>
+<div style="min-height: 60px; display: flex; align-items: center; gap: 12px; padding: 8px 16px">
+<div style="flex: 1; display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--tp)"><span style="width: 7px; height: 7px; border-radius: 50%; background: var(--off); box-shadow: inset 0 0 0 1px var(--dring)"></span><span>Last.fm: not connected</span></div>
+<div style="height: 36px; box-sizing: border-box; display: flex; align-items: center; padding: 0 16px; background: var(--chbg); border: 1px solid var(--chbd); border-radius: 4px; font-size: 14px; color: var(--tst); white-space: nowrap">Connect</div>
+</div>
+</div>
+</div>
+<div style="height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><div style="width: 108px; height: 4px; border-radius: 2px; background: var(--tm)"></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:384,&quot;height&quot;:832}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { folders: [
+      { name: 'Internal storage · Music', path: '/storage/emulated/0/Music' },
+      { name: 'SD card · Music', path: '/storage/1A2B-3C4D/Music' }
+    ] };
+  }
+}
+</script>
+</body>
+</html>

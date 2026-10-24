@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width: 100%; height: 100%; container-type: size; display: flex; flex-direction: column; background: var(--wbg); background-image: var(--tgl); font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; color: var(--tp); overflow: hidden">
+<div style="height: 28px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-size: 13px; font-weight: 600; color: var(--tp)"><span>9:41</span><span>87%</span></div>
+<div style="flex-shrink: 0; padding: 6px 20px 0; display: flex; justify-content: center">
+<div style="width: min(calc(100cqw - 40px), calc(100cqh - 426px)); aspect-ratio: 1; box-sizing: border-box; border: 1px solid var(--abd); background: repeating-linear-gradient(135deg, var(--art1) 0 10px, var(--art2) 10px 20px); box-shadow: var(--sha); display: flex; align-items: center; justify-content: center">
+<span style="font-size: 11px; letter-spacing: 0.06em; color: var(--artlt); background: var(--artl); padding: 2px 6px; white-space: nowrap">[ALBUM ART]</span>
+</div>
+</div>
+<div style="flex-shrink: 0; padding: 14px 20px 0; display: flex; flex-direction: column">
+<div style="display: flex; align-items: flex-start; gap: 8px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 22px; font-weight: 600; line-height: 1.2; color: var(--th); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Polygon Weather</span>
+<span style="font-size: 16px; font-weight: 600; color: var(--acb); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Aphelion Drive</span>
+<span style="font-size: 15px; color: var(--ts); white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Second Sight</span>
+</div>
+<span style="flex-shrink: 0; padding-top: 4px; font-size: 15px; color: var(--tm); font-variant-numeric: tabular-nums; white-space: nowrap">3 / 10</span>
+</div>
+</div>
+<div style="flex: 3; min-height: 0"></div>
+<div style="flex-shrink: 0; padding: 0 20px; display: flex; flex-direction: column">
+<div style="margin-top: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 13px; color: var(--tm); font-variant-numeric: tabular-nums; text-align: right">
+<span style="max-width: 100%; color: var(--ts); white-space: nowrap">FLAC · 96 kHz</span>
+<span style="max-width: 100%; color: var(--ts); white-space: nowrap">24 bit · 1,140 kbps</span>
+</div>
+<svg viewBox="0 0 96 40" preserveAspectRatio="none" shape-rendering="crispEdges" style="display: block; width: 100%; height: 40px; margin-top: 14px" aria-label="Seek"><path d="{{ wavePlayed }}" style="fill: var(--sfill)"></path><path d="{{ waveRest }}" style="fill: var(--str)"></path></svg>
+<div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 13px; color: var(--tm); font-variant-numeric: tabular-nums"><span>2:18</span><span>5:32</span></div>
+</div>
+<div style="flex: 1; min-height: 0"></div>
+<div style="flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 8px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%; border: 1px solid var(--cfb); background: var(--cf); color: var(--crp); display: flex; align-items: center; justify-content: center; box-shadow: var(--shc)">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9"></path><path d="M19.5 4.5V9H15"></path><path d="M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15"></path><path d="M4.5 19.5V15H9"></path></svg>
+</div>
+<div style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%; border: 1px solid var(--cfb); background: var(--cf); color: var(--cio); display: flex; align-items: center; justify-content: center; box-shadow: var(--shc)">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5"></path><path d="M4 20L21 3"></path><path d="M21 16v5h-5"></path><path d="M15 15l6 6"></path><path d="M4 4l5 5"></path></svg>
+</div>
+<div onClick="{{ toggleBp }}" aria-label="Bit-Perfect" style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 50%; border: 1px solid var(--cfb); background: var(--cf); color: {{ bpColor }}; display: flex; align-items: center; justify-content: center; box-shadow: var(--shc); font-size: 12px; font-weight: 700; letter-spacing: 0.02em; cursor: pointer; user-select: none">BP</div>
+</div>
+<div style="display: flex; align-items: center; gap: clamp(16px, 2.6cqh, 22px)">
+<div style="width: clamp(52px, 8.5cqh, 70px); height: clamp(52px, 8.5cqh, 70px); box-sizing: border-box; border-radius: 50%; border: 1px solid var(--cfb); background: var(--cf); color: var(--cin); display: flex; align-items: center; justify-content: center; box-shadow: var(--shc)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 42%; height: 42%"><path d="M6 5v14"></path><path d="M18 5.5L8.5 12l9.5 6.5z" fill="currentColor"></path></svg>
+</div>
+<div style="width: clamp(68px, 11.7cqh, 96px); height: clamp(68px, 11.7cqh, 96px); box-sizing: border-box; border-radius: 50%; border: 1px solid var(--cfb); background: var(--cf); color: var(--acp); display: flex; align-items: center; justify-content: center; box-shadow: var(--shp), 0 0 0 1px var(--cpr), var(--glow)">
+<svg viewBox="0 0 24 24" aria-hidden="true" style="width: 44%; height: 44%"><rect x="6.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"></rect><rect x="13.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"></rect></svg>
+</div>
+<div style="width: clamp(52px, 8.5cqh, 70px); height: clamp(52px, 8.5cqh, 70px); box-sizing: border-box; border-radius: 50%; border: 1px solid var(--cfb); background: var(--cf); color: var(--cin); display: flex; align-items: center; justify-content: center; box-shadow: var(--shc)">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width: 42%; height: 42%"><path d="M18 5v14"></path><path d="M6 5.5L15.5 12L6 18.5z" fill="currentColor"></path></svg>
+</div>
+</div>
+</div>
+<span style="flex-shrink: 0; padding: 0 20px 6px; font-size: 13px; color: var(--tm); text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Shared · 48 kHz / 32-bit (resampled)</span>
+<div style="height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center"><div style="width: 108px; height: 4px; border-radius: 2px; background: var(--tm)"></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:384,&quot;height&quot;:832},&quot;bitPerfect&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { bp: null };
+  renderVals() {
+    const bp = this.state.bp ?? this.props.bitPerfect ?? false;
+    const N = 96, H = 40, split = Math.round(N * 138 / 332);
+    let played = '', rest = '';
+    for (let i = 0; i < N; i++) {
+      const env = 0.55 + 0.35 * Math.sin(i / 9) + 0.1 * Math.sin(i / 2.3);
+      const fade = Math.min(1, i / 6, (N - i) / 8);
+      const lvl = Math.abs(env * fade * (0.75 + 0.25 * Math.sin(i * 1.7)));
+      const h = Math.max(2, Math.min(H, lvl * H));
+      const seg = `M${i} ${(H - h) / 2}h1v${h}h-1z`;
+      if (i < split) played += seg; else rest += seg;
+    }
+    return { wavePlayed: played, waveRest: rest, bpColor: bp ? 'var(--bpon, var(--on))' : 'var(--bpoff, var(--off))', toggleBp: () => this.setState({ bp: !bp }) };
+  }
+}
+</script>
+</body>
+</html>

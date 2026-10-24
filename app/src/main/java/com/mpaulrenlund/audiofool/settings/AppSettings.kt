@@ -1,0 +1,68 @@
+package com.mpaulrenlund.audiofool.settings
+
+import android.content.Context
+import android.content.SharedPreferences
+import com.mpaulrenlund.audiofool.core.library.MusicFolderList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+/** One entry in the music folder list (spec 4.5): a plain path, included or left out. */
+@Serializable
+data class MusicFolder(val path: String, val included: Boolean = true)
+
+/**
+ * The app's settings, in SharedPreferences: small, read once at start (the theme
+ * must be known before the first frame) and written when they change.
+ */
+class AppSettings(context: Context) {
+    private val prefs: SharedPreferences = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private val _darkTheme = MutableStateFlow(prefs.getString(KEY_THEME, null) != THEME_LIGHT)
+
+    /** Dark when nothing is saved (spec 2). */
+    val darkTheme: StateFlow<Boolean> = _darkTheme.asStateFlow()
+
+    fun setDarkTheme(dark: Boolean) {
+        _darkTheme.value = dark
+        prefs.edit().putString(KEY_THEME, if (dark) THEME_DARK else THEME_LIGHT).apply()
+    }
+
+    private val _folders = MutableStateFlow(readFolders())
+
+    /** The music folders, in the order they were added. */
+    val folders: StateFlow<List<MusicFolder>> = _folders.asStateFlow()
+
+    /** Whether a folder list has ever been saved; until then the app offers the usual places. */
+    val foldersChosen: Boolean get() = prefs.contains(KEY_FOLDERS)
+
+    fun setFolders(folders: List<MusicFolder>) {
+        // One entry per folder, whichever way it was written (MusicFolderList, from the desktop).
+        val distinct = MusicFolderList.distinct(folders.map { it.path })
+            .map { path -> folders.first { MusicFolderList.sameFolder(it.path, path) }.copy(path = path) }
+        _folders.value = distinct
+        prefs.edit().putString(KEY_FOLDERS, json.encodeToString(distinct)).apply()
+    }
+
+    fun addFolder(path: String) = setFolders(folders.value + MusicFolder(path))
+
+    fun setIncluded(path: String, included: Boolean) =
+        setFolders(folders.value.map { if (MusicFolderList.sameFolder(it.path, path)) it.copy(included = included) else it })
+
+    fun removeFolder(path: String) = setFolders(folders.value.filterNot { MusicFolderList.sameFolder(it.path, path) })
+
+    private fun readFolders(): List<MusicFolder> =
+        prefs.getString(KEY_FOLDERS, null)?.let { runCatching { json.decodeFromString<List<MusicFolder>>(it) }.getOrNull() }
+            ?: emptyList()
+
+    companion object {
+        const val FILE = "settings"
+        private const val KEY_THEME = "theme"
+        private const val KEY_FOLDERS = "musicFolders"
+        private const val THEME_DARK = "dark"
+        private const val THEME_LIGHT = "light"
+    }
+}

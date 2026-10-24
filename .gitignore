@@ -1,0 +1,20 @@
+# Build output
+build/
+.gradle/
+.kotlin/
+.cxx/
+app/.cxx/
+*.apk
+*.aab
+
+# Local machine
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+
+# Signing material never lives in the repo
+*.jks
+*.keystore
+keystore.properties
