@@ -79,14 +79,18 @@ design/screens/.
    preview state so it can be checked now.
 8. Art: thumbnails cached on disk and decoded at display size. Scrolling all artists
    and a long album list has to stay smooth.
+9. Session 1's temporary screen goes, but its debug numbers stay reachable (I report
+   them back, and later sessions add to them). Ask me where. Also ask about the
+   launcher icon, which session 1 left as Android's default.
 
 Verify: screenshot tests of every screen in both themes at both sizes, compared side
 by side with design/screens/ (list every difference and fix it or ask). On an
 emulator with sample music: scrolling a long artist list, a removed or unmounted
 folder showing as unavailable rather than gone, and a theme switch on every screen.
-Then a signed build on a pre-release, and add to the S24 list: the real library,
-scrolling the full artist list, removing the SD card, and a theme switch on every
-screen.
+Then a signed build on a pre-release, and add to the S24 list: my phone's library
+(8,127 tracks; the S24 has no SD card slot), scrolling the full artist list, and a
+theme switch on every screen; and to the M21 list: the full library from the SD card,
+scrolling it, and removing the card.
 
 When done, list what changed and anything that differs from the spec, record the
 decisions in design/progress.md, update HANDOFF.md, commit and push.

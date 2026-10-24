@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-24, session 1. Read this with `README.md` (how the app works) and
+Updated 2026-10-24, end of session 1. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, and the lists of what to test on each device).
 The spec is `design/android-spec.md`.
 
@@ -120,10 +120,21 @@ the debug panel shows counts, start times, cache and scan numbers, and formats.
 
 ## Where things stand (after session 1)
 
+- **Released:** pre-release `v0.0.1` ("Session 1 test build", versionCode 1) on GitHub,
+  signed with the release key. The next test build is `0.0.2`, versionCode 2.
+- **The user's results so far** (S24, 2026-10-24): 192 artists · 821 albums · 8,127 tracks,
+  first scan under 30 seconds, cold start "very fast". The S24 has **no SD card slot** and a
+  smaller library than the desktop's; the full ~26,000-track library and SD card removal
+  are tested on the **M21** (its list in `design/progress.md` is started).
+- **GitHub:** the repo is public (the user's call). This PC pushes and releases as
+  `marcusrenlund`, a collaborator with write access; `gh` is signed in as that account.
 - Project, signing, theme, ThemeLab, settings, storage access, folder list, the library
   scan and cache, the ported Core rules. The screen is a temporary one (library counts,
   music folders, theme, debug numbers); session 2 replaces it with Artists, Albums,
-  Album, Search and Settings.
+  Album, Search and Settings. **Keep the debug numbers reachable** (the user reports them
+  back, and later sessions add to them): `ui/LibraryHome.kt`'s `DebugPanel`.
+- **Open question for session 2:** there is no launcher icon yet (Android's default shows);
+  the spec doesn't say what to use. Ask.
 - `LibraryRepository` is the library: cache first, then a background rescan; the scan
   reuses tags for files whose size and date haven't changed, and carries over every
   track of a folder it can't reach.
