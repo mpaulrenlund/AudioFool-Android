@@ -89,6 +89,8 @@ Session 1:
 
 ### Session 2 build (`v0.0.2`)
 
+Released 2026-10-24 as pre-release
+[`v0.0.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.0.2).
 Installs over v0.0.1 (same key): the library, cache and settings stay. The debug numbers
 are now under the logo > **Statistics**.
 

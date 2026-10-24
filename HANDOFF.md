@@ -146,9 +146,9 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ## Where things stand (after session 2)
 
-- **Released:** pre-release `v0.0.1` (session 1, versionCode 1). Session 2's build is
-  `0.0.2`, versionCode 2 (see `design/progress.md` for whether it has been released). The
-  next test build is `0.0.3`, versionCode 3.
+- **Released:** pre-releases `v0.0.1` (session 1, versionCode 1) and `v0.0.2` ("Session 2
+  test build", versionCode 2, 2026-10-24), both signed with the release key. The next test
+  build is `0.0.3`, versionCode 3.
 - **Screens (session 2):** Artists, Albums, Album, Search, Settings, Statistics, the logo
   menu and the mini player, all from tokens, checked against `design/screens/` (the
   differences are listed in `design/progress.md`). Navigation is its own small back stack
