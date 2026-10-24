@@ -12,6 +12,13 @@ import com.mpaulrenlund.audiofool.settings.AppSettings
 import com.mpaulrenlund.audiofool.settings.MusicFolder
 import com.mpaulrenlund.audiofool.storage.Storage
 import com.mpaulrenlund.audiofool.theme.AppTokens
+import com.mpaulrenlund.audiofool.art.Thumbnails
+import com.mpaulrenlund.audiofool.playback.NowPlaying
+import com.mpaulrenlund.audiofool.ui.ArtSources
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -31,6 +38,19 @@ class AudioFoolApp : Application() {
         private set
     val tokens: AppTokens by lazy { AppTokens.get(assets) }
     val startTimes = StartTimes()
+    val nowPlaying = NowPlaying()
+
+    /**
+     * Cover thumbnails (spec 8), kept in the app's own storage: the lists' size
+     * (`albums.thumb`, which Artists and the mini player shrink from) and the
+     * album header's (`album.art`), in pixels for this screen.
+     */
+    val art: ArtSources by lazy {
+        val density = resources.displayMetrics.density
+        fun px(path: String) = (tokens.mobile.number(path) * density).roundToInt()
+        val folder = File(noBackupFilesDir, "art")
+        ArtSources(Thumbnails(folder, px("albums.thumb"), scope), Thumbnails(folder, px("album.art"), scope))
+    }
 
     private var libraryStarted = false
 
@@ -44,11 +64,32 @@ class AudioFoolApp : Application() {
         )
         scope.launch(Dispatchers.IO) { tokens }
         startLibrary()
+        prefillCovers()
 
         Storage.watchVolumes(this) { arrived ->
             val folders = settings.folders.value.filter { it.included }.map { it.path }
             val unavailable = library.state.value.unavailableFolders
             if (DriveChange.worthRefresh(folders, unavailable, arrived) { File(it).isDirectory }) library.rescan()
+        }
+    }
+
+    /**
+     * After each scan, makes the small cover copies the lists will need, newest
+     * albums first (what Artists shows), then the rest; and once a run, drops
+     * copies unused for 90 days (the desktop's ArtDiskCache.Prune).
+     */
+    private fun prefillCovers() {
+        scope.launch {
+            art.list.prune()
+            library.state
+                .filter { !it.scanning && it.library != null }
+                .map { it.library!! }
+                .distinctUntilChanged { a, b -> a === b }
+                .collect { lib ->
+                    val newest = lib.artists.mapNotNull { it.newestAlbum }
+                    val seen = newest.toHashSet()
+                    art.list.prefill(newest + lib.artists.flatMap { it.albums }.filter { it !in seen })
+                }
         }
     }
 

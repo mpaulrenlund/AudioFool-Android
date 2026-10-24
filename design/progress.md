@@ -5,7 +5,7 @@ Update this at the end of every session: tick off what's finished, note anything
 ## Sessions
 
 - [x] **1. Project, theme and library** (spec §1, §2, §8) — 2026-10-24
-- [ ] **2. Library screens, navigation and search** (§2, §3, §4)
+- [x] **2. Library screens, navigation and search** (§2, §3, §4) — 2026-10-24
 - [ ] **3. Playback** (§3, §5, §6.1, §6.3)
 - [ ] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6)
 - [ ] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7)
@@ -29,6 +29,51 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+Session 2 (2026-10-24):
+
+- **Debug numbers live in Statistics** (the user's call): logo > Statistics shows the
+  library line and a Debug panel. Session 5 builds the statistics above them; the Debug
+  panel stays at the bottom.
+- **Launcher icon: the desktop's icon** (the user's call): the PlayStation logo from
+  `icon_preview.png`, unchanged, on white, scaled into the adaptive icon's safe zone.
+- **No navigation library.** A small back stack of its own (`ui/Navigation.kt`) with
+  `PredictiveBackHandler`, so no new dependency. Screens are named (artist, album title),
+  not held, so a rescan shows the new library on an open screen. The gesture shrinks the
+  top screen to `predictiveBack.scale` and moves it `shift` dp; committed, it slides away.
+- **The row you opened stays selected** when you come back (`state.selectionBg`), which is
+  what the mockups show on Artists and Albums.
+- **Press feedback** is the desktop's hover colour, `state.hoverOverlay`, while a finger is down.
+- **The logo menu** has no mockup: a panel under the logo (`menu.*` tokens) with Settings,
+  Theme (with the theme's name; it switches at once and the menu stays open) and
+  Statistics, with `shadow.headerArt` under it so it reads as lifted over the list.
+- **Unavailable music** (spec 1 says "shown as unavailable"; the desktop only says so in
+  its status bar): songs on an unreachable folder are drawn at `disabledOpacity` and can't
+  be tapped; an album or artist is greyed when all of its songs are; the folder in Settings
+  is greyed and its path line says "Not available". Everything stays listed and browsable.
+- **The empty Artists list** says what the desktop's `EmptyStateText` says, pointing to
+  Settings (from the logo menu) instead of the desktop's Libraries menu.
+- **Search** groups hold the library's own artists and albums, so "3 albums" and "11
+  tracks" count all of them, not just the matches. Results are worked out off the main
+  thread on an index folded once per library. With an empty query the panel is empty.
+- **Covers:** the desktop's `AlbumArtService` rules (first five tracks, then the folder;
+  whole pictures first; "no cover" saved only when every file was read, so a missing SD
+  card isn't remembered as coverless). Copies at the list size (`albums.thumb`, 64 dp) and
+  the album header's (`album.art`), JPEG 90 (PNG with transparency), in `no_backup/art`,
+  pruned after 90 days unused; decoded copies in memory up to an eighth of the heap. After
+  each scan a background fill makes the list copies, newest albums first.
+- **Mini player preview:** until playback exists, a debug switch makes a tapped song show
+  as playing (silently), so the mini player and the now-playing rows can be checked.
+- **The PlayStation logo** is copied into the assets by the build (`copyAppAssets`, which
+  also copies the token files), so the repo's PNG stays the only copy.
+- **CSS shadow order:** the first layer of a token is drawn on top, as CSS does
+  (`tokenSurface` drew them the other way round before).
+- **Settings rows:** the mockups' min-height is the content's, inside the padding.
+- New tokens in `mobile-tokens.json`: `menu.*`, `predictiveBack.*`,
+  `topBar.searchBarPaddingX`, `panel.headerActionPaddingEnd`, `settings.rowGap`,
+  `settings.lineGap`, `settings.statusTextSize` and `album.triangle.strokeOnGrid`.
+
+Session 1:
+
 - New repo `C:\AudioFool-Android` (GitHub `mpaulrenlund/AudioFool-Android`); the desktop repo is untouched.
 - BASS for decoding, AudioFool's own `AudioTrack` output stage, and a media session for the system controls.
 - All-files access with plain folder paths. Music on internal storage and the SD card; about 26,000 tracks.
@@ -41,6 +86,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **The repo is public** (the user's call, 2026-10-24). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
+
+### Session 2 build (`v0.0.2`)
+
+Installs over v0.0.1 (same key): the library, cache and settings stay. The debug numbers
+are now under the logo > **Statistics**.
+
+- [ ] **Icon.** The launcher shows the PlayStation logo on white, not Android's default.
+- [ ] **Artists.** Opens on Artists with your 192 artists, each with its newest album's cover. Covers appear as you scroll; Statistics > Covers counts up to 821 as the background fill works through them.
+- [ ] **Scrolling.** Fling from the top of Artists to the bottom and back: smooth, no stutter, covers filling in. Same for a long album list. (The emulator can't judge this: its software renderer takes about 30 ms a frame for anything.)
+- [ ] **Drill-down and back.** Artist → Albums → Album, then the back gesture: hold it halfway, and the screen underneath shows while the one you're leaving shrinks; let go and it slides away. The artist you opened is still highlighted, at the same scroll position.
+- [ ] **Search.** Tap the search field: the keyboard comes up; results update as you type, in ARTISTS / ALBUMS / SONGS. Back closes the keyboard, back again returns. Accents are ignored: "bjork" finds Björk.
+- [ ] **Theme on every screen.** Logo > Theme switches at once (the menu stays open to show it); Settings > Theme too. Check Artists, Albums, Album, Search, Settings and Statistics in both themes; the status bar icons are readable in both.
+- [ ] **Mini player.** Statistics > Mini player preview on, then tap a song: the mini player shows it, the song's row turns blue with the ▸ triangle, Play/Pause toggles. No sound yet (session 3). Off hides it again.
+- [ ] **Start times.** Statistics > Cold start and Warm start (back out, open again) with the new screens. Emulator: 1.3 s cold, 1.1 s warm with 826 tracks.
+- [ ] **Session 1 items still open below** (folders, rescan, theme, covers, token sheet), now reached from Settings and Statistics.
+
+### Session 1 build (`v0.0.1`)
 
 Session 1 build (`v0.0.1`). Report from the **Debug** panel at the bottom of the screen.
 
@@ -59,6 +121,12 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+Session 2 (`v0.0.2`), with the full library on the SD card:
+
+- [ ] **Scrolling the full library.** Fling through all ~499 artists and a long album list on the Snapdragon 680: smooth? Covers fill in as the background fill works (Statistics > Covers, up to ~2,376).
+- [ ] **SD card out.** With the card out, Settings shows "SD card · Music" greyed with "Not available"; the card's artists, albums and songs stay listed, greyed, and its songs can't be tapped. Card back: everything as before, "Up to date".
+- [ ] **Search** across the full library: results keep up with typing.
+
 Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full ~26,000-track library is meant to be on it. Session 4 adds the playback and Bit-Perfect items. Report from the **Debug** panel.
 
 - [ ] **Install and access.** v0.0.1 installs on Android 13; "Allow…" opens the all-files access page; after allowing, the app comes back and starts reading.
@@ -70,6 +138,51 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### Session 2 — Library screens, navigation and search (2026-10-24)
+
+**Built:** the shared parts (screen frame with the title glow, panel, panel header, rows
+in their three looks, chips, round buttons, the search field, album art with the
+desktop's placeholder), navigation with predictive back, Artists with the logo menu,
+Albums, Album, Search, Settings, Statistics (holding the debug numbers), the mini player
+(hidden until something plays, with a debug preview), cover thumbnails cached on disk and
+in memory with a background fill, and the launcher icon. Session 1's temporary screen is
+gone. Ported with tests: the desktop's `ArtDiskCache`, `CutOffImage.WholeFirst` and
+`Display` (times, counts, rates, sizes). New, with tests: `SearchResults` (Search's three
+groups) and the back stack (`Navigator`).
+
+**Verified:**
+- `:core:test` 176 tests, `:app:testDebugUnitTest` 17, `verifyRoborazziDebug`: every
+  screen in both themes at both sizes, plus nothing-played, SD-card-out and the logo menu
+  (56 pictures in `app/screenshots/`, the token sheet's 16 included), compared side by side with `design/screens/`.
+- Emulator, release build installed over v0.0.1 (the update path works): 209 artists ·
+  413 albums · 826 tracks with folder covers. Drill-down and back; the back gesture held
+  halfway (the screen underneath shows, the top one shrinks) and committed (scroll
+  position and selection kept); Search with the keyboard (the panel shrinks above it; back
+  closes the keyboard first); the logo menu; the theme from the menu and from Settings;
+  the mini player preview (now-playing row, triangle, Play/Pause); the SD card unmounted
+  (the card's songs greyed but kept, the folder "Not available") and mounted again ("Up to
+  date", nothing removed). Cold start 1.3 s, warm 1.1 s, cache 78 ms, a rescan reads 0.
+- Not judged on the emulator: scrolling smoothness (its software renderer takes ~30 ms a
+  frame for everything; the UI thread was slow on 31 of 955 frames). It's on both device lists.
+
+**Differences from the mockups (design/screens):**
+- **Font:** Selawik is a little lighter than the mockups' Segoe UI, so text looks thinner
+  and lines sit 1–2 dp differently. Known since session 1.
+- **Art placeholders:** the desktop's music note on the panel colour (spec 2), not the
+  mockups' stripes, which stand for album art.
+- **Search finds more than the mockup shows:** the desktop's rule matches every song whose
+  title, artist, album artist or album holds every term, so "polygon" also lists all of The
+  Polygon Set's songs and its other albums. The mockup's three songs were sample data.
+- **Album #** is the tag's track number (the desktop's table), so a second disc starts at
+  1 again; the mockup numbers its ten songs straight through.
+- **Bit-Perfect** reads "Shared" under the label: the readout (spec 6.3) needs the output
+  stage (session 3). The BP chip and Last.fm's Connect do nothing yet.
+- **Last.fm's line** stays on one line where it fits; the mockup wraps it.
+- **Play/Pause** uses `shadow.playButton` (spec 2); the mini player mockup used
+  `shadow.controlButton`.
+- The search field's focus ring is `state.searchFocusRing` (spec 4.4); the mockup used
+  `accent.playback` (the same colour in Dark, different in Light).
 
 ### Session 1 — Project, theme and library (2026-10-24)
 

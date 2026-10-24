@@ -42,11 +42,12 @@ fun Modifier.tokenSurface(
     borderWidth: Dp? = null,
 ): Modifier = drawBehind {
     val outline = shape.createOutline(size, layoutDirection, this)
-    for (layer in shadows.filter { !it.inset }) drawOuterShadow(outline, layer)
+    // CSS paints the first shadow on top, so the list is drawn last to first.
+    for (layer in shadows.filter { !it.inset }.asReversed()) drawOuterShadow(outline, layer)
     drawOutlineFill(outline, background)
     if (shadows.any { it.inset }) {
         val path = Path().apply { addOutline(outline) }
-        clipPath(path) { for (layer in shadows.filter { it.inset }) drawInsetShadow(layer) }
+        clipPath(path) { for (layer in shadows.filter { it.inset }.asReversed()) drawInsetShadow(layer) }
     }
     if (border != null && borderWidth != null) {
         val w = borderWidth.toPx()

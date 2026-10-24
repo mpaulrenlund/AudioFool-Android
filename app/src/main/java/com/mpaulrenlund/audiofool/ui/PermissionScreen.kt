@@ -29,7 +29,7 @@ fun PermissionScreen(onAllow: () -> Unit) {
             Panel("Music files") {
                 SettingRow("Allow access to all files", "AudioFool reads your music folders on the phone and the SD card by their paths.")
                 Row(Modifier.padding(horizontal = t.dp("settings.rowPaddingX"), vertical = t.dp("settings.rowPaddingY"))) {
-                    ChipButton("Allow…", onAllow)
+                    ChipButton("Allow…", onClick = onAllow)
                 }
             }
         }

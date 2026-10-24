@@ -27,6 +27,7 @@
     "logoBarPaddingStart": 4,
     "logoBarPaddingEnd": 12,
     "logoToSearchGap": 6,
+    "searchBarPaddingX": 12,
     "titleSize": 18,
     "titleWeight": 600,
     "subtitleSize": 13,
@@ -48,6 +49,7 @@
     "marginBottom": 6,
     "headerHeight": 36,
     "headerPaddingX": 16,
+    "headerActionPaddingEnd": 8,
     "headerTextSize": 12,
     "headerLetterSpacingEm": 0.12,
     "listPadding": 6
@@ -101,7 +103,7 @@
     "songSize": 16,
     "cellSize": 14,
     "numberMinWidth": 18,
-    "triangle": { "width": 8, "height": 10, "gap": 4 }
+    "triangle": { "width": 8, "height": 10, "gap": 4, "strokeOnGrid": 1.2 }
   },
   "search": {
     "artistRowHeight": 56,
@@ -112,11 +114,29 @@
     "songRowGap": 10,
     "timeWidth": 40
   },
+  "menu": {
+    "$note": "The logo menu (spec 4.1: Settings, Theme, Statistics). No mockup: a panel under the logo with settings-sized rows (session 2).",
+    "width": 208,
+    "offsetX": 4,
+    "listPadding": 6,
+    "rowHeight": 48,
+    "rowPaddingX": 12,
+    "textSize": 16,
+    "valueSize": 13
+  },
+  "predictiveBack": {
+    "$note": "The screen being left during the back gesture (session 2): it shrinks to `scale` and moves `shift` dp toward the swipe, then slides off in `commitMs` milliseconds.",
+    "scale": 0.9,
+    "shift": 24,
+    "commitMs": 180
+  },
   "settings": {
     "sectionGap": 8,
     "rowMinHeight": 60,
     "rowPaddingX": 16,
     "rowPaddingY": 8,
+    "rowGap": 12,
+    "lineGap": 2,
     "labelSize": 16,
     "valueSize": 13,
     "chipHeight": 36,
@@ -124,6 +144,7 @@
     "buttonPaddingX": 16,
     "buttonTextSize": 14,
     "chipTextSize": 13,
+    "statusTextSize": 15,
     "themeChipWidth": 44,
     "chipIcon": 16,
     "dot": 7,

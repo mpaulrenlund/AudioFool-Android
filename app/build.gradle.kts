@@ -15,23 +15,29 @@ val signingProperties: Properties? =
         file(path).takeIf { it.exists() }?.let { f -> Properties().apply { f.inputStream().use(::load) } }
     }
 
-// The three token files are copied from design/ into the app's assets at build
-// time, so design/ stays the only copy (CLAUDE.md: the desktop colour files are
-// kept identical to the desktop's).
-abstract class CopyThemeTokens : DefaultTask() {
-    @get:InputFiles abstract val sources: ConfigurableFileCollection
+// The three token files and the PlayStation logo are copied into the app's
+// assets at build time, so design/ and the repo's logo stay the only copies
+// (CLAUDE.md: the desktop colour files are kept identical to the desktop's, and
+// the logo is never replaced or redrawn).
+abstract class CopyAppAssets : DefaultTask() {
+    @get:InputFiles abstract val tokens: ConfigurableFileCollection
+    @get:InputFiles abstract val brand: ConfigurableFileCollection
     @get:OutputDirectory abstract val outputDir: DirectoryProperty
 
     @TaskAction fun copy() {
-        val dir = outputDir.get().asFile.resolve("tokens")
-        dir.deleteRecursively()
-        dir.mkdirs()
-        sources.forEach { it.copyTo(dir.resolve(it.name), overwrite = true) }
+        val root = outputDir.get().asFile
+        for ((folder, files) in listOf("tokens" to tokens, "brand" to brand)) {
+            val dir = root.resolve(folder)
+            dir.deleteRecursively()
+            dir.mkdirs()
+            files.forEach { it.copyTo(dir.resolve(it.name), overwrite = true) }
+        }
     }
 }
 
-val copyThemeTokens = tasks.register<CopyThemeTokens>("copyThemeTokens") {
-    sources.from(rootProject.files("design/theme-tokens.json", "design/theme-tokens.dark.json", "design/mobile-tokens.json"))
+val copyAppAssets = tasks.register<CopyAppAssets>("copyAppAssets") {
+    tokens.from(rootProject.files("design/theme-tokens.json", "design/theme-tokens.dark.json", "design/mobile-tokens.json"))
+    brand.from(rootProject.files("PlayStation-Logo-1994.png"))
 }
 
 android {
@@ -43,8 +49,8 @@ android {
         applicationId = "com.mpaulrenlund.audiofool"
         minSdk = 33
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.0.1"
+        versionCode = 2
+        versionName = "0.0.2"
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         externalNativeBuild {
@@ -114,7 +120,7 @@ android {
 
 androidComponents {
     onVariants { variant ->
-        variant.sources.assets?.addGeneratedSourceDirectory(copyThemeTokens, CopyThemeTokens::outputDir)
+        variant.sources.assets?.addGeneratedSourceDirectory(copyAppAssets, CopyAppAssets::outputDir)
     }
 }
 

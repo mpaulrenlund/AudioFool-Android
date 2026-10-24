@@ -4,28 +4,22 @@ import android.os.Bundle
 import android.graphics.Color
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mpaulrenlund.audiofool.storage.Storage
 import com.mpaulrenlund.audiofool.theme.AppTheme
 import com.mpaulrenlund.audiofool.theme.AudioFoolTheme
-import com.mpaulrenlund.audiofool.ui.HomeActions
-import com.mpaulrenlund.audiofool.ui.LibraryHome
+import com.mpaulrenlund.audiofool.ui.AppRoot
 import com.mpaulrenlund.audiofool.ui.PermissionScreen
-import com.mpaulrenlund.audiofool.ui.SheetPage
-import com.mpaulrenlund.audiofool.ui.TokenSheet
 
 class MainActivity : ComponentActivity() {
     private val app get() = application as AudioFoolApp
@@ -46,8 +40,6 @@ class MainActivity : ComponentActivity() {
                 enableEdgeToEdge(statusBarStyle = bars, navigationBarStyle = bars)
             }
             val state by app.library.state.collectAsStateWithLifecycle()
-            val folders by app.settings.folders.collectAsStateWithLifecycle()
-            var sheet by remember { mutableStateOf<SheetPage?>(null) }
 
             val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
                 val path = tree?.let { Storage.pathFromTree(this, it) } ?: return@rememberLauncherForActivityResult
@@ -65,29 +57,10 @@ class MainActivity : ComponentActivity() {
             }
 
             AudioFoolTheme(theme) {
-                val page = sheet
-                when {
-                    !hasAccess -> PermissionScreen { startActivity(Storage.allFilesAccessIntent(this)) }
-                    page != null -> {
-                        BackHandler { sheet = null }
-                        TokenSheet(page, Modifier.clickable { sheet = SheetPage.entries[(page.ordinal + 1) % SheetPage.entries.size] })
-                    }
-                    else -> LibraryHome(
-                        state = state,
-                        folders = folders,
-                        startTimes = app.startTimes,
-                        actions = HomeActions(
-                            toggleTheme = { app.settings.setDarkTheme(!dark) },
-                            rescan = { app.library.rescan() },
-                            addFolder = { pickFolder.launch(null) },
-                            setIncluded = { path, included ->
-                                app.settings.setIncluded(path, included)
-                                app.library.foldersChanged()
-                            },
-                            showTokenSheet = { sheet = SheetPage.Colours1 },
-                            forgetCache = { app.library.deleteCache() },
-                        ),
-                    )
+                if (!hasAccess) {
+                    PermissionScreen { startActivity(Storage.allFilesAccessIntent(this)) }
+                } else {
+                    AppRoot(app, dark) { pickFolder.launch(null) }
                 }
             }
         }

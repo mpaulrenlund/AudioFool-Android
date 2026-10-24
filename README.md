@@ -5,11 +5,16 @@ Galaxy S24 Ultra (Android 17) and a FiiO M21 (Android 13). Kotlin and Jetpack Co
 with the desktop's two themes, PS2 Dark and PS1 Light, and its library rules ported
 from `AudioFool.Core`.
 
-Status: session 1 of 5 (project, theme, library). Playback, the library screens,
+Status: session 2 of 5 (the library screens, navigation and search). Playback,
 Bit-Perfect and Last.fm follow; see `design/session-prompts.md` and `design/progress.md`.
 
 ## How it works
 
+- **Screens.** Artists → Albums → Album, plus Search, Settings and Statistics (which for
+  now holds the debug numbers). The PlayStation logo is the menu button (Settings,
+  Theme, Statistics). There are no on-screen back buttons: system back and predictive
+  back go up one level, and each screen keeps its scroll position and selection. A
+  mini player sits under every library screen once something has played.
 - **Storage.** Sideloaded, so the app asks for all-files access and keeps plain folder
   paths (`/storage/emulated/0/Music`, `/storage/1A2B-3C4D/Music`). Until the user picks
   folders, it uses each volume's `Music` folder.
@@ -26,7 +31,10 @@ Bit-Perfect and Last.fm follow; see `design/session-prompts.md` and `design/prog
   with the card. The app rescans when storage is mounted or removed.
 - **Covers.** The best embedded picture (whole before cut off, front cover, most pixels,
   JPEG over PNG, most bytes: the desktop's rules), else `cover.jpg`, `folder.jpg` and the
-  other names the desktop looks for, in its order, ignoring case.
+  other names the desktop looks for, in its order, ignoring case. An album's cover is
+  looked for in its first five tracks, then its folder. Small copies at the size the lists
+  show are kept in the app's storage (the desktop's `ArtDiskCache`) and made in the
+  background after each scan, so the lists fill from there rather than the SD card.
 - **The theme.** The desktop's token files are the app's theme, read by JSON path
   (`color.panel.bg`, `shadow.controlButton`); sizes come from `design/mobile-tokens.json`.
   Dark when nothing is saved; a switch applies at once.
@@ -57,5 +65,6 @@ this PC's setup and the whole build, test and release loop.
   AudioFool uses it under the MPL, linked statically into `libaudiofooltags.so`.
 - **Selawik 1.01** (`app/src/main/res/font`): Microsoft's open-source stand-in for Segoe
   UI, SIL Open Font License 1.1 (`third_party/selawik/LICENSE.txt`).
-- The PlayStation logo (`PlayStation-Logo-1994.png`) is used unchanged.
+- The PlayStation logo (`PlayStation-Logo-1994.png`) is used unchanged, and the launcher
+  icon is the desktop's icon (the same logo) on white.
 - BASS for Android (session 3) will be listed here with its licence terms.

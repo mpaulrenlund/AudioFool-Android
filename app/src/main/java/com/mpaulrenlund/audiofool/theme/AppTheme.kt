@@ -40,6 +40,9 @@ class AppTheme(val isDark: Boolean, val tokens: AppTokens) {
 
     fun color(path: String): Color = palette.color(path).toCompose()
 
+    /** A desktop colour as the token file has it, for building a shadow layer from it. */
+    fun themeColor(path: String): ThemeColor = palette.color(path)
+
     fun mobileColor(path: String): Color = tokens.mobile.color("$path.${if (isDark) "dark" else "light"}").toCompose()
 
     fun shadow(path: String): List<ShadowLayer> = palette.shadow(path)

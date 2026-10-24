@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The desktop's icon (C:\MusicPlayer\src\AudioFool\Resources\icon_preview.png):
+     the PlayStation logo, unchanged, on white (the user's call, session 2). The
+     logo is scaled into the adaptive icon's safe zone (228 of 432 px). -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@android:color/white" />
+    <foreground android:drawable="@drawable/ic_launcher_logo" />
+</adaptive-icon>

@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-24, end of session 1. Read this with `README.md` (how the app works) and
+Updated 2026-10-24, end of session 2. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, and the lists of what to test on each device).
 The spec is `design/android-spec.md`.
 
@@ -12,16 +12,19 @@ The spec is `design/android-spec.md`.
 |---|---|
 | Source | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android`, branch `main` |
 | The desktop app (read-only) | `C:\MusicPlayer`; its `src/AudioFool.Core` is what gets ported |
-| Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/` |
-| The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `ui/` |
+| Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/` |
+| The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/` (what's playing), `ui/` (screens, navigation) |
+| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `StatisticsScreen.kt` (debug numbers), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts) |
+| Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
 | TagLib 2.3.2 (C++, vendored unchanged) | `third_party/taglib/`; the JNI bridge is `app/src/main/cpp/tagreader_jni.cpp` |
 | Selawik font | `app/src/main/res/font/` (Regular, Semibold, Bold), licence in `third_party/selawik/` |
-| Token files | `design/theme-tokens.json`, `theme-tokens.dark.json` (the desktop's, unchanged), `design/mobile-tokens.json`. The build copies all three into the app's assets (`copyThemeTokens`); never copy them by hand |
+| Token files | `design/theme-tokens.json`, `theme-tokens.dark.json` (the desktop's, unchanged), `design/mobile-tokens.json`. The build copies all three, and `PlayStation-Logo-1994.png`, into the app's assets (`copyAppAssets`); never copy them by hand |
 | ThemeLab pictures | `app/screenshots/` (recorded by Roborazzi; compare with `design/screens/`) |
 | **Release keystore** | `C:\Users\MarcusRenlund\AndroidKeys\audiofool-release.jks`, passwords in `audiofool-release.properties` beside it. **Outside the repo.** Back up both files together |
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
 | On the phone: settings | SharedPreferences `settings` (theme, music folders) |
+| On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
 
 Release key SHA-256: `1F:DE:FE:0A:0E:C5:F4:B6:63:61:39:B3:5B:F3:9D:B8:9E:EA:2C:68:9A:3A:A1:7A:BC:12:D8:CE:C5:BE:2C:21`.
 Every APK the user gets is signed with it. A build signed with anything else won't
@@ -114,32 +117,63 @@ Then, with `MSYS_NO_PATHCONV=1`:
    `design/progress.md`.
 
 Logs can't be read off the phones, so anything the user reports back is on the screen:
-the debug panel shows counts, start times, cache and scan numbers, and formats.
+logo > **Statistics** shows the library line and the Debug panel (counts, start times,
+cache and scan numbers, formats, covers filled, the mini player preview, the token sheet).
+
+### Checking a screen against the mockups
+
+```bash
+ffmpeg -i design/screens/s24-dark-album.png -i app/screenshots/s24-dark-album.png -filter_complex "[1]scale=384:832:flags=area[b];[0][b]hstack" cmp.png
+```
+
+ThemeLab draws the screens with the mockups' sample library (`ThemeLabFixtures`) and the
+mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
+
+### Driving the emulator
+
+- A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
+  silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.
+  Session 2 used 200 artists × 2 albums.
+- Taps are in device pixels (1080 × 2400): a 360-wide screenshot is a third of that.
+- The back gesture held halfway: `adb shell "input motionevent DOWN 3 1200; input motionevent MOVE 400 1200"`,
+  take the screenshot, then `input motionevent UP 400 1200`.
+- Text the screen shows: `adb shell uiautomator dump /sdcard/ui.xml` and grep `text=`.
+- Frame times: `dumpsys gfxinfo com.mpaulrenlund.audiofool` (reset first). The headless
+  emulator renders in software (~30 ms a frame for anything), so only the phones can judge
+  smoothness.
 
 ---
 
-## Where things stand (after session 1)
+## Where things stand (after session 2)
 
-- **Released:** pre-release `v0.0.1` ("Session 1 test build", versionCode 1) on GitHub,
-  signed with the release key. The next test build is `0.0.2`, versionCode 2.
+- **Released:** pre-release `v0.0.1` (session 1, versionCode 1). Session 2's build is
+  `0.0.2`, versionCode 2 (see `design/progress.md` for whether it has been released). The
+  next test build is `0.0.3`, versionCode 3.
+- **Screens (session 2):** Artists, Albums, Album, Search, Settings, Statistics, the logo
+  menu and the mini player, all from tokens, checked against `design/screens/` (the
+  differences are listed in `design/progress.md`). Navigation is its own small back stack
+  with predictive back. Statistics holds the debug numbers until session 5 builds the
+  statistics above them (the user's call).
+- **Playback is not there yet.** `playback/NowPlaying` is what the screens read for "what's
+  playing"; today only the debug preview sets it. Session 3 puts the queue and BASS behind
+  it and wires `AppActions.play`, `playPause`, `previous`, `next` and `openNowPlaying`
+  (they are stubs in `ui/AppRoot.kt`). Remove the preview switch from Statistics then.
+- **Bit-Perfect and Last.fm rows** in Settings are drawn in their off state and do nothing.
 - **The user's results so far** (S24, 2026-10-24): 192 artists · 821 albums · 8,127 tracks,
   first scan under 30 seconds, cold start "very fast". The S24 has **no SD card slot** and a
   smaller library than the desktop's; the full ~26,000-track library and SD card removal
   are tested on the **M21** (its list in `design/progress.md` is started).
 - **GitHub:** the repo is public (the user's call). This PC pushes and releases as
   `marcusrenlund`, a collaborator with write access; `gh` is signed in as that account.
-- Project, signing, theme, ThemeLab, settings, storage access, folder list, the library
-  scan and cache, the ported Core rules. The screen is a temporary one (library counts,
-  music folders, theme, debug numbers); session 2 replaces it with Artists, Albums,
-  Album, Search and Settings. **Keep the debug numbers reachable** (the user reports them
-  back, and later sessions add to them): `ui/LibraryHome.kt`'s `DebugPanel`.
-- **Open question for session 2:** there is no launcher icon yet (Android's default shows);
-  the spec doesn't say what to use. Ask.
+- **Keep the debug numbers reachable** (the user reports them back, and later sessions
+  add to them): `ui/StatisticsScreen.kt`'s `DebugPanel`.
 - `LibraryRepository` is the library: cache first, then a background rescan; the scan
   reuses tags for files whose size and date haven't changed, and carries over every
   track of a folder it can't reach.
-- `CoverArt.read(track)` gives a track's cover (best embedded picture, else the folder's
-  file). Thumbnails and their disk cache are session 2.
+- **Covers:** `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp)
+  keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes
+  the list copies after each scan. Now Playing's big art (session 3) should decode the
+  full cover with `CoverArt.read`, not these.
 
 ## Traps worth not rediscovering
 
@@ -157,5 +191,17 @@ the debug panel shows counts, start times, cache and scan numbers, and formats.
 - **Paths compare ignoring case** (the desktop's OrdinalIgnoreCase): Android's shared storage
   and SD cards are case-insensitive. `Paths.key()` for maps.
 - **Name sorting** uses a root-locale collator (case ignored, accents not), cached per string.
+- **Navigation keeps one keyed composition per screen** (`NavHost`). During the back
+  gesture the screen underneath is composed too; when it becomes the top it must stay the
+  same `key(...)` group, or it is recreated and loses its scroll position and selection
+  (found on the emulator in session 2). Write `gesture = false` and the pop together.
+- **Popups are windows of their own**: Roborazzi's `captureRoboImage { }` misses them. The
+  logo menu's pictures use a compose rule and `captureScreenRoboImage` (`ThemeLabMenuTest`),
+  one picture per test because a test can set its content only once.
+- **ThemeLab can't reach TagLib**, so anything that reads covers or tags (Statistics' cover
+  check) is shown without a library there, and `LocalArt` is null (placeholders).
+- **CSS min-height** in the mockups is the content's, inside the padding: put
+  `heightIn(min = ...)` after `padding(...)`.
+- **Token arrays are keyed by `id`**: `album.columns.number.width`, not `columns.0`.
 - A pushed file on a FAT card can be re-read once after a remount (FAT keeps write times to
   2 seconds), which the scan counts as "read", not "removed". Harmless.

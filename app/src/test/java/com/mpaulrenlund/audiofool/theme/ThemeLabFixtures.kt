@@ -1,0 +1,77 @@
+package com.mpaulrenlund.audiofool.theme
+
+import com.mpaulrenlund.audiofool.core.library.LibraryScanner
+import com.mpaulrenlund.audiofool.core.library.MusicLibrary
+import com.mpaulrenlund.audiofool.core.model.Track
+
+/**
+ * The mockups' sample library (design/mockup), so ThemeLab's pictures can be laid
+ * beside design/screens: the same artists and album counts, Aphelion Drive's three
+ * albums, Second Sight's ten songs with their times, and the Polygon songs Search
+ * finds. Albums no mockup opens get a few placeholder songs.
+ */
+object ThemeLabFixtures {
+    const val INTERNAL = "/storage/emulated/0/Music"
+    const val SD_CARD = "/storage/1A2B-3C4D/Music"
+
+    private fun ms(time: String): Long = time.split(":").let { (m, s) -> (m.toLong() * 60 + s.toLong()) * 1000 }
+
+    private fun track(root: String, artist: String, album: String, year: Int, n: Int, title: String, time: String) = Track(
+        filePath = "$root/$artist/$album/%02d %s.flac".format(n, title),
+        title = title,
+        artist = artist,
+        albumArtist = artist,
+        album = album,
+        trackNumber = n,
+        year = year,
+        durationMs = ms(time),
+        kind = "FLAC",
+        sampleRate = 44100,
+        bitDepth = 16,
+    )
+
+    private fun album(root: String, artist: String, album: String, year: Int, songs: List<Pair<String, String>>) =
+        songs.mapIndexed { i, (title, time) -> track(root, artist, album, year, i + 1, title, time) }
+
+    private fun filler(root: String, artist: String, album: String, year: Int, count: Int) =
+        album(root, artist, album, year, (1..count).map { "Track $it" to "3:${(10 + it * 7) % 60}".padEnd(4, '0') })
+
+    val secondSight = listOf(
+        "Sunlight Through Static" to "4:31", "Memory Card" to "3:34", "Polygon Weather" to "5:32",
+        "Low Poly Sunrise" to "4:49", "Analogue Stick" to "3:18", "Wireframe Hymn" to "6:41",
+        "Disc Read Error" to "2:56", "Grey Plastic" to "4:03", "Startup Chime" to "1:28", "Second Sight" to "6:06",
+    )
+
+    /** The artists, album counts and order of the Artists mockup. Grey Chassis and The Polygon Set live on the SD card. */
+    val tracks: List<Track> = buildList {
+        addAll(filler(INTERNAL, "Aeon Static", "Static Bloom", 2004, 9))
+        addAll(filler(INTERNAL, "Aphelion Drive", "First Light", 1995, 6))
+        addAll(album(INTERNAL, "Aphelion Drive", "Second Sight", 1997, secondSight))
+        addAll(filler(INTERNAL, "Aphelion Drive", "Third Person", 2001, 8))
+        addAll(filler(INTERNAL, "Bitcrush Quartet", "Eight Bit", 2009, 7))
+        addAll(filler(INTERNAL, "Bitcrush Quartet", "Sixteen Bit", 2012, 9))
+        addAll(filler(INTERNAL, "Dual Shock Ensemble", "Rumble", 1998, 10))
+        addAll(filler(INTERNAL, "Emotion Engine", "Two Hundred Ninety-Four Megahertz", 2000, 11))
+        addAll(filler(INTERNAL, "Fifth Generation", "Thirty-Two Bit", 1996, 8))
+        add(track(SD_CARD, "Grey Chassis", "Idle Animation", 2006, 4, "Low Polygon Lullaby", "4:12"))
+        addAll(filler(INTERNAL, "Hyperblast Choir", "One", 2002, 5))
+        addAll(filler(INTERNAL, "Hyperblast Choir", "Two", 2004, 5))
+        addAll(filler(INTERNAL, "Hyperblast Choir", "Three", 2007, 5))
+        addAll(filler(INTERNAL, "Hyperblast Choir", "Four", 2011, 5))
+        addAll(filler(INTERNAL, "Memory Card Club", "Fifteen Blocks", 1999, 6))
+        addAll(filler(INTERNAL, "Memory Card Club", "Save Point", 2003, 6))
+        addAll(filler(SD_CARD, "The Polygon Set", "Wireframes", 1999, 9))
+        add(track(SD_CARD, "The Polygon Set", "Polygon Count", 2003, 1, "Polygon Count", "3:47"))
+        addAll(filler(SD_CARD, "The Polygon Set", "Polygon Count", 2003, 11).drop(1))
+        addAll(filler(SD_CARD, "The Polygon Set", "Texture Pop", 2008, 10))
+        addAll(filler(INTERNAL, "Redbook Audio", "Seventy-Four Minutes", 1997, 12))
+        addAll(filler(INTERNAL, "Scanline", "Interlaced", 2001, 8))
+        addAll(filler(INTERNAL, "Scanline", "Progressive", 2005, 8))
+        addAll(filler(INTERNAL, "Vibration Function", "Pulse", 2010, 7))
+    }
+
+    val library: MusicLibrary = LibraryScanner.build(tracks)
+
+    /** "Polygon Weather" from Second Sight: what the mockups show playing. */
+    val playing: Track = tracks.first { it.title == "Polygon Weather" }
+}

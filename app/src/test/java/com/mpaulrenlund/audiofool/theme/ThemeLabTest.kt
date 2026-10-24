@@ -1,10 +1,30 @@
 package com.mpaulrenlund.audiofool.theme
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.mpaulrenlund.audiofool.StartTimes
+import com.mpaulrenlund.audiofool.library.LibraryState
+import com.mpaulrenlund.audiofool.playback.NowPlaying
+import com.mpaulrenlund.audiofool.settings.MusicFolder
+import com.mpaulrenlund.audiofool.ui.AlbumScreen
+import com.mpaulrenlund.audiofool.ui.AlbumsScreen
+import com.mpaulrenlund.audiofool.ui.AppActions
+import com.mpaulrenlund.audiofool.ui.ArtistsScreen
+import com.mpaulrenlund.audiofool.ui.Browse
+import com.mpaulrenlund.audiofool.ui.DebugActions
+import com.mpaulrenlund.audiofool.ui.DebugNumbers
+import com.mpaulrenlund.audiofool.ui.FolderLine
+import com.mpaulrenlund.audiofool.ui.LocalBarInsets
+import com.mpaulrenlund.audiofool.ui.SearchScreen
+import com.mpaulrenlund.audiofool.ui.SettingsActions
+import com.mpaulrenlund.audiofool.ui.SettingsScreen
 import com.mpaulrenlund.audiofool.ui.SheetPage
+import com.mpaulrenlund.audiofool.ui.StatisticsScreen
 import com.mpaulrenlund.audiofool.ui.TokenSheet
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,18 +35,31 @@ import org.robolectric.annotation.GraphicsMode
  * ThemeLab: renders composables in both themes at both device sizes, the
  * S24 Ultra (384 x 832 dp) and the M21 (375 x 667 dp). `recordRoborazziDebug`
  * writes the pictures to app/screenshots/; `verifyRoborazziDebug` compares
- * against them. Starts with the token sheet; session 2 adds every screen.
+ * against them. The screens use the mockups' sample library and the mockups'
+ * 28 dp status row and 20 dp handle as system bars, so each picture can be laid
+ * beside its design/screens PNG.
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class ThemeLabTest {
     private val tokens by lazy { AppTokens.get(ApplicationProvider.getApplicationContext<android.app.Application>().assets) }
 
+    /** The mockups' bars: a 28 dp status row and a 20 dp gesture handle. */
+    private val mockupBars = WindowInsets(top = 28.dp, bottom = 20.dp)
+
+    internal fun browse(playing: Boolean = true, unavailable: List<String> = emptyList()) = Browse(
+        library = ThemeLabFixtures.library,
+        unavailableFolders = unavailable,
+        nowPlaying = NowPlaying().apply { if (playing) showForPictures(ThemeLabFixtures.playing) },
+    )
+
     private fun shoot(device: String, name: String, content: @Composable () -> Unit) {
         for (dark in listOf(true, false)) {
             val themeName = if (dark) "dark" else "light"
             captureRoboImage("screenshots/$device-$themeName-$name.png") {
-                AudioFoolTheme(AppTheme(dark, tokens)) { content() }
+                AudioFoolTheme(AppTheme(dark, tokens)) {
+                    CompositionLocalProvider(LocalBarInsets provides mockupBars) { content() }
+                }
             }
         }
     }
@@ -35,6 +68,39 @@ class ThemeLabTest {
         for (page in SheetPage.entries) shoot(device, "tokens-${page.name.lowercase()}") { TokenSheet(page) }
     }
 
+    private fun screens(device: String) {
+        val actions = AppActions()
+        shoot(device, "artists") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive") }
+        shoot(device, "albums") { AlbumsScreen("Aphelion Drive", browse(), actions, initialSelected = "Second Sight") }
+        shoot(device, "album") { AlbumScreen("Aphelion Drive", "Second Sight", browse(), actions) }
+        shoot(device, "search") { SearchScreen(browse(), actions, initialQuery = "polygon") }
+        shoot(device, "settings") {
+            SettingsScreen(
+                folders = listOf(
+                    FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false),
+                    FolderLine(MusicFolder(ThemeLabFixtures.SD_CARD), "SD card · Music", unavailable = false),
+                ),
+                actions = SettingsActions(),
+            )
+        }
+        // Not in the mockups: nothing played yet, and the SD card taken out.
+        shoot(device, "artists-nothing-played") { ArtistsScreen(browse(playing = false), actions) }
+        shoot(device, "artists-sd-card-out") { ArtistsScreen(browse(unavailable = listOf(ThemeLabFixtures.SD_CARD)), actions) }
+        shoot(device, "settings-sd-card-out") {
+            SettingsScreen(
+                folders = listOf(
+                    FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false),
+                    FolderLine(MusicFolder(ThemeLabFixtures.SD_CARD), "SD card · Music", unavailable = true),
+                ),
+                actions = SettingsActions(),
+            )
+        }
+        shoot(device, "statistics") {
+            StatisticsScreen(LibraryState(), DebugNumbers(StartTimes()), preview = false, actions = DebugActions())
+        }
+    }
+
+
     @Test
     @Config(qualifiers = S24)
     fun token_sheet_s24() = tokenSheet("s24")
@@ -42,6 +108,14 @@ class ThemeLabTest {
     @Test
     @Config(qualifiers = M21)
     fun token_sheet_m21() = tokenSheet("m21")
+
+    @Test
+    @Config(qualifiers = S24)
+    fun screens_s24() = screens("s24")
+
+    @Test
+    @Config(qualifiers = M21)
+    fun screens_m21() = screens("m21")
 
     companion object {
         /** Galaxy S24 Ultra: 1440 x 3120 px, shown at 384 x 832 dp. */

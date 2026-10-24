@@ -102,6 +102,21 @@ object CutOffImage {
         else -> false
     }
 
+    /**
+     * An album's pictures in the order to try them: each whole one as it comes,
+     * then the cut-off ones in their order, so another track's cover or the
+     * folder's file is shown over a cut-off one, and a cut-off one only when
+     * nothing else will do. Lazy: nothing past the first whole one shown is read.
+     */
+    fun wholeFirst(pictures: Sequence<ByteArray?>): Sequence<ByteArray> = sequence {
+        val cutOff = ArrayList<ByteArray>()
+        for (picture in pictures) {
+            if (picture == null || picture.isEmpty()) continue
+            if (isCutOff(picture)) cutOff.add(picture) else yield(picture)
+        }
+        yieldAll(cutOff)
+    }
+
     private fun jpegRunsOut(data: ByteArray): Boolean {
         var i = 2
         while (true) {
