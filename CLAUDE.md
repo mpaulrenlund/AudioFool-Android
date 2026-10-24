@@ -13,7 +13,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 | What | Where |
 |---|---|
-| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (private), branch `main` |
+| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (public), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
 | The desktop app | `C:\MusicPlayer` (C# / WPF). Read-only from here. Its `src/AudioFool.Core` holds the logic to port; its `tests/` hold the tests to port with it |
 | Colour tokens | `design/theme-tokens.json` (PS1 Light) and `design/theme-tokens.dark.json` (PS2 Dark), the desktop's files copied unchanged |
 | Mobile sizes | `design/mobile-tokens.json` |
