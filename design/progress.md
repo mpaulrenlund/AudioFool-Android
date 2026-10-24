@@ -44,21 +44,30 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 Session 1 build (`v0.0.1`). Report from the **Debug** panel at the bottom of the screen.
 
-- [ ] **Install and access.** The APK installs; "Allow…" opens the all-files access page; after allowing, the app comes back and starts reading.
-- [ ] **Folders.** The list starts with the phone's and the SD card's `Music` folders (where there are any). "Add Folder…" picks another, on internal storage and on the card, shown as "SD card · name" with its path. Unticking hides that folder's artists at once; ticking brings them back without a rescan.
-- [ ] **Counts.** The LIBRARY line (artists · albums · tracks) against the desktop's status bar (499 artists · 2,376 albums · 26,795 tracks when last seen there), and the Formats line.
-- [ ] **First scan.** How long the first full scan took: Debug > Last scan, with its read, reused and removed counts.
-- [ ] **Cold start.** Swipe the app away and open it again, three times: Debug > Cold start each time, and Cache ("read and built in"). The library should be on screen at once.
+The S24 has **no SD card slot** and holds a smaller library than the desktop's: **192 artists · 821 albums · 8,127 tracks** (the user, 2026-10-24). The full ~26,000-track library and SD card removal are tested on the M21.
+
+- [x] **Install and access.** v0.0.1 installed, was given access and read the library (2026-10-24).
+- [ ] **Folders.** The list starts with the phone's `Music` folder. "Add Folder…" picks another on internal storage, shown as "Internal storage · name" with its path. Unticking hides that folder's artists at once; ticking brings them back without a rescan.
+- [x] **Counts.** 192 artists · 821 albums · 8,127 tracks (2026-10-24). Still to report: the Formats line.
+- [x] **First scan.** Under 30 seconds for 8,127 tracks (2026-10-24). Exact figure, if wanted: Debug > Last scan.
+- [x] **Cold start.** "Very fast" (2026-10-24). Exact figures, if wanted: Debug > Cold start and Cache.
 - [ ] **Warm start.** Back out with the back gesture and open it again: Debug > Warm start.
 - [ ] **Rescan.** The refresh button in MUSIC FOLDERS: Last scan should read about 0 and reuse every track.
-- [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 - [ ] **Theme.** The moon chip switches to PS1 Light at once and back; the choice survives a restart; the status bar icons are readable in both.
 - [ ] **Covers.** The "Newest album of …" row shows a cover and says whether it was Embedded or Folder.
 - [ ] **Token sheet.** Debug > Token sheet: tap through the four pages in both themes; back returns.
 
 ## To test on the M21
 
-(Session 4 starts this list.)
+Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full ~26,000-track library is meant to be on it. Session 4 adds the playback and Bit-Perfect items. Report from the **Debug** panel.
+
+- [ ] **Install and access.** v0.0.1 installs on Android 13; "Allow…" opens the all-files access page; after allowing, the app comes back and starts reading.
+- [ ] **Folders.** The list starts with the internal and the SD card's `Music` folders (where there are any), the card's shown as "SD card · Music". "Add Folder…" picks a folder on the card.
+- [ ] **Counts.** The LIBRARY line against the desktop's status bar (499 artists · 2,376 albums · 26,795 tracks when last seen there), and the Formats line.
+- [ ] **First scan.** How long the first full scan of the whole library took: Debug > Last scan, with its read, reused and removed counts.
+- [ ] **Cold start with the full library.** Swipe the app away and open it again, three times: Debug > Cold start each time, and Cache ("read and built in"). The library should be on screen at once on the Snapdragon 680.
+- [ ] **Rescan.** The refresh button in MUSIC FOLDERS: Last scan should read about 0 and reuse every track.
+- [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
 
