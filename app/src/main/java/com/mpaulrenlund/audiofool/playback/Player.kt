@@ -284,8 +284,7 @@ class Player(
             "Outputs" to routes.outputsSummary(),
             "Phone" to "${Build.MANUFACTURER} · ${Build.BRAND} · ${Build.MODEL}" +
                 if (routes.speakerIsHeadphones) " · speaker taken as headphones" else "",
-            "Jack" to jackReport,
-            "Jack files" to jackFiles(),
+            "FiiO signals" to fiioLog.joinToString("\n").ifEmpty { "none yet" },
             "Bit-Perfect" to "${if (routes.bitPerfectOn) "on" else "off"} · way here: ${routes.way.name}" +
                 if (routes.greyed) " (greyed)" else "",
             "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),
@@ -577,53 +576,42 @@ class Player(
     }
 
     /**
-     * The headphone jack's own plug and unplug (`ACTION_HEADSET_PLUG`). Where
-     * Android sees no headphones (the M21: its jacks are the "speaker"), it never
-     * says "becoming noisy", so an unplug while playing pauses here too; a pause
-     * already made by [noisy] makes this one do nothing. Always listened for, so
-     * the debug screen can say what the jack has reported.
+     * FiiO's own signals (the M21, 0.1.5): `fiio.intent.action.HEADSET_TYPE_CHANGED`
+     * at a plug or unplug and `fiio.intent.action.SAMPLE_RATE_CHANGED` when its
+     * output's rate changes, both sent by FiiO's status bar. What they carry isn't
+     * known yet, so the debug screen shows it, for the readout to use later.
      */
-    private val jack = object : BroadcastReceiver() {
+    private val fiio = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val plugged = intent.getIntExtra("state", -1)
-            if (plugged < 0) return
-            jackReport = "${if (plugged == 1) "plugged in" else "unplugged"}${intent.getStringExtra("name")?.takeIf { it.isNotEmpty() }?.let { " (\"$it\")" } ?: ""}" +
-                if (isInitialStickyBroadcast) " · when the app started" else " · at ${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())}"
-            if (!isInitialStickyBroadcast && plugged == 0 && state.isPlaying) pause()
+            val extras = intent.extras?.let { b -> b.keySet().sorted().joinToString(", ") { "$it=${anyExtra(b, it)}" } } ?: "no extras"
+            val line = "${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())} ${intent.action?.substringAfterLast('.')}: $extras"
+            fiioLog = (listOf(line) + fiioLog).take(LOG_SIZE)
         }
     }
 
-    /** What the headphone jack last said, for the debug screen. */
-    private var jackReport = "nothing yet"
+    /** FiiO's signals as they came, newest first, for the debug screen. */
+    private var fiioLog: List<String> = emptyList()
 
-    /**
-     * For the debug screen: the kernel's jack switches, where an app may read
-     * them. The M21 sends no plug broadcast (0.1.3), yet FiiO's own player pauses
-     * on an unplug; if one of these changes with the plug, the app can watch it.
-     */
-    private fun jackFiles(): String {
-        val found = listOf("/sys/class/switch", "/sys/class/extcon").flatMap { dir ->
-            val entries = runCatching { File(dir).listFiles()?.toList() }.getOrNull()
-            when {
-                entries == null -> listOf("$dir: can't be read (or isn't there)")
-                entries.isEmpty() -> listOf("$dir: empty")
-                else -> entries.sortedBy { it.name }.map { e ->
-                    val name = runCatching { File(e, "name").readText().trim() }.getOrNull()
-                    val state = runCatching { File(e, "state").readText().trim().replace('\n', ' ') }.getOrElse { "not readable" }
-                    "${e.name}${name?.let { " ($it)" } ?: ""} = $state"
-                }
-            }
-        }
-        return found.joinToString("\n")
-    }
+    /** An extra of a type not known in advance (the typed getters need it known). */
+    @Suppress("DEPRECATION")
+    private fun anyExtra(bundle: android.os.Bundle, key: String): Any? = bundle.get(key)
 
     init {
-        context.registerReceiver(jack, IntentFilter(AudioManager.ACTION_HEADSET_PLUG), Context.RECEIVER_NOT_EXPORTED)
+        val filter = IntentFilter().apply {
+            addAction(FIIO_HEADSET_TYPE_CHANGED)
+            addAction(FIIO_SAMPLE_RATE_CHANGED)
+        }
+        // Sent by FiiO's status bar, an app of its own: only an exported receiver hears it.
+        context.registerReceiver(fiio, filter, Context.RECEIVER_EXPORTED)
     }
 
     private fun registerNoisy() {
         if (noisyRegistered) return
-        context.registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), Context.RECEIVER_NOT_EXPORTED)
+        // Exported: on the M21 "becoming noisy" comes from FiiO's status bar (an app
+        // of its own, uid 10089), not from Android's audio service, and a receiver
+        // that isn't exported never hears it (0.1.5, found in the M21's broadcast
+        // history). Anyone sending it can only pause the music.
+        context.registerReceiver(noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), Context.RECEIVER_EXPORTED)
         noisyRegistered = true
     }
 
@@ -637,6 +625,9 @@ class Player(
         /** `adb logcat -s AudioFoolPlay` on the emulator. */
         const val TAG = "AudioFoolPlay"
         const val LOG_SIZE = 30
+
+        const val FIIO_HEADSET_TYPE_CHANGED = "fiio.intent.action.HEADSET_TYPE_CHANGED"
+        const val FIIO_SAMPLE_RATE_CHANGED = "fiio.intent.action.SAMPLE_RATE_CHANGED"
         const val SAVE_EVERY_MS = 10_000L
         const val TICK_MS = 250L
         const val DUCKED = 0.2f
