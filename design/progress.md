@@ -508,7 +508,7 @@ released as pre-release [`v0.1.5`](https://github.com/mpaulrenlund/AudioFool-And
 - [x] **Unplugging pauses** (4.4 mm, BP on): "it paused when i unplugged!", and the
   broadcast history shows "becoming noisy" delivered to AudioFool.
 - [x] **The readout follows FiiO's rate**: 44.1 kHz / 16-bit and 96 kHz / 32-bit, both "(bit-perfect)".
-- [ ] **The 3.5 mm jack** the same (unplug and readout).
+- [x] **The 3.5 mm jack**: unplugging pauses too (the user, 2026-10-25).
 - [x] **BP off** (a 96 kHz song): "Headphones · Shared · 96 kHz" (the user, 2026-10-25). FiiO
   runs its DAC at the song's rate even through Android's mixer, so nothing is resampled; what
   BP adds on the M21 is the full-volume, whole-number-sample path, not the rate.
