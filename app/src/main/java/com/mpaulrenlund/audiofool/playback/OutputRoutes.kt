@@ -104,6 +104,10 @@ class OutputRoutes(context: Context) {
         refresh()
     }
 
+    /** This player has no speaker: what Android calls its speaker is the headphone out (the M21). */
+    @Volatile var speakerIsHeadphones: Boolean = false
+        private set
+
     /** Works out the route again (devices came or went, or an `AudioTrack` was rerouted). Main thread. */
     fun refresh() {
         val outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
@@ -116,7 +120,10 @@ class OutputRoutes(context: Context) {
             ?: said
             ?: outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
         val pretending = pretend
-        val newRoute = pretending ?: SpeakerlessPlayers.route(now?.let { routeOf(it.type) } ?: OutputRoute.Speaker, SPEAKER_IS_HEADPHONES)
+        // A FiiO player's "speaker" is its headphone jacks (the M21).
+        val speaker = outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+        speakerIsHeadphones = SpeakerlessPlayers.speakerIsHeadphones(Build.MANUFACTURER, Build.BRAND, Build.MODEL, speaker?.productName?.toString())
+        val newRoute = pretending ?: SpeakerlessPlayers.route(now?.let { routeOf(it.type) } ?: OutputRoute.Speaker, speakerIsHeadphones)
         val changed = newRoute != route || now?.id != device?.id
         // The old device's mixer goes with it (unplugging clears it anyway).
         if (changed) clearMixer()
@@ -253,7 +260,7 @@ class OutputRoutes(context: Context) {
         val rates = d.sampleRates.sorted().joinToString(", ") { Display.sampleRate(it).removeSuffix(" kHz") }.let { if (it.isEmpty()) "any" else "$it kHz" }
         val encodings = d.encodings.toSet().sorted().joinToString(", ") { encodingName(it) }.ifEmpty { "any" }
         val pretending = pretend?.let { " · pretending ${it.label} (debug)" } ?: ""
-        val speakerless = if (SPEAKER_IS_HEADPHONES) " · ${Build.MANUFACTURER} ${Build.MODEL}: its speaker is the headphone out" else ""
+        val speakerless = if (speakerIsHeadphones) " · its speaker is the headphone out (FiiO)" else ""
         return "${typeName(d.type)} \"${d.productName}\" · rates: $rates · formats: $encodings$pretending$speakerless"
     }
 
@@ -323,9 +330,6 @@ class OutputRoutes(context: Context) {
     companion object {
         /** `setPreferredMixerAttributes` and the bit-perfect mixer: Android 14 and later (the S24; not the M21). */
         val MIXER_API: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-
-        /** This player has no speaker: what Android calls its speaker is the headphone out (the M21). */
-        val SPEAKER_IS_HEADPHONES: Boolean = SpeakerlessPlayers.speakerIsHeadphones(Build.MANUFACTURER ?: "", Build.BRAND ?: "")
 
         /** How long after a device comes or goes the route is looked at again. */
         private const val SETTLE_MS = 1_000L

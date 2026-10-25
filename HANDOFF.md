@@ -6,6 +6,12 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
+- **0.1.3** (versionCode 9): 0.1.2's FiiO check (maker or brand exactly "FiiO") didn't catch
+  the M21. Now "FiiO" anywhere in maker, brand, model or the speaker's name; Statistics shows
+  a **Phone** row. Unplugging didn't pause on the M21 (Android sees no headphones, so no
+  "becoming noisy"): the player also pauses on the jack's `ACTION_HEADSET_PLUG` unplug, and a
+  **Jack** row shows what the jack reported. **Waiting on** the M21's Output, Phone and Jack
+  rows. Next fix: 0.1.4, versionCode 10.
 - **0.1.2** (versionCode 8) is released as a pre-release (2026-10-25,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.2>, `dist/AudioFool-0.1.2.apk`). The M21 lists its headphone jacks to Android as the built-in
   speaker (Outputs: earpiece, speaker, telephony; no wired device), so a FiiO player's

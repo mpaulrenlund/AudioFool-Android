@@ -10,7 +10,8 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6) — 2026-10-24
 - [x] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7) — 2026-10-24, released as v0.1.0
 - [x] **0.1.1 fixes** from the first device reports — 2026-10-25
-- [x] **0.1.2**: the M21's headphone out — 2026-10-25
+- [x] **0.1.2**: the M21's headphone out — 2026-10-25 (didn't take: 0.1.3)
+- [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 
 ## Decisions made in the design
 
@@ -30,6 +31,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.1.3 (2026-10-25):
+
+- **0.1.2's FiiO check didn't catch the M21**: still "Speaker", BP greyed. It wanted
+  `Build.MANUFACTURER` or `Build.BRAND` to be exactly "FiiO"; the only name known to say
+  FiiO was the speaker's own ("FiiO M21", probably `Build.MODEL`). Now "FiiO" anywhere in
+  the maker, brand, model or the speaker's name counts. Statistics > Playback gains a
+  **Phone** row (maker · brand · model, and "speaker taken as headphones" when it applies),
+  so the next report shows which matched.
+- **Unplugging on the M21 didn't pause**: Android never sees headphones there, so it never
+  says "becoming noisy". The player now also listens for the jack's own `ACTION_HEADSET_PLUG`
+  and pauses on an unplug while playing (on any phone; a second pause does nothing). A
+  **Jack** row says what the jack last reported, so if the M21 sends nothing, that shows.
+  Not testable on the emulator (no jack, and the shell may not send that broadcast).
+- **FiiO's own bypass setting:** the user doesn't think the M21 has one.
 
 0.1.2 (2026-10-25):
 
@@ -441,6 +457,15 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+0.1.3 (the M21 by its speaker's name, and the jack). The user's report on 0.1.2
+(2026-10-25): Output still "Speaker" on the 3.5 mm and 4.4 mm jacks, BP greyed, unplugging
+while playing doesn't pause, and no FiiO bypass setting that they know of.
+
+- [ ] **BP can be turned on**, Output starts "Headphones". If not, report the **Phone** row.
+- [ ] **Unplugging pauses** (3.5 mm and 4.4 mm). Either way, report the **Jack** row after
+  plugging in and pulling out: "nothing yet" means the M21 doesn't send the jack's signal.
+- [ ] **With BP on**, a 44.1 kHz and a 96 kHz FLAC: Output and System output.
+
 0.1.2 (the M21's headphone out), released 2026-10-25 as pre-release
 [`v0.1.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.2)
 ("AudioFool 0.1.2", versionCode 8). The user's report on 0.1.1 (2026-10-25): 24-bit plays
@@ -535,6 +560,20 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.1.3 — the M21 by its speaker's name, and the jack (2026-10-25)
+
+**Reported** (0.1.2, M21): still "Speaker" and BP greyed on both jacks; unplugging doesn't
+pause; no FiiO bypass setting known.
+
+**Changed:** `SpeakerlessPlayers.speakerIsHeadphones` takes the maker, brand, model and the
+speaker's name, any containing "FiiO"; `OutputRoutes` passes them; `Player` listens for
+`ACTION_HEADSET_PLUG` and pauses on an unplug; Statistics' Phone and Jack rows.
+
+**Verified:** `:core:test` (the M21's names and a Samsung's in the test),
+`:app:testDebugUnitTest`, `verifyRoborazziDebug`, the release build. Emulator: starts,
+Phone "Google · google · sdk_gphone64_x86_64", Jack "nothing yet", BP greyed on its
+speaker. **Not checked here:** the M21's names and its jack signal.
 
 ### 0.1.2 — the M21's headphone out (2026-10-25)
 

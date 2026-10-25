@@ -18,11 +18,18 @@ enum class OutputRoute(val label: String) {
  * speaker: the FiiO M21 lists only "speaker", earpiece and telephony outputs,
  * with its 3.5 mm and 4.4 mm jacks behind the "speaker" (the user's report on
  * 0.1.1). There the speaker route is the headphone out.
+ *
+ * 0.1.2 looked for a maker or brand of exactly "FiiO" and the M21 wasn't caught;
+ * its speaker calls itself "FiiO M21", so the model and that name count too, and
+ * "FiiO" may be anywhere in any of them.
  */
 object SpeakerlessPlayers {
-    /** [manufacturer] and [brand] are the phone's (`Build.MANUFACTURER`, `Build.BRAND`). */
-    fun speakerIsHeadphones(manufacturer: String, brand: String): Boolean =
-        manufacturer.equals("FiiO", ignoreCase = true) || brand.equals("FiiO", ignoreCase = true)
+    /**
+     * @param names The phone's `Build.MANUFACTURER`, `Build.BRAND`, `Build.MODEL`
+     *   and the speaker's own product name: any that says FiiO.
+     */
+    fun speakerIsHeadphones(vararg names: String?): Boolean =
+        names.any { it != null && it.contains("FiiO", ignoreCase = true) }
 
     /** The route as the readout and Bit-Perfect should take it on this player. */
     fun route(route: OutputRoute, speakerIsHeadphones: Boolean): OutputRoute =

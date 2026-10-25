@@ -33,7 +33,11 @@ class BitPerfectTest {
         assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("FiiO", "FiiO"))
         assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("fiio", "other"))
         assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("unknown", "FIIO"))
-        assertEquals(false, SpeakerlessPlayers.speakerIsHeadphones("samsung", "samsung"))
+        // The M21 (0.1.2's report): only its speaker's name was known to say FiiO.
+        assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("QUALCOMM", "qti", "M21", "FiiO M21"))
+        assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("unknown", null, "FiiO M21", null))
+        assertEquals(false, SpeakerlessPlayers.speakerIsHeadphones("samsung", "samsung", "SM-S928B", "SM-S928B"))
+        assertEquals(false, SpeakerlessPlayers.speakerIsHeadphones(null, null, null, null))
     }
 
     @Test fun there_its_speaker_is_the_headphone_route_and_bp_can_be_used() {

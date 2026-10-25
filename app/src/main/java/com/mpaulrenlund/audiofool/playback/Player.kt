@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.mpaulrenlund.audiofool.core.format.Display
@@ -281,6 +282,9 @@ class Player(
         return listOf(
             "Route" to "${routes.route.label} · ${routes.deviceSummary()}",
             "Outputs" to routes.outputsSummary(),
+            "Phone" to "${Build.MANUFACTURER} · ${Build.BRAND} · ${Build.MODEL}" +
+                if (routes.speakerIsHeadphones) " · speaker taken as headphones" else "",
+            "Jack" to jackReport,
             "Bit-Perfect" to "${if (routes.bitPerfectOn) "on" else "off"} · way here: ${routes.way.name}" +
                 if (routes.greyed) " (greyed)" else "",
             "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),
@@ -569,6 +573,30 @@ class Player(
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && state.isPlaying) pause()
         }
+    }
+
+    /**
+     * The headphone jack's own plug and unplug (`ACTION_HEADSET_PLUG`). Where
+     * Android sees no headphones (the M21: its jacks are the "speaker"), it never
+     * says "becoming noisy", so an unplug while playing pauses here too; a pause
+     * already made by [noisy] makes this one do nothing. Always listened for, so
+     * the debug screen can say what the jack has reported.
+     */
+    private val jack = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val plugged = intent.getIntExtra("state", -1)
+            if (plugged < 0) return
+            jackReport = "${if (plugged == 1) "plugged in" else "unplugged"}${intent.getStringExtra("name")?.takeIf { it.isNotEmpty() }?.let { " (\"$it\")" } ?: ""}" +
+                if (isInitialStickyBroadcast) " · when the app started" else " · at ${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())}"
+            if (!isInitialStickyBroadcast && plugged == 0 && state.isPlaying) pause()
+        }
+    }
+
+    /** What the headphone jack last said, for the debug screen. */
+    private var jackReport = "nothing yet"
+
+    init {
+        context.registerReceiver(jack, IntentFilter(AudioManager.ACTION_HEADSET_PLUG), Context.RECEIVER_NOT_EXPORTED)
     }
 
     private fun registerNoisy() {
