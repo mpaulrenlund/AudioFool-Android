@@ -254,7 +254,8 @@ private fun Quality(track: Track) {
 /**
  * The waveform seekbar (spec 5): full width, `waveformHeight` tall, the track's
  * waveform as `waveformBars` hard-edged bars centred on the middle line, the
- * played part `slider.seekFill`, the rest `slider.track`. Until the waveform is
+ * played part `slider.seekFill`, the rest `slider.track`, split at the exact
+ * place so it glides while playing. Until the waveform is
  * ready, a flat bar `waveformFloor` high. Drag or tap to seek; the bar follows
  * the finger and the seek happens on letting go. The elapsed and total times
  * sit under it.
@@ -306,7 +307,10 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit) {
     ) {
         val barWidth = size.width / bars
         val floorPx = floor.toPx()
-        val split = (fraction * bars).roundToInt()
+        // The split falls at the exact place, cutting through the bar being played, as
+        // the desktop's WaveformView clips its shape there; a whole-bar split moved only
+        // every 1/96 of the song (about 3 s in a 5-minute one).
+        val split = fraction * size.width
         for (i in 0 until bars) {
             // The levels are 96 columns already; shorter tracks give fewer, spread out.
             val level = when {
@@ -316,7 +320,15 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit) {
             val h = maxOf(floorPx, minOf(size.height, level * size.height))
             val left = (i * barWidth).roundToInt().toFloat()
             val right = ((i + 1) * barWidth).roundToInt().toFloat()
-            drawRect(if (i < split) played else rest, Offset(left, (size.height - h) / 2), Size(right - left, h))
+            val top = (size.height - h) / 2
+            when {
+                right <= split -> drawRect(played, Offset(left, top), Size(right - left, h))
+                left >= split -> drawRect(rest, Offset(left, top), Size(right - left, h))
+                else -> {
+                    drawRect(played, Offset(left, top), Size(split - left, h))
+                    drawRect(rest, Offset(split, top), Size(right - split, h))
+                }
+            }
         }
     }
     val shown = if (dragging != null) (fraction * duration).toLong() else position

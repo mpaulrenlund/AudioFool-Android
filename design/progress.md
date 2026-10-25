@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down) — built and checked on the emulator 2026-10-25, not released
+- [ ] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — built and checked on the emulator 2026-10-25, not released
 
 ## Decisions made in the design
 
@@ -65,6 +65,13 @@ The user made these while the mockups were designed (October 2026). The spec alr
   to 3 / 3; a quick 150 px flick skipped; a drag along the seekbar seeks (0:00 → 0:07)
   without skipping; mid-swipe the art and title slide and fade. ThemeLab pictures
   unchanged (nothing differs at rest).
+- **The seekbar glides** (the user: "pretty slow to update"). It already redrew every frame
+  from a position about 10 ms fresh, but coloured whole bars only, so the played part moved
+  one bar in 96 at a time (about every 3 s in a 5-minute song). Now the split falls at the
+  exact place, through the bar being played, as the desktop's `WaveformView` clips its shape
+  at the position. Spec 5 updated. **Checked on the emulator** (a 3-minute FLAC): the split
+  moved 4–5 px between screenshots, steadily, with a bar cut partway; it used to hold still
+  for 1.9 s and jump 10 px. The Now Playing pictures changed by a few pixels (the 2:18 bar).
 
 0.1.5 (2026-10-25), found with the M21 on this PC over adb (the user connected it):
 
@@ -384,6 +391,8 @@ Session 1:
 - [ ] **Swipe to skip on Now Playing.** Swipe the cover left: next song; right: back a song
   (or the start of this one if more than 3 s in). A swipe down does nothing; back closes it.
   Does the distance feel right, and does a quick flick work?
+- [ ] **Seekbar glides.** While a long song plays, the blue part of the waveform creeps
+  forward smoothly instead of a bar every few seconds.
 
 ### 0.1.1 (fixes from the first reports)
 
@@ -702,7 +711,13 @@ to it in `LibraryScreens.kt`, `artists.index` tokens, three ThemeLab pictures, s
 Then Now Playing's `SwipeToSkip` (art and title block) in place of swipe-down, the
 `nowPlaying.swipe*` tokens, spec 5. Driven on the emulator with `input swipe` (a 150 px
 flick needs about 20 ms to pass the fling speed) and `input motionevent` for mid-swipe
-screenshots.
+screenshots. Then the seekbar's split at the exact place, measured on the emulator by
+reading the played colour along one pixel row of rapid screenshots.
+
+**Emulator data fixed:** both `SD Card Band` FLACs on the emulator's card were damaged
+(ffmpeg: "invalid residual"; the second's header unreadable), likely from a card pulled
+mid-write in session 5. The app opened them, got no audio, and ended the queue at 0:00.
+Rebuilt as 3-minute tones with the same tags (ffmpeg `sine`, level slowly changing).
 
 **Verified:** `:core:test`, `:app:testDebugUnitTest`, `recordRoborazziDebug` (only the new
 pictures changed), the release build on the emulator (versionCode 12 still; bump before
