@@ -13,6 +13,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.2**: the M21's headphone out — 2026-10-25 (didn't take: 0.1.3)
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
+- [x] **0.1.5**: unplug pauses on the M21 (checked on the M21 over adb) — 2026-10-25
 
 ## Decisions made in the design
 
@@ -32,6 +33,24 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.1.5 (2026-10-25), found with the M21 on this PC over adb (the user connected it):
+
+- **The M21 does send "becoming noisy"** at an unplug, but from FiiO's status bar
+  (`com.android.systemui`, uid 10089, an app), not Android's audio service. A receiver
+  registered `RECEIVER_NOT_EXPORTED` only hears the system and itself, so AudioFool never
+  heard it; Poweramp did. 0.1.3's "the M21 never says becoming noisy" was wrong. The noisy
+  receiver is now exported: anyone sending it can only pause the music. **Checked on the
+  M21:** the broadcast history shows it delivered to AudioFool at the unplug, and it paused.
+- **Removed** 0.1.3's `ACTION_HEADSET_PLUG` receiver and 0.1.4's jack-file probe: the M21
+  sends neither and apps can't read the files.
+- **FiiO's own signals reach apps** (exported receiver): `fiio.intent.action.HEADSET_TYPE_CHANGED`
+  (`type`: 8 with headphones in, 0 unplugged) and `fiio.intent.action.SAMPLE_RATE_CHANGED`
+  (`format`, `rate`: 44100 while a 44.1 kHz song played with BP on, 0 when stopped). That
+  rate is the M21's output as FiiO sees it. Statistics > Playback > **FiiO signals** lists
+  them. Whether the readout should use it is the user's call (a spec change).
+- **Why 0.1.2's FiiO check missed:** the M21 reports `Build.MANUFACTURER` "QUALCOMM",
+  `Build.BRAND` "qti", `Build.MODEL` "FiiO M21" (Statistics' Phone row).
 
 0.1.4 (2026-10-25):
 
@@ -475,6 +494,12 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+0.1.5 (unplug), checked on the M21 itself over adb (2026-10-25):
+
+- [x] **Unplugging pauses** (4.4 mm, BP on): "it paused when i unplugged!", and the
+  broadcast history shows "becoming noisy" delivered to AudioFool.
+- [ ] **The 3.5 mm jack** the same.
+
 0.1.4 (the click), released 2026-10-25 as pre-release
 [`v0.1.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4)
 ("AudioFool 0.1.4", versionCode 10). The user's report on 0.1.3 (2026-10-25): BP works; unplugging doesn't
@@ -594,6 +619,23 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.1.5 — the M21's unplug, found over adb (2026-10-25)
+
+**How:** the user connected the M21 to this PC (adb sees it as `model:FiiO_M21`, serial "?",
+so pick it by `-t <transport_id>` from `adb devices -l`; the emulator is the other device).
+`adb shell dumpsys activity broadcasts history` lists each broadcast with its sender and every
+receiver it was delivered to; `dumpsys activity broadcasts` lists registered receivers. The
+broadcast extras show as STRIPPED there, so AudioFool's Statistics showed them (read with
+`uiautomator dump`). A plain `adb logcat` capture dropped when USB reconnected and caught
+little; the broadcast history held everything needed.
+
+**Changed:** the noisy receiver exported; the jack receiver and probe removed; a receiver for
+FiiO's two signals, shown in Statistics.
+
+**Verified:** `:core:test`, `:app:testDebugUnitTest`, `verifyRoborazziDebug`, the release
+build; installed on the M21 with `adb install -r` (versionCode 11, same key, data kept); the
+user unplugged while playing: paused, and the history shows the delivery.
 
 ### 0.1.4 — no click at a restart or a tap (2026-10-25)
 

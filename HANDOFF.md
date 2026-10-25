@@ -6,6 +6,12 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
+- **0.1.5** (versionCode 11, built, installed on the M21 over adb, **not released**): unplug
+  pauses on the M21. Its "becoming noisy" comes from FiiO's status bar (an app uid), so the
+  receiver must be exported. FiiO's `SAMPLE_RATE_CHANGED` carries the rate its DAC runs at
+  (`rate=44100` while a 44.1 kHz song played): a candidate for the M21's readout, the user's
+  call. **The M21 can be connected to this PC** when the user plugs it in: pick it with
+  `adb -t <transport_id>` (its serial shows as "?").
 - **0.1.4** (versionCode 10) is released as a pre-release (2026-10-25,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4>, `dist/AudioFool-0.1.4.apk`). The click on the M21 at a restart or a tapped song: the
   desktop's 5 ms seek fade, ported (`SeekFade`; a `VolumeShaper` fades the old sound out
@@ -350,6 +356,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
 - **A buffer from `Decoder.read` must be empty when it returns false** (`limit(0)`): `clear()` makes it look full of old samples, which `pump` then writes.
 - **Anything that cuts a playing `AudioTrack` goes through `OutputStage.cut`**, which fades it out first; a bare `pause()`/`flush()` clicks on the M21.
+- **On the M21, system broadcasts can come from FiiO's status bar** (an app uid): a `RECEIVER_NOT_EXPORTED` receiver misses them. Check the sender in `dumpsys activity broadcasts history`.
 - **The M21 has no headphone device in Android's eyes**: its jacks are the "speaker" (48 kHz, 16-bit, per Android). Don't look for `TYPE_WIRED_*` there.
 - **24-bit packed `AudioTrack`s are static on the M21** (Android 13) though the emulator plays them: shared sends 24-bit as float, the M21's way as 32-bit.
 - **An `AudioTrack` must use the mixer entry's own `AudioFormat`** (`OutputPlan.Mixer.format`)
