@@ -74,4 +74,17 @@ object ThemeLabFixtures {
 
     /** "Polygon Weather" from Second Sight: what the mockups show playing. */
     val playing: Track = tracks.first { it.title == "Polygon Weather" }
+
+    /** Now Playing's song as its mockup shows it: a 24/96 FLAC at 1,140 kbps, third of ten. */
+    val nowPlayingTrack: Track = playing.copy(sampleRate = 96000, bitDepth = 24, bitrate = 1140)
+
+    /** The Now Playing mockup's position: 2:18 of 5:32. */
+    const val NOW_PLAYING_POSITION_MS = 138_000L
+
+    /** The Now Playing mockup's made-up waveform (its `renderVals`), as levels of 0 to 1. */
+    val mockupWaveform: FloatArray = FloatArray(96) { i ->
+        val env = 0.55 + 0.35 * kotlin.math.sin(i / 9.0) + 0.1 * kotlin.math.sin(i / 2.3)
+        val fade = minOf(1.0, i / 6.0, (96 - i) / 8.0)
+        kotlin.math.abs(env * fade * (0.75 + 0.25 * kotlin.math.sin(i * 1.7))).coerceAtMost(1.0).toFloat()
+    }
 }

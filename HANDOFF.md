@@ -1,30 +1,41 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-24, end of session 2 (and its v0.0.3 follow-up). Read this with
-`README.md` (how the app works) and `design/progress.md` (every decision, and the lists of
-what to test on each device). The spec is `design/android-spec.md`.
+Updated 2026-10-24, end of session 3 (playback). Read this with `README.md` (how the app
+works) and `design/progress.md` (every decision, and the lists of what to test on each
+device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **Next is session 3, Playback** (`design/session-prompts.md`): BASS for Android, the
-  output stage, gapless, the media session, PlayOrder / ReopenPoint / Waveform /
-  OutputReadout, Now Playing, and wiring the mini player and song taps to the queue.
-- Read, in order: `CLAUDE.md`, this file, `design/android-spec.md` (§3, §5, §6.1, §6.3), and
-  in `design/progress.md` the Decisions sections and the session 2 notes.
-- **Where session 3 plugs in:** `playback/NowPlaying.kt` is what every screen reads for
-  "what's playing" (the mini player, the now-playing rows, the Album table's triangle).
-  `ui/AppRoot.kt` builds `AppActions`; `play`, `playPause`, `previous`, `next` and
-  `openNowPlaying` are stubs today. Statistics' "Mini player preview" switch exists only
-  because there is no playback: remove it once there is.
-- **Device reports still open** (the user hasn't reported them; don't block on them): most
-  of the v0.0.2 items on both lists in `design/progress.md`. Done so far: the S24's
-  install, counts, first scan and cold start (v0.0.1), and the M21's first scan (v0.0.3:
-  8 min 49 s for 27,115 files, artists shown as found; the user: "it's OK").
-- **Releases:** `v0.0.1`, `v0.0.2`, `v0.0.3` are out. The next test build is `0.0.4`,
-  versionCode 4. Confirm the tag and notes with the user before `gh release create`.
-- **The emulator** still holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists
-  × 2 albums of silent MP3s with folder covers, and the SD card's `/storage/0000-0000/Music`)
-  and v0.0.3 installed. `dist/` (ignored by git) holds the released APKs.
+- **Next is session 4, Bit-Perfect, DSD over DoP, and an M21 test build**
+  (`design/session-prompts.md`). It starts with research the user wants to see first (the
+  Android 14+ bit-perfect mixer on a USB DAC, FiiO's SRC bypass on the M21).
+- Read, in order: `CLAUDE.md`, this file, `design/android-spec.md` (§6), and in
+  `design/progress.md` the Decisions sections and the session 3 notes.
+- **Where session 4 plugs in:**
+  - `playback/OutputStage.kt` opens the `AudioTrack` (`openOutput`, `build`): that is
+    where the route, `setPreferredMixerAttributes` and DoP go. It already reopens the
+    output when a song asks for another format, after the last one is heard out (that's
+    the place to re-apply the mixer attributes at a new rate), and after a lost output
+    (`reopenAfterLoss`, carrying on from `ReopenPoint`).
+  - `playback/Decoder.kt` picks the encoding from the bit depth (`encodingFor`) and opens
+    DSD as PCM; DoP needs `BASS_DSD_RAW` and the desktop's DoP packing.
+  - `playback/Player.kt` `readoutFor` builds the readout with `OutputMode.Shared`; the
+    route goes in front of it (spec 6.3).
+  - `ui/NowPlayingScreen.kt` `BitPerfectButton(on, onClick, greyed)` draws all three
+    states; `NowPlayingActions.toggleBitPerfect` is null today. Settings' row reads
+    `nowPlaying.readout` and still shows the off chip.
+  - Statistics > Playback is where the route, readout and mixer attributes go for the user
+    to report.
+- **Device reports still open** (don't block on them): the v0.0.2 and v0.0.4 items on both
+  lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
+  cold start (v0.0.1), and the M21's first scan (v0.0.3).
+- **Releases:** `v0.0.1` to `v0.0.3` are out, and session 3's `0.0.4` (versionCode 4) if
+  the user approved it (see *Where things stand*). The next is `0.0.5`, versionCode 5.
+  Confirm the tag and notes with the user before `gh release create`.
+- **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
+  albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and a copy of the
+  sample set on the SD card, `/storage/0000-0000/Music`) and the session 3 release build.
+  `dist/` (ignored by git) holds the released APKs.
 
 ---
 
@@ -35,7 +46,9 @@ what to test on each device). The spec is `design/android-spec.md`.
 | Source | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android`, branch `main` |
 | The desktop app (read-only) | `C:\MusicPlayer`; its `src/AudioFool.Core` is what gets ported |
 | Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/` |
-| The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/` (what's playing), `ui/` (screens, navigation) |
+| The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
+| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song), `OutputStage` (the `AudioTrack` thread: gapless, what's heard), `Player` (queue, order, focus, unplug, resume), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported logic in `core/.../playback/` and `core/.../analysis/` |
+| BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
 | Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `StatisticsScreen.kt` (debug numbers), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts) |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
 | TagLib 2.3.2 (C++, vendored unchanged) | `third_party/taglib/`; the JNI bridge is `app/src/main/cpp/tagreader_jni.cpp` |
@@ -47,6 +60,8 @@ what to test on each device). The spec is `design/android-spec.md`.
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
 | On the phone: settings | SharedPreferences `settings` (theme, music folders) |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
+| On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat |
+| On the phone: waveforms | `no_backup/waveforms/*.wave` (96 levels per file, named from path, size and date) |
 
 Release key SHA-256: `1F:DE:FE:0A:0E:C5:F4:B6:63:61:39:B3:5B:F3:9D:B8:9E:EA:2C:68:9A:3A:A1:7A:BC:12:D8:CE:C5:BE:2C:21`.
 Every APK the user gets is signed with it. A build signed with anything else won't
@@ -107,10 +122,26 @@ The signed APK is `app/build/outputs/apk/release/app-release.apk`. Bump `version
 ### The emulator
 
 AVD `Medium_Phone_API_37.0` (Android 17, 1080 × 2400, with an SD card volume `0000-0000`).
+Leave out `-no-audio` now that it plays: the output stage needs an audio device.
 
 ```bash
-"$LOCALAPPDATA/Android/Sdk/emulator/emulator.exe" -avd Medium_Phone_API_37.0 -no-window -no-audio -no-boot-anim -no-snapshot-save
+"$LOCALAPPDATA/Android/Sdk/emulator/emulator.exe" -avd Medium_Phone_API_37.0 -no-window -no-boot-anim -no-snapshot-save
 ```
+
+Playback, as the emulator shows it (release builds too):
+
+- `adb logcat -s AudioFoolPlay:I` logs each output opened ("44.1 kHz / 16-bit, 2 ch →
+  output 44.1 kHz / 16-bit, 2 ch") and each song heard, with the joins, reopens and
+  underruns so far. Statistics > Playback shows the same.
+- Gapless: play `Gapless Live`; two joins and 0 underruns is gapless (one `AudioTrack`,
+  never dry). The emulator's clock runs a little slow (12 s songs take about 12.7 s), so
+  don't judge gaps by timestamps.
+- Media keys: `adb shell input keyevent MEDIA_PLAY_PAUSE` (also `MEDIA_NEXT`,
+  `MEDIA_PREVIOUS`, `HEADSETHOOK`). The session: `adb shell dumpsys media_session`; its
+  first `state=PlaybackState` line can be an old one, `adb logcat -s MediaSessionService`
+  shows each change.
+- The shade's media player: `adb shell cmd statusbar expand-notifications`. The AVD has no
+  lock screen set, so waking it shows the app; the lock screen is checked on the S24.
 
 Then, with `MSYS_NO_PATHCONV=1`:
 
@@ -153,6 +184,10 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ### Driving the emulator
 
+- Tapping by text: dump the screen (`uiautomator dump`), find the node whose `text="…"`
+  starts with what you want, skipping `EditText` (the search field holds the query too),
+  and tap the centre of its `bounds`. Session 3 wrapped that in a small script.
+
 - A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.
   Session 2 used 200 artists × 2 albums.
@@ -166,7 +201,22 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ---
 
-## Where things stand (after session 2)
+## Where things stand (after session 3)
+
+- **Playback works on the emulator:** every sample format plays at its own rate and depth
+  (FLAC 16/44 and 24/96, MP3, AAC, ALAC 24/48, Opus, Vorbis, WAV, AIFF 24, WavPack, DSF and
+  DFF as 88.2 kHz PCM); `Gapless Live` joins twice with 0 underruns; a format change
+  reopens the output; the media session, the shade's player with the cover, media keys,
+  seeking, swipe-down, and resume after the app is killed (restored paused at the place,
+  and a play key resumes it from the home screen).
+- **Not checked on the emulator** (on the S24 list): the lock screen, a real Bluetooth
+  headset's buttons, unplugging headphones, audio focus against another app, and how it
+  sounds.
+- `NowPlaying` is what every screen reads; `Player` keeps it up to date. Statistics' preview
+  switch is gone.
+- Bit-Perfect is drawn off and does nothing (session 4); the readout is the shared output's.
+
+## Where things stood after session 2
 
 - **Released** (all pre-releases, signed with the release key): `v0.0.1` (session 1,
   versionCode 1), `v0.0.2` ("Session 2 test build", versionCode 2) and `v0.0.3` ("First-scan
@@ -180,10 +230,6 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   differences are listed in `design/progress.md`). Navigation is its own small back stack
   with predictive back. Statistics holds the debug numbers until session 5 builds the
   statistics above them (the user's call).
-- **Playback is not there yet.** `playback/NowPlaying` is what the screens read for "what's
-  playing"; today only the debug preview sets it. Session 3 puts the queue and BASS behind
-  it and wires `AppActions.play`, `playPause`, `previous`, `next` and `openNowPlaying`
-  (they are stubs in `ui/AppRoot.kt`). Remove the preview switch from Statistics then.
 - **Bit-Perfect and Last.fm rows** in Settings are drawn in their off state and do nothing.
 - **The user's results so far** (S24, 2026-10-24): 192 artists · 821 albums · 8,127 tracks,
   first scan under 30 seconds, cold start "very fast". The S24 has **no SD card slot** and a
@@ -202,6 +248,21 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   full cover with `CoverArt.read`, not these.
 
 ## Traps worth not rediscovering
+
+- **An endless frame loop hangs ThemeLab.** Roborazzi waits for the screen to settle; a
+  `LaunchedEffect` that asks for every frame (`withFrameMillis` in a loop) never lets it,
+  and the test run hangs with no output. Now Playing's seekbar ticks only while playing and
+  `NowPlaying.live` (false in `showForPictures`).
+- **Tracks are matched by identity** (`===`) in the player and the hearing timeline, as
+  the desktop's `ReferenceEquals`: `Track` is a data class, so `==` would mix up two copies
+  of the same song (the emulator's SD card holds a copy of the sample set, so some albums
+  have every song twice; that's the sample data, not a bug).
+- **The output stage owns BASS's streams and the `AudioTrack`** on its own thread; anything
+  else sends it a command. Its news comes back on that thread; `Player` posts it to main.
+- **BASS add-ons load by file name** (`BASS_PluginLoad("libbassflac.so")`): no extracted
+  libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
+- **`run-as` doesn't work on release builds**, so the app's files can't be read on the
+  emulator without a debug build (which needs an uninstall first: other key).
 
 - **The Application loads TagLib** (an Android `.so`), so Robolectric tests run with a plain
   `android.app.Application` (`app/src/test/resources/robolectric.properties`). Test the

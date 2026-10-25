@@ -40,6 +40,7 @@ sealed interface Route {
     @Serializable data object Search : Route
     @Serializable data object Settings : Route
     @Serializable data object Statistics : Route
+    @Serializable data object NowPlaying : Route
     @Serializable data class TokenSheet(val page: SheetPage) : Route
 }
 

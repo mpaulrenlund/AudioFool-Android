@@ -17,6 +17,7 @@ import com.mpaulrenlund.audiofool.StartTimes
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.library.CoverArt
 import com.mpaulrenlund.audiofool.library.LibraryState
+import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,10 +29,20 @@ class DebugNumbers(
     val thumbnailsDone: () -> Pair<Int, Int> = { 0 to 0 },
     /** How "Unavailable: SD card · Music" names a folder. */
     val describeFolder: (String) -> String = { it },
+    val playback: PlaybackNumbers? = null,
+)
+
+/** What the user reports back about playback: BASS, the formats it plays, and how each track's output opened. */
+class PlaybackNumbers(
+    val nowPlaying: NowPlaying,
+    val bass: () -> String,
+    val formats: () -> String,
+    val missing: () -> String,
+    /** Gapless joins, reopens and underruns since the app started. */
+    val joins: () -> String = { "–" },
 )
 
 class DebugActions(
-    val setPreview: (Boolean) -> Unit = {},
     val showTokenSheet: () -> Unit = {},
     val forgetCache: () -> Unit = {},
 )
@@ -44,7 +55,7 @@ class DebugActions(
  * the statistics are added above it.
  */
 @Composable
-fun StatisticsScreen(state: LibraryState, numbers: DebugNumbers, preview: Boolean, actions: DebugActions) {
+fun StatisticsScreen(state: LibraryState, numbers: DebugNumbers, actions: DebugActions) {
     TitledScreen("Statistics") {
         Panel("Library") {
             val library = state.library
@@ -63,7 +74,26 @@ fun StatisticsScreen(state: LibraryState, numbers: DebugNumbers, preview: Boolea
             )
             ArtCheck(state)
         }
-        DebugPanel(state, numbers, preview, actions)
+        numbers.playback?.let { PlaybackPanel(it) }
+        DebugPanel(state, numbers, actions)
+    }
+}
+
+/**
+ * Playback's numbers (session 3): BASS and its add-ons, what is heard, and for
+ * each track the rate and format its decoder asked for and the output took.
+ */
+@Composable
+private fun PlaybackPanel(numbers: PlaybackNumbers) {
+    val np = numbers.nowPlaying
+    Panel("Playback") {
+        SettingRow("Decoder", numbers.bass())
+        SettingRow("Formats", numbers.formats().ifEmpty { "–" })
+        numbers.missing().takeIf { it.isNotEmpty() }?.let { SettingRow("Missing add-ons", it) }
+        SettingRow("Output", np.readout.ifEmpty { "–" })
+        SettingRow("Joins", numbers.joins())
+        SettingRow("Opened", if (np.openedLog.isEmpty()) "nothing played yet" else np.openedLog.joinToString("\n"))
+        if (np.skippedLog.isNotEmpty()) SettingRow("Skipped", np.skippedLog.joinToString("\n"))
     }
 }
 
@@ -98,7 +128,7 @@ private fun ArtCheck(state: LibraryState) {
 }
 
 @Composable
-private fun DebugPanel(state: LibraryState, numbers: DebugNumbers, preview: Boolean, actions: DebugActions) {
+private fun DebugPanel(state: LibraryState, numbers: DebugNumbers, actions: DebugActions) {
     val s = state.stats
     val startTimes = numbers.startTimes
     fun ms(v: Long?) = v?.let { "${Display.count(it.toInt())} ms" } ?: "–"
@@ -118,13 +148,6 @@ private fun DebugPanel(state: LibraryState, numbers: DebugNumbers, preview: Bool
         }
         val (done, total) = numbers.thumbnailsDone()
         SettingRow("Covers", "saved small copies checked: ${Display.count(done)} of ${Display.count(total)} albums")
-        SettingRow(
-            "Mini player preview",
-            if (preview) "On: a tap on a song shows it as playing (no sound until playback is built)" else "Off",
-            onClick = { actions.setPreview(!preview) },
-        ) {
-            FolderCheckbox(preview)
-        }
         SettingRow("Token sheet", "every colour, size and surface", onClick = actions.showTokenSheet)
         SettingRow("Forget the cache", "the next start reads every tag, to time a full scan", onClick = actions.forgetCache)
     }

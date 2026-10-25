@@ -13,11 +13,18 @@ import com.mpaulrenlund.audiofool.settings.MusicFolder
 import com.mpaulrenlund.audiofool.storage.Storage
 import com.mpaulrenlund.audiofool.theme.AppTokens
 import com.mpaulrenlund.audiofool.art.Thumbnails
+import com.mpaulrenlund.audiofool.core.playback.ResumePoint
 import com.mpaulrenlund.audiofool.playback.NowPlaying
+import com.mpaulrenlund.audiofool.playback.PlaybackService
+import com.mpaulrenlund.audiofool.playback.Player
+import com.mpaulrenlund.audiofool.playback.SystemControls
+import com.mpaulrenlund.audiofool.playback.WaveformReader
 import com.mpaulrenlund.audiofool.ui.ArtSources
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +46,27 @@ class AudioFoolApp : Application() {
     val tokens: AppTokens by lazy { AppTokens.get(assets) }
     val startTimes = StartTimes()
     val nowPlaying = NowPlaying()
+
+    /** The queue and playback (spec 6.1); the output stage starts on the first play. */
+    val player: Player by lazy {
+        Player(
+            context = this,
+            state = nowPlaying,
+            scope = scope,
+            resumePath = File(noBackupFilesDir, "resume.json").path,
+            waveforms = WaveformReader(File(noBackupFilesDir, "waveforms"), tokens.mobile.number("nowPlaying.waveformBars").toInt()),
+        ).also { p ->
+            p.onChange = {
+                systemControls.update()
+                PlaybackService.sync(this, p.state.isPlaying)
+            }
+        }
+    }
+
+    /** The media session (lock screen, notification, headset buttons), made with the first queue. */
+    val systemControls: SystemControls by lazy {
+        SystemControls(this, player, scope).also { it.onArt = { PlaybackService.running?.update() } }
+    }
 
     /**
      * Cover thumbnails (spec 8), kept in the app's own storage: the lists' size
@@ -65,6 +93,7 @@ class AudioFoolApp : Application() {
         scope.launch(Dispatchers.IO) { tokens }
         startLibrary()
         prefillCovers()
+        restoreQueue()
 
         Storage.watchVolumes(this) { arrived ->
             val folders = settings.folders.value.filter { it.included }.map { it.path }
@@ -90,6 +119,19 @@ class AudioFoolApp : Application() {
                     val seen = newest.toHashSet()
                     art.list.prefill(newest + lib.artists.flatMap { it.albums }.filter { it !in seen })
                 }
+        }
+    }
+
+    /**
+     * Reopens to last time's queue, paused where it was (spec 6.1, Resume), once the
+     * first library (the cache, usually) is there to find its songs in.
+     */
+    private fun restoreQueue() {
+        scope.launch {
+            val point = withContext(Dispatchers.IO) { player.readResumePoint() } ?: return@launch
+            val lib = library.state.filter { it.library?.allTracks?.isNotEmpty() == true }.map { it.library!! }.first()
+            val lookup = ResumePoint.lookupIn(lib.allTracks)
+            withContext(Dispatchers.Main) { player.restore(point, lookup) }
         }
     }
 

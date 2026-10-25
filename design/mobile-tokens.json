@@ -220,6 +220,7 @@
     "skipIconOfButton": 0.42,
     "playIconOfButton": 0.44,
     "outputSize": 13,
-    "outputBottom": 6
+    "outputBottom": 6,
+    "swipeCloseDistance": 96
   }
 }

@@ -49,8 +49,8 @@ android {
         applicationId = "com.mpaulrenlund.audiofool"
         minSdk = 33
         targetSdk = 37
-        versionCode = 3
-        versionName = "0.0.3"
+        versionCode = 4
+        versionName = "0.0.4"
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         externalNativeBuild {
@@ -115,6 +115,14 @@ android {
 
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
+    }
+
+    // BASS for Android (un4seen), vendored unchanged in third_party/bass: the
+    // prebuilt libraries for the phones (arm64-v8a) and the emulator (x86_64),
+    // and their Java bindings, which must stay in package com.un4seen.bass.
+    sourceSets.getByName("main") {
+        jniLibs.directories.add("../third_party/bass/libs")
+        java.directories.add("../third_party/bass/java")
     }
 }
 

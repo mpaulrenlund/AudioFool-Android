@@ -2,56 +2,88 @@ package com.mpaulrenlund.audiofool.playback
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 
 /**
- * What is playing, as the screens show it: the mini player (spec 3) and the
- * now-playing rows (spec 2). Session 3 puts the queue and BASS behind it.
+ * What is playing, as the screens show it: the mini player (spec 3), the
+ * now-playing rows (spec 2) and Now Playing (spec 5). [Player] keeps it up to
+ * date, on the main thread; ThemeLab fills it in by hand ([showForPictures]).
  *
- * Until then it has only a **preview**, turned on from the debug panel: with it
- * on, a tap on a song marks that song as playing (silently) and the mini player
- * shows it, so both can be checked. Off, nothing plays and the mini player stays
- * hidden, as spec 3 says it is until something has been played.
+ * The track is the one being **heard**, which across a gapless join is the old
+ * one until its last frame has come out of the speakers.
  */
 @Stable
 class NowPlaying {
     var track: Track? by mutableStateOf(null)
-        private set
+        internal set
     var isPlaying: Boolean by mutableStateOf(false)
-        private set
-    var preview: Boolean by mutableStateOf(false)
-        private set
+        internal set
 
-    /** A tap on a song (spec 2: it plays, with the rest of its album after it). Only the preview, for now. */
-    fun play(track: Track) {
-        if (!preview) return
-        this.track = track
-        isPlaying = true
-    }
+    /** Where [track] sits in the queue, from 0, and the queue's length: Now Playing's "3 / 10". */
+    var queueIndex: Int by mutableIntStateOf(0)
+        internal set
+    var queueSize: Int by mutableIntStateOf(0)
+        internal set
 
-    fun playPause() {
-        if (track != null) isPlaying = !isPlaying
-    }
+    var repeat: RepeatMode by mutableStateOf(RepeatMode.Off)
+        internal set
+    var shuffle: Boolean by mutableStateOf(false)
+        internal set
 
-    fun setPreview(on: Boolean, firstTrack: Track?) {
-        preview = on
-        if (on) {
-            if (track == null) {
-                track = firstTrack
-                isPlaying = firstTrack != null
-            }
-        } else {
-            track = null
-            isPlaying = false
-        }
-    }
+    /** The output readout (spec 6.3). */
+    var readout: String by mutableStateOf("")
+        internal set
+
+    /** The track's waveform levels (0 to 1), or null until worked out (spec 5: a flat bar meanwhile). */
+    var waveform: FloatArray? by mutableStateOf(null)
+        internal set
+
+    /** Where playback is held when nothing is moving it (paused after a restore, a seek pending). */
+    var heldPositionMs: Long by mutableLongStateOf(0)
+        internal set
+
+    /** Where in [track] the speakers are, in milliseconds; read as often as the screen draws. */
+    internal var positionSource: () -> Long = { heldPositionMs }
+
+    fun positionMs(): Long = positionSource()
+
+    /** False for ThemeLab's still pictures: the seekbar reads the position once instead of every frame. */
+    internal var live: Boolean = true
+
+    /** The track's length as Now Playing shows it. */
+    val durationMs: Long get() = track?.durationMs ?: 0
+
+    /** For the debug panel: how each track's output was opened, newest first. */
+    var openedLog: List<String> by mutableStateOf(emptyList())
+        internal set
+
+    /** For the debug panel: songs passed over because they wouldn't open. */
+    var skippedLog: List<String> by mutableStateOf(emptyList())
+        internal set
 
     /** For ThemeLab: a song shown as playing, as in the mockups. */
-    fun showForPictures(track: Track, playing: Boolean = true) {
-        preview = true
+    fun showForPictures(
+        track: Track,
+        playing: Boolean = true,
+        index: Int = 0,
+        size: Int = 1,
+        positionMs: Long = 0,
+        waveform: FloatArray? = null,
+        readout: String = "",
+    ) {
         this.track = track
         isPlaying = playing
+        queueIndex = index
+        queueSize = size
+        heldPositionMs = positionMs
+        positionSource = { heldPositionMs }
+        live = false
+        this.waveform = waveform
+        this.readout = readout
     }
 }

@@ -38,7 +38,13 @@ d="$M/DSD"; mkdir -p "$d"
 cp "$HERE/../core/src/test/resources/testdata/sample.dsf" "$d/sample.dsf"
 q -f lavfi -i "anullsrc=r=44100:cl=stereo" -t 0.1 -c:a libmp3lame -id3v2_version 4 -metadata title="DFF Song" -metadata artist="DSD Artist" -metadata album="DFF Album" -metadata date=2020-05-01 -metadata track=1 id3src.mp3
 node "$HERE/make-dff.js" id3src.mp3 "$d/DFF Song.dff"
+# Gapless (spec 6.1): one continuous rising sweep cut sample-exactly into three
+# songs of a "live album", at counts that fall mid-frame for every decoder.
+d="$M/Gapless Live/Live at the Emulator"; mkdir -p "$d"; cp cover-a.jpg "$d/cover.jpg"
+q -f lavfi -i "aevalsrc=0.4*sin(2*PI*(200*t+12*t*t)):s=44100:d=36" -ac 2 sweep.wav
+cuts=(0 529207 1058431 1587600)
+for i in 1 2 3; do q -i sweep.wav -af "atrim=start_sample=${cuts[$((i-1))]}:end_sample=${cuts[$i]}" -c:a flac -sample_fmt s16 -metadata title="Live Part $i" -metadata artist="Gapless Live" -metadata album="Live at the Emulator" -metadata date=2026 -metadata track="$i/3" "$d/0$i.flac"; done
 d="$M/Untagged"; mkdir -p "$d"; tone 1200 44100 t.wav; q -i t.wav -c:a libmp3lame -map_metadata -1 -write_id3v2 0 "$d/mystery track.mp3"
 mkdir -p "$M/.hidden"; cp "$d/mystery track.mp3" "$M/.hidden/skip.mp3"
-rm -f t.wav t48.wav t96.wav id3src.mp3 cover-a.jpg cover-b.jpg
+rm -f t.wav t48.wav t96.wav sweep.wav id3src.mp3 cover-a.jpg cover-b.jpg
 echo "Sample library in $M"

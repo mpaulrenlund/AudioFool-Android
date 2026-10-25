@@ -29,6 +29,11 @@ import com.mpaulrenlund.audiofool.ui.SettingsScreen
 import com.mpaulrenlund.audiofool.ui.SheetPage
 import com.mpaulrenlund.audiofool.ui.StatisticsScreen
 import com.mpaulrenlund.audiofool.ui.TokenSheet
+import com.mpaulrenlund.audiofool.ui.NowPlayingActions
+import com.mpaulrenlund.audiofool.ui.NowPlayingScreen
+import com.mpaulrenlund.audiofool.core.playback.OutputMode
+import com.mpaulrenlund.audiofool.core.playback.OutputReadout
+import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
@@ -107,8 +112,31 @@ class ThemeLabTest {
             )
         }
         shoot(device, "statistics") {
-            StatisticsScreen(LibraryState(), DebugNumbers(StartTimes()), preview = false, actions = DebugActions())
+            StatisticsScreen(LibraryState(), DebugNumbers(StartTimes()), actions = DebugActions())
         }
+        // As the mockup: playing, Repeat on (All), Shuffle off.
+        shoot(device, "now-playing") { NowPlayingScreen(nowPlaying().apply { repeat = RepeatMode.All }, NowPlayingActions()) }
+        // Not in the mockups: Repeat One and Shuffle on, paused, the waveform not worked out yet.
+        shoot(device, "now-playing-modes") {
+            val np = nowPlaying(playing = false, waveform = null).apply {
+                repeat = RepeatMode.One
+                shuffle = true
+            }
+            NowPlayingScreen(np, NowPlayingActions())
+        }
+    }
+
+    /** Now Playing's mockup state: third of ten, 2:18 in, its waveform and the readout the shared output gives. */
+    private fun nowPlaying(playing: Boolean = true, waveform: FloatArray? = ThemeLabFixtures.mockupWaveform) = NowPlaying().apply {
+        showForPictures(
+            ThemeLabFixtures.nowPlayingTrack,
+            playing = playing,
+            index = 2,
+            size = 10,
+            positionMs = ThemeLabFixtures.NOW_PLAYING_POSITION_MS,
+            waveform = waveform,
+            readout = OutputReadout.describe(OutputMode.Shared, 48000, 0, 96000, false),
+        )
     }
 
 

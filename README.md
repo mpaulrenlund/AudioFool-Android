@@ -5,8 +5,8 @@ Galaxy S24 Ultra (Android 17) and a FiiO M21 (Android 13). Kotlin and Jetpack Co
 with the desktop's two themes, PS2 Dark and PS1 Light, and its library rules ported
 from `AudioFool.Core`.
 
-Status: session 2 of 5 (the library screens, navigation and search). Playback,
-Bit-Perfect and Last.fm follow; see `design/session-prompts.md` and `design/progress.md`.
+Status: session 3 of 5 (playback). Bit-Perfect and DSD over DoP, then Last.fm and
+Statistics follow; see `design/session-prompts.md` and `design/progress.md`.
 
 ## How it works
 
@@ -35,6 +35,19 @@ Bit-Perfect and Last.fm follow; see `design/session-prompts.md` and `design/prog
   looked for in its first five tracks, then its folder. Small copies at the size the lists
   show are kept in the app's storage (the desktop's `ArtDiskCache`) and made in the
   background after each scan, so the lists fill from there rather than the SD card.
+- **Playback.** BASS decodes; AudioFool's own output stage writes the samples to an
+  `AudioTrack` opened at the track's own rate and bit depth (16-bit sources as 16-bit,
+  24-bit as 24-bit, lossy files as float), so the app decides what reaches the output.
+  The next song is opened while one plays and joined on in the same output, so an
+  album plays without gaps; a song in another format reopens the output once the last
+  one has been heard out. DSD is converted to PCM at 88.2 kHz (DoP comes in session 4).
+  A tap on a song plays it with the rest of its album after it; Previous, Next, shuffle
+  and repeat follow the desktop's `PlayOrder`.
+- **The system's controls.** A foreground media service and a media session: the lock
+  screen, the notification (with the cover), headset and Bluetooth buttons. Another
+  app's sound pauses or ducks it (audio focus); unplugging headphones pauses it.
+- **Resume.** The queue, the song, the place heard (the desktop's `ReopenPoint`), shuffle
+  and repeat are saved (`resume.json`) and restored, paused, when the app opens again.
 - **The theme.** The desktop's token files are the app's theme, read by JSON path
   (`color.panel.bg`, `shadow.controlButton`); sizes come from `design/mobile-tokens.json`.
   Dark when nothing is saved; a switch applies at once.
@@ -45,6 +58,25 @@ Everything in the desktop's `AudioFormats`: MP3, FLAC, Ogg Vorbis, Opus, AAC/M4A
 WMA, Musepack, AC-3, DTS, WAV, AIFF, APE, WavPack, TAK, DSD (DSF, DFF) and the tracker
 formats. Tags come from TagLib 2.3.2, which reads all of them except TAK, AC-3, DTS, MTM,
 UMX and MO3; those show with what their file name gives, as on the desktop.
+
+Playback covers what BASS and its add-ons decode (the debug panel lists them):
+
+| Format | Provided by |
+|---|---|
+| MP3, Ogg Vorbis, WAV, AIFF, MOD/S3M/XM/IT | `libbass.so` (core) |
+| FLAC | `libbassflac.so` |
+| DSD (`.dsf`, `.dff`) | `libbassdsd.so` |
+| Opus | `libbassopus.so` |
+| AAC / M4A | `libbass_aac.so` |
+| ALAC | `libbassalac.so` |
+| APE (Monkey's Audio) | `libbassape.so` |
+| WavPack | `libbasswv.so` |
+| Musepack | `libbass_mpc.so` |
+| AC-3 | `libbass_ac3.so` |
+
+Not playable on the phone: **WMA** (un4seen's `basswma` exists only for Windows), and,
+as on the desktop, **TAK** and **DTS** (no add-on exists). Those songs are listed, and
+passed over when they come up in a queue.
 
 ## Building
 
@@ -67,4 +99,21 @@ this PC's setup and the whole build, test and release loop.
   UI, SIL Open Font License 1.1 (`third_party/selawik/LICENSE.txt`).
 - The PlayStation logo (`PlayStation-Logo-1994.png`) is used unchanged, and the launcher
   icon is the desktop's icon (the same logo) on white.
-- BASS for Android (session 3) will be listed here with its licence terms.
+- **BASS 2.4 for Android** (`third_party/bass`, unchanged, from
+  <https://www.un4seen.com/bass.html>): `bass24-android.zip`, `bassflac24-android.zip`,
+  `bassdsd24-android.zip`, `bassopus24-android.zip`, `bassalac24-android.zip`,
+  `bassape24-android.zip`, `basswv24-android.zip`, and from the third-party add-ons
+  (`files/z/2/`) `bass_aac24-android.zip`, `bass_mpc24-android.zip`,
+  `bass_ac324-android.zip`. Kept: the `arm64-v8a` (phones) and `x86_64` (emulator)
+  libraries, the Java bindings (`java/com/un4seen/bass`, which must keep that package),
+  and each package's text file. To update, download the same zips and replace those.
+  - **Licence:** BASS and its un4seen add-ons are free for **non-commercial use** (an
+    individual not making money from the product); anything sold or carrying adverts
+    needs a commercial licence from un4seen. Provided as is, without warranty
+    (`third_party/bass/bass.txt`). The terms say nothing against keeping the libraries
+    in a public repository, and the desktop repo does the same.
+  - **BASS_AAC** and **BASS_AC3** (by Sebastian Andersson) are under the **GPL**
+    (`third_party/bass/gpl.txt`, and each one's readme); commercial use of AAC decoding
+    needs Nero AG's licence, and AAC carries patents (Via Licensing). Fine for this
+    personal, free, open-source app; a reason to drop those two if that ever changes.
+    **BASS_MPC** is by the same author (readme in `third_party/bass`).

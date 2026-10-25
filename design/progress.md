@@ -6,7 +6,7 @@ Update this at the end of every session: tick off what's finished, note anything
 
 - [x] **1. Project, theme and library** (spec §1, §2, §8) — 2026-10-24
 - [x] **2. Library screens, navigation and search** (§2, §3, §4) — 2026-10-24
-- [ ] **3. Playback** (§3, §5, §6.1, §6.3)
+- [x] **3. Playback** (§3, §5, §6.1, §6.3) — 2026-10-24
 - [ ] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6)
 - [ ] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7)
 
@@ -28,6 +28,60 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+Session 3 (2026-10-24):
+
+- **BASS 2.4 for Android, vendored unchanged** in `third_party/bass` (as the desktop keeps
+  its DLLs in git): the core and the add-ons for every format the desktop plays, for
+  `arm64-v8a` (the phones) and `x86_64` (the emulator), with the Java bindings. `bassmix`
+  is left out: the desktop needs it for gapless, here the output stage joins tracks
+  itself. **WMA can't play** on the phone: un4seen publishes `basswma` for Windows only.
+  TAK and DTS can't play on either. Licence terms in README.
+- **No media library.** The media session, the notification and audio focus use
+  Android's own `MediaSession`, `Notification.MediaStyle` and `AudioFocusRequest`, so
+  nothing new comes in (no Media3).
+- **The output's format follows the file:** an `AudioTrack` at the track's own rate;
+  16-bit sources as 16-bit, 24- and 32-bit sources as 24-bit packed (BASS decodes to
+  float, which holds 24 bits exactly), lossy files as float. If a format won't open, it
+  falls back to float, then 16-bit. Songs asking for the same format join in the same
+  `AudioTrack` (gapless); one in another format reopens it after the last song has been
+  heard out ([TrackEnd], ported, with the output treated like the desktop's exclusive mode).
+- **DSD is converted to PCM at 88.2 kHz** (`BASS_CONFIG_DSD_FREQ`, the desktop's fallback
+  rate), as float. DoP is session 4.
+- **What's shown is what's heard:** the desktop's `HearingTimeline` is ported; the
+  `AudioTrack`'s playback head says which song and place are coming out, so the screens
+  change song at the join, not half a second early.
+- **The media session lives with the queue** (`SystemControls`), not with the service, so a
+  headset or Bluetooth button resumes a restored queue before anything has played; the
+  service holds the notification and the foreground.
+- **Resume** (spec 6.1) is new for the phone (the desktop reopens on the last song at
+  0:00): `no_backup/resume.json` holds the queue's paths, the song, the place heard,
+  shuffle, repeat and the shuffled order, saved with `SafeFile` on every song change,
+  pause, seek and mode change, every 10 s while playing, and when the app goes out of
+  sight. Restored paused once the library is loaded; songs no longer in the library drop
+  out. `PlayOrder.restore` is added for the shuffled order.
+- **The end of the queue** goes back to its first song, paused, so Play plays it again.
+  The desktop clears its now-playing bar; the mini player stays here.
+- **Now Playing's "3 / 10"** counts in play order while shuffled (the 3rd song heard of 10),
+  in album order otherwise.
+- **The readout** (spec 6.3) is the shared output's: the system mixer's rate, and
+  "(resampled)" when the song's rate differs, e.g. "Shared · 48 kHz (resampled)". The
+  mockup's "/ 32-bit" is left out: Android doesn't tell an app the mixer's bit depth, and
+  the desktop's readout leaves the depth out when the device doesn't say. Session 4 adds
+  the route.
+- **Seeking:** a tap seeks at once; a drag moves the bar and seeks on letting go.
+  Previous restarts the song after 3 s, as on the desktop. Repeat cycles Off, All, One.
+- **Swipe down** closes Now Playing after `nowPlaying.swipeCloseDistance` (96 dp, new);
+  the screen follows the finger. The big art's placeholder is the desktop's
+  `albumHeader.placeholderIconSize`.
+- **Songs that won't open** (a removed SD card, WMA) are passed over to the next in the
+  play order and listed in Statistics > Playback > Skipped.
+- **Debug numbers** (Statistics > Playback): BASS's version and add-ons, the readout, gapless
+  joins, reopens and **underruns** (the output running dry while fed: what a gap would be),
+  and for each song the format its decoder asked for and the output opened. The mini
+  player preview switch is gone.
+- **Previews in ThemeLab** use the mockup's song (24/96 FLAC, 1,140 kbps, 3 / 10, 2:18 of
+  5:32) and its made-up waveform, so the pictures line up with `design/screens/`.
 
 Session 2 (2026-10-24):
 
@@ -86,6 +140,42 @@ Session 1:
 - **The repo is public** (the user's call, 2026-10-24). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
+
+### v0.0.4 (session 3: playback)
+
+Not released yet: waiting for the user's go-ahead on the tag and notes. Installs over
+v0.0.3 (same key). Report from logo > **Statistics** > **Playback**.
+
+- [ ] **Formats.** Play a song of each kind you have: FLAC 16/44 and 24/96 (or 24/192),
+  MP3, AAC, ALAC, Opus, DSD. Each plays; Playback > Opened shows, per song, what it asked
+  for and what the output took, e.g. "96 kHz / 24-bit, 2 ch → output 96 kHz / 24-bit,
+  2 ch". Report any where the two halves differ (the output fell back), and any song
+  under Skipped.
+- [ ] **Gapless.** A live album or a continuous one (Dark Side of the Moon, a DJ mix):
+  no gap, click or dip between songs. Playback > Joins should count one gapless join per
+  song change and **0 underruns**. A song in another format than the last (16-bit after
+  24-bit) reopens the output, with a short gap: that one is expected.
+- [ ] **Now Playing.** Tap the mini player: the cover, title, artist, album, "3 / 10", the
+  quality lines, the waveform (flat for a moment the first time, then the song's shape),
+  the times moving. Tap and drag the waveform to seek. Repeat cycles off / all / one (the
+  "1" badge); Shuffle; Previous restarts after 3 s, else goes back. Swipe down or the
+  back gesture closes it. Both themes.
+- [ ] **Lock screen and notification.** While playing, lock the phone: the cover, title,
+  artist, play/pause, previous, next and a seekbar, all working. Same in the notification
+  shade. Pause, then swipe the notification away: it goes. Tapping it opens Now Playing.
+- [ ] **Bluetooth headset buttons.** Play/pause, next and previous from the headset (and
+  from a watch, if you use one). Also after a restart with nothing played yet: the button
+  should resume where you left off.
+- [ ] **Unplug pausing.** Playing through wired headphones (or a USB-C adapter), pull them
+  out: it pauses. Turning a Bluetooth headset off does the same.
+- [ ] **Interruptions.** A call, or a voice assistant, pauses it and it carries on after;
+  a navigation prompt lowers it briefly; another music app starting stops it.
+- [ ] **Resume.** Play an album, seek into a song, pause, swipe the app away from recents,
+  open it again: the mini player shows the song, paused; Now Playing shows the same place;
+  Play carries on from there, with the rest of the album after it.
+- [ ] **The rates.** Playback > Output with the phone speaker, and with Bluetooth, while a
+  44.1 kHz and a 96 kHz song play (e.g. "Shared · 48 kHz (resampled)").
+- [ ] **Battery and heat** over an hour of playing with the screen off: anything unusual?
 
 ### v0.0.3 (the first scan shows the library as it is found)
 
@@ -161,6 +251,54 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### Session 3 — Playback (2026-10-24)
+
+**Built:** BASS for Android vendored (core, FLAC, DSD, Opus, AAC, ALAC, APE, WavPack,
+Musepack, AC-3), the output stage (BASS decode streams into an `AudioTrack` at the song's
+own rate and depth, gapless joins in one output, a reopen for a new format, what's
+heard from the playback head), the player (queue, play order, repeat, shuffle, Previous's
+3-second rule, audio focus, unplug pausing, resume), the media session and the foreground
+service with the notification, Now Playing (spec 5), the waveform worked out in the
+background and cached per file, the readout, and the mini player and every song tap
+wired to the queue. Ported with their tests: `PlayOrder`, `ReopenPoint`, `HearingTimeline`,
+`OutputReadout`, `TrackEnd`, `WaveformLevels` (`Waveform`'s decoding half is in the app).
+New, with tests: `QualityLines` (spec 5's two lines), `ResumePoint` (the saved queue),
+`PlayOrder.restore`. The sample script gained `Gapless Live` (a sweep cut into three
+songs at sample counts mid-frame).
+
+**Verified:**
+- `:core:test` 250 (72 new), `:app:testDebugUnitTest` 17, `verifyRoborazziDebug`: Now Playing
+  as the mockup and with Repeat One / Shuffle / paused / no waveform yet, both themes, both
+  sizes (8 new pictures), compared side by side with `design/screens/`; Statistics changed
+  (the preview switch gone); every other picture unchanged.
+- Emulator, release build installed over v0.0.3 (same key):
+  - Every sample format plays, opened as asked: FLAC 16/44 (16-bit), FLAC 24/96 (24-bit),
+    ALAC 24/48 (24-bit), WAV (16-bit), AIFF (24-bit), WavPack (16-bit); MP3, AAC, Opus and
+    Vorbis as float; DSF and DFF as 88.2 kHz float PCM.
+  - `Gapless Live`: two gapless joins, **0 underruns**, three times (once with the app out of
+    sight); MP3 → MP3 joins too; WAV 16 → AIFF 24 reopens the output, as it should.
+  - The end of the queue goes back to its first song, paused.
+  - The media session: the shade's player with the embedded cover, title, artist and
+    seekbar; `MEDIA_PAUSE`, `HEADSETHOOK`, `MEDIA_NEXT` and `MEDIA_PREVIOUS` work.
+  - Seeking by tapping the waveform (75% → 9 s); swipe down closes Now Playing; the
+    theme switches on Now Playing.
+  - Resume: killed paused at 0:10 of Live Part 2, reopened with it in the mini player and
+    Now Playing at 0:10; a play key from the home screen carried on from 10.26 s.
+- Not checked on the emulator (on the S24 list): the lock screen (the AVD has none set),
+  Bluetooth and wired headsets, unplug pausing, audio focus against another app, and the
+  sound itself.
+
+**Differences from the mockups (design/screens):**
+- **The readout** reads "Shared · 48 kHz (resampled)", without the mockup's "/ 32-bit"
+  (Android doesn't say the mixer's depth; see Decisions).
+- **Art placeholder:** the desktop's music note, as everywhere else (session 2).
+- **Font:** Selawik sits the album line 1–2 dp off the mockup's Segoe UI (known).
+- BP shows its off state and does nothing yet (session 4), as the prompt asks.
+
+**Differences from the spec, and what it didn't say** (all in Decisions above): WMA doesn't
+play on Android; what the end of the queue does; "3 / 10" while shuffled; the swipe-down
+distance; songs that won't open are passed over.
 
 ### Session 2 follow-up — the first scan shows the library as it is found (v0.0.3, 2026-10-24)
 

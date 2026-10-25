@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool
 
+import android.content.Intent
 import android.os.Bundle
 import android.graphics.Color
 import androidx.activity.ComponentActivity
@@ -10,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,11 +27,15 @@ class MainActivity : ComponentActivity() {
     private val app get() = application as AudioFoolApp
     private var hasAccess by mutableStateOf(false)
 
+    /** Counts the notification's taps, each one a request for Now Playing. */
+    private var openNowPlaying by mutableIntStateOf(0)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         app.startTimes.activityCreated()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         hasAccess = Storage.hasAllFilesAccess()
+        if (savedInstanceState == null && intent.getBooleanExtra(EXTRA_NOW_PLAYING, false)) openNowPlaying++
 
         setContent {
             val dark by app.settings.darkTheme.collectAsStateWithLifecycle()
@@ -60,10 +66,26 @@ class MainActivity : ComponentActivity() {
                 if (!hasAccess) {
                     PermissionScreen { startActivity(Storage.allFilesAccessIntent(this)) }
                 } else {
-                    AppRoot(app, dark) { pickFolder.launch(null) }
+                    AppRoot(app, dark, openNowPlaying) { pickFolder.launch(null) }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_NOW_PLAYING, false)) openNowPlaying++
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Out of sight: the place is saved, in case the phone ends the process (spec 6.1, Resume).
+        app.player.save()
+    }
+
+    companion object {
+        /** Set by the playback notification: open on Now Playing. */
+        const val EXTRA_NOW_PLAYING = "com.mpaulrenlund.audiofool.NOW_PLAYING"
     }
 
     override fun onResume() {

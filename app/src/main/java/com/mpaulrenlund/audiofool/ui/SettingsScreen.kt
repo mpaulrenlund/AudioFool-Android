@@ -34,10 +34,11 @@ class FolderLine(val folder: MusicFolder, val name: String, val unavailable: Boo
 /**
  * Settings (spec 4.5): Appearance, Playback, Music folders and Last.fm.
  * Bit-Perfect and Last.fm are shown in their off state; sessions 4 and 5 wire
- * them up.
+ * them up. [readout] is the output readout (spec 6.3), blank until something
+ * has been played.
  */
 @Composable
-fun SettingsScreen(folders: List<FolderLine>, actions: SettingsActions) {
+fun SettingsScreen(folders: List<FolderLine>, actions: SettingsActions, readout: String = "") {
     val t = LocalAppTheme.current
     TitledScreen("Settings") {
         Panel("Appearance") {
@@ -48,8 +49,7 @@ fun SettingsScreen(folders: List<FolderLine>, actions: SettingsActions) {
             }
         }
         Panel("Playback") {
-            // The output readout (spec 6.3) comes with the output stage in session 3.
-            SettingRow("Bit-Perfect", "Shared") {
+            SettingRow("Bit-Perfect", readout.ifEmpty { "Shared" }) {
                 Chip {
                     StatusDot("color.status.bitPerfectOff")
                     ChipText("Bit-Perfect")

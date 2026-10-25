@@ -79,6 +79,17 @@ object AppIcons {
         ),
     )
 
+    /** Now Playing's Repeat (the desktop's repeat arrows). */
+    val REPEAT = AppIcon(
+        AppIcon.Part("M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19.5 9"),
+        AppIcon.Part("M19.5 4.5V9H15"),
+        AppIcon.Part("M19.5 12a7.5 7.5 0 0 1-12.8 5.3L4.5 15"),
+        AppIcon.Part("M4.5 19.5V15H9"),
+    )
+
+    /** Now Playing's Shuffle. */
+    val SHUFFLE = stroked("M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5")
+
     /** No mockup shows it; the skip buttons' triangle, pointing right and centred. */
     val PLAY = AppIcon(AppIcon.Part("M8 5.5L18 12L8 18.5z", filled = true))
 
