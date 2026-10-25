@@ -89,6 +89,9 @@ Session 1:
 
 ### v0.0.3 (the first scan shows the library as it is found)
 
+Released 2026-10-24 as pre-release
+[`v0.0.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.0.3).
+
 - [ ] **First scan.** Statistics > Forget the cache, swipe the app away and open it: the ARTISTS header shows "Reading tags: N of 8,127" and artists appear within a few seconds, filling in as the scan goes. At the end the count goes and Statistics > Last scan has the time. Then open it again: the library is there at once, with no count.
 
 ### Session 2 build (`v0.0.2`)

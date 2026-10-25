@@ -147,9 +147,9 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 ## Where things stand (after session 2)
 
 - **Released:** pre-releases `v0.0.1` (session 1, versionCode 1) and `v0.0.2` ("Session 2
-  test build", versionCode 2, 2026-10-24), both signed with the release key. `0.0.3`
-  (versionCode 3: the first scan shows the library as it is found) is built; see
-  `design/progress.md` for whether it has been released. The next is `0.0.4`, versionCode 4.
+  test build", versionCode 2, 2026-10-24), both signed with the release key. `v0.0.3`
+  ("First-scan progress", versionCode 3: the first scan shows the library as it is found)
+  was released 2026-10-24. The next is `0.0.4`, versionCode 4.
 - **First scan:** with no cache, `LibraryRepository.showAsFound` publishes a partial
   library every 1.5 s or so while tags are read, and Artists shows "Reading tags: N of M".
   The M21's first full scan took about 8 minutes (27,115 files from the SD card).
