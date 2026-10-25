@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.mpaulrenlund.audiofool.core.format.Display
+import com.mpaulrenlund.audiofool.core.library.ScanProgress
 import com.mpaulrenlund.audiofool.core.model.Album
 import com.mpaulrenlund.audiofool.core.model.ArtistGroup
 import com.mpaulrenlund.audiofool.core.model.Track
@@ -30,7 +32,14 @@ import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 
 /** Artists (spec 4.1), the start screen. */
 @Composable
-fun ArtistsScreen(browse: Browse, actions: AppActions, scanning: Boolean = false, initialSelected: String? = null, initialMenuOpen: Boolean = false) {
+fun ArtistsScreen(
+    browse: Browse,
+    actions: AppActions,
+    scanning: Boolean = false,
+    progress: ScanProgress? = null,
+    initialSelected: String? = null,
+    initialMenuOpen: Boolean = false,
+) {
     val t = LocalAppTheme.current
     var selected by rememberSaveable { mutableStateOf(initialSelected) }
     var menuOpen by rememberSaveable { mutableStateOf(initialMenuOpen) }
@@ -44,7 +53,7 @@ fun ArtistsScreen(browse: Browse, actions: AppActions, scanning: Boolean = false
         bottom = { MiniPlayerBar(browse, actions) },
     ) {
         PanelSurface(Modifier.weight(1f)) {
-            PanelHeader("Artists")
+            PanelHeader("Artists", action = readingTags(scanning, progress))
             val artists = browse.library.artists
             if (artists.isEmpty()) {
                 EmptyNote(browse, scanning)
@@ -59,6 +68,23 @@ fun ArtistsScreen(browse: Browse, actions: AppActions, scanning: Boolean = false
                 }
             }
         }
+    }
+}
+
+/**
+ * "Reading tags: 12,000 of 27,115" at the right of the ARTISTS header while a scan
+ * reads tags (a first scan takes minutes on the M21), in the header's muted
+ * colour. Nothing while a scan only checks for changes.
+ */
+private fun readingTags(scanning: Boolean, progress: ScanProgress?): (@Composable RowScope.() -> Unit)? {
+    if (!scanning || progress == null || progress.filesFound == 0 || progress.filesRead >= progress.filesFound) return null
+    return {
+        val t = LocalAppTheme.current
+        Line(
+            "Reading tags: ${Display.count(progress.filesRead)} of ${Display.count(progress.filesFound)}",
+            t.text("artists.countSize", "color.text.muted"),
+            Modifier.padding(end = t.dp("panel.headerPaddingX") - t.dp("panel.headerActionPaddingEnd")),
+        )
     }
 }
 

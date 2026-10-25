@@ -87,6 +87,10 @@ Session 1:
 
 ## To test on the S24
 
+### v0.0.3 (the first scan shows the library as it is found)
+
+- [ ] **First scan.** Statistics > Forget the cache, swipe the app away and open it: the ARTISTS header shows "Reading tags: N of 8,127" and artists appear within a few seconds, filling in as the scan goes. At the end the count goes and Statistics > Last scan has the time. Then open it again: the library is there at once, with no count.
+
 ### Session 2 build (`v0.0.2`)
 
 Released 2026-10-24 as pre-release
@@ -128,8 +132,12 @@ Session 2 (`v0.0.2`), with the full library on the SD card:
 - **First scan (2026-10-24, in progress):** 27,115 files found; 12,000 read after a little
   over 3 minutes (about 60 a second, so about 8 minutes in all). Working, but the Artists
   screen shows nothing until it ends: it says "Music appears here as it's found", which
-  this build doesn't do. To fix in v0.0.3. Still to report: Statistics > Last scan when it
+  this build doesn't do. Fixed in v0.0.3. Still to report: Statistics > Last scan when it
   finishes.
+- [ ] **v0.0.3 first scan.** Install v0.0.3, Statistics > Forget the cache, swipe the app away and
+  open it: within a few seconds artists appear and keep filling in, with "Reading tags: N of
+  27,115" in the ARTISTS header. Does scrolling and opening an artist work while it reads?
+  Report Statistics > Last scan when it ends, to compare with v0.0.2's.
 
 - [ ] **Scrolling the full library.** Fling through all ~499 artists and a long album list on the Snapdragon 680: smooth? Covers fill in as the background fill works (Statistics > Covers, up to ~2,376).
 - [ ] **SD card out.** With the card out, Settings shows "SD card · Music" greyed with "Not available"; the card's artists, albums and songs stay listed, greyed, and its songs can't be tapped. Card back: everything as before, "Up to date".
@@ -146,6 +154,29 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### Session 2 follow-up — the first scan shows the library as it is found (v0.0.3, 2026-10-24)
+
+The M21's first scan of v0.0.2 (27,115 files from the SD card, about 8 minutes) showed
+an empty Artists panel saying "Music appears here as it's found" until it ended.
+
+**Built:** the scanner hands each track to the app as its tags are read
+(`LibraryScanner.scan(onRead = ...)`); on a first scan (no cache) the repository rebuilds
+the library from what has been read every 1.5 s, or 4 × the last rebuild's time when that
+is longer, and the Artists list fills in. The partial rebuilds stop before the result is
+shown. The ARTISTS header shows "Reading tags: N of M" whenever a scan reads tags (also a
+rescan that finds new files); nothing while it only checks for changes.
+
+**Verified:** `:core:test` 178 (two new: tracks handed over as read, none for files reused
+from the cache), `:app:testDebugUnitTest` 17, ThemeLab: two new pictures per size and theme
+(`artists-first-scan`, `artists-first-scan-starting`), the others unchanged. Emulator,
+cache forgotten: "Scanning the library" at 2.4 s, "Reading tags: 88 of 826" at 3.0 s, the
+first artists at 3.6 s with covers filling in, done in 4.8 s with the same 209 · 413 · 826.
+A normal start shows the cached library at once with no count.
+
+**Decisions:** the partial library is only shown, never saved: a first scan cut short
+starts again next time. The count sits in the panel header, right-aligned, 13 sp
+`text.muted` (`artists.countSize`), as no mockup shows a scan.
 
 ### Session 2 — Library screens, navigation and search (2026-10-24)
 

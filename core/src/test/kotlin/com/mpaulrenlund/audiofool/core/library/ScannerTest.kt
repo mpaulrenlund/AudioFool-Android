@@ -342,3 +342,30 @@ class ScanSummaryTest {
         }
     }
 }
+
+// Not from the desktop: the first scan shows the library as it is found (session 2).
+class ReadAsFoundTest {
+    @get:Rule val temp = TemporaryFolder()
+
+    @Test fun every_file_read_is_handed_over_as_it_is_read() = runBlocking {
+        val folder = temp.newFolder("music")
+        for (i in 1..9) File(folder, "song $i.mp3").writeText("x".repeat(i))
+        val seen = java.util.concurrent.ConcurrentLinkedQueue<Track>()
+
+        val result = scanner().scan(listOf(folder.path), onRead = { seen.add(it) })
+
+        assertEquals(result.library.allTracks.map { it.filePath }.sorted(), seen.map { it.filePath }.sorted())
+    }
+
+    @Test fun files_reused_from_the_cache_are_not_handed_over() = runBlocking {
+        val folder = temp.newFolder("music")
+        File(folder, "old.mp3").writeText("aaaa")
+        val first = scanner().scan(listOf(folder.path))
+        File(folder, "new.mp3").writeText("bbbb")
+        val seen = java.util.concurrent.ConcurrentLinkedQueue<Track>()
+
+        scanner().scan(listOf(folder.path), first.library.allTracks.associateBy { Paths.key(it.filePath) }, onRead = { seen.add(it) })
+
+        assertEquals(listOf("new.mp3"), seen.map { Paths.fileName(it.filePath) })
+    }
+}

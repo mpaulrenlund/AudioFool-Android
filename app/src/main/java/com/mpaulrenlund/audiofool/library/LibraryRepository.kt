@@ -18,7 +18,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -103,12 +107,24 @@ class LibraryRepository(
                 _state.update { it.copy(scanning = true, progress = null) }
                 val began = SystemClock.uptimeMillis()
                 try {
-                    val result = scanner.scan(
-                        rootFolders = included,
-                        known = known.associateBy { Paths.key(it.filePath) },
-                        progress = { p -> _state.update { it.copy(progress = p) } },
-                        rereadTags = rereadTags,
-                    )
+                    // A first scan (no cache) shows the library as it is found; later
+                    // scans show the cached library until they finish.
+                    val found = if (known.isEmpty()) ConcurrentLinkedQueue<Track>() else null
+                    val result = coroutineScope {
+                        val asFound = found?.let { launch { showAsFound(it) } }
+                        try {
+                            scanner.scan(
+                                rootFolders = included,
+                                known = known.associateBy { Paths.key(it.filePath) },
+                                progress = { p -> _state.update { it.copy(progress = p) } },
+                                rereadTags = rereadTags,
+                                onRead = found?.let { q -> { t: Track -> q.add(t) } },
+                            )
+                        } finally {
+                            // Stopped before the result is shown, so a late partial can't replace it.
+                            asFound?.cancelAndJoin()
+                        }
+                    }
                     // Tracks of folders that are listed but left out stay known; tracks
                     // of folders no longer listed at all are dropped (MusicFolderList).
                     val leftOut = known.filter { t ->
@@ -144,6 +160,26 @@ class LibraryRepository(
     }
 
     /**
+     * While a first scan reads tags, shows what it has read so far, rebuilt every
+     * [AS_FOUND_MS] or so: less often when a rebuild takes long, as it does with
+     * tens of thousands of tracks on the M21.
+     */
+    private suspend fun showAsFound(found: Collection<Track>) {
+        var count = 0
+        var wait = AS_FOUND_MS
+        while (true) {
+            delay(wait)
+            val tracks = found.toList()
+            if (tracks.size == count) continue
+            val began = SystemClock.uptimeMillis()
+            val library = LibraryScanner.build(tracks)
+            count = tracks.size
+            _state.update { it.copy(library = library) }
+            wait = maxOf(AS_FOUND_MS, 4 * (SystemClock.uptimeMillis() - began))
+        }
+    }
+
+    /**
      * The folder list changed: show what is already known for the new list at
      * once, then scan for the rest.
      */
@@ -157,6 +193,10 @@ class LibraryRepository(
         File(cachePath).delete()
         File(SafeFile.backupPathFor(cachePath)).delete()
         known = emptyList()
+    }
+
+    private companion object {
+        const val AS_FOUND_MS = 1500L
     }
 
     private fun shown(tracks: List<Track>): List<Track> {

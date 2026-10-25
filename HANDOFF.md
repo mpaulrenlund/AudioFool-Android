@@ -147,8 +147,12 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 ## Where things stand (after session 2)
 
 - **Released:** pre-releases `v0.0.1` (session 1, versionCode 1) and `v0.0.2` ("Session 2
-  test build", versionCode 2, 2026-10-24), both signed with the release key. The next test
-  build is `0.0.3`, versionCode 3.
+  test build", versionCode 2, 2026-10-24), both signed with the release key. `0.0.3`
+  (versionCode 3: the first scan shows the library as it is found) is built; see
+  `design/progress.md` for whether it has been released. The next is `0.0.4`, versionCode 4.
+- **First scan:** with no cache, `LibraryRepository.showAsFound` publishes a partial
+  library every 1.5 s or so while tags are read, and Artists shows "Reading tags: N of M".
+  The M21's first full scan took about 8 minutes (27,115 files from the SD card).
 - **Screens (session 2):** Artists, Albums, Album, Search, Settings, Statistics, the logo
   menu and the mini player, all from tokens, checked against `design/screens/` (the
   differences are listed in `design/progress.md`). Navigation is its own small back stack

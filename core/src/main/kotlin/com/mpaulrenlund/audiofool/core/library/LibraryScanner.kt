@@ -50,12 +50,17 @@ class LibraryScanner(
      *
      * [rereadTags] re-reads every reachable file even when it matches the cache,
      * for a cache from an older version that lacks a field.
+     *
+     * [onRead] is given each track as its tags are read, from the reading threads,
+     * so a first scan can show the library as it is found (session 2 on the M21:
+     * 27,000 files take minutes). The result is still only what [scan] returns.
      */
     suspend fun scan(
         rootFolders: List<String>,
         known: Map<String, Track>? = null,
         progress: ((ScanProgress) -> Unit)? = null,
         rereadTags: Boolean = false,
+        onRead: ((Track) -> Unit)? = null,
     ): ScanResult = withContext(dispatcher) {
         val reachable = mutableListOf<String>()
         val unavailable = mutableListOf<String>()
@@ -68,7 +73,7 @@ class LibraryScanner(
         val brokenOff = mutableListOf<String>()
         val files = enumerateAudioFiles(reachable, brokenOff)
 
-        scanFiles(files, reachable, unavailable, brokenOff, known, progress, rereadTags)
+        scanFiles(files, reachable, unavailable, brokenOff, known, progress, rereadTags, onRead)
     }
 
     private suspend fun scanFiles(
@@ -79,6 +84,7 @@ class LibraryScanner(
         known: Map<String, Track>?,
         progress: ((ScanProgress) -> Unit)?,
         rereadTags: Boolean,
+        onRead: ((Track) -> Unit)?,
     ): ScanResult {
         // Decide reuse-or-read for every file we can see. The stat came with the walk.
         val reusable = ArrayList<Track>()
@@ -108,7 +114,7 @@ class LibraryScanner(
         val freshlyRead = ArrayList<Track>(toRead.size)
         var unopened = 0
         if (toRead.isNotEmpty()) {
-            for ((track, couldNotOpen) in readTags(toRead, progress)) {
+            for ((track, couldNotOpen) in readTags(toRead, progress, onRead)) {
                 // A file that couldn't be opened (its card gone mid-scan) keeps the
                 // tags it had: a blank stand-in would replace them in the cache.
                 val had = if (couldNotOpen) known?.get(Paths.key(track.filePath)) else null
@@ -176,6 +182,7 @@ class LibraryScanner(
     private suspend fun readTags(
         files: List<FoundFile>,
         progress: ((ScanProgress) -> Unit)?,
+        onRead: ((Track) -> Unit)?,
     ): List<TagReader.Result> = coroutineScope {
         val read = AtomicInteger()
         val step = maxOf(1, files.size / 100)
@@ -186,6 +193,7 @@ class LibraryScanner(
                 part.map { file ->
                     ensureActive()
                     val result = tagReader.read(file.path, file.stamp, file.folderArt)
+                    onRead?.invoke(result.track)
 
                     // Report roughly every 1%, so a big scan doesn't drown the UI.
                     val done = read.incrementAndGet()

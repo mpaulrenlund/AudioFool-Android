@@ -8,6 +8,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.mpaulrenlund.audiofool.StartTimes
+import com.mpaulrenlund.audiofool.core.library.LibraryScanner
+import com.mpaulrenlund.audiofool.core.library.MusicLibrary
+import com.mpaulrenlund.audiofool.core.library.ScanProgress
 import com.mpaulrenlund.audiofool.library.LibraryState
 import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.settings.MusicFolder
@@ -85,6 +88,14 @@ class ThemeLabTest {
         }
         // Not in the mockups: nothing played yet, and the SD card taken out.
         shoot(device, "artists-nothing-played") { ArtistsScreen(browse(playing = false), actions) }
+        // A first scan (no cache): the artists read so far, and the count in the header.
+        shoot(device, "artists-first-scan") {
+            val partial = Browse(LibraryScanner.build(ThemeLabFixtures.tracks.take(60)), emptyList(), NowPlaying())
+            ArtistsScreen(partial, actions, scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 12000))
+        }
+        shoot(device, "artists-first-scan-starting") {
+            ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 0))
+        }
         shoot(device, "artists-sd-card-out") { ArtistsScreen(browse(unavailable = listOf(ThemeLabFixtures.SD_CARD)), actions) }
         shoot(device, "settings-sd-card-out") {
             SettingsScreen(

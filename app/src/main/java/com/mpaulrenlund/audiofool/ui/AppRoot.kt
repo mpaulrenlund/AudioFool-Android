@@ -40,7 +40,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, pickFolder: () -> Unit) {
     CompositionLocalProvider(LocalArt provides app.art) {
         NavHost(nav) { route ->
             when (route) {
-                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning)
+                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, progress = state.progress)
                 is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
                 is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions)
                 Route.Search -> SearchScreen(browse, actions)
