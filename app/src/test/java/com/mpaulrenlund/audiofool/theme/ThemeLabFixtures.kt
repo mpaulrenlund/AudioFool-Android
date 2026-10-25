@@ -1,6 +1,7 @@
 package com.mpaulrenlund.audiofool.theme
 
 import com.mpaulrenlund.audiofool.core.library.LibraryScanner
+import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
 
@@ -12,6 +13,23 @@ import com.mpaulrenlund.audiofool.core.model.Track
  */
 object ThemeLabFixtures {
     const val INTERNAL = "/storage/emulated/0/Music"
+
+    /** Statistics (spec 4.6) the size of the desktop's library, as last seen there. */
+    val fullLibraryStats = LibraryStatistics(
+        trackCount = 26_795,
+        albumCount = 2_376,
+        artistCount = 499,
+        totalDurationMs = 7_421_000_000,
+        totalBytes = 743_000_000_000,
+        fileTypes = listOf(
+            LibraryStatistics.Slice("FLAC", 19_204, 19_204 / 26_795.0, 611_000_000_000),
+            LibraryStatistics.Slice("MP3", 6_102, 6_102 / 26_795.0, 58_000_000_000),
+            LibraryStatistics.Slice("DSD", 812, 812 / 26_795.0, 61_000_000_000),
+            LibraryStatistics.Slice("ALAC", 498, 498 / 26_795.0, 11_000_000_000),
+            LibraryStatistics.Slice("AAC", 176, 176 / 26_795.0, 1_400_000_000),
+            LibraryStatistics.Slice("WAV", 3, 3 / 26_795.0, 120_000_000),
+        ),
+    )
     const val SD_CARD = "/storage/1A2B-3C4D/Music"
 
     private fun ms(time: String): Long = time.split(":").let { (m, s) -> (m.toLong() * 60 + s.toLong()) * 1000 }

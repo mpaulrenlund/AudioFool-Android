@@ -2,8 +2,28 @@ package com.mpaulrenlund.audiofool.ui
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
+import com.mpaulrenlund.audiofool.core.playback.ListeningTime
+import com.mpaulrenlund.audiofool.theme.tokenSurface
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,34 +73,125 @@ class DebugActions(
 )
 
 /**
- * Statistics, from the logo menu (spec 4.6). Session 5 builds the statistics
- * themselves; until then it holds the numbers the user reports back from the
- * phones (the user's call, session 2): the library's counts and state, start and
- * scan times, and the debug switches. The Debug panel stays at the bottom once
- * the statistics are added above it.
+ * Statistics, from the logo menu (spec 4.6): the library's totals, its formats
+ * and the time listened, built as the desktop's Statistics window is (figures in
+ * `type.statValue`, labelled bars), in two columns for a phone. Below them, the
+ * numbers the user reports back from the phones (the user's call, session 2):
+ * playback, start and scan times, and the debug switches.
  */
 @Composable
-fun StatisticsScreen(state: LibraryState, numbers: DebugNumbers, actions: DebugActions) {
+fun StatisticsScreen(
+    state: LibraryState,
+    numbers: DebugNumbers,
+    actions: DebugActions,
+    stats: LibraryStatistics = LibraryStatistics.Empty,
+    listening: ListeningTime? = null,
+) {
     TitledScreen("Statistics") {
         Panel("Library") {
-            val library = state.library
-            SettingRow(
-                label = if (library == null) "Reading the library…" else
-                    "${Display.count(library.artists.size)} artists · ${Display.count(library.albumCount)} albums · ${Display.count(library.allTracks.size)} tracks",
-                value = when {
-                    state.scanning -> state.progress?.let { p ->
-                        if (p.filesFound == 0) "Checking for changes…" else "Reading tags: ${Display.count(p.filesRead)} of ${Display.count(p.filesFound)}"
-                    } ?: "Checking for changes…"
-                    state.unavailableFolders.isNotEmpty() ->
-                        "Unavailable: " + state.unavailableFolders.joinToString { numbers.describeFolder(it) } +
-                            " (${Display.count(library?.allTracks?.count(state::isUnavailable) ?: 0)} tracks kept)"
-                    else -> "Up to date"
-                },
-            )
-            ArtCheck(state)
+            if (state.library == null) {
+                SettingRow("Reading the library…")
+            } else {
+                Figures(
+                    listOf(
+                        Display.count(stats.trackCount) to "Tracks",
+                        Display.count(stats.albumCount) to "Albums",
+                        Display.count(stats.artistCount) to "Artists",
+                    ),
+                    listOf(
+                        Display.longDuration(stats.totalDurationMs) to "Play time",
+                        Display.size(stats.totalBytes) to "On disk",
+                    ),
+                )
+            }
+            SettingRow(label = "Scan", value = libraryLine(state, numbers))
+        }
+        if (stats.fileTypes.isNotEmpty()) {
+            Panel("Formats") {
+                Column(Modifier.padding(vertical = LocalAppTheme.current.dp("statistics.listPaddingY"))) {
+                    for (s in stats.fileTypes) {
+                        BarRow(s.label, "${Display.count(s.count)} · ${Display.percent(s.share)} · ${Display.size(s.bytes)}", s.share)
+                    }
+                }
+            }
+        }
+        if (listening != null) {
+            Panel("Listening") {
+                Figures(listOf(Display.longDuration(listening.totalMs) to "Listened since ${date(listening.sinceUtc)}"))
+            }
         }
         numbers.playback?.let { PlaybackPanel(it) }
         DebugPanel(state, numbers, actions)
+    }
+}
+
+/** Where the scan is: "Up to date", the tags being read, or the folders that can't be reached. */
+private fun libraryLine(state: LibraryState, numbers: DebugNumbers): String = when {
+    state.scanning -> state.progress?.let { p ->
+        if (p.filesFound == 0) "Checking for changes…" else "Reading tags: ${Display.count(p.filesRead)} of ${Display.count(p.filesFound)}"
+    } ?: "Checking for changes…"
+    state.unavailableFolders.isNotEmpty() ->
+        "Unavailable: " + state.unavailableFolders.joinToString { numbers.describeFolder(it) } +
+            " (${Display.count(state.library?.allTracks?.count(state::isUnavailable) ?: 0)} tracks kept)"
+    else -> "Up to date"
+}
+
+/** "24 Oct 2026". */
+private fun date(utcMs: Long): String = SimpleDateFormat("d MMM yyyy", Locale.ENGLISH).format(Date(utcMs))
+
+/**
+ * Rows of figures, the desktop's tiles: each a `type.statValue` number with its
+ * label under it, sharing the row's width.
+ */
+@Composable
+private fun Figures(vararg rows: List<Pair<String, String>>) {
+    val t = LocalAppTheme.current
+    val value = t.text("statistics.tileLabelSize", "color.text.heading", weight = t.desktopNumber("type.statValue.weight").toInt())
+        .copy(fontSize = t.desktopNumber("type.statValue.size").sp)
+    val label = t.text("statistics.tileLabelSize", "color.text.muted")
+    Column(
+        Modifier.padding(horizontal = t.dp("statistics.tilePaddingX"), vertical = t.dp("statistics.tilePaddingY")),
+        verticalArrangement = Arrangement.spacedBy(t.dp("statistics.tilePaddingY")),
+    ) {
+        for (row in rows) {
+            Row(horizontalArrangement = Arrangement.spacedBy(t.dp("statistics.tileGap"))) {
+                for ((figure, name) in row) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(t.dp("statistics.tileLineGap"))) {
+                        Line(figure, value)
+                        Line(name, label, maxLines = 2)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * The desktop's BarRow: the label and its value on a line, and under them a bar
+ * `playbackBar.trackHeight` high, filled [fill] of the way in `slider.volumeFill`
+ * on `slider.track` (the playback colour is kept for playback).
+ */
+@Composable
+private fun BarRow(label: String, value: String, fill: Double) {
+    val t = LocalAppTheme.current
+    val shape = RoundedCornerShape(t.radius("radius.sliderTrack"))
+    Column(
+        Modifier.padding(horizontal = t.dp("statistics.rowPaddingX"), vertical = t.dp("statistics.rowPaddingY")),
+        verticalArrangement = Arrangement.spacedBy(t.dp("statistics.barGap")),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(t.dp("settings.rowGap")), verticalAlignment = Alignment.CenterVertically) {
+            Line(label, t.text("statistics.rowLabelSize", "color.text.primary"), Modifier.weight(1f))
+            Line(value, t.text("statistics.rowValueSize", "color.text.muted"))
+        }
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(t.desktopNumber("playbackBar.trackHeight").dp)
+                .tokenSurface(shape, t.color("color.slider.track"), t.shadow("shadow.sliderTrackInset")),
+        ) {
+            val f = fill.coerceIn(0.0, 1.0).toFloat()
+            if (f > 0f) Box(Modifier.fillMaxWidth(f).fillMaxHeight().clip(shape).background(t.color("color.slider.volumeFill")))
+        }
     }
 }
 
@@ -141,6 +252,7 @@ private fun DebugPanel(state: LibraryState, numbers: DebugNumbers, actions: Debu
     val startTimes = numbers.startTimes
     fun ms(v: Long?) = v?.let { "${Display.count(it.toInt())} ms" } ?: "–"
     Panel("Debug") {
+        ArtCheck(state)
         SettingRow("Cold start", "process start to the library on screen: ${ms(startTimes.coldStartMs)}")
         SettingRow("Warm start", "screen created to the library on screen: ${ms(startTimes.warmStartMs)} (${startTimes.warmStarts} so far)")
         SettingRow("Cache", "read and built in ${ms(s.cacheLoadMs)} · ${Display.count(s.cacheTracks)} tracks · ${Display.count((s.cacheBytes / 1024).toInt())} KB")

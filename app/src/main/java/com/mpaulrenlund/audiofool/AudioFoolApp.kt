@@ -15,6 +15,7 @@ import com.mpaulrenlund.audiofool.storage.Storage
 import com.mpaulrenlund.audiofool.theme.AppTokens
 import com.mpaulrenlund.audiofool.art.Thumbnails
 import com.mpaulrenlund.audiofool.core.playback.ResumePoint
+import com.mpaulrenlund.audiofool.playback.Listening
 import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.playback.OutputRoutes
 import com.mpaulrenlund.audiofool.playback.PlaybackService
@@ -61,12 +62,16 @@ class AudioFoolApp : Application() {
             settings = settings,
         ).also { p ->
             p.watchers.add(lastFm)
+            p.watchers.add(listening)
             p.onChange = {
                 systemControls.update()
                 PlaybackService.sync(this, p.state.isPlaying)
             }
         }
     }
+
+    /** The listening time Statistics shows (spec 4.6), counted from the first run of this version on. */
+    val listening: Listening by lazy { Listening(File(noBackupFilesDir, "listening.json").path, scope) }
 
     /** Last.fm (spec 7): the connection Settings shows, and the scrobbles, queued in the app's own storage. */
     val lastFm: LastFm by lazy { LastFm(this, noBackupFilesDir) }

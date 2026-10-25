@@ -172,6 +172,20 @@
     "messageSize": 13,
     "buttonGap": 8
   },
+  "statistics": {
+    "$note": "Statistics (spec 4.6). No mockup: the desktop's Statistics window (tiles of type.statValue figures, labelled bars in slider.volumeFill on slider.track, playbackBar.trackHeight high) fitted to a phone in two columns (session 5).",
+    "tileGap": 8,
+    "tilePaddingX": 16,
+    "tilePaddingY": 12,
+    "tileLineGap": 2,
+    "tileLabelSize": 13,
+    "rowPaddingX": 16,
+    "rowPaddingY": 8,
+    "rowLabelSize": 15,
+    "rowValueSize": 13,
+    "barGap": 6,
+    "listPaddingY": 6
+  },
   "miniPlayer": {
     "height": 64,
     "marginX": 8,

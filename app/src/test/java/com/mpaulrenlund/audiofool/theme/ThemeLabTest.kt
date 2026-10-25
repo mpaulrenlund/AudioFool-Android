@@ -36,6 +36,7 @@ import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
+import com.mpaulrenlund.audiofool.core.playback.ListeningTime
 import com.mpaulrenlund.audiofool.core.scrobbling.ScrobblerState
 import com.mpaulrenlund.audiofool.lastfm.LastFm
 import org.junit.Test
@@ -115,8 +116,18 @@ class ThemeLabTest {
                 actions = SettingsActions(),
             )
         }
+        // No mockup (spec 4.6): figures the size of the M21's library, to see the widest numbers fit.
         shoot(device, "statistics") {
-            StatisticsScreen(LibraryState(), DebugNumbers(StartTimes()), actions = DebugActions())
+            StatisticsScreen(
+                LibraryState(library = ThemeLabFixtures.library),
+                DebugNumbers(StartTimes()),
+                actions = DebugActions(),
+                stats = ThemeLabFixtures.fullLibraryStats,
+                listening = ListeningTime(totalMs = 51_720_000, sinceUtc = 1_792_800_000_000),
+            )
+        }
+        shoot(device, "statistics-empty") {
+            StatisticsScreen(LibraryState(library = MusicLibrary.Empty), DebugNumbers(StartTimes()), actions = DebugActions(), listening = ListeningTime(sinceUtc = 1_792_800_000_000))
         }
         // As the mockup: playing, Repeat on (All), Shuffle off.
         shoot(device, "now-playing") { NowPlayingScreen(nowPlaying().apply { repeat = RepeatMode.All }, NowPlayingActions()) }

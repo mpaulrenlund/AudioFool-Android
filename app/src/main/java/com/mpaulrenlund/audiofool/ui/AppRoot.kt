@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mpaulrenlund.audiofool.AudioFoolApp
+import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
@@ -104,6 +105,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 )
                 Route.Statistics -> StatisticsScreen(
                     state = state,
+                    stats = remember(library) { LibraryStatistics.compute(library) },
+                    listening = app.listening.time,
                     numbers = DebugNumbers(
                         startTimes = app.startTimes,
                         thumbnailsDone = { app.art.list.prefilled to app.art.list.prefillTotal },
