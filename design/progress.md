@@ -10,6 +10,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6) — 2026-10-24
 - [x] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7) — 2026-10-24, released as v0.1.0
 - [x] **0.1.1 fixes** from the first device reports — 2026-10-25
+- [x] **0.1.2**: the M21's headphone out — 2026-10-25
 
 ## Decisions made in the design
 
@@ -29,6 +30,20 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.1.2 (2026-10-25):
+
+- **A FiiO player's speaker is its headphone out.** The user's 0.1.1 report from the M21
+  (4.4 mm jack): Route "speaker \"FiiO M21\" · rates: 48 kHz · formats: 16-bit"; Outputs
+  "type 1 (earpiece), speaker, type 18 (telephony)", all "FiiO M21". No wired device is ever
+  listed, so 0.1.1's "headphones over a speaker" rule had nothing to find. Now, where
+  `Build.MANUFACTURER` or `Build.BRAND` is FiiO, the speaker route is Headphones
+  (`SpeakerlessPlayers`, core, with tests), so BP works the M21's way (`SourceRate`) and
+  the readout says Headphones. The Route row says so on such a player. Spec §6.2 updated.
+- **What BP does there is still open.** Android says the "speaker" runs at 48 kHz only, so
+  unless FiiO's bypass changes the system output's rate, the readout will say
+  "Headphones · 48 kHz (resampled)" with BP on (the spec's rule: never "bit-perfect" unless
+  seen). The next report says.
 
 0.1.1 (2026-10-25), from the user's first device reports:
 
@@ -426,6 +441,20 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+0.1.2 (the M21's headphone out). The user's report on 0.1.1 (2026-10-25): 24-bit plays
+cleanly now and the join glitch is gone, but BP still couldn't be turned on through the
+4.4 mm jack; Output "Speaker · Shared · 48 kHz", and Android lists no headphone output.
+
+- [ ] **BP can be turned on** through the 4.4 mm (and 3.5 mm) jack, and Output starts with
+  "Headphones". Statistics > Playback > Route ends "FiiO M21: its speaker is the headphone out".
+- [ ] **With BP on**, a 44.1 kHz and a 96 kHz FLAC: report Output and System output. If System
+  output stays 48 kHz, Output says "(resampled)": FiiO's bypass isn't changing Android's rate.
+- [ ] **FiiO's own setting:** is there an SRC bypass / "All to All" / bit-perfect switch in the
+  M21's settings or pull-down? Does it change System output?
+- [ ] **Unplugging the headphones** pauses (the M21 may not tell apps, since Android sees no
+  headphones).
+- [ ] **Bluetooth** still greys BP ("Bluetooth · Shared · …").
+
 0.1.1 (fixes from the first reports), released as pre-release
 [`v0.1.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.1). User's report on 0.1.0 (2026-10-25): through the
 4.4 mm out, 24-bit songs were loud static with the music barely audible (16-bit and MP3
@@ -504,6 +533,19 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.1.2 — the M21's headphone out (2026-10-25)
+
+**Reported** (0.1.1): S24: the join glitch is gone, Now Playing opens on a tap, 24-bit and
+BP work through the DAC. M21: 24-bit plays cleanly, the glitch is gone, but BP still can't
+be turned on (Route and Outputs above: only a "speaker").
+
+**Changed:** `SpeakerlessPlayers` (core) takes a FiiO player's speaker route as Headphones;
+`OutputRoutes` uses it, and its Route row says so.
+
+**Verified:** `:core:test` (three new tests), `:app:testDebugUnitTest`,
+`verifyRoborazziDebug` and the release build. Emulator: not a FiiO, so its speaker stays
+Speaker with BP greyed. **Not checked here:** anything on the M21 (its list above).
 
 ### 0.1.1 — fixes from the first device reports (2026-10-25)
 

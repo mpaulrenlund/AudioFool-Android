@@ -21,6 +21,7 @@ import com.mpaulrenlund.audiofool.core.playback.MixerEntry
 import com.mpaulrenlund.audiofool.core.playback.OutputMode
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
 import com.mpaulrenlund.audiofool.core.playback.SampleKind
+import com.mpaulrenlund.audiofool.core.playback.SpeakerlessPlayers
 import java.util.concurrent.CopyOnWriteArraySet
 
 /** How the output stage opens the `AudioTrack` for a track (session 4). */
@@ -115,7 +116,7 @@ class OutputRoutes(context: Context) {
             ?: said
             ?: outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
         val pretending = pretend
-        val newRoute = pretending ?: now?.let { routeOf(it.type) } ?: OutputRoute.Speaker
+        val newRoute = pretending ?: SpeakerlessPlayers.route(now?.let { routeOf(it.type) } ?: OutputRoute.Speaker, SPEAKER_IS_HEADPHONES)
         val changed = newRoute != route || now?.id != device?.id
         // The old device's mixer goes with it (unplugging clears it anyway).
         if (changed) clearMixer()
@@ -252,7 +253,8 @@ class OutputRoutes(context: Context) {
         val rates = d.sampleRates.sorted().joinToString(", ") { Display.sampleRate(it).removeSuffix(" kHz") }.let { if (it.isEmpty()) "any" else "$it kHz" }
         val encodings = d.encodings.toSet().sorted().joinToString(", ") { encodingName(it) }.ifEmpty { "any" }
         val pretending = pretend?.let { " · pretending ${it.label} (debug)" } ?: ""
-        return "${typeName(d.type)} \"${d.productName}\" · rates: $rates · formats: $encodings$pretending"
+        val speakerless = if (SPEAKER_IS_HEADPHONES) " · ${Build.MANUFACTURER} ${Build.MODEL}: its speaker is the headphone out" else ""
+        return "${typeName(d.type)} \"${d.productName}\" · rates: $rates · formats: $encodings$pretending$speakerless"
     }
 
     /**
@@ -321,6 +323,9 @@ class OutputRoutes(context: Context) {
     companion object {
         /** `setPreferredMixerAttributes` and the bit-perfect mixer: Android 14 and later (the S24; not the M21). */
         val MIXER_API: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
+        /** This player has no speaker: what Android calls its speaker is the headphone out (the M21). */
+        val SPEAKER_IS_HEADPHONES: Boolean = SpeakerlessPlayers.speakerIsHeadphones(Build.MANUFACTURER ?: "", Build.BRAND ?: "")
 
         /** How long after a device comes or goes the route is looked at again. */
         private const val SETTLE_MS = 1_000L

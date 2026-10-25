@@ -6,6 +6,13 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
+- **0.1.2** (versionCode 8): the M21 lists its headphone jacks to Android as the built-in
+  speaker (Outputs: earpiece, speaker, telephony; no wired device), so a FiiO player's
+  speaker route is now Headphones (`SpeakerlessPlayers`) and BP can be turned on. 0.1.1's
+  other fixes are confirmed on the phones (2026-10-25): the join glitch, Now Playing on a
+  tap, 24-bit on the M21, BP through the S24's DAC. **Open:** what the M21's System output
+  does with BP on (48 kHz means "(resampled)"); ask about FiiO's own bypass setting before
+  changing the readout rule. Next fix: 0.1.3, versionCode 9.
 - **0.1.1** (versionCode 7) is released as a pre-release (2026-10-25,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.1>, `dist/AudioFool-0.1.1.apk`). It fixes the first reports: a song tap opens Now Playing; the end-of-song glitch and gap; no 24-bit
   packed output (the M21 turned it into static: shared now sends 24-bit as float, the M21's
@@ -326,6 +333,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **BASS add-ons load by file name** (`BASS_PluginLoad("libbassflac.so")`): no extracted
   libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
 - **A buffer from `Decoder.read` must be empty when it returns false** (`limit(0)`): `clear()` makes it look full of old samples, which `pump` then writes.
+- **The M21 has no headphone device in Android's eyes**: its jacks are the "speaker" (48 kHz, 16-bit, per Android). Don't look for `TYPE_WIRED_*` there.
 - **24-bit packed `AudioTrack`s are static on the M21** (Android 13) though the emulator plays them: shared sends 24-bit as float, the M21's way as 32-bit.
 - **An `AudioTrack` must use the mixer entry's own `AudioFormat`** (`OutputPlan.Mixer.format`)
   to be attached to the mixer that was set; a rebuilt one with another channel mask may not

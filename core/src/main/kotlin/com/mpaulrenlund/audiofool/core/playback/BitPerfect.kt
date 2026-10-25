@@ -13,6 +13,22 @@ enum class OutputRoute(val label: String) {
     Other("Output"),
 }
 
+/**
+ * Players with no speaker, whose headphone outs Android lists as the built-in
+ * speaker: the FiiO M21 lists only "speaker", earpiece and telephony outputs,
+ * with its 3.5 mm and 4.4 mm jacks behind the "speaker" (the user's report on
+ * 0.1.1). There the speaker route is the headphone out.
+ */
+object SpeakerlessPlayers {
+    /** [manufacturer] and [brand] are the phone's (`Build.MANUFACTURER`, `Build.BRAND`). */
+    fun speakerIsHeadphones(manufacturer: String, brand: String): Boolean =
+        manufacturer.equals("FiiO", ignoreCase = true) || brand.equals("FiiO", ignoreCase = true)
+
+    /** The route as the readout and Bit-Perfect should take it on this player. */
+    fun route(route: OutputRoute, speakerIsHeadphones: Boolean): OutputRoute =
+        if (speakerIsHeadphones && route == OutputRoute.Speaker) OutputRoute.Headphones else route
+}
+
 /** What Bit-Perfect does on a route (spec 6.2). */
 enum class BitPerfectWay {
     /** It can't do anything here: BP is greyed out (Bluetooth, the speaker). */

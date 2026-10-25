@@ -27,6 +27,28 @@ class BitPerfectTest {
         }
     }
 
+    // ---------- a player whose speaker is its headphone out (0.1.1) ----------
+
+    @Test fun a_fiio_player_is_one_whose_speaker_is_its_headphone_out() {
+        assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("FiiO", "FiiO"))
+        assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("fiio", "other"))
+        assertEquals(true, SpeakerlessPlayers.speakerIsHeadphones("unknown", "FIIO"))
+        assertEquals(false, SpeakerlessPlayers.speakerIsHeadphones("samsung", "samsung"))
+    }
+
+    @Test fun there_its_speaker_is_the_headphone_route_and_bp_can_be_used() {
+        val route = SpeakerlessPlayers.route(OutputRoute.Speaker, speakerIsHeadphones = true)
+        assertEquals(OutputRoute.Headphones, route)
+        assertEquals(BitPerfectWay.SourceRate, BitPerfectRule.way(route, mixerApi = false, usbMixerEntries = 0))
+    }
+
+    @Test fun other_routes_and_other_phones_are_left_alone() {
+        for (route in listOf(OutputRoute.Bluetooth, OutputRoute.Usb, OutputRoute.Headphones, OutputRoute.Other)) {
+            assertEquals(route, SpeakerlessPlayers.route(route, speakerIsHeadphones = true))
+        }
+        assertEquals(OutputRoute.Speaker, SpeakerlessPlayers.route(OutputRoute.Speaker, speakerIsHeadphones = false))
+    }
+
     // ---------- choosing a mixer entry ----------
 
     private fun e(rate: Int, kind: SampleKind?, bitPerfect: Boolean, channels: Int = 2) = MixerEntry(rate, channels, kind, bitPerfect)
