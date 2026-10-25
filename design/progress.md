@@ -125,6 +125,12 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 Session 2 (`v0.0.2`), with the full library on the SD card:
 
+- **First scan (2026-10-24, in progress):** 27,115 files found; 12,000 read after a little
+  over 3 minutes (about 60 a second, so about 8 minutes in all). Working, but the Artists
+  screen shows nothing until it ends: it says "Music appears here as it's found", which
+  this build doesn't do. To fix in v0.0.3. Still to report: Statistics > Last scan when it
+  finishes.
+
 - [ ] **Scrolling the full library.** Fling through all ~499 artists and a long album list on the Snapdragon 680: smooth? Covers fill in as the background fill works (Statistics > Covers, up to ~2,376).
 - [ ] **SD card out.** With the card out, Settings shows "SD card · Music" greyed with "Not available"; the card's artists, albums and songs stay listed, greyed, and its songs can't be tapped. Card back: everything as before, "Up to date".
 - [ ] **Search** across the full library: results keep up with typing.
