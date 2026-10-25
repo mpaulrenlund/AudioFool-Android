@@ -352,6 +352,11 @@ Released 2026-10-25 as pre-release
 User's report on 0.1.0 (2026-10-25): playback through the USB DAC works with BP on and off,
 but the readout kept saying "resampled" with BP on.
 
+- [x] **A 24/48 song through the DAC** (the user, 2026-10-25, on 0.1.4): BP on "USB · 48 kHz /
+  24-bit (rate matched)", BP off "USB · Shared · 48 kHz". The S24 offers the DAC an ordinary
+  mixer entry at 48 kHz but no bit-perfect one there (as expected of Samsung). 0.1.0's
+  "resampled" with BP on was most likely a 44.1 kHz song with no entry at that rate (shared,
+  48 kHz). Still wanted: the **USB mixers** row, to know the rates offered.
 - [ ] **The readout with BP on.** Through the DAC, play a 16/44 and a 24/96 FLAC with BP on, and
   send a photo of logo > Statistics > Playback for each (Output, Route, Bit-Perfect, Opened
   as, USB mixers, Mixer set). That says whether the S24 offers the DAC a mixer at those
