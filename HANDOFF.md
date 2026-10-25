@@ -1,26 +1,27 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and unreleased UI changes (the Artists letter strip, swipe to skip, the gliding seekbar).
+Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and 0.2.0 (the Artists letter strip, swipe to skip, the gliding seekbar).
 Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
 and the lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
-  sections (0.1.5 down to 0.1.1 at the top, then session 5) and the newest session notes.
-- **Latest: 0.1.5** (versionCode 12), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.5>,
-  `dist/AudioFool-0.1.5.apk`. Next: **0.1.6, versionCode 13** for fixes; 0.2.0 for a new
-  feature. Releases so far: v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first
-  full release, v0.1.1 to v0.1.5 pre-releases (all fixes, 2026-10-25). Confirm the tag and
-  the notes with the user before `gh release create`.
-- **On `main`, not released, the user's UI requests (2026-10-25):** the Artists letter strip
-  (spec 4.1, `ui/ArtistIndexStrip.kt`, `core/.../library/ArtistIndex.kt`), and Now Playing
-  swiped sideways to skip, with swipe-down gone (spec 5, `SwipeToSkip` in
+  sections (0.2.0 down to 0.1.1 at the top, then session 5) and the newest session notes.
+- **Latest: 0.2.0** (versionCode 13), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0>,
+  `dist/AudioFool-0.2.0.apk`: the user's UI requests of 2026-10-25, the Artists letter
+  strip (spec 4.1, `ui/ArtistIndexStrip.kt`, `core/.../library/ArtistIndex.kt`), Now
+  Playing swiped sideways to skip with swipe-down gone (spec 5, `SwipeToSkip` in
   `NowPlayingScreen.kt`), and the seekbar's played part split at the exact place so it
-  glides. All checked in ThemeLab and on the emulator. As a new feature it would be **0.2.0, versionCode 13**; the user may batch
-  more UI fixes into it first. Confirm before releasing.
-- **Nothing is waiting on the user, and nothing is broken that they know of.** Confirmed on
+  glides. Checked in ThemeLab and on the emulator; not yet on a phone. Next: **0.2.1,
+  versionCode 14** for fixes; 0.3.0 for a new feature. Releases so far: v0.0.1 to v0.0.4
+  pre-releases, v0.0.5 skipped, v0.1.0 the first full release, v0.1.1 to v0.1.5 and v0.2.0
+  pre-releases (2026-10-25). Confirm the tag and the notes with the user before
+  `gh release create`.
+- **Waiting on the user:** how 0.2.0 feels on the phones (the 0.2.0 items on both lists in
+  `design/progress.md`).
+- **Nothing is broken that the user knows of.** Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
   Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
   the readout by FiiO's rate, no click at a restart or a tap, unplug pauses on both jacks.

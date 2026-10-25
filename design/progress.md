@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — built and checked on the emulator 2026-10-25, not released
+- [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
 ## Decisions made in the design
 
@@ -35,7 +35,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.2.0, not released yet (2026-10-25):
+0.2.0 (2026-10-25), released as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0) ("AudioFool 0.2.0", versionCode 13):
 
 - **A letter strip on Artists** (the user asked; no desktop rule, no mockup). The user's
   calls: hidden until the list scrolls (so spec 2's "no visible scrollbars" holds at rest),
@@ -382,7 +382,10 @@ Session 1:
 
 ## To test on the S24
 
-### 0.2.0 (the Artists letter strip; not released yet)
+### 0.2.0 (the letter strip, swipe to skip, the gliding seekbar)
+
+Released 2026-10-25 as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0)
+("AudioFool 0.2.0", versionCode 13). Installs over 0.1.5 (same key).
 
 - [ ] **Letter strip.** Flick Artists: the strip fades in at the right, and out about 1.5 s after
   the list stops. Slide a thumb down it: the bubble follows, the list jumps letter by letter,
@@ -567,7 +570,7 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.2.0 (not released yet):
+0.2.0, released as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0) (versionCode 13):
 
 - [ ] **Letter strip on the full library.** With ~26,000 tracks: does a slide down the strip
   keep up (no stutter as the list jumps), and do the letters fit the M21's shorter screen?
@@ -704,7 +707,7 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 
 ## Session notes
 
-### 0.2.0 — the Artists letter strip, and swipe to skip (2026-10-25)
+### 0.2.0 — the Artists letter strip, swipe to skip, the gliding seekbar (2026-10-25)
 
 **Changed:** `core/.../library/ArtistIndex.kt` (+ tests), `ui/ArtistIndexStrip.kt`, Artists wired
 to it in `LibraryScreens.kt`, `artists.index` tokens, three ThemeLab pictures, spec 2 and 4.1.
