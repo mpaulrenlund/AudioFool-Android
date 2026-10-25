@@ -363,6 +363,8 @@ but the readout kept saying "resampled" with BP on.
   shared and is resampled to 48 kHz (the readout says so). True bit-perfect on the S24 would
   need the app's own USB driver (libusb, as USB Audio Player Pro): a new dependency and a
   spec change, the user's call. Not decided.
+- [x] **A 24/96 song through the DAC** (2026-10-25): BP on "USB · 96 kHz / 24-bit (rate
+  matched)", BP off "USB · 48 kHz (resampled)". BP keeps hi-res at its own rate on the S24.
 - [ ] **Route** row with the DAC: does the DAC itself list 44.1 kHz ("rates: …")? If it does,
   Samsung leaves 44.1 out of the mixer; if not, the DAC doesn't offer it over USB.
 - [ ] **The readout with BP on.** Through the DAC, play a 16/44 and a 24/96 FLAC with BP on, and
