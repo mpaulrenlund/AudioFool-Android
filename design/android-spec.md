@@ -97,7 +97,7 @@ The screen title "Settings" (18/600) and four panels, `settings.sectionGap` apar
 - **Appearance**: Theme, showing "PS2 Dark" or "PS1 Light", with a chip holding a moon (Dark) or sun (Light) icon. A tap switches.
 - **Playback**: Bit-Perfect, with the output readout (§6.3) under the label and a chip with a status dot (`status.bitPerfectOn` / `status.bitPerfectOff`, ring `status.dotRing`) and the word "Bit-Perfect". It's the same setting as the BP button (§6.4), greyed out in the same cases.
 - **Music folders**: a refresh button in the header (rescans). One row per folder, with a checkbox (filled `accent.playback`, check in `panel.bg`) to include or leave out, the folder's name ("SD card · Music") and its path. Then "Add Folder…", which opens a folder picker and saves the plain path.
-- **Last.fm**: a dot and "Last.fm: not connected", with a Connect button. Once connected: "Last.fm: connected as <user>" with Disconnect.
+- **Last.fm**: a dot and "Last.fm: not connected", with a Connect button. Once connected: "Last.fm: connected as <user>" with Disconnect. The dot is `status.lastFmDot` while scrobbling, `status.lastFmOff` otherwise; "Last.fm: connect again" when Last.fm rejects the session. Connect opens a form in the panel: the API key and shared secret fields, "Get a key…", Cancel and Connect; then, while last.fm's approval page is open in the browser, a line saying so with "Open again" and Cancel (session 5). A failed send adds the queue line under the status.
 
 ### 4.6 Statistics
 
@@ -106,6 +106,8 @@ There's no mockup. Build it from the same parts (panels, headers, rows, `type.st
 - **Library totals**: tracks, albums, artists, size on disk.
 - **Formats**: tracks per format (FLAC, DSD, MP3, …), using the desktop's format names (`AudioFormats`).
 - **Listening time**: total time listened, recorded by the app from now on.
+
+As built (session 5, approved from screenshots): LIBRARY holds Tracks, Albums and Artists in one row and Play time and On disk in the next, as `type.statValue` figures with a label under each, then the scan line. FORMATS has one bar row per format (label; "count · share · size"; a `playbackBar.trackHeight` bar in `slider.volumeFill` on `slider.track`). LISTENING shows the time and "Listened since <date>". The Playback and Debug panels follow.
 
 ## 5. Now Playing
 
@@ -153,11 +155,12 @@ A 34 dp round button labelled "BP" (12/700). The label is `bpLabel.on` when Bit-
 
 ## 7. Last.fm
 
-Scrobbling as on desktop (`LastFmApi`, `LastFmScrobbler`, `PlayTracker`, `ScrobbleQueue`): now-playing updates, scrobbles under Last.fm's rules, and an offline queue. Connect asks once for the API key and secret (the user reuses the desktop's), then opens the browser for approval and fetches the session. The key, secret and session are stored encrypted (Android Keystore), never in the repo.
+Scrobbling as on desktop (`LastFmApi`, `LastFmScrobbler`, `PlayTracker`, `ScrobbleQueue`): now-playing updates, scrobbles under Last.fm's rules, and an offline queue. Connect asks once for the API key and secret (the user reuses the desktop's), then opens the browser for approval and fetches the session. The key, secret and session are stored encrypted (Android Keystore), never in the repo. The play is counted from the heard position, so a scrobble's rules (half the song or four minutes, seeks don't count) are the desktop's exactly.
 
 ## 8. Library and cache
 
 - The scan walks the chosen folders and reads tags and art. The tag reader must cover every format in the desktop's `AudioFormats`, DSF and DFF included.
 - A cache makes a cold start with 26,000 tracks show the library at once. A rescan only reads files whose size or date changed (desktop `FileStamp`, `LibraryCache`).
 - Artist, album and song order, release dates, and search follow the desktop's Core rules. Port them, and port their tests.
+- A folder that can't be reached (the SD card out) keeps its tracks, shown as unavailable. When the card is ejected, a song on it that is playing stops at once, paused where it was heard (Android ends any app still holding a file open on it), and carries on with the card back (session 5).
 - Cover thumbnails are cached on disk and decoded at display size. Scrolling 26,000 tracks must stay smooth on the M21 (Snapdragon 680, 4 GB).

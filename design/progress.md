@@ -29,6 +29,49 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+Session 5 (2026-10-24):
+
+- **v0.0.5 skipped** (the user's call): built, never released. Its device items carry over
+  to 0.1.0.
+- **Last.fm** ported from `AudioFool.Core/Scrobbling` with its 38 tests, unchanged in
+  behaviour; times are milliseconds. HTTP is plain `java.net` (no new dependency); the
+  scrobbler's sends run in a coroutine scope on the main thread. The queue is
+  `no_backup/scrobbles.json` (SafeFile, `.bak`).
+- **The play position comes from `PlayWatcher`**: the player tells its watchers the heard
+  track and place every 250 ms while playing (the desktop's position timer), and which
+  track started (by identity). Last.fm and the listening time both use it.
+- **Connect** is the desktop's flow (token, browser, poll auth.getSession every 3 s for up to
+  5 minutes), inside the Last.fm panel rather than a window: fields for the API key and
+  shared secret, then "Approve AudioFool on last.fm in the browser…" with Open again and
+  Cancel. No mockup; sizes in `mobile-tokens.json` → `lastFm.*`. The key and secret are kept
+  once a token comes back, so a reconnect is pre-filled; Disconnect forgets only the session.
+- **Encrypted storage** without a library: AES-GCM with a 256-bit key in the Android Keystore
+  (alias `audiofool.lastfm`), the IV and ciphertext in SharedPreferences `lastfm`. A value
+  that won't decrypt reads as missing (connect again).
+- **The panel's dot** is `status.lastFmDot` while scrobbling, `status.lastFmOff` otherwise
+  (not connected, switched off, failing, or rejected: "Last.fm: connect again"). A failing
+  send shows the desktop's queue line under the status.
+- **Statistics** (no mockup; the user approved the screenshots): the desktop's Statistics
+  window fitted to a phone. LIBRARY: Tracks, Albums, Artists in one row, Play time and On
+  disk in the next (figures in `type.statValue`), then the scan line. FORMATS: the desktop's
+  bar rows, "count · share · size", bars `slider.volumeFill` on `slider.track`. LISTENING:
+  the time listened and since when. Then Playback and Debug as before; the cover check moved
+  into Debug. `LibraryStatistics` ported with the totals and file types only (the desktop's
+  quality tiers, decades and tag checks aren't in the phone's spec).
+- **Listening time** (new, no desktop rule): small forward steps of the heard position of
+  the same track, as `PlayTracker` counts a play; saved to `no_backup/listening.json` every
+  10 s of listening and when the queue ends; counted from the first run of 0.1.0.
+- **An ejected SD card while a song on it is open:** vold ends every process holding a file
+  open on the volume about 250 ms after `ACTION_MEDIA_EJECT` (it killed the app on the
+  emulator). The player now lets go at the eject: the song playing (or decoding) stops,
+  paused where it was heard; one opened ahead for a gapless join is dropped. Play while the
+  card is out does nothing; with it back, Play carries on from the place.
+- **Font size 1.3:** Now Playing's art reserve grows with the text
+  (`nowPlaying.artReserveText`, 140 dp of text at 1.0, times fontScale − 1), so the M21
+  keeps the readout on screen. Every other screen fits as it was.
+- **Search with no matches** shows the empty panel, as with an empty query (unchanged; not in
+  the spec).
+
 Session 4 (2026-10-24):
 
 - **Research first** (shown to the user before building): Android 14+'s
@@ -197,11 +240,34 @@ Session 1:
 
 ## To test on the S24
 
+### 0.1.0 (session 5: Last.fm, Statistics, edge cases)
+
+Installs over v0.0.4 (same key). Also holds v0.0.5's Bit-Perfect items below, which were
+never released.
+
+- [ ] **Connect Last.fm.** Settings > Last.fm > Connect: paste the desktop's API key and shared
+  secret, Connect. The browser opens last.fm's approval page; approve, come back: within a
+  few seconds the panel says "Last.fm: connected as <you>" with a green dot.
+- [ ] **Scrobbles reach your profile.** Play a song past half its length (or four minutes):
+  last.fm shows "Scrobbling now" when it starts, and the scrobble at its start time.
+  Seeking ahead doesn't count as listening.
+- [ ] **Offline queue.** Airplane mode, play two songs past the threshold, airplane mode off,
+  play anything: both scrobbles appear, with their own times. (Statistics shows nothing for
+  this; the Last.fm panel says "Last send failed…" while it waits.)
+- [ ] **Disconnect and reconnect.** Disconnect: "not connected". Connect again: the key and
+  secret are filled in already.
+- [ ] **Statistics.** Logo > Statistics: the five figures and the formats against the desktop's
+  Statistics window (the desktop counts every library; the phone only its own folders).
+  Listening goes up while you play.
+- [ ] **Font size.** Android Settings > Display > Font size one or two steps up: Artists, an
+  album, Now Playing and Settings still fit (Now Playing's art shrinks to keep the readout).
+- [ ] **A call while playing.** It pauses for the call and carries on after (checked on the
+  emulator with a simulated call).
+
 ### v0.0.5 (session 4: Bit-Perfect)
 
 **Not released:** the user skipped v0.0.5 at the start of session 5 (2026-10-24). These
-items carry over to the next build session 5 hands out, which installs over v0.0.4 (same
-key). Report from logo > **Statistics** > **Playback**: Output, Route,
+items are tested on 0.1.0, which installs over v0.0.4 (same key). Report from logo > **Statistics** > **Playback**: Output, Route,
 Bit-Perfect, Opened as, System output, Direct, USB mixers, Mixer set. A photo of the panel
 is fine.
 
@@ -313,7 +379,19 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-Session 4 (`v0.0.5`, not released: these carry over to session 5's build), the M21's first playback build. Report from logo > **Statistics** >
+0.1.0 (session 5), with the full library on the SD card:
+
+- [ ] **Pull the SD card while a song on it plays.** It stops and shows paused (it used to be
+  killed by Android on the emulator); the card's artists stay, greyed. Put the card back,
+  Play: it carries on from where it stopped. Same with the card ejected from Android's
+  Settings, and with the music paused rather than playing.
+- [ ] **Cold start with the full library.** Swipe the app away and open it, three times:
+  Statistics > Debug > Cold start. The library should be on screen at once.
+- [ ] **Statistics** with the full library: the figures against the desktop's (499 artists ·
+  2,376 albums · 26,795 tracks when last seen), and how long the screen takes to open.
+- [ ] **Last.fm** on the M21 as on the S24 (the same key; a second session for the same user).
+
+Session 4 (`v0.0.5`, not released: tested on 0.1.0 instead), the M21's first playback build. Report from logo > **Statistics** >
 **Playback** (a photo is fine).
 
 - [ ] **Install over the last build** and play something from the SD card through the 3.5 mm or
@@ -365,6 +443,41 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### Session 5 — Last.fm, Statistics, polish and release (2026-10-24)
+
+**Device results:** none reported yet for v0.0.4 or v0.0.5 (v0.0.5 was skipped), so step 1
+had nothing to fix; those lists carry over to 0.1.0.
+
+**Built:** Last.fm (`core/.../scrobbling`: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`,
+`ScrobbleQueue`, `LastFmScrobbler`, ported with `ScrobblingTests`; the app's `LastFm`,
+`LastFmStore` and Settings' panel), `PlayWatcher`, Statistics (`LibraryStatistics` ported
+with its totals and file-type tests; `ListeningTime`/`ListeningCounter` with tests; the app's
+`Listening` and the screen), the SD card eject fix (`Player.letGoOf`) and Now Playing's
+reserve at larger font sizes.
+
+**Verified:**
+- `:core:test`, `:app:testDebugUnitTest` and `verifyRoborazziDebug`: 340 tests, 0 failures.
+  Every earlier picture unchanged; new: Settings' Last.fm panel (connected, connecting),
+  Statistics (full-size figures, empty), the edge cases (very long names, a 120-song album,
+  an empty library, search with no library) and the main screens at font size 1.3, both
+  themes and both sizes.
+- Emulator, release build: Statistics with the sample library (829 tracks, 10 formats); the
+  listening time counting while playing and updating on the open screen; Gapless Live still
+  2 joins, 0 underruns; an SD card unmounted while a song on it played (the app survived,
+  paused, the place kept; Play with the card out did nothing; with it back Play carried on
+  at 0:18), and while paused; the app started with the card out ("Unavailable: SD card ·
+  Music (9 tracks kept)"); a simulated call (paused while ringing and in the call, playing
+  after); cold start 1.6 s with 829 tracks.
+- **Found on the emulator and fixed:** the eject kill (above); the M21's readout cut off at
+  font size 1.3.
+- **Not checked here** (on the device lists): a real Last.fm connection and scrobbles (needs
+  your key), the full library's cold start and Statistics, a physical card pull, a real
+  call, and the font size on the phones.
+
+**Differences from the spec** (spec updated, §4.5, §4.6, §7): the connect form sits in the
+Last.fm panel (no mockup), with a queue line under the status when sends fail; Statistics'
+layout and the Debug panel below it; the listening time starts at 0.1.0.
 
 ### Session 4 — Bit-Perfect, DSD over DoP, and an M21 test build (2026-10-24)
 

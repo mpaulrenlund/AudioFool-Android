@@ -1,20 +1,19 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-24, end of session 4 (Bit-Perfect, DSD over DoP). Read this with
-`README.md` (how the app works) and `design/progress.md` (every decision, and the lists of
-what to test on each device). The spec is `design/android-spec.md`.
+Updated 2026-10-24, end of session 5 (Last.fm, Statistics, edge cases, 0.1.0). Read this
+with `README.md` (how the app works) and `design/progress.md` (every decision, and the
+lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **v0.0.5 was skipped** (the user's call at the start of session 5): built
-  (`dist/AudioFool-0.0.5.apk`, versionCode 5) but never released. Its device items carry
-  over to session 5's build. The next versionCode is 6.
-- **Session 5, Last.fm, Statistics, polish and release 0.1.0**
-  (`design/session-prompts.md`). Its first step is the S24 and M21 test results: read both
-  lists in `design/progress.md`, especially v0.0.5's (what Samsung's mixer offers a USB
-  DAC, and whether the M21's System output follows the song).
-- Read, in order: `CLAUDE.md`, this file, `design/android-spec.md` (§4.5, §4.6, §7), and in
-  `design/progress.md` the Decisions sections and the session 4 notes.
+- **Version 1 is built.** The five planned sessions are done. What's left is the user's
+  device reports: the 0.1.0, v0.0.5 and v0.0.4 items on both lists in `design/progress.md`
+  (Last.fm on the profile, Bit-Perfect through a real DAC, the M21's bypass, a physical SD
+  card pull, the full library's cold start). Fix what they turn up; middle number for new
+  features, last for fixes (`0.1.1` next for fixes, versionCode 7).
+- **v0.0.5 was skipped** (the user's call): built, never released. 0.1.0 is versionCode 6.
+- Read, in order: `CLAUDE.md`, this file, and in `design/progress.md` the Decisions sections
+  and the session 5 notes.
 - **If the S24 lists no bit-perfect mixer** (likely, from other Samsung phones), BP gives
   "rate matched" there. A truly bit-perfect S24 would need the app's own USB driver
   (libusb, as USB Audio Player Pro does): a new dependency and a spec change, so ask.
@@ -24,14 +23,18 @@ what to test on each device). The spec is `design/android-spec.md`.
 - **Device reports still open** (don't block on them): the v0.0.2, v0.0.4 and v0.0.5 items on
   both lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
   cold start (v0.0.1), and the M21's first scan (v0.0.3).
-- **Releases:** `v0.0.1` to `v0.0.4` are out (pre-releases); `v0.0.5` was skipped. The next
-  is versionCode 6, as `0.0.6` or straight to `0.1.0`.
+- **Releases:** `v0.0.1` to `v0.0.4` are out (pre-releases); `v0.0.5` was skipped; `0.1.0`
+  is session 5's (see *Where things stand*).
+- **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
+  the key never goes in the repo). The user reports from Settings > Last.fm (its status and
+  queue line) and their last.fm profile.
   Confirm the tag and notes with the user before `gh release create`.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
-  albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and a copy of the
-  sample set on the SD card, `/storage/0000-0000/Music`) and the session 4 release build
-  (0.0.5), with Bit-Perfect saved **on** and the Gapless Live album paused in the queue.
-  `dist/` (ignored by git) holds the released APKs and `AudioFool-0.0.5.apk`.
+  albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and on the SD card,
+  `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute
+  FLACs for pulling the card mid-song) and the session 5 release build, with Bit-Perfect
+  saved **on**, Last.fm not connected, and Long Song 1 (on the card) paused in the queue.
+  `dist/` (ignored by git) holds the released APKs.
 
 ---
 
@@ -44,6 +47,9 @@ what to test on each device). The spec is `design/android-spec.md`.
 | Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/`, `playback/`, `analysis/` |
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`; `OutputReadout`) and `core/.../analysis/` |
+| Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
+| Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` |
+| What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
 | Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `StatisticsScreen.kt` (debug numbers), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts) |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
@@ -55,6 +61,8 @@ what to test on each device). The spec is `design/android-spec.md`.
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
 | On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`) |
+| On the phone: Last.fm | SharedPreferences `lastfm` (API key, secret, user, session: each AES-GCM encrypted with the Keystore key `audiofool.lastfm`); `no_backup/scrobbles.json` (+ `.bak`): the queue |
+| On the phone: listening time | `no_backup/listening.json` (+ `.bak`): total ms and since when |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
 | On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat |
 | On the phone: waveforms | `no_backup/waveforms/*.wave` (96 levels per file, named from path, size and date) |
@@ -205,7 +213,19 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ---
 
-## Where things stand (after session 4)
+## Where things stand (after session 5)
+
+- **Last.fm** is ported and wired: now playing, scrobbles from the heard position, the
+  offline queue, Connect / Disconnect in Settings. Not yet seen on a real profile.
+- **Statistics** shows the totals, formats and listening time (the user approved the
+  screenshots), above the Playback and Debug panels.
+- **Edge cases** checked: long names, a 120-song album, an empty library and font size 1.3
+  in ThemeLab; SD card out while playing and idle, a call, and cold start on the emulator.
+  Fixed: the app was killed when the card was ejected with a song on it open
+  (`Player.letGoOf`), and Now Playing's readout fell off the M21 at font size 1.3.
+- **0.1.0**: see `design/progress.md` (*To test on the S24* / *M21*) for what to check.
+
+## Where things stood after session 4
 
 - **Bit-Perfect is wired up**: the BP button and the Settings chip (saved, greyed on the
   speaker and Bluetooth), USB mixer attributes on Android 14+ (bit-perfect, else rate
@@ -264,6 +284,18 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   full cover with `CoverArt.read`, not these.
 
 ## Traps worth not rediscovering
+
+- **Ejecting a volume kills any process with a file open on it.** vold sends SIGINT to every
+  process holding a file on the card about 250 ms after `ACTION_MEDIA_EJECT`; the app has
+  that long to close its streams (`Storage.watchVolumes`' `onEjecting` → `Player.letGoOf`).
+  Anything new that keeps a file on the card open (a long read, a stream) must let go there
+  too. A physical pull goes the same way.
+- **`AudioFoolApp.playerLazy` must be declared before `player`** (which delegates to it), or
+  the app crashes at start with a null delegate.
+- **`adb shell mkdir` with a space** needs inner quotes (`"'/storage/…/SD Card Band'"`), or it
+  makes one folder per word.
+- **The listening time and scrobbles count the heard position**, not the clock: anything
+  that changes how `positionMs()` behaves changes both.
 
 - **An endless frame loop hangs ThemeLab.** Roborazzi waits for the screen to settle; a
   `LaunchedEffect` that asks for every frame (`withFrameMillis` in a loop) never lets it,

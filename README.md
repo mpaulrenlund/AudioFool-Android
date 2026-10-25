@@ -5,13 +5,14 @@ Galaxy S24 Ultra (Android 17) and a FiiO M21 (Android 13). Kotlin and Jetpack Co
 with the desktop's two themes, PS2 Dark and PS1 Light, and its library rules ported
 from `AudioFool.Core`.
 
-Status: session 4 of 5 (Bit-Perfect and DSD over DoP). Last.fm, Statistics and the
-0.1.0 release follow; see `design/session-prompts.md` and `design/progress.md`.
+Status: version 1 (0.1.0), after five build sessions; see `design/progress.md` for
+every decision and what is still to be checked on the phones.
 
 ## How it works
 
-- **Screens.** Artists → Albums → Album, plus Search, Settings and Statistics (which for
-  now holds the debug numbers). The PlayStation logo is the menu button (Settings,
+- **Screens.** Artists → Albums → Album, plus Search, Settings and Statistics (the
+  library's totals, its formats and the time listened, with the debug numbers under them).
+  The PlayStation logo is the menu button (Settings,
   Theme, Statistics). There are no on-screen back buttons: system back and predictive
   back go up one level, and each screen keeps its scroll position and selection. A
   mini player sits under every library screen once something has played.
@@ -28,7 +29,9 @@ Status: session 4 of 5 (Bit-Perfect and DSD over DoP). Last.fm, Statistics and t
   date haven't changed keeps its cached tags.
 - **A missing folder is not a deleted library.** A folder that can't be reached (the SD
   card out, or pulled mid-scan) keeps its tracks, shown as unavailable; they come back
-  with the card. The app rescans when storage is mounted or removed.
+  with the card. The app rescans when storage is mounted or removed. When a card is
+  ejected, a song playing from it stops at once, paused where it was (Android ends any app
+  still holding a file open on a card being removed), and carries on with the card back.
 - **Covers.** The best embedded picture (whole before cut off, front cover, most pixels,
   JPEG over PNG, most bytes: the desktop's rules), else `cover.jpg`, `folder.jpg` and the
   other names the desktop looks for, in its order, ignoring case. An album's cover is
@@ -66,6 +69,17 @@ Status: session 4 of 5 (Bit-Perfect and DSD over DoP). Last.fm, Statistics and t
   ducking); unplugging headphones pauses it.
 - **Resume.** The queue, the song, the place heard (the desktop's `ReopenPoint`), shuffle
   and repeat are saved (`resume.json`) and restored, paused, when the app opens again.
+- **Last.fm.** Scrobbling as on the desktop (its `LastFmApi`, `PlayTracker`,
+  `ScrobbleQueue` and `LastFmScrobbler`, ported with their tests): "now playing" when a song
+  starts, a scrobble once it has played for half its length or four minutes (counted from
+  what was heard, so seeking ahead doesn't count), and a queue on disk (`scrobbles.json`)
+  that waits out a lost network, sent in batches. Settings > Last.fm > Connect asks for
+  your API key and shared secret (the desktop's work), opens last.fm in the browser to
+  approve the app, and connects by itself once you have. The key, secret and session are
+  encrypted with a key held in the Android Keystore.
+- **Statistics.** Tracks, albums, artists, play time and size on disk; tracks per format
+  (the desktop's `LibraryStatistics`); and the time listened, counted by the app from the
+  first run of 0.1.0 on (`listening.json`).
 - **The theme.** The desktop's token files are the app's theme, read by JSON path
   (`color.panel.bg`, `shadow.controlButton`); sizes come from `design/mobile-tokens.json`.
   Dark when nothing is saved; a switch applies at once.
