@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **0.2.0**: the Artists letter strip — built and checked on the emulator 2026-10-25, not released
 
 ## Decisions made in the design
 
@@ -33,6 +34,25 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.2.0, not released yet (2026-10-25):
+
+- **A letter strip on Artists** (the user asked; no desktop rule, no mockup). The user's
+  calls: hidden until the list scrolls (so spec 2's "no visible scrollbars" holds at rest),
+  a bubble with the letter while a finger is on it, and only the letters the library has.
+  Mine: it files by the sort key, so "The Beatles" is under B where the list puts it;
+  accents dropped (the root collation sorts "Å" with "A"), "#" for digits and symbols, "•"
+  for other scripts; letters listed in the order they first appear, so a jump always goes
+  down the list. `ArtistIndex` in core, with tests. A haptic tick at each new letter. The
+  strip floats over the rows' right end and reserves no width; hidden, it takes no
+  touches. Shown 1.5 s after scrolling stops (`artists.index.hideDelayMs`). Spec 2 and 4.1
+  updated; tokens in `mobile-tokens.json` → `artists.index`.
+- **Checked:** ThemeLab `artists-index`, `artists-index-pressed` and
+  `edge-artists-index-full` (all 28 entries fit the M21's list at about 14 dp each), both
+  themes and sizes; every older picture unchanged. On the emulator (200-artist sample):
+  hidden at rest, shown while scrolling, gone after; a slide from A to S shows the bubble
+  and jumps; a tap on A from the end goes back to the top; a tap on a row's right end
+  with the strip hidden opens the artist.
 
 0.1.5 (2026-10-25), found with the M21 on this PC over adb (the user connected it):
 
@@ -343,6 +363,13 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.0 (the Artists letter strip; not released yet)
+
+- [ ] **Letter strip.** Flick Artists: the strip fades in at the right, and out about 1.5 s after
+  the list stops. Slide a thumb down it: the bubble follows, the list jumps letter by letter,
+  with a light tick each time. "The …" artists sit under their second word's letter. Is it
+  easy to hit with a thumb, and does the tick feel right?
+
 ### 0.1.1 (fixes from the first reports)
 
 Released 2026-10-25 as pre-release
@@ -516,6 +543,11 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+0.2.0 (not released yet):
+
+- [ ] **Letter strip on the full library.** With ~26,000 tracks: does a slide down the strip
+  keep up (no stutter as the list jumps), and do the letters fit the M21's shorter screen?
+
 0.1.5 (unplug, and the readout by FiiO's rate), checked on the M21 itself over adb (2026-10-25);
 released as pre-release [`v0.1.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.5)
 ("AudioFool 0.1.5", versionCode 12):
@@ -647,6 +679,15 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.2.0 — the Artists letter strip (2026-10-25)
+
+**Changed:** `core/.../library/ArtistIndex.kt` (+ tests), `ui/ArtistIndexStrip.kt`, Artists wired
+to it in `LibraryScreens.kt`, `artists.index` tokens, three ThemeLab pictures, spec 2 and 4.1.
+
+**Verified:** `:core:test`, `:app:testDebugUnitTest`, `recordRoborazziDebug` (only the new
+pictures changed), the release build on the emulator (versionCode 12 still; bump before
+release). Not on a phone yet.
 
 ### 0.1.5 — the M21's unplug, found over adb (2026-10-25)
 

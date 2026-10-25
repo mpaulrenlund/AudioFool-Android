@@ -62,7 +62,23 @@
     "thumbGap": 14,
     "nameSize": 16,
     "countSize": 13,
-    "lineGap": 2
+    "lineGap": 2,
+    "index": {
+      "$note": "The letter strip at the list's right edge (0.2.0, the user's call; no mockup): hidden at rest, it fades in while the list scrolls and out hideDelayMs after. A pill in the panel's colours; the letters text.muted, the current one text.primary at activeWeight. While a finger is on it, the bubble (the logo menu's surface) shows the letter in text.heading in the middle of the list.",
+      "touchWidth": 40,
+      "width": 24,
+      "marginEnd": 4,
+      "marginY": 8,
+      "paddingY": 6,
+      "letterSlot": 18,
+      "textSize": 12,
+      "activeWeight": 600,
+      "fadeMs": 150,
+      "hideDelayMs": 1500,
+      "bubble": 72,
+      "bubbleTextSize": 36,
+      "bubbleWeight": 600
+    }
   },
   "albums": {
     "rowHeight": 76,

@@ -59,7 +59,7 @@ The striped squares in the mockups stand for album art. Where an album has no ar
 - **Chip**: `settings.chipHeight`, `color.status.chipBg`, 1 dp `color.status.chipBorder`, `radius.chip`, text `color.text.status`.
 - **Round buttons**: `color.control.face`, 1 dp `color.control.faceBorder`, `shadow.controlButton`. Play/Pause uses `shadow.playButton`, plus a 1 dp `color.control.playRing` ring and `shadow.playGlow` (both invisible in Light), with the icon in `accent.playback`.
 - Album titles wrap to two lines, then "…". Everything else is one line with "…".
-- No visible scrollbars. Lists scroll by touch.
+- No visible scrollbars. Lists scroll by touch. Artists' letter strip (§4.1) is the one thing drawn at a list's edge, and only while the list scrolls (the user's call, 0.2.0).
 - A tap on a song plays it, with the rest of its album queued after it, and opens Now Playing on it (the user's call, 0.1.1). A tap on an artist or album opens it.
 
 ## 3. Mini player
@@ -73,6 +73,7 @@ On every library screen, under the panel. Shows the cover, title (600, `text.pri
 - Top bar: the PlayStation logo (`PlayStation-Logo-1994.png`, unchanged, 36 × 28 in a 48 dp touch area), then the search field filling the rest. A tap on the field opens Search.
 - **The logo is the menu button.** Its menu holds Settings, Theme (switches at once) and Statistics.
 - Panel "ARTISTS". Each row: a 48 dp thumbnail of the artist's **newest album** (latest release date, using the desktop's release-date rules), the name (16, `text.primary`) and the album count, e.g. "3 albums" (13, `text.muted`). The order follows the desktop (`ArtistOrder`).
+- **Letter strip** (the user's call, 0.2.0; no mockup, sizes in `artists.index.*`): a narrow pill at the list's right edge holding only the letters the library has, in list order. An artist files under the first letter of its sort key ("The Beatles" under B), accents dropped ("Åsa" under A); digits and symbols under "#", other scripts under "•". Hidden at rest; it fades in while the list scrolls and out 1.5 s after. While it shows, a touch or a slide along it jumps the list to that letter's first artist, with a haptic tick at each new letter, and a bubble in the middle of the list shows the letter (the logo menu's surface, the letter 36/600 in `text.heading`). The letters are `text.muted`, the current one `text.primary` at 600. Hidden, it takes no touches. Not shown when the library has fewer than two letters.
 
 ### 4.2 Albums
 

@@ -22,6 +22,7 @@ import com.mpaulrenlund.audiofool.ui.Browse
 import com.mpaulrenlund.audiofool.ui.DebugActions
 import com.mpaulrenlund.audiofool.ui.DebugNumbers
 import com.mpaulrenlund.audiofool.ui.FolderLine
+import com.mpaulrenlund.audiofool.ui.IndexPreview
 import com.mpaulrenlund.audiofool.ui.LocalBarInsets
 import com.mpaulrenlund.audiofool.ui.SearchScreen
 import com.mpaulrenlund.audiofool.ui.SettingsActions
@@ -107,6 +108,9 @@ class ThemeLabTest {
         shoot(device, "artists-first-scan-starting") {
             ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 0))
         }
+        // The letter strip (0.2.0, no mockup): as it shows while the list scrolls, and with a finger on H.
+        shoot(device, "artists-index") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive", indexPreview = IndexPreview()) }
+        shoot(device, "artists-index-pressed") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive", indexPreview = IndexPreview("H")) }
         shoot(device, "artists-sd-card-out") { ArtistsScreen(browse(unavailable = listOf(ThemeLabFixtures.SD_CARD)), actions) }
         shoot(device, "settings-sd-card-out") {
             SettingsScreen(
@@ -216,6 +220,10 @@ class ThemeLabTest {
                 },
                 NowPlayingActions(),
             )
+        }
+        // Every entry the strip can hold, to see 28 letters fit the M21's list.
+        shoot(device, "edge-artists-index-full") {
+            ArtistsScreen(Browse(ThemeLabFixtures.alphabetLibrary, emptyList(), NowPlaying()), actions, indexPreview = IndexPreview("M"))
         }
         shoot(device, "edge-artists-empty") { ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions) }
         shoot(device, "edge-search-empty") { SearchScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, initialQuery = "polygon") }

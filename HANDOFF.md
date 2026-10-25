@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases (the user's first device reports).
+Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and the Artists letter strip (unreleased).
 Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
 and the lists of what to test on each device). The spec is `design/android-spec.md`.
 
@@ -14,6 +14,10 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   feature. Releases so far: v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first
   full release, v0.1.1 to v0.1.5 pre-releases (all fixes, 2026-10-25). Confirm the tag and
   the notes with the user before `gh release create`.
+- **On `main`, not released: the Artists letter strip** (2026-10-25, the user's request; spec
+  4.1, `ui/ArtistIndexStrip.kt`, `core/.../library/ArtistIndex.kt`). Checked in ThemeLab and
+  on the emulator. As a new feature it would be **0.2.0, versionCode 13**; the user may batch
+  more UI fixes into it first. Confirm before releasing.
 - **Nothing is waiting on the user, and nothing is broken that they know of.** Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
   Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
@@ -338,6 +342,9 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **The listening time and scrobbles count the heard position**, not the clock: anything
   that changes how `positionMs()` behaves changes both.
 
+- **ThemeLab pictures of the letter strip** pass `indexPreview` to `ArtistsScreen`: it shows
+  the strip without a scroll and starts no hide timer (a `delay` there would keep the
+  picture from settling). On the emulator the strip's letters sit near x = 1012 px.
 - **An endless frame loop hangs ThemeLab.** Roborazzi waits for the screen to settle; a
   `LaunchedEffect` that asks for every frame (`withFrameMillis` in a loop) never lets it,
   and the test run hangs with no output. Now Playing's seekbar ticks only while playing and

@@ -115,6 +115,14 @@ object ThemeLabFixtures {
 
     val edgeLibrary: MusicLibrary = LibraryScanner.build(edgeTracks)
 
+    /** Every entry the letter strip can hold (0.2.0): "#", A to Z and "•", two artists each. */
+    val alphabetLibrary: MusicLibrary = LibraryScanner.build(buildList {
+        val names = listOf("2 Player Mode", "8-Bit Choir") +
+            ('A'..'Z').flatMap { listOf("${it}x Ensemble", "${it}y Quartet") } +
+            listOf("Кино", "坂本龍一")
+        names.forEachIndexed { i, name -> addAll(filler(INTERNAL, name, "Album $i", 2000 + i % 20, 2)) }
+    })
+
     /** The long-named song, playing. */
     val longPlaying: Track = edgeTracks.first()
 
