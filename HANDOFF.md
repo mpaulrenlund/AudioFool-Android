@@ -6,7 +6,8 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.1** (versionCode 7) fixes the first reports: a song tap opens Now Playing; the end-of-song glitch and gap; no 24-bit
+- **0.1.1** (versionCode 7) is released as a pre-release (2026-10-25,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.1>, `dist/AudioFool-0.1.1.apk`). It fixes the first reports: a song tap opens Now Playing; the end-of-song glitch and gap; no 24-bit
   packed output (the M21 turned it into static: shared now sends 24-bit as float, the M21's
   way as 32-bit); the headphone route on the M21 (BP was greyed); an **Outputs** row in
   Statistics > Playback. **Waiting on:** the M21 saying 24-bit is clean and BP turns on (else

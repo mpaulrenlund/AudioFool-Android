@@ -270,6 +270,10 @@ Session 1:
 
 ### 0.1.1 (fixes from the first reports)
 
+Released 2026-10-25 as pre-release
+[`v0.1.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.1)
+("AudioFool 0.1.1", versionCode 7). Installs over 0.1.0 (same key).
+
 User's report on 0.1.0 (2026-10-25): playback through the USB DAC works with BP on and off,
 but the readout kept saying "resampled" with BP on.
 
@@ -422,7 +426,8 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.1.1 (fixes from the first reports). User's report on 0.1.0 (2026-10-25): through the
+0.1.1 (fixes from the first reports), released as pre-release
+[`v0.1.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.1). User's report on 0.1.0 (2026-10-25): through the
 4.4 mm out, 24-bit songs were loud static with the music barely audible (16-bit and MP3
 fine); BP couldn't be turned on.
 
