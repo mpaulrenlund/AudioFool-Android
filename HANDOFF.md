@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and the Artists letter strip (unreleased).
+Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and two unreleased UI changes (the Artists letter strip, swipe to skip).
 Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
 and the lists of what to test on each device). The spec is `design/android-spec.md`.
 
@@ -14,9 +14,10 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   feature. Releases so far: v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first
   full release, v0.1.1 to v0.1.5 pre-releases (all fixes, 2026-10-25). Confirm the tag and
   the notes with the user before `gh release create`.
-- **On `main`, not released: the Artists letter strip** (2026-10-25, the user's request; spec
-  4.1, `ui/ArtistIndexStrip.kt`, `core/.../library/ArtistIndex.kt`). Checked in ThemeLab and
-  on the emulator. As a new feature it would be **0.2.0, versionCode 13**; the user may batch
+- **On `main`, not released, the user's UI requests (2026-10-25):** the Artists letter strip
+  (spec 4.1, `ui/ArtistIndexStrip.kt`, `core/.../library/ArtistIndex.kt`), and Now Playing
+  swiped sideways to skip, with swipe-down gone (spec 5, `SwipeToSkip` in
+  `NowPlayingScreen.kt`). Both checked in ThemeLab and on the emulator. As a new feature it would be **0.2.0, versionCode 13**; the user may batch
   more UI fixes into it first. Confirm before releasing.
 - **Nothing is waiting on the user, and nothing is broken that they know of.** Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now

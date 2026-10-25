@@ -59,7 +59,6 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             cycleRepeat = player::cycleRepeat,
             toggleShuffle = player::toggleShuffle,
             toggleBitPerfect = player::toggleBitPerfect,
-            close = nav::back,
         )
     }
     val lastFmActions = remember {

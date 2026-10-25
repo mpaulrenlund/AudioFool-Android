@@ -112,7 +112,7 @@ As built (session 5, approved from screenshots): LIBRARY holds Tracks, Albums an
 
 ## 5. Now Playing
 
-Opens from the mini player, and when a song is tapped (in a list or in Search). It has **no buttons at the top**: system back or a swipe down closes it, back to the screen underneath. From top to bottom:
+Opens from the mini player, and when a song is tapped (in a list or in Search). It has **no buttons at the top**: system back closes it, back to the screen underneath. There is no swipe down (the user's call, 0.2.0). **Swiping the art or the title block sideways skips**: left is Next, right is Previous (the button's rule: more than 3 s in, it restarts the song). They follow the finger and fade; let go past `nowPlaying.swipeSkipDistance`, or flick faster than `swipeSkipVelocity`, and the song changes; either way they spring back. The seekbar keeps its own sideways drag. From top to bottom:
 
 1. **Art**, square, `nowPlaying.paddingX` from each side, `nowPlaying.artTop` below the status bar. Its side is the smaller of (screen width − 40) and (screen height − `artHeightReserve`), so on the M21 it shrinks to leave the controls room. Border 1 dp `art.border`, `shadow.headerArt`.
 2. **Title** (22/600, `text.heading`), **artist** (16/600, `accent.blue`) and **album** (15, `text.secondary`), left-aligned. The **track count "3 / 10"** (15, `text.muted`) sits right of the title, aligned to its top. There's no Like button.

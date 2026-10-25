@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -64,6 +65,7 @@ import com.mpaulrenlund.audiofool.theme.tokenSurface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /** What Now Playing can ask for. */
@@ -76,13 +78,12 @@ class NowPlayingActions(
     val toggleShuffle: () -> Unit = {},
     /** The BP button (spec 6.4); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
-    /** A swipe down: back to the screen underneath (spec 5). */
-    val close: () -> Unit = {},
 )
 
 /**
  * Now Playing (spec 5), opened from the mini player. No buttons at the top:
- * system back or a swipe down closes it. From the top: the art, the title block
+ * system back closes it. A sideways swipe on the art or the title block skips:
+ * left for Next, right for Previous. From the top: the art, the title block
  * with the track count, the quality lines, the waveform seekbar with the times,
  * the controls row (Repeat / Shuffle / BP on the left, the transport on the
  * right for a right thumb) and the output readout.
@@ -91,24 +92,12 @@ class NowPlayingActions(
 fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
     val t = LocalAppTheme.current
     val track = nowPlaying.track
-    val scope = rememberCoroutineScope()
-    val drag = remember { Animatable(0f) }
-    val closeAtPx = with(LocalDensity.current) { t.dp("nowPlaying.swipeCloseDistance").toPx() }
 
     WindowBackground(t, Modifier.fillMaxSize()) {
         BoxWithConstraints(
             Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical))
-                // A swipe down closes it; the screen follows the finger.
-                .draggable(
-                    rememberDraggableState { delta -> scope.launch { drag.snapTo(maxOf(0f, drag.value + delta)) } },
-                    Orientation.Vertical,
-                    onDragStopped = {
-                        if (drag.value > closeAtPx) actions.close() else drag.animateTo(0f)
-                    },
-                )
-                .graphicsLayer { translationY = drag.value },
+                .windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical)),
         ) {
             val screenHeight = maxHeight + barHeights()
             val padX = t.dp("nowPlaying.paddingX")
@@ -119,10 +108,12 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             val art = minOf(maxWidth - padX * 2, screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth)
 
             Column(Modifier.fillMaxSize()) {
-                Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
-                    BigArt(track, art)
+                SwipeToSkip(art, actions) {
+                    Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
+                        BigArt(track, art)
+                    }
+                    TitleBlock(nowPlaying, track)
                 }
-                TitleBlock(nowPlaying, track)
                 Spacer(Modifier.weight(t.number("nowPlaying.spaceAboveQualityWeight").toFloat()))
                 Column(Modifier.padding(horizontal = padX)) {
                     track?.let { Quality(it) }
@@ -138,6 +129,46 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             }
         }
     }
+}
+
+/**
+ * The art and title block, swiped sideways to skip (the user's call, 0.2.0): left
+ * is Next, right is Previous (the button's rule, so more than 3 s in it restarts
+ * the song). They follow the finger, fading toward `swipeFadeTo` over the art's
+ * width; past `swipeSkipDistance`, or flung faster than `swipeSkipVelocity`, the
+ * song changes, and either way they spring back. The seekbar keeps its own drag.
+ */
+@Composable
+private fun SwipeToSkip(art: Dp, actions: NowPlayingActions, content: @Composable ColumnScope.() -> Unit) {
+    val t = LocalAppTheme.current
+    val scope = rememberCoroutineScope()
+    val drag = remember { Animatable(0f) }
+    val density = LocalDensity.current
+    val skipAtPx = with(density) { t.dp("nowPlaying.swipeSkipDistance").toPx() }
+    val flingPx = with(density) { t.dp("nowPlaying.swipeSkipVelocity").toPx() }
+    val artPx = with(density) { art.toPx() }
+    val fadeTo = t.number("nowPlaying.swipeFadeTo").toFloat()
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .draggable(
+                rememberDraggableState { delta -> scope.launch { drag.snapTo(drag.value + delta) } },
+                Orientation.Horizontal,
+                onDragStopped = { velocity ->
+                    // A fling counts only away from the middle, not one flicked back.
+                    when {
+                        drag.value < -skipAtPx || (velocity < -flingPx && drag.value < 0) -> actions.next()
+                        drag.value > skipAtPx || (velocity > flingPx && drag.value > 0) -> actions.previous()
+                    }
+                    drag.animateTo(0f)
+                },
+            )
+            .graphicsLayer {
+                translationX = drag.value
+                alpha = 1f - (1f - fadeTo) * (abs(drag.value) / artPx).coerceAtMost(1f)
+            },
+        content = content,
+    )
 }
 
 /** The status and navigation bars' heights: the spec's sizes are fractions of the whole screen. */

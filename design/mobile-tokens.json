@@ -264,6 +264,9 @@
     "playIconOfButton": 0.44,
     "outputSize": 13,
     "outputBottom": 6,
-    "swipeCloseDistance": 96
+    "$swipeNote": "Swipe the art or the title block sideways (0.2.0, the user's call, replacing swipe-down to close): left is Next, right is Previous. Both follow the finger and fade toward swipeFadeTo over the art's width; let go past swipeSkipDistance, or flung faster than swipeSkipVelocity (dp/s), and the song changes; otherwise they spring back.",
+    "swipeSkipDistance": 96,
+    "swipeSkipVelocity": 1200,
+    "swipeFadeTo": 0.35
   }
 }

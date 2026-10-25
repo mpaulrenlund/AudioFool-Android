@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.0**: the Artists letter strip — built and checked on the emulator 2026-10-25, not released
+- [ ] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down) — built and checked on the emulator 2026-10-25, not released
 
 ## Decisions made in the design
 
@@ -53,6 +53,18 @@ The user made these while the mockups were designed (October 2026). The spec alr
   hidden at rest, shown while scrolling, gone after; a slide from A to S shows the bubble
   and jumps; a tap on A from the end goes back to the top; a tap on a row's right end
   with the strip hidden opens the artist.
+- **Now Playing: no swipe down; swipe sideways to skip** (the user asked). Swipe down to
+  close (session 3) is gone, with its token and the `close` action: system back closes it.
+  The user's calls: left is Next, right is Previous, following the Previous button's
+  3-second rule; only the art and the title block take the swipe (clear of the seekbar's
+  own drag); they follow the finger and fade, then spring back. Mine: the song changes
+  past 96 dp, or on a flick faster than 1,200 dp/s away from the middle; they fade to 0.35
+  over the art's width (`nowPlaying.swipe*`). Spec 5 updated.
+- **Checked on the emulator** (Gapless Live, repeat off): a swipe down does nothing; a short
+  slow swipe springs back; right restarted a song 7 s in, then went back to 2 / 3; left went
+  to 3 / 3; a quick 150 px flick skipped; a drag along the seekbar seeks (0:00 → 0:07)
+  without skipping; mid-swipe the art and title slide and fade. ThemeLab pictures
+  unchanged (nothing differs at rest).
 
 0.1.5 (2026-10-25), found with the M21 on this PC over adb (the user connected it):
 
@@ -369,6 +381,9 @@ Session 1:
   the list stops. Slide a thumb down it: the bubble follows, the list jumps letter by letter,
   with a light tick each time. "The …" artists sit under their second word's letter. Is it
   easy to hit with a thumb, and does the tick feel right?
+- [ ] **Swipe to skip on Now Playing.** Swipe the cover left: next song; right: back a song
+  (or the start of this one if more than 3 s in). A swipe down does nothing; back closes it.
+  Does the distance feel right, and does a quick flick work?
 
 ### 0.1.1 (fixes from the first reports)
 
@@ -680,10 +695,14 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 
 ## Session notes
 
-### 0.2.0 — the Artists letter strip (2026-10-25)
+### 0.2.0 — the Artists letter strip, and swipe to skip (2026-10-25)
 
 **Changed:** `core/.../library/ArtistIndex.kt` (+ tests), `ui/ArtistIndexStrip.kt`, Artists wired
 to it in `LibraryScreens.kt`, `artists.index` tokens, three ThemeLab pictures, spec 2 and 4.1.
+Then Now Playing's `SwipeToSkip` (art and title block) in place of swipe-down, the
+`nowPlaying.swipe*` tokens, spec 5. Driven on the emulator with `input swipe` (a 150 px
+flick needs about 20 ms to pass the fling speed) and `input motionevent` for mid-swipe
+screenshots.
 
 **Verified:** `:core:test`, `:app:testDebugUnitTest`, `recordRoborazziDebug` (only the new
 pictures changed), the release build on the emulator (versionCode 12 still; bump before
