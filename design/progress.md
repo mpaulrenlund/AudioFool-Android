@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — built and checked on the emulator 2026-10-25, not released
+- [x] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — 2026-10-25, released as a pre-release (the stuck art still to confirm on the S24)
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
 ## Decisions made in the design
@@ -36,7 +36,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.2.1, not released yet (2026-10-25), from the user's report on 0.2.0 (S24):
+0.2.1 (2026-10-25), released as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1) ("AudioFool 0.2.1", versionCode 14), from the user's report on 0.2.0 (S24):
 
 - **The letter strip is always shown** (the user's call: "that would work better"), so the
   rows end short of it: `artists.index.width` + 2 × `marginEnd` (32 dp) from the list's edge
@@ -404,7 +404,10 @@ Session 1:
 
 ## To test on the S24
 
-### 0.2.1 (not released yet)
+### 0.2.1 (the strip always shown, the stuck art)
+
+Released 2026-10-25 as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1)
+("AudioFool 0.2.1", versionCode 14). Installs over 0.2.0 (same key).
 
 - [ ] **Swipe to skip, again.** Swipe the cover left and right several times: each skip, the
   new song's cover is in the middle at once, never stuck to the side. A short swipe slides

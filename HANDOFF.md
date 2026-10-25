@@ -1,32 +1,29 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and 0.2.0 (the Artists letter strip, swipe to skip, the gliding seekbar).
+Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases, 0.2.0 (the Artists letter strip, swipe to skip, the gliding seekbar) and 0.2.1.
 Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
 and the lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
-  sections (0.2.0 down to 0.1.1 at the top, then session 5) and the newest session notes.
-- **Latest: 0.2.0** (versionCode 13), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0>,
-  `dist/AudioFool-0.2.0.apk`: the user's UI requests of 2026-10-25, the Artists letter
-  strip (spec 4.1, `ui/ArtistIndexStrip.kt`, `core/.../library/ArtistIndex.kt`), Now
-  Playing swiped sideways to skip with swipe-down gone (spec 5, `SwipeToSkip` in
-  `NowPlayingScreen.kt`), and the seekbar's played part split at the exact place so it
-  glides. Checked in ThemeLab and on the emulator; not yet on a phone. Next: **0.2.1,
-  versionCode 14** for fixes; 0.3.0 for a new feature. Releases so far: v0.0.1 to v0.0.4
-  pre-releases, v0.0.5 skipped, v0.1.0 the first full release, v0.1.1 to v0.1.5 and v0.2.0
-  pre-releases (2026-10-25). Confirm the tag and the notes with the user before
+  sections (0.2.1 down to 0.1.1 at the top, then session 5) and the newest session notes.
+- **Latest: 0.2.1** (versionCode 14), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1>,
+  `dist/AudioFool-0.2.1.apk`, from the user's 0.2.0 report: the Artists letter strip always
+  shown (rows end short of it), and swipe to skip reworked because 0.2.0 left the art stuck
+  off the screen after every skip on the S24. That bug was never reproduced here (emulator,
+  or `SwipeToSkipTest`); the rework takes the animation out of a skip, so the S24 must
+  confirm it. 0.2.0 (versionCode 13) brought the strip (spec 4.1, `ui/ArtistIndexStrip.kt`,
+  `core/.../library/ArtistIndex.kt`), swipe to skip in place of swipe-down (spec 5,
+  `SwipeToSkip` in `NowPlayingScreen.kt`) and the gliding seekbar. Next: **0.2.2,
+  versionCode 15** for fixes; 0.3.0 for a new feature. Releases so far: v0.0.1 to v0.0.4
+  pre-releases, v0.0.5 skipped, v0.1.0 the first full release, v0.1.1 to v0.1.5, v0.2.0 and
+  v0.2.1 pre-releases (2026-10-25). Confirm the tag and the notes with the user before
   `gh release create`.
-- **On `main`, not released: 0.2.1** (versionCode 14), from the user's 0.2.0 report: the letter
-  strip always shown (rows end short of it), and swipe to skip reworked because it left the
-  art stuck off the screen after every skip on the S24. That bug was never reproduced here
-  (emulator, or `SwipeToSkipTest`); the rework removes the animation from the skip, so the
-  S24 must confirm it. Confirm the tag and notes before releasing.
 - **Waiting on the user:** 0.2.1 on the S24 (the stuck art), then the rest of the 0.2.0 items
   on both lists in `design/progress.md`.
-- **Nothing is broken that the user knows of.** Confirmed on
+- **Nothing else is broken that the user knows of** (the stuck art is fixed in 0.2.1, unconfirmed). Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
   Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
   the readout by FiiO's rate, no click at a restart or a tap, unplug pauses on both jacks.
