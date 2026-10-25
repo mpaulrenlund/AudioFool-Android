@@ -29,8 +29,8 @@ device). The spec is `design/android-spec.md`.
 - **Device reports still open** (don't block on them): the v0.0.2 and v0.0.4 items on both
   lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
   cold start (v0.0.1), and the M21's first scan (v0.0.3).
-- **Releases:** `v0.0.1` to `v0.0.3` are out, and session 3's `0.0.4` (versionCode 4) if
-  the user approved it (see *Where things stand*). The next is `0.0.5`, versionCode 5.
+- **Releases:** `v0.0.1` to `v0.0.4` are out (`v0.0.4`, "Playback (session 3 test build)",
+  versionCode 4, 2026-10-24). The next is `0.0.5`, versionCode 5.
   Confirm the tag and notes with the user before `gh release create`.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
   albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and a copy of the

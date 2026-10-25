@@ -143,8 +143,9 @@ Session 1:
 
 ### v0.0.4 (session 3: playback)
 
-Not released yet: waiting for the user's go-ahead on the tag and notes. Installs over
-v0.0.3 (same key). Report from logo > **Statistics** > **Playback**.
+Released 2026-10-24 as pre-release
+[`v0.0.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.0.4)
+("Playback (session 3 test build)"). Installs over v0.0.3 (same key). Report from logo > **Statistics** > **Playback**.
 
 - [ ] **Formats.** Play a song of each kind you have: FLAC 16/44 and 24/96 (or 24/192),
   MP3, AAC, ALAC, Opus, DSD. Each plays; Playback > Opened shows, per song, what it asked
