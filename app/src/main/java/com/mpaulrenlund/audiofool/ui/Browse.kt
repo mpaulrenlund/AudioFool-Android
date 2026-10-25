@@ -64,7 +64,7 @@ class AppActions(
     val open: (Route) -> Unit = {},
     val back: () -> Unit = {},
     val toggleTheme: () -> Unit = {},
-    /** A tap on a song (spec 2). */
+    /** A tap on a song (spec 2): it plays, and Now Playing opens. */
     val play: (Track) -> Unit = {},
     val playPause: () -> Unit = {},
     val previous: () -> Unit = {},

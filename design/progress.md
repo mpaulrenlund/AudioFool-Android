@@ -9,6 +9,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **3. Playback** (§3, §5, §6.1, §6.3) — 2026-10-24
 - [x] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6) — 2026-10-24
 - [x] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7) — 2026-10-24, released as v0.1.0
+- [x] **0.1.1 fixes** from the first device reports — 2026-10-25
 
 ## Decisions made in the design
 
@@ -28,6 +29,26 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.1.1 (2026-10-25), from the user's first device reports:
+
+- **A tap on a song opens Now Playing** (the user's call): from an album and from Search.
+  Back returns to the list it came from. Spec §2 and §5 updated.
+- **No 24-bit packed `AudioTrack`s.** On the M21 (Android 13, 4.4 mm out, BP off) every
+  24-bit song came out as loud static with the music barely audible, while 16-bit and MP3
+  (float) played fine. The shared output now sends 24-bit tracks as float (Android mixes in
+  float, and float holds 24-bit samples exactly, so nothing is lost); the M21's way
+  (`SourceRate`) sends 16-bit as 16-bit and anything wider as 32-bit. USB mixer entries keep
+  their own format. Spec §6.2 updated. Not yet heard on the M21.
+- **The headphone route:** the M21's BP couldn't be turned on, so the route wasn't seen as
+  Headphones. Now, if Android names the speaker (or nothing) for media while wired
+  headphones are listed, the headphones are the route; and the route is looked at again a
+  second after a device comes or goes. Statistics > Playback gains an **Outputs** row (every
+  output Android lists) so the M21's report shows what its 4.4 mm out is called.
+- **The S24's readout said "resampled" with BP on.** No readout bug found on the emulator
+  (the readout follows each reopen); "resampled" with BP on means the USB mixer wasn't set
+  (no entry at the track's rate, refused, or the track not accepted). Mixer set now says
+  "track not accepted" for the last case. Waiting on the S24's Statistics > Playback.
 
 Session 5 (2026-10-24):
 
@@ -240,6 +261,17 @@ Session 1:
 
 ## To test on the S24
 
+### 0.1.1 (fixes from the first reports)
+
+User's report on 0.1.0 (2026-10-25): playback through the USB DAC works with BP on and off,
+but the readout kept saying "resampled" with BP on.
+
+- [ ] **The readout with BP on.** Through the DAC, play a 16/44 and a 24/96 FLAC with BP on, and
+  send a photo of logo > Statistics > Playback for each (Output, Route, Bit-Perfect, Opened
+  as, USB mixers, Mixer set). That says whether the S24 offers the DAC a mixer at those
+  rates and what happened when it was asked.
+- [ ] **Tapping a song opens Now Playing**, from an album and from Search; back returns to the list.
+
 ### 0.1.0 (session 5: Last.fm, Statistics, edge cases)
 
 Released 2026-10-24 as
@@ -381,6 +413,17 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+0.1.1 (fixes from the first reports). User's report on 0.1.0 (2026-10-25): through the
+4.4 mm out, 24-bit songs were loud static with the music barely audible (16-bit and MP3
+fine); BP couldn't be turned on.
+
+- [ ] **24-bit songs play cleanly** through the 4.4 mm out with BP off (a 24/96 and a 24/44.1
+  FLAC), and through the 3.5 mm out.
+- [ ] **BP can be turned on** with headphones in. If it still can't, send a photo of Statistics >
+  Playback: **Route** and **Outputs** say what the M21 calls its headphone outs.
+- [ ] **With BP on**, the same 24-bit songs: clean? Report Output, Opened as and System output.
+- [ ] **Tapping a song opens Now Playing.**
+
 0.1.0 (session 5), with the full library on the SD card:
 
 - [ ] **Pull the SD card while a song on it plays.** It stops and shows paused (it used to be
@@ -445,6 +488,25 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.1.1 — fixes from the first device reports (2026-10-25)
+
+**Reported** (0.1.0): S24 + USB DAC plays with BP on and off, but the readout stayed
+"resampled" with BP on; the user wants a song tap to open Now Playing; the M21's 4.4 mm out
+turned 24-bit songs into static, with BP greyed.
+
+**Changed:** `AppRoot` opens Now Playing after a song tap; `OutputStage` never opens a 24-bit
+packed output (shared: float; the M21's way: 32-bit); `OutputRoutes` takes wired headphones
+over a speaker Android still names, looks again a second after a device change, lists every
+output (Statistics' new Outputs row) and notes a mixer entry whose track wasn't accepted.
+
+**Verified:** `:core:test`, `:app:testDebugUnitTest`, `verifyRoborazziDebug` (no picture
+changed) and the release build. Emulator: a song tapped in Search and in an album opens Now
+Playing (keyboard closed; back returns to the list); a 24/96 FLAC opens "96 kHz / 24-bit →
+output 96 kHz / 32-bit float" on the speaker, and with the pretend Headphones route and BP on
+"→ 96 kHz / 32-bit (SourceRate)"; the emulator's outputs are its speaker and a telephony
+out, so its route stays Speaker. **Not checked here:** whether float and 32-bit play cleanly
+on the M21, its route, and the S24's mixer (the device lists above).
 
 ### Session 5 — Last.fm, Statistics, polish and release (2026-10-24)
 

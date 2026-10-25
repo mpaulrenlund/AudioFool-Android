@@ -280,6 +280,7 @@ class Player(
         val asked = if (engineMade) engine.askedFormat else null
         return listOf(
             "Route" to "${routes.route.label} · ${routes.deviceSummary()}",
+            "Outputs" to routes.outputsSummary(),
             "Bit-Perfect" to "${if (routes.bitPerfectOn) "on" else "off"} · way here: ${routes.way.name}" +
                 if (routes.greyed) " (greyed)" else "",
             "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),

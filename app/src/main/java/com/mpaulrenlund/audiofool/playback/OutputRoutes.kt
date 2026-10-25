@@ -85,9 +85,18 @@ class OutputRoutes(context: Context) {
     val greyed: Boolean get() = way == BitPerfectWay.None
 
     private val callback = object : AudioDeviceCallback() {
-        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) = refresh()
-        override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) = refresh()
+        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) = devicesChanged()
+        override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) = devicesChanged()
     }
+
+    /** Android may move media to a new device a moment after saying it came: look now, and again shortly. */
+    private fun devicesChanged() {
+        refresh()
+        main.removeCallbacks(refreshAgain)
+        main.postDelayed(refreshAgain, SETTLE_MS)
+    }
+
+    private val refreshAgain = Runnable { refresh() }
 
     fun start() {
         audioManager.registerAudioDeviceCallback(callback, main)
@@ -96,8 +105,15 @@ class OutputRoutes(context: Context) {
 
     /** Works out the route again (devices came or went, or an `AudioTrack` was rerouted). Main thread. */
     fun refresh() {
-        val now = audioManager.getAudioDevicesForAttributes(MEDIA).firstOrNull { it.isSink }
-            ?: audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+        val outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        val said = audioManager.getAudioDevicesForAttributes(MEDIA).firstOrNull { it.isSink }
+        // Media always leaves the speaker for headphones plugged in; if Android
+        // still names the speaker (or nothing), the headphones it is. (Not line
+        // outs: some phones list one that is always there.)
+        val now = said?.takeUnless { routeOf(it.type) == OutputRoute.Speaker }
+            ?: outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_WIRED_HEADSET || it.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES }
+            ?: said
+            ?: outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
         val pretending = pretend
         val newRoute = pretending ?: now?.let { routeOf(it.type) } ?: OutputRoute.Speaker
         val changed = newRoute != route || now?.id != device?.id
@@ -188,6 +204,12 @@ class OutputRoutes(context: Context) {
         return OutputPlan.Mixer(attributes.format, entry.bitPerfect)
     }
 
+    /** The `AudioTrack` wouldn't open in the entry [prepare] set: back to shared, and the debug screen says so. */
+    fun mixerTrackFailed() {
+        lastMixerNote = "track not accepted (${lastMixerNote}): shared"
+        clearMixer()
+    }
+
     /** Back to the normal mixer on the USB device (Bit-Perfect off, nothing playing, another route). */
     fun clearMixer() {
         if (mixerSet == null) return
@@ -216,6 +238,10 @@ class OutputRoutes(context: Context) {
 
     /** The rate the system's media output runs at now (what the M21's check compares with the track's). */
     fun systemOutputRate(): Int = runCatching { AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC) }.getOrDefault(0)
+
+    /** Every output Android lists now, for the debug screen: which one the route was taken from. */
+    fun outputsSummary(): String =
+        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).joinToString(", ") { "${typeName(it.type)} \"${it.productName}\"" }.ifEmpty { "none" }
 
     /** The USB device's mixer entries, grouped, for the debug screen. */
     fun mixerSummary(): String = if (route != OutputRoute.Usb) "–" else if (!MIXER_API) "Android 13: no mixer API" else MixerChoice.summary(usbMixers.entries)
@@ -295,6 +321,9 @@ class OutputRoutes(context: Context) {
     companion object {
         /** `setPreferredMixerAttributes` and the bit-perfect mixer: Android 14 and later (the S24; not the M21). */
         val MIXER_API: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
+        /** How long after a device comes or goes the route is looked at again. */
+        private const val SETTLE_MS = 1_000L
 
         /** Media: the only usage mixer attributes apply to, and what every `AudioTrack` here plays as. */
         val MEDIA: AudioAttributes = AudioAttributes.Builder()

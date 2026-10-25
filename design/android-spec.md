@@ -60,7 +60,7 @@ The striped squares in the mockups stand for album art. Where an album has no ar
 - **Round buttons**: `color.control.face`, 1 dp `color.control.faceBorder`, `shadow.controlButton`. Play/Pause uses `shadow.playButton`, plus a 1 dp `color.control.playRing` ring and `shadow.playGlow` (both invisible in Light), with the icon in `accent.playback`.
 - Album titles wrap to two lines, then "…". Everything else is one line with "…".
 - No visible scrollbars. Lists scroll by touch.
-- A tap on a song plays it, with the rest of its album queued after it. A tap on an artist or album opens it.
+- A tap on a song plays it, with the rest of its album queued after it, and opens Now Playing on it (the user's call, 0.1.1). A tap on an artist or album opens it.
 
 ## 3. Mini player
 
@@ -111,7 +111,7 @@ As built (session 5, approved from screenshots): LIBRARY holds Tracks, Albums an
 
 ## 5. Now Playing
 
-Opens from the mini player. It has **no buttons at the top**: system back or a swipe down closes it, back to the screen underneath. From top to bottom:
+Opens from the mini player, and when a song is tapped (in a list or in Search). It has **no buttons at the top**: system back or a swipe down closes it, back to the screen underneath. From top to bottom:
 
 1. **Art**, square, `nowPlaying.paddingX` from each side, `nowPlaying.artTop` below the status bar. Its side is the smaller of (screen width − 40) and (screen height − `artHeightReserve`), so on the M21 it shrinks to leave the controls room. Border 1 dp `art.border`, `shadow.headerArt`.
 2. **Title** (22/600, `text.heading`), **artist** (16/600, `accent.blue`) and **album** (15, `text.secondary`), left-aligned. The **track count "3 / 10"** (15, `text.muted`) sits right of the title, aligned to its top. There's no Like button.
@@ -143,7 +143,7 @@ Repeat: off `control.iconOff`; on `control.repeatOn`; repeat-one adds the deskto
 | M21 headphone out (and a USB DAC on the M21, which has no mixer API on Android 13) | On: the app opens the output at the track's own rate, in whole-number samples, at full volume, and leaves the rest to FiiO's system SRC bypass. An app can't read the hardware's rate, so the readout says "bit-perfect" only when the system's media output (`AudioTrack.getNativeOutputSampleRate`) is seen running at the track's rate, and "resampled" otherwise. |
 | Bluetooth, phone speaker | Not possible. BP is greyed out (`disabledOpacity`) and can't be tapped. |
 
-The setting is saved. Off means the normal shared output. Turning it on or off, or a change of route (a DAC plugged in, Bluetooth connecting), reopens the output where the song was heard. On a bit-perfect path the app never turns the volume down: a prompt that would duck the music pauses it instead.
+The shared output never takes 24-bit packed samples: a 24-bit track goes to Android's mixer as float, which holds it exactly (24-bit packed came out as static on the M21, 0.1.1), and the M21's way sends anything wider than 16-bit as 32-bit. The setting is saved. Off means the normal shared output. Turning it on or off, or a change of route (a DAC plugged in, Bluetooth connecting), reopens the output where the song was heard. On a bit-perfect path the app never turns the volume down: a prompt that would duck the music pauses it instead.
 
 ### 6.3 Output readout
 

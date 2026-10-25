@@ -258,8 +258,8 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
      *
      * How is [routes]' call ([OutputPlan]): a USB mixer entry it has set, in
      * exactly its format; the track's rate in whole-number samples (the M21);
-     * or shared, trying the track's own encoding, then float, then 16-bit. A
-     * bit-perfect way that won't open falls back to shared.
+     * or shared, trying the track's own encoding (24-bit goes as float), then
+     * float, then 16-bit. A bit-perfect way that won't open falls back to shared.
      */
     private fun openOutput(format: PcmFormat, track: Track, reuse: Boolean): Boolean {
         val open = output
@@ -278,14 +278,15 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
                 val f = plan.format
                 val opened = PcmFormat(f.sampleRate, f.channelCount, f.encoding, format.dop)
                 if (use(build(opened, exact = f), opened, format, if (plan.bitPerfect) OutputPath.BitPerfect else OutputPath.RateMatched, track)) return true
-                routes.clearMixer()
+                routes.mixerTrackFailed()
             }
             OutputPlan.SourceRate -> {
-                // Whole-number samples only: a float decoder's go out as 32-bit, then 24-bit.
-                val encodings = if (format.encoding == AudioFormat.ENCODING_PCM_FLOAT) {
-                    listOf(AudioFormat.ENCODING_PCM_32BIT, AudioFormat.ENCODING_PCM_24BIT_PACKED)
+                // Whole-number samples only: 16-bit as 16-bit, anything wider as 32-bit.
+                // Never 24-bit packed: the M21 turns it into static (0.1.1).
+                val encodings = if (format.encoding == AudioFormat.ENCODING_PCM_16BIT) {
+                    listOf(AudioFormat.ENCODING_PCM_16BIT, AudioFormat.ENCODING_PCM_32BIT)
                 } else {
-                    listOf(format.encoding, AudioFormat.ENCODING_PCM_32BIT, AudioFormat.ENCODING_PCM_24BIT_PACKED).distinct()
+                    listOf(AudioFormat.ENCODING_PCM_32BIT)
                 }
                 for (encoding in encodings) {
                     val f = format.withEncoding(encoding)
@@ -294,7 +295,11 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
             }
             OutputPlan.Shared -> Unit
         }
-        val encodings = listOf(format.encoding, AudioFormat.ENCODING_PCM_FLOAT, AudioFormat.ENCODING_PCM_16BIT).distinct()
+        // Shared: Android mixes in float, so a 24-bit track goes as float, which holds
+        // its samples exactly. A 24-bit packed track came out as static on the M21
+        // (Android 13, 0.1.1), though the emulator played it.
+        val encodings = listOf(format.encoding, AudioFormat.ENCODING_PCM_FLOAT, AudioFormat.ENCODING_PCM_16BIT)
+            .filter { it != AudioFormat.ENCODING_PCM_24BIT_PACKED }.distinct()
         for (encoding in encodings) {
             val f = format.withEncoding(encoding)
             if (use(build(f), f, format, OutputPath.Shared, track)) return true

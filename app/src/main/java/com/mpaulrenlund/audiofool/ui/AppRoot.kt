@@ -37,10 +37,12 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             open = nav::open,
             back = nav::back,
             toggleTheme = { app.settings.setDarkTheme(!app.settings.darkTheme.value) },
-            // Spec 2: a tap on a song plays it, with the rest of its album after it.
+            // Spec 2: a tap on a song plays it, with the rest of its album after it,
+            // and opens Now Playing on it (the user's call, 0.1.1).
             play = { track ->
                 val album = app.library.state.value.library?.albumHolding(track.filePath)
                 player.playFromAlbum(track, album?.tracks ?: listOf(track))
+                if (app.nowPlaying.track?.filePath == track.filePath) nav.open(Route.NowPlaying)
             },
             playPause = player::playPause,
             previous = player::previous,
