@@ -6,11 +6,11 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.5** (versionCode 11, built, installed on the M21 over adb, **not released**): unplug
-  pauses on the M21. Its "becoming noisy" comes from FiiO's status bar (an app uid), so the
-  receiver must be exported. FiiO's `SAMPLE_RATE_CHANGED` carries the rate its DAC runs at
-  (`rate=44100` while a 44.1 kHz song played): a candidate for the M21's readout, the user's
-  call. **The M21 can be connected to this PC** when the user plugs it in: pick it with
+- **0.1.5** (versionCode 12; installed on the M21 over adb and checked there): unplug
+  pauses on the M21, and its readout goes by FiiO's reported DAC rate ("Headphones · 96 kHz
+  / 32-bit (bit-perfect)" seen on the M21). Its "becoming noisy" comes from FiiO's status bar (an app uid), so the
+  receiver must be exported. FiiO's `SAMPLE_RATE_CHANGED` carries the rate its DAC runs at;
+  `OutputReadout.hardwareRate` uses it. Next fix: 0.1.6, versionCode 13. **The M21 can be connected to this PC** when the user plugs it in: pick it with
   `adb -t <transport_id>` (its serial shows as "?").
 - **0.1.4** (versionCode 10) is released as a pre-release (2026-10-25,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4>, `dist/AudioFool-0.1.4.apk`). The click on the M21 at a restart or a tapped song: the

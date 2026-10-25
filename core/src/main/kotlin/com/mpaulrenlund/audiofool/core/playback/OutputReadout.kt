@@ -62,6 +62,16 @@ object OutputReadout {
         }
     }
 
+    /**
+     * The rate the M21's readout goes by (0.1.5, the user's call): the rate FiiO
+     * itself reports its DAC running at (`fiio.intent.action.SAMPLE_RATE_CHANGED`'s
+     * `rate`), once it has reported one for the output open now; until then, the
+     * system output's (`AudioTrack.getNativeOutputSampleRate`), as before.
+     *
+     * @param reportedRate FiiO's rate, or 0 when it hasn't reported one.
+     */
+    fun hardwareRate(systemRate: Int, reportedRate: Int): Int = if (reportedRate > 0) reportedRate else systemRate
+
     /** "44.1 kHz", "96 kHz". */
     fun rate(hz: Int): String = Display.sampleRate(hz)
 }

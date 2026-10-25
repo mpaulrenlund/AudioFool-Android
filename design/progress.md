@@ -13,7 +13,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.2**: the M21's headphone out — 2026-10-25 (didn't take: 0.1.3)
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
-- [x] **0.1.5**: unplug pauses on the M21 (checked on the M21 over adb) — 2026-10-25
+- [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
 
 ## Decisions made in the design
 
@@ -48,7 +48,14 @@ The user made these while the mockups were designed (October 2026). The spec alr
   (`type`: 8 with headphones in, 0 unplugged) and `fiio.intent.action.SAMPLE_RATE_CHANGED`
   (`format`, `rate`: 44100 while a 44.1 kHz song played with BP on, 0 when stopped). That
   rate is the M21's output as FiiO sees it. Statistics > Playback > **FiiO signals** lists
-  them. Whether the readout should use it is the user's call (a spec change).
+  them.
+- **The M21's readout goes by FiiO's reported rate** (the user's call): on a FiiO's headphone
+  route, `OutputReadout.hardwareRate` takes FiiO's last nonzero `rate` for the output open
+  now (forgotten at each open, so a new song shows the system's 48 kHz for about a second
+  until FiiO reports), else the system output's. Spec §6.2 updated. **Checked on the M21:**
+  a 44.1 kHz / 16-bit FLAC with BP on reads "Headphones · 44.1 kHz / 16-bit (bit-perfect)",
+  a 96 kHz / 24-bit one "Headphones · 96 kHz / 32-bit (bit-perfect)" (24-bit goes as 32-bit
+  on that path since 0.1.1). Statistics' System output row adds "FiiO reports …".
 - **Why 0.1.2's FiiO check missed:** the M21 reports `Build.MANUFACTURER` "QUALCOMM",
   `Build.BRAND` "qti", `Build.MODEL` "FiiO M21" (Statistics' Phone row).
 
@@ -498,7 +505,9 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 - [x] **Unplugging pauses** (4.4 mm, BP on): "it paused when i unplugged!", and the
   broadcast history shows "becoming noisy" delivered to AudioFool.
-- [ ] **The 3.5 mm jack** the same.
+- [x] **The readout follows FiiO's rate**: 44.1 kHz / 16-bit and 96 kHz / 32-bit, both "(bit-perfect)".
+- [ ] **The 3.5 mm jack** the same (unplug and readout).
+- [ ] **BP off**: what the readout says (FiiO's rate with Android's mixer in the way).
 
 0.1.4 (the click), released 2026-10-25 as pre-release
 [`v0.1.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4)
@@ -630,12 +639,14 @@ broadcast extras show as STRIPPED there, so AudioFool's Statistics showed them (
 `uiautomator dump`). A plain `adb logcat` capture dropped when USB reconnected and caught
 little; the broadcast history held everything needed.
 
-**Changed:** the noisy receiver exported; the jack receiver and probe removed; a receiver for
+**Changed:** the readout on a FiiO's headphone out goes by FiiO's rate (`OutputReadout.hardwareRate`, tested); the noisy receiver exported; the jack receiver and probe removed; a receiver for
 FiiO's two signals, shown in Statistics.
 
 **Verified:** `:core:test`, `:app:testDebugUnitTest`, `verifyRoborazziDebug`, the release
 build; installed on the M21 with `adb install -r` (versionCode 11, same key, data kept); the
-user unplugged while playing: paused, and the history shows the delivery.
+user unplugged while playing: paused, and the history shows the delivery. Then
+versionCode 12 with the readout: read off the M21's Now Playing with `uiautomator dump` for
+a 44.1 kHz and a 96 kHz song (above).
 
 ### 0.1.4 — no click at a restart or a tap (2026-10-25)
 

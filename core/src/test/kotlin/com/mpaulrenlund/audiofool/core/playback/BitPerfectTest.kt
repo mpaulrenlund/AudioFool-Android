@@ -118,6 +118,30 @@ class BitPerfectTest {
         assertEquals("Headphones · 48 kHz (resampled)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 48000, 24, 96000, false))
     }
 
+    // The M21 (0.1.5): FiiO reports its DAC's rate; Android's system output always says 48 kHz.
+
+    @Test fun fiios_reported_rate_is_used_once_there_is_one() {
+        assertEquals(44100, OutputReadout.hardwareRate(systemRate = 48000, reportedRate = 44100))
+        assertEquals(48000, OutputReadout.hardwareRate(systemRate = 48000, reportedRate = 0))
+    }
+
+    @Test fun the_m21_at_the_tracks_rate_is_bit_perfect_by_fiios_report() =
+        assertEquals(
+            "Headphones · 44.1 kHz / 16-bit (bit-perfect)",
+            OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 44100), 16, 44100, false),
+        )
+
+    @Test fun the_m21_says_resampled_when_fiio_reports_another_rate_or_none_yet() {
+        assertEquals(
+            "Headphones · 48 kHz (resampled)",
+            OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), 24, 96000, false),
+        )
+        assertEquals(
+            "Headphones · 48 kHz (resampled)",
+            OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 0), 16, 44100, false),
+        )
+    }
+
     @Test fun shared_readout_names_the_route() {
         assertEquals("Speaker · Shared · 48 kHz (resampled)", OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 24, 44100, false))
         assertEquals("Bluetooth · Shared · 48 kHz", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 16, 48000, false))

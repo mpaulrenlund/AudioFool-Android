@@ -289,7 +289,8 @@ class Player(
                 if (routes.greyed) " (greyed)" else "",
             "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),
             "System output" to routes.systemOutputRate().let { if (it > 0) Display.sampleRate(it) else "–" } +
-                " (mixer property ${audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE) ?: "–"} Hz)",
+                " (mixer property ${audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE) ?: "–"} Hz)" +
+                if (fiioRate > 0) " · FiiO reports ${Display.sampleRate(fiioRate)}" else "",
             "Direct" to (asked?.let { "${describe(it)}: ${routes.directSupport(it)}" } ?: "–"),
             "USB mixers" to routes.mixerSummary(),
             "Mixer set" to "${routes.preferredMixer()}${routes.lastMixerNote.takeIf { it.isNotEmpty() }?.let { " · last: $it" } ?: ""}",
@@ -375,6 +376,8 @@ class Player(
         val line = "${track.displayTitle} (${track.kind}): ${describe(asked)} → output ${describe(opened)}$how"
         android.util.Log.i(TAG, "opened $line · ${routes.route.label}")
         state.openedLog = (listOf(line) + state.openedLog).take(LOG_SIZE)
+        // A new output: FiiO's rate is the old one's until it reports again.
+        fiioRate = 0
         showRoute()
     }.let { }
 
@@ -464,10 +467,13 @@ class Player(
         val asked = if (engineMade) engine.askedFormat else null
         val source = asked?.sampleRate ?: track?.sampleRate ?: 0
         if (opened == null) return OutputReadout.describe(route, OutputPath.Shared, routes.systemOutputRate(), 0, source, false)
+        // A FiiO's own headphone out: the rate FiiO says its DAC runs at, once it has said (0.1.5).
+        val fiio = route == OutputRoute.Headphones && routes.speakerIsHeadphones
+        val rate = if (fiio) OutputReadout.hardwareRate(routes.systemOutputRate(), fiioRate) else routes.systemOutputRate()
         return when (val path = engine.openedPath) {
             OutputPath.BitPerfect, OutputPath.RateMatched -> OutputReadout.describe(route, path, opened.sampleRate, opened.bits, source, opened.dop)
-            OutputPath.SourceRate -> OutputReadout.describe(route, path, routes.systemOutputRate(), opened.bits, source, false)
-            OutputPath.Shared -> OutputReadout.describe(route, path, routes.systemOutputRate(), 0, source, false)
+            OutputPath.SourceRate -> OutputReadout.describe(route, path, rate, opened.bits, source, false)
+            OutputPath.Shared -> OutputReadout.describe(route, path, rate, 0, source, false)
         }
     }
 
@@ -586,8 +592,20 @@ class Player(
             val extras = intent.extras?.let { b -> b.keySet().sorted().joinToString(", ") { "$it=${anyExtra(b, it)}" } } ?: "no extras"
             val line = "${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())} ${intent.action?.substringAfterLast('.')}: $extras"
             fiioLog = (listOf(line) + fiioLog).take(LOG_SIZE)
+            // The DAC's rate (0 when stopped, which keeps the last one): the readout's, from now on.
+            val rate = intent.extras?.let { anyExtra(it, "rate") }.let { (it as? Number)?.toInt() ?: it?.toString()?.toIntOrNull() } ?: 0
+            if (intent.action == FIIO_SAMPLE_RATE_CHANGED && rate > 0) {
+                fiioRate = rate
+                state.readout = readoutFor(state.track)
+            }
         }
     }
+
+    /**
+     * The rate FiiO last said its DAC runs at for the output open now, or 0 until
+     * it says (forgotten whenever an output opens). The M21's readout goes by it.
+     */
+    private var fiioRate = 0
 
     /** FiiO's signals as they came, newest first, for the debug screen. */
     private var fiioLog: List<String> = emptyList()

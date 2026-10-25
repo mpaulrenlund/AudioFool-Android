@@ -49,7 +49,7 @@ android {
         applicationId = "com.mpaulrenlund.audiofool"
         minSdk = 33
         targetSdk = 37
-        versionCode = 11
+        versionCode = 12
         versionName = "0.1.5"
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
