@@ -6,7 +6,21 @@ what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **Next is session 5, Last.fm, Statistics, polish and release 0.1.0**
+- **First, v0.0.5 is built but not released.** Session 4 ended waiting for the user's OK on
+  the tag and notes. The signed APK is `dist/AudioFool-0.0.5.apk` (versionCode 5, release
+  key checked with `apksigner`; rebuild with `:app:assembleRelease` if `dist/` is gone).
+  The draft, shown to the user and not yet approved:
+  - Tag `v0.0.5`, pre-release. Title "Bit-Perfect (session 4 test build)".
+  - Notes: "Bit-Perfect: the BP button and the Settings chip now work. On a USB DAC (S24) it
+    uses Android's bit-perfect mixer at each song's rate, or a 'rate matched' mixer where the
+    phone has none. On the M21's headphone out it plays at the song's own rate and checks the
+    system rate. Greyed out on Bluetooth and the speaker. DSD goes as DoP on a bit-perfect
+    output. Report Statistics > Playback (Route, USB mixers, Opened as, System output, Mixer
+    set)."
+  - Once the user approves: `gh release create v0.0.5 dist/AudioFool-0.0.5.apk --prerelease
+    --title ... --notes ...`, then replace "Not released yet" under *v0.0.5* in
+    `design/progress.md` with the release line (as v0.0.4's has), and this bullet with a one-line note.
+- **Then session 5, Last.fm, Statistics, polish and release 0.1.0**
   (`design/session-prompts.md`). Its first step is the S24 and M21 test results: read both
   lists in `design/progress.md`, especially v0.0.5's (what Samsung's mixer offers a USB
   DAC, and whether the M21's System output follows the song).
@@ -21,13 +35,14 @@ what to test on each device). The spec is `design/android-spec.md`.
 - **Device reports still open** (don't block on them): the v0.0.2, v0.0.4 and v0.0.5 items on
   both lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
   cold start (v0.0.1), and the M21's first scan (v0.0.3).
-- **Releases:** `v0.0.1` to `v0.0.4` are out (pre-releases); `v0.0.5` is session 4's build
-  (versionCode 5). The next is `0.0.6`, versionCode 6, unless session 5 goes straight to
-  0.1.0. Confirm the tag and notes with the user before `gh release create`.
+- **Releases:** `v0.0.1` to `v0.0.4` are out (pre-releases); `v0.0.5` is pending (above).
+  After it, the next is `0.0.6`, versionCode 6, unless session 5 goes straight to 0.1.0.
+  Confirm the tag and notes with the user before `gh release create`.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
   albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and a copy of the
-  sample set on the SD card, `/storage/0000-0000/Music`) and the session 3 release build.
-  `dist/` (ignored by git) holds the released APKs.
+  sample set on the SD card, `/storage/0000-0000/Music`) and the session 4 release build
+  (0.0.5), with Bit-Perfect saved **on** and the Gapless Live album paused in the queue.
+  `dist/` (ignored by git) holds the released APKs and `AudioFool-0.0.5.apk`.
 
 ---
 
@@ -37,7 +52,7 @@ what to test on each device). The spec is `design/android-spec.md`.
 |---|---|
 | Source | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android`, branch `main` |
 | The desktop app (read-only) | `C:\MusicPlayer`; its `src/AudioFool.Core` is what gets ported |
-| Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/` |
+| Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/`, `playback/`, `analysis/` |
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`; `OutputReadout`) and `core/.../analysis/` |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
