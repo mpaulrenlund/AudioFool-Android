@@ -1,8 +1,30 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-24, end of session 2. Read this with `README.md` (how the app works) and
-`design/progress.md` (every decision, and the lists of what to test on each device).
-The spec is `design/android-spec.md`.
+Updated 2026-10-24, end of session 2 (and its v0.0.3 follow-up). Read this with
+`README.md` (how the app works) and `design/progress.md` (every decision, and the lists of
+what to test on each device). The spec is `design/android-spec.md`.
+
+## Starting the next session
+
+- **Next is session 3, Playback** (`design/session-prompts.md`): BASS for Android, the
+  output stage, gapless, the media session, PlayOrder / ReopenPoint / Waveform /
+  OutputReadout, Now Playing, and wiring the mini player and song taps to the queue.
+- Read, in order: `CLAUDE.md`, this file, `design/android-spec.md` (§3, §5, §6.1, §6.3), and
+  in `design/progress.md` the Decisions sections and the session 2 notes.
+- **Where session 3 plugs in:** `playback/NowPlaying.kt` is what every screen reads for
+  "what's playing" (the mini player, the now-playing rows, the Album table's triangle).
+  `ui/AppRoot.kt` builds `AppActions`; `play`, `playPause`, `previous`, `next` and
+  `openNowPlaying` are stubs today. Statistics' "Mini player preview" switch exists only
+  because there is no playback: remove it once there is.
+- **Device reports still open** (the user hasn't reported them; don't block on them): most
+  of the v0.0.2 items on both lists in `design/progress.md`. Done so far: the S24's
+  install, counts, first scan and cold start (v0.0.1), and the M21's first scan (v0.0.3:
+  8 min 49 s for 27,115 files, artists shown as found; the user: "it's OK").
+- **Releases:** `v0.0.1`, `v0.0.2`, `v0.0.3` are out. The next test build is `0.0.4`,
+  versionCode 4. Confirm the tag and notes with the user before `gh release create`.
+- **The emulator** still holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists
+  × 2 albums of silent MP3s with folder covers, and the SD card's `/storage/0000-0000/Music`)
+  and v0.0.3 installed. `dist/` (ignored by git) holds the released APKs.
 
 ---
 
@@ -146,13 +168,13 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ## Where things stand (after session 2)
 
-- **Released:** pre-releases `v0.0.1` (session 1, versionCode 1) and `v0.0.2` ("Session 2
-  test build", versionCode 2, 2026-10-24), both signed with the release key. `v0.0.3`
-  ("First-scan progress", versionCode 3: the first scan shows the library as it is found)
-  was released 2026-10-24. The next is `0.0.4`, versionCode 4.
+- **Released** (all pre-releases, signed with the release key): `v0.0.1` (session 1,
+  versionCode 1), `v0.0.2` ("Session 2 test build", versionCode 2) and `v0.0.3` ("First-scan
+  progress", versionCode 3), all 2026-10-24. The next is `0.0.4`, versionCode 4.
 - **First scan:** with no cache, `LibraryRepository.showAsFound` publishes a partial
   library every 1.5 s or so while tags are read, and Artists shows "Reading tags: N of M".
-  The M21's first full scan took about 8 minutes (27,115 files from the SD card).
+  The M21's first full scan took 528,563 ms (8 min 49 s, 27,115 files from the SD card,
+  about 51 a second); later starts read the cache.
 - **Screens (session 2):** Artists, Albums, Album, Search, Settings, Statistics, the logo
   menu and the mini player, all from tokens, checked against `design/screens/` (the
   differences are listed in `design/progress.md`). Navigation is its own small back stack
@@ -166,7 +188,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **The user's results so far** (S24, 2026-10-24): 192 artists · 821 albums · 8,127 tracks,
   first scan under 30 seconds, cold start "very fast". The S24 has **no SD card slot** and a
   smaller library than the desktop's; the full ~26,000-track library and SD card removal
-  are tested on the **M21** (its list in `design/progress.md` is started).
+  are tested on the **M21** (27,115 files found there).
 - **GitHub:** the repo is public (the user's call). This PC pushes and releases as
   `marcusrenlund`, a collaborator with write access; `gh` is signed in as that account.
 - **Keep the debug numbers reachable** (the user reports them back, and later sessions

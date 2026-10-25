@@ -143,8 +143,8 @@ Session 2 (`v0.0.2`), with the full library on the SD card:
   Report Statistics > Last scan when it ends, to compare with v0.0.2's.
   **Reported 2026-10-24: Last scan 528,563 ms (8 min 49 s)**, about 51 files a second.
   v0.0.2's run was only estimated (about 60 a second at the 3-minute mark), so whether the
-  as-found rebuilds slowed it is not settled. Still to report: that the artists appeared
-  as they were found.
+  as-found rebuilds slowed it is not settled. The first scan as it now behaves: the user
+  says "it's OK".
 
 - [ ] **Scrolling the full library.** Fling through all ~499 artists and a long album list on the Snapdragon 680: smooth? Covers fill in as the background fill works (Statistics > Covers, up to ~2,376).
 - [ ] **SD card out.** With the card out, Settings shows "SD card · Music" greyed with "Not available"; the card's artists, albums and songs stay listed, greyed, and its songs can't be tapped. Card back: everything as before, "Up to date".
