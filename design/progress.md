@@ -356,7 +356,15 @@ but the readout kept saying "resampled" with BP on.
   24-bit (rate matched)", BP off "USB · Shared · 48 kHz". The S24 offers the DAC an ordinary
   mixer entry at 48 kHz but no bit-perfect one there (as expected of Samsung). 0.1.0's
   "resampled" with BP on was most likely a 44.1 kHz song with no entry at that rate (shared,
-  48 kHz). Still wanted: the **USB mixers** row, to know the rates offered.
+  48 kHz).
+- [x] **USB mixers** with the DAC (the user, 2026-10-25): "default: 48, 88.2, 96, 176.4, 192,
+  352.8, 384 kHz · 16, 24, 32-bit · 2 ch". **No bit-perfect entries at all, and no 44.1 kHz.**
+  So BP on the S24 is "rate matched" at 48 kHz and up, and a 44.1 kHz song falls back to
+  shared and is resampled to 48 kHz (the readout says so). True bit-perfect on the S24 would
+  need the app's own USB driver (libusb, as USB Audio Player Pro): a new dependency and a
+  spec change, the user's call. Not decided.
+- [ ] **Route** row with the DAC: does the DAC itself list 44.1 kHz ("rates: …")? If it does,
+  Samsung leaves 44.1 out of the mixer; if not, the DAC doesn't offer it over USB.
 - [ ] **The readout with BP on.** Through the DAC, play a 16/44 and a 24/96 FLAC with BP on, and
   send a photo of logo > Statistics > Playback for each (Output, Route, Bit-Perfect, Opened
   as, USB mixers, Mixer set). That says whether the S24 offers the DAC a mixer at those

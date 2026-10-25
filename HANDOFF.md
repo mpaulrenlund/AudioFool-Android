@@ -56,8 +56,9 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 - **v0.0.5 was skipped** (the user's call): built, never released. 0.1.0 is versionCode 6.
 - Read, in order: `CLAUDE.md`, this file, and in `design/progress.md` the Decisions sections
   and the session 5 notes.
-- **If the S24 lists no bit-perfect mixer** (likely, from other Samsung phones), BP gives
-  "rate matched" there. A truly bit-perfect S24 would need the app's own USB driver
+- **The S24 lists no bit-perfect mixer** (confirmed 2026-10-25 with the user's DAC: default
+  entries only, at 48, 88.2, 96, 176.4, 192, 352.8, 384 kHz, **no 44.1 kHz**), so BP gives
+  "rate matched" there, and a 44.1 kHz song is shared and resampled to 48 kHz. A truly bit-perfect S24 would need the app's own USB driver
   (libusb, as USB Audio Player Pro does): a new dependency and a spec change, so ask.
 - **If the M21's System output stays at 48 kHz**, its readout says "(resampled)" even if
   FiiO's bypass works some other way; ask the user what the M21's own setting shows before
