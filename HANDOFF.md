@@ -6,7 +6,8 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.2** (versionCode 8): the M21 lists its headphone jacks to Android as the built-in
+- **0.1.2** (versionCode 8) is released as a pre-release (2026-10-25,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.2>, `dist/AudioFool-0.1.2.apk`). The M21 lists its headphone jacks to Android as the built-in
   speaker (Outputs: earpiece, speaker, telephony; no wired device), so a FiiO player's
   speaker route is now Headphones (`SpeakerlessPlayers`) and BP can be turned on. 0.1.1's
   other fixes are confirmed on the phones (2026-10-25): the join glitch, Now Playing on a

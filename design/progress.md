@@ -441,7 +441,9 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.1.2 (the M21's headphone out). The user's report on 0.1.1 (2026-10-25): 24-bit plays
+0.1.2 (the M21's headphone out), released 2026-10-25 as pre-release
+[`v0.1.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.2)
+("AudioFool 0.1.2", versionCode 8). The user's report on 0.1.1 (2026-10-25): 24-bit plays
 cleanly now and the join glitch is gone, but BP still couldn't be turned on through the
 4.4 mm jack; Output "Speaker · Shared · 48 kHz", and Android lists no headphone output.
 
