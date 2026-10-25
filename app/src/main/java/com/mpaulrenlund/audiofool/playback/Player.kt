@@ -74,6 +74,12 @@ class Player(
     /** Called on any change the system's controls show (the media session). */
     var onChange: () -> Unit = {}
 
+    /** Told what is heard while playing: Last.fm and the listening time. */
+    val watchers = ArrayList<PlayWatcher>()
+
+    /** The track the watchers were last told started, by identity. */
+    private var watchedTrack: Track? = null
+
     init {
         state.positionSource = ::positionMs
         routes.bitPerfectOn = settings.bitPerfect.value
@@ -346,6 +352,8 @@ class Player(
         // The end of the queue: back to its start, paused, so Play plays it again.
         engaged = false
         setPlaying(false)
+        watchedTrack = null
+        watchers.forEach { it.stopped() }
         val first = order.order.firstOrNull() ?: return@post
         heardIndex = first
         decodingIndex = first
@@ -445,11 +453,36 @@ class Player(
             registerNoisy()
             main.removeCallbacks(periodicSave)
             main.postDelayed(periodicSave, SAVE_EVERY_MS)
+            main.removeCallbacks(tick)
+            main.post(tick)
         } else {
             unregisterNoisy()
             main.removeCallbacks(periodicSave)
+            main.removeCallbacks(tick)
         }
         onChange()
+    }
+
+    /**
+     * While playing, the watchers hear where the speakers are, as the desktop's
+     * scrobbler does from its 250 ms position timer. The heard track and its
+     * place come from the same timeline, so across a gapless join they change
+     * together.
+     */
+    private val tick = object : Runnable {
+        override fun run() {
+            if (!state.isPlaying) return
+            val track = state.track
+            if (track != null) {
+                if (track !== watchedTrack) {
+                    watchedTrack = track
+                    watchers.forEach { it.started(track) }
+                }
+                val position = positionMs()
+                watchers.forEach { it.position(track, position) }
+            }
+            main.postDelayed(this, TICK_MS)
+        }
     }
 
     /** While playing, the place is saved now and then, so a phone that kills the app loses little. */
@@ -529,6 +562,7 @@ class Player(
         const val TAG = "AudioFoolPlay"
         const val LOG_SIZE = 30
         const val SAVE_EVERY_MS = 10_000L
+        const val TICK_MS = 250L
         const val DUCKED = 0.2f
 
         /** How long after an output opens the readout looks at the system's rate again. */

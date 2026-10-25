@@ -7,6 +7,9 @@
         android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 
+    <!-- Last.fm (spec 7): scrobbles and the connect flow. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- Playback (spec 6.1): a foreground media service keeps playing out of sight. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />

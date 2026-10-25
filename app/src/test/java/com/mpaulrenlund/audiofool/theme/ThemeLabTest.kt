@@ -36,6 +36,8 @@ import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
+import com.mpaulrenlund.audiofool.core.scrobbling.ScrobblerState
+import com.mpaulrenlund.audiofool.lastfm.LastFm
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
@@ -155,6 +157,21 @@ class ThemeLabTest {
                 readout = OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 0, 44100, false),
                 bitPerfect = true,
                 bitPerfectGreyed = true,
+            )
+        }
+        // Last.fm (spec 7): connected, and Connect tapped with the desktop's key filled in.
+        shoot(device, "settings-lastfm-connected") {
+            SettingsScreen(
+                folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                actions = SettingsActions(),
+                lastFm = LastFm.Status(state = ScrobblerState.Scrobbling, userName = "mpaulrenlund"),
+            )
+        }
+        shoot(device, "settings-lastfm-connect") {
+            SettingsScreen(
+                folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                actions = SettingsActions(),
+                lastFm = LastFm.Status(enteringKeys = true, savedKey = "0123456789abcdef0123456789abcdef", savedSecret = ""),
             )
         }
     }

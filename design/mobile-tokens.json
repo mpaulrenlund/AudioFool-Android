@@ -160,6 +160,18 @@
     "folderNameSize": 16,
     "folderPathSize": 12.5
   },
+  "lastFm": {
+    "$note": "Settings' Last.fm panel while connecting (spec 7). No mockup: the key and secret fields are drawn as the search field is, the buttons as chips (session 5).",
+    "formPaddingBottom": 12,
+    "formGap": 8,
+    "fieldHeight": 40,
+    "fieldPaddingX": 12,
+    "fieldTextSize": 14,
+    "fieldLabelSize": 12.5,
+    "fieldLabelGap": 4,
+    "messageSize": 13,
+    "buttonGap": 8
+  },
   "miniPlayer": {
     "height": 64,
     "marginX": 8,

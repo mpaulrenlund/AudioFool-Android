@@ -199,8 +199,9 @@ Session 1:
 
 ### v0.0.5 (session 4: Bit-Perfect)
 
-Not released yet (the tag and notes are confirmed with the user first). Installs over
-v0.0.4 (same key). Report from logo > **Statistics** > **Playback**: Output, Route,
+**Not released:** the user skipped v0.0.5 at the start of session 5 (2026-10-24). These
+items carry over to the next build session 5 hands out, which installs over v0.0.4 (same
+key). Report from logo > **Statistics** > **Playback**: Output, Route,
 Bit-Perfect, Opened as, System output, Direct, USB mixers, Mixer set. A photo of the panel
 is fine.
 
@@ -312,7 +313,7 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-Session 4 (`v0.0.5`), the M21's first playback build. Report from logo > **Statistics** >
+Session 4 (`v0.0.5`, not released: these carry over to session 5's build), the M21's first playback build. Report from logo > **Statistics** >
 **Playback** (a photo is fine).
 
 - [ ] **Install over the last build** and play something from the SD card through the 3.5 mm or

@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.mpaulrenlund.audiofool.core.library.DriveChange
+import com.mpaulrenlund.audiofool.lastfm.LastFm
 import com.mpaulrenlund.audiofool.library.LibraryRepository
 import com.mpaulrenlund.audiofool.settings.AppSettings
 import com.mpaulrenlund.audiofool.settings.MusicFolder
@@ -59,12 +60,16 @@ class AudioFoolApp : Application() {
             routes = OutputRoutes(this),
             settings = settings,
         ).also { p ->
+            p.watchers.add(lastFm)
             p.onChange = {
                 systemControls.update()
                 PlaybackService.sync(this, p.state.isPlaying)
             }
         }
     }
+
+    /** Last.fm (spec 7): the connection Settings shows, and the scrobbles, queued in the app's own storage. */
+    val lastFm: LastFm by lazy { LastFm(this, noBackupFilesDir) }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */
     val systemControls: SystemControls by lazy {

@@ -59,6 +59,17 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             close = nav::back,
         )
     }
+    val lastFmActions = remember {
+        val lastFm = app.lastFm
+        LastFmActions(
+            startConnecting = lastFm::startConnecting,
+            connect = lastFm::connect,
+            cancel = lastFm::cancel,
+            openApprovalPage = lastFm::openApprovalPage,
+            openCreateApiAccount = lastFm::openCreateApiAccount,
+            disconnect = lastFm::disconnect,
+        )
+    }
     LaunchedEffect(openNowPlaying) {
         if (openNowPlaying > 0 && app.nowPlaying.track != null) nav.open(Route.NowPlaying)
     }
@@ -88,6 +99,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     readout = app.nowPlaying.readout,
                     bitPerfect = app.nowPlaying.bitPerfect,
                     bitPerfectGreyed = app.nowPlaying.bitPerfectGreyed,
+                    lastFm = app.lastFm.status,
+                    lastFmActions = lastFmActions,
                 )
                 Route.Statistics -> StatisticsScreen(
                     state = state,
