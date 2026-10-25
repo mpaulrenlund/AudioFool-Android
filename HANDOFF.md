@@ -6,7 +6,7 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.1** (versionCode 7) fixes the first reports: a song tap opens Now Playing; no 24-bit
+- **0.1.1** (versionCode 7) fixes the first reports: a song tap opens Now Playing; the end-of-song glitch and gap; no 24-bit
   packed output (the M21 turned it into static: shared now sends 24-bit as float, the M21's
   way as 32-bit); the headphone route on the M21 (BP was greyed); an **Outputs** row in
   Statistics > Playback. **Waiting on:** the M21 saying 24-bit is clean and BP turns on (else
@@ -14,6 +14,8 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
   (its readout said "resampled": the mixer wasn't set; Mixer set says why). Next fix: 0.1.2,
   versionCode 8.
 - **Never open a 24-bit packed `AudioTrack`.** The emulator plays it; the M21 makes static.
+- **The glitch and gap at the end of every song** (both phones, 0.1.0) was `Decoder.read` leaving the
+  buffer looking full when a song ran out: its old contents went out at every gapless join.
 - **Version 1 is built.** The five planned sessions are done. What's left is the user's
   device reports: the 0.1.0, v0.0.5 and v0.0.4 items on both lists in `design/progress.md`
   (Last.fm on the profile, Bit-Perfect through a real DAC, the M21's bypass, a physical SD
@@ -145,9 +147,11 @@ Playback, as the emulator shows it (release builds too):
 - `adb logcat -s AudioFoolPlay:I` logs each output opened ("44.1 kHz / 16-bit, 2 ch →
   output 44.1 kHz / 16-bit, 2 ch") and each song heard, with the joins, reopens and
   underruns so far. Statistics > Playback shows the same.
-- Gapless: play `Gapless Live`; two joins and 0 underruns is gapless (one `AudioTrack`,
-  never dry). The emulator's clock runs a little slow (12 s songs take about 12.7 s), so
-  don't judge gaps by timestamps.
+- Gapless: play `Gapless Live` (three songs of exactly 12.000 s). Two joins and 0 underruns
+  means one `AudioTrack` that never ran dry, **not** that the join is clean: also check
+  the logcat `heard` lines come about 12.0 s apart. Up to 0.1.0 they came 12.7 s apart,
+  which was put down to a slow emulator clock; it was 0.74 s of stale buffer written at
+  every join (fixed in 0.1.1).
 - Media keys: `adb shell input keyevent MEDIA_PLAY_PAUSE` (also `MEDIA_NEXT`,
   `MEDIA_PREVIOUS`, `HEADSETHOOK`). The session: `adb shell dumpsys media_session`; its
   first `state=PlaybackState` line can be an old one, `adb logcat -s MediaSessionService`
@@ -320,6 +324,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   else sends it a command. Its news comes back on that thread; `Player` posts it to main.
 - **BASS add-ons load by file name** (`BASS_PluginLoad("libbassflac.so")`): no extracted
   libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
+- **A buffer from `Decoder.read` must be empty when it returns false** (`limit(0)`): `clear()` makes it look full of old samples, which `pump` then writes.
 - **24-bit packed `AudioTrack`s are static on the M21** (Android 13) though the emulator plays them: shared sends 24-bit as float, the M21's way as 32-bit.
 - **An `AudioTrack` must use the mixer entry's own `AudioFormat`** (`OutputPlan.Mixer.format`)
   to be attached to the mixer that was set; a rebuilt one with another channel mask may not

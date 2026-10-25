@@ -32,6 +32,13 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 0.1.1 (2026-10-25), from the user's first device reports:
 
+- **The glitch and gap at the end of every song** (S24 through the USB dongle DAC, and the
+  M21's 4.4 mm out): when a song ran out, `Decoder.read` cleared its buffer before saying
+  so, which left it looking full; at a gapless join the output stage then wrote those
+  131,072 bytes of old samples (0.74 s at 44.1 kHz / 16-bit) before the next song. It now
+  returns an empty buffer. Every gapless join was hit; a reopen for a new format and the
+  end of the queue were not. The session 3 check counted joins and underruns and took the
+  12.7 s between 12 s songs for a slow emulator clock; it was this.
 - **A tap on a song opens Now Playing** (the user's call): from an album and from Search.
   Back returns to the list it came from. Spec §2 and §5 updated.
 - **No 24-bit packed `AudioTrack`s.** On the M21 (Android 13, 4.4 mm out, BP off) every
@@ -271,6 +278,8 @@ but the readout kept saying "resampled" with BP on.
   as, USB mixers, Mixer set). That says whether the S24 offers the DAC a mixer at those
   rates and what happened when it was asked.
 - [ ] **Tapping a song opens Now Playing**, from an album and from Search; back returns to the list.
+- [ ] **No glitch or gap between songs** through the DAC: a live or continuous album (BP off, then on).
+  Reported on 0.1.0: a loud glitch at the end of every song, and no gapless.
 
 ### 0.1.0 (session 5: Last.fm, Statistics, edge cases)
 
@@ -423,6 +432,8 @@ fine); BP couldn't be turned on.
   Playback: **Route** and **Outputs** say what the M21 calls its headphone outs.
 - [ ] **With BP on**, the same 24-bit songs: clean? Report Output, Opened as and System output.
 - [ ] **Tapping a song opens Now Playing.**
+- [ ] **No glitch or gap between songs** through the 4.4 mm out: a live or continuous album.
+  Reported on 0.1.0: a loud glitch at the end of every song, and no gapless.
 
 0.1.0 (session 5), with the full library on the SD card:
 
@@ -493,9 +504,10 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 
 **Reported** (0.1.0): S24 + USB DAC plays with BP on and off, but the readout stayed
 "resampled" with BP on; the user wants a song tap to open Now Playing; the M21's 4.4 mm out
-turned 24-bit songs into static, with BP greyed.
+turned 24-bit songs into static, with BP greyed. Then, on both phones: a loud glitch at the
+end of every song, and no gapless.
 
-**Changed:** `AppRoot` opens Now Playing after a song tap; `OutputStage` never opens a 24-bit
+**Changed:** `Decoder.read` returns an empty buffer at a song's end (the join glitch); `AppRoot` opens Now Playing after a song tap; `OutputStage` never opens a 24-bit
 packed output (shared: float; the M21's way: 32-bit); `OutputRoutes` takes wired headphones
 over a speaker Android still names, looks again a second after a device change, lists every
 output (Statistics' new Outputs row) and notes a mixer entry whose track wasn't accepted.
@@ -505,7 +517,8 @@ changed) and the release build. Emulator: a song tapped in Search and in an albu
 Playing (keyboard closed; back returns to the list); a 24/96 FLAC opens "96 kHz / 24-bit →
 output 96 kHz / 32-bit float" on the speaker, and with the pretend Headphones route and BP on
 "→ 96 kHz / 32-bit (SourceRate)"; the emulator's outputs are its speaker and a telephony
-out, so its route stays Speaker. **Not checked here:** whether float and 32-bit play cleanly
+out, so its route stays Speaker. Gapless Live (12.000 s songs, by ffprobe): the next song
+was heard 12.72 s after the last started before the fix, 11.96 and 11.99 s after. **Not checked here:** whether float and 32-bit play cleanly
 on the M21, its route, and the S24's mixer (the device lists above).
 
 ### Session 5 — Last.fm, Statistics, polish and release (2026-10-24)

@@ -85,10 +85,12 @@ class Decoder private constructor(
     /**
      * Decodes up to one chunk into [out] (cleared first), converted to
      * [encoding]: whole frames, in the output's byte order. False at the end of
-     * the track or on a read error.
+     * the track or on a read error, with [out] left empty.
      */
     fun read(out: ByteBuffer, encoding: Int): Boolean {
-        out.clear()
+        // Empty until a chunk is decoded: a cleared buffer looks full, and its old
+        // samples were written out at every gapless join (0.1.1).
+        out.clear().limit(0)
         if (ended) return false
         floatBuffer.clear()
         val got = BASS.BASS_ChannelGetData(handle, floatBuffer, floatBuffer.capacity() or BASS.BASS_DATA_FLOAT)
@@ -96,6 +98,7 @@ class Decoder private constructor(
             ended = true
             return false
         }
+        out.limit(out.capacity())
         val samples = got / 4
         val frames = samples / format.channels
         val floats = floatBuffer.asFloatBuffer()
