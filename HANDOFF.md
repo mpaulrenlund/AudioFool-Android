@@ -10,9 +10,10 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4>, `dist/AudioFool-0.1.4.apk`). The click on the M21 at a restart or a tapped song: the
   desktop's 5 ms seek fade, ported (`SeekFade`; a `VolumeShaper` fades the old sound out
   before `OutputStage.cut`, the decoder fades the new in after a jump; never DoP). M21 BP
-  works since 0.1.3. **Open:** unplug-pause on the M21 (no `ACTION_HEADSET_PLUG`; FiiO's
-  player does pause): the Jack files row says whether the kernel's jack switches can be
-  read. Next fix: 0.1.5, versionCode 11.
+  works since 0.1.3. The click is gone (user, 2026-10-25). **Open:** unplug-pause on the M21:
+  no noisy broadcast, no `ACTION_HEADSET_PLUG`, the jack files can't be read (all
+  reported); FiiO's player pauses by something of FiiO's own. Only a logcat at an unplug
+  can say what; the user decides whether that's worth it. Next fix: 0.1.5, versionCode 11.
 - **0.1.3** (versionCode 9) is released as a pre-release (2026-10-25,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.3>, `dist/AudioFool-0.1.3.apk`). 0.1.2's FiiO check (maker or brand exactly "FiiO") didn't catch
   the M21. Now "FiiO" anywhere in maker, brand, model or the speaker's name; Statistics shows

@@ -481,10 +481,13 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 pause and Jack says "nothing yet"; FiiO's own player does pause on an unplug; a small click
 on the M21 only, mostly at a restart and at a tapped song, BP on or off.
 
-- [ ] **No click** at a restart (Previous after 3 s), a tapped song while another plays, Next,
-  and a drag on the seekbar. BP on and off.
-- [ ] **Jack files**: open Statistics with headphones in, note the Jack files row, pull them
-  out, open Statistics again: did any line change? ("can't be read" means apps can't see them.)
+- [x] **No click** at a restart, a tapped song, Next or a seekbar drag: "Click is gone"
+  (the user, 2026-10-25).
+- [x] **Jack files**: "can't be read" both plugged in and unplugged (2026-10-25). With no
+  noisy broadcast, no `ACTION_HEADSET_PLUG` and no readable switch, an app has no standard
+  way to see the M21's unplug; FiiO's player uses something of FiiO's own. **Unplug-pause on
+  the M21 is open**, waiting on the user's choice: leave it, or capture a logcat from the
+  M21 at an unplug to find FiiO's signal.
 
 0.1.3 (the M21 by its speaker's name, and the jack), released 2026-10-25 as pre-release
 [`v0.1.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.3)
