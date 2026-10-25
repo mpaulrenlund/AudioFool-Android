@@ -457,7 +457,9 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.1.3 (the M21 by its speaker's name, and the jack). The user's report on 0.1.2
+0.1.3 (the M21 by its speaker's name, and the jack), released 2026-10-25 as pre-release
+[`v0.1.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.3)
+("AudioFool 0.1.3", versionCode 9). The user's report on 0.1.2
 (2026-10-25): Output still "Speaker" on the 3.5 mm and 4.4 mm jacks, BP greyed, unplugging
 while playing doesn't pause, and no FiiO bypass setting that they know of.
 
