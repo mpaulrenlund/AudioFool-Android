@@ -1,37 +1,29 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-24, end of session 3 (playback). Read this with `README.md` (how the app
-works) and `design/progress.md` (every decision, and the lists of what to test on each
-device). The spec is `design/android-spec.md`.
+Updated 2026-10-24, end of session 4 (Bit-Perfect, DSD over DoP). Read this with
+`README.md` (how the app works) and `design/progress.md` (every decision, and the lists of
+what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **Next is session 4, Bit-Perfect, DSD over DoP, and an M21 test build**
-  (`design/session-prompts.md`). It starts with research the user wants to see first (the
-  Android 14+ bit-perfect mixer on a USB DAC, FiiO's SRC bypass on the M21).
-- Read, in order: `CLAUDE.md`, this file, `design/android-spec.md` (§6), and in
-  `design/progress.md` the Decisions sections and the session 3 notes.
-- **Where session 4 plugs in:**
-  - `playback/OutputStage.kt` opens the `AudioTrack` (`openOutput`, `build`): that is
-    where the route, `setPreferredMixerAttributes` and DoP go. It already reopens the
-    output when a song asks for another format, after the last one is heard out (that's
-    the place to re-apply the mixer attributes at a new rate), and after a lost output
-    (`reopenAfterLoss`, carrying on from `ReopenPoint`).
-  - `playback/Decoder.kt` picks the encoding from the bit depth (`encodingFor`) and opens
-    DSD as PCM; DoP needs `BASS_DSD_RAW` and the desktop's DoP packing.
-  - `playback/Player.kt` `readoutFor` builds the readout with `OutputMode.Shared`; the
-    route goes in front of it (spec 6.3).
-  - `ui/NowPlayingScreen.kt` `BitPerfectButton(on, onClick, greyed)` draws all three
-    states; `NowPlayingActions.toggleBitPerfect` is null today. Settings' row reads
-    `nowPlaying.readout` and still shows the off chip.
-  - Statistics > Playback is where the route, readout and mixer attributes go for the user
-    to report.
-- **Device reports still open** (don't block on them): the v0.0.2 and v0.0.4 items on both
-  lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
+- **Next is session 5, Last.fm, Statistics, polish and release 0.1.0**
+  (`design/session-prompts.md`). Its first step is the S24 and M21 test results: read both
+  lists in `design/progress.md`, especially v0.0.5's (what Samsung's mixer offers a USB
+  DAC, and whether the M21's System output follows the song).
+- Read, in order: `CLAUDE.md`, this file, `design/android-spec.md` (§4.5, §4.6, §7), and in
+  `design/progress.md` the Decisions sections and the session 4 notes.
+- **If the S24 lists no bit-perfect mixer** (likely, from other Samsung phones), BP gives
+  "rate matched" there. A truly bit-perfect S24 would need the app's own USB driver
+  (libusb, as USB Audio Player Pro does): a new dependency and a spec change, so ask.
+- **If the M21's System output stays at 48 kHz**, its readout says "(resampled)" even if
+  FiiO's bypass works some other way; ask the user what the M21's own setting shows before
+  changing the rule (`OutputReadout.describe`, `OutputPath.SourceRate`).
+- **Device reports still open** (don't block on them): the v0.0.2, v0.0.4 and v0.0.5 items on
+  both lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
   cold start (v0.0.1), and the M21's first scan (v0.0.3).
-- **Releases:** `v0.0.1` to `v0.0.4` are out (`v0.0.4`, "Playback (session 3 test build)",
-  versionCode 4, 2026-10-24). The next is `0.0.5`, versionCode 5.
-  Confirm the tag and notes with the user before `gh release create`.
+- **Releases:** `v0.0.1` to `v0.0.4` are out (pre-releases); `v0.0.5` is session 4's build
+  (versionCode 5). The next is `0.0.6`, versionCode 6, unless session 5 goes straight to
+  0.1.0. Confirm the tag and notes with the user before `gh release create`.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
   albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and a copy of the
   sample set on the SD card, `/storage/0000-0000/Music`) and the session 3 release build.
@@ -47,7 +39,7 @@ device). The spec is `design/android-spec.md`.
 | The desktop app (read-only) | `C:\MusicPlayer`; its `src/AudioFool.Core` is what gets ported |
 | Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/` |
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
-| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song), `OutputStage` (the `AudioTrack` thread: gapless, what's heard), `Player` (queue, order, focus, unplug, resume), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported logic in `core/.../playback/` and `core/.../analysis/` |
+| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`; `OutputReadout`) and `core/.../analysis/` |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
 | Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `StatisticsScreen.kt` (debug numbers), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts) |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
@@ -58,7 +50,7 @@ device). The spec is `design/android-spec.md`.
 | **Release keystore** | `C:\Users\MarcusRenlund\AndroidKeys\audiofool-release.jks`, passwords in `audiofool-release.properties` beside it. **Outside the repo.** Back up both files together |
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
-| On the phone: settings | SharedPreferences `settings` (theme, music folders) |
+| On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`) |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
 | On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat |
 | On the phone: waveforms | `no_backup/waveforms/*.wave` (96 levels per file, named from path, size and date) |
@@ -142,6 +134,14 @@ Playback, as the emulator shows it (release builds too):
   shows each change.
 - The shade's media player: `adb shell cmd statusbar expand-notifications`. The AVD has no
   lock screen set, so waking it shows the app; the lock screen is checked on the S24.
+- **Bit-Perfect on the emulator:** its only output is the speaker, so BP is greyed. Statistics >
+  Playback > **Pretend route (emulator test)** cycles off → Headphones (the M21's way) → USB
+  (a made-up bit-perfect mixer, never sent to Android) → off; not saved. With USB and BP on,
+  a 24/96 FLAC opens "(BitPerfect)" and the DFF opens as DoP at 176.4 kHz. The logcat
+  `opened` lines end with the path and the route.
+- The logo button is at (74, 137) in device pixels; Statistics' Pretend row is at the bottom
+  of the Playback panel (swipe up twice). Too many BACKs leave the app, and the next tap
+  lands on the home screen.
 
 Then, with `MSYS_NO_PATHCONV=1`:
 
@@ -201,7 +201,19 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ---
 
-## Where things stand (after session 3)
+## Where things stand (after session 4)
+
+- **Bit-Perfect is wired up**: the BP button and the Settings chip (saved, greyed on the
+  speaker and Bluetooth), USB mixer attributes on Android 14+ (bit-perfect, else rate
+  matched), the M21's source-rate way checked against the system output's rate, DoP for DSD
+  on the bit-perfect mixer, and a reopen at the place heard when the route or the setting
+  changes. The readout names the route.
+- **Checked only on the emulator**, with the pretend route: nothing about a real DAC or the
+  M21's bypass is known yet; that's the v0.0.5 lists in `design/progress.md`.
+- **What the user reports** is on Statistics > Playback: Route, Bit-Perfect, Opened as,
+  System output, Direct, USB mixers, Mixer set.
+
+## Where things stood after session 3
 
 - **Playback works on the emulator:** every sample format plays at its own rate and depth
   (FLAC 16/44 and 24/96, MP3, AAC, ALAC 24/48, Opus, Vorbis, WAV, AIFF 24, WavPack, DSF and
@@ -261,6 +273,14 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   else sends it a command. Its news comes back on that thread; `Player` posts it to main.
 - **BASS add-ons load by file name** (`BASS_PluginLoad("libbassflac.so")`): no extracted
   libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
+- **An `AudioTrack` must use the mixer entry's own `AudioFormat`** (`OutputPlan.Mixer.format`)
+  to be attached to the mixer that was set; a rebuilt one with another channel mask may not
+  match. `OutputRoutes.MEDIA` is the one set of attributes for both the mixer and every track.
+- **`AudioFormat.Builder` throws above Android's rate limit** (192 kHz on the emulator; a
+  hidden per-device value): wrap anything that builds one for a made-up rate.
+- **`setPreferredMixerAttributes` and the other mixer calls are Android 14+**: guard each call
+  with `Build.VERSION.SDK_INT` inline (lint doesn't follow `OutputRoutes.MIXER_API`). The M21
+  is Android 13.
 - **`run-as` doesn't work on release builds**, so the app's files can't be read on the
   emulator without a debug build (which needs an uninstall first: other key).
 

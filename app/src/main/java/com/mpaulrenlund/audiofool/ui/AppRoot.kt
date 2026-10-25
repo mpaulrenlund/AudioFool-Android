@@ -55,6 +55,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             seek = player::seek,
             cycleRepeat = player::cycleRepeat,
             toggleShuffle = player::toggleShuffle,
+            toggleBitPerfect = player::toggleBitPerfect,
             close = nav::back,
         )
     }
@@ -82,8 +83,11 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                             app.settings.setIncluded(path, included)
                             app.library.foldersChanged()
                         },
+                        toggleBitPerfect = player::toggleBitPerfect,
                     ),
                     readout = app.nowPlaying.readout,
+                    bitPerfect = app.nowPlaying.bitPerfect,
+                    bitPerfectGreyed = app.nowPlaying.bitPerfectGreyed,
                 )
                 Route.Statistics -> StatisticsScreen(
                     state = state,
@@ -97,6 +101,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                             formats = { BassRuntime.availableFormats.joinToString(", ") },
                             missing = { BassRuntime.missingFormats.joinToString(", ") },
                             joins = player::outputStats,
+                            output = player::outputDetails,
+                            pretendRoute = { player.pretendRoute },
+                            cyclePretendRoute = player::cyclePretendRoute,
                         ),
                     ),
                     actions = DebugActions(

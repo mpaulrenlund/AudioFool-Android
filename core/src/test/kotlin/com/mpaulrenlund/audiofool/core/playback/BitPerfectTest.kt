@@ -1,0 +1,102 @@
+package com.mpaulrenlund.audiofool.core.playback
+
+import org.junit.Test
+import kotlin.test.assertEquals
+
+// Session 4's rules for Bit-Perfect on a phone (spec 6.2, 6.3): which way it
+// works on each route, which USB mixer entry a track plays through, and the readout.
+
+class BitPerfectTest {
+    // ---------- the way per route ----------
+
+    @Test fun usb_on_android_14_uses_the_mixer() =
+        assertEquals(BitPerfectWay.UsbMixer, BitPerfectRule.way(OutputRoute.Usb, mixerApi = true, usbMixerEntries = 12))
+
+    @Test fun usb_that_lists_no_mixer_entries_is_greyed() =
+        assertEquals(BitPerfectWay.None, BitPerfectRule.way(OutputRoute.Usb, mixerApi = true, usbMixerEntries = 0))
+
+    @Test fun usb_before_android_14_and_a_headphone_out_rely_on_the_source_rate() {
+        assertEquals(BitPerfectWay.SourceRate, BitPerfectRule.way(OutputRoute.Usb, mixerApi = false, usbMixerEntries = 0))
+        assertEquals(BitPerfectWay.SourceRate, BitPerfectRule.way(OutputRoute.Headphones, mixerApi = false, usbMixerEntries = 0))
+        assertEquals(BitPerfectWay.SourceRate, BitPerfectRule.way(OutputRoute.Headphones, mixerApi = true, usbMixerEntries = 0))
+    }
+
+    @Test fun bluetooth_and_the_speaker_are_greyed() {
+        for (route in listOf(OutputRoute.Bluetooth, OutputRoute.Speaker, OutputRoute.Other)) {
+            assertEquals(BitPerfectWay.None, BitPerfectRule.way(route, mixerApi = true, usbMixerEntries = 12))
+        }
+    }
+
+    // ---------- choosing a mixer entry ----------
+
+    private fun e(rate: Int, kind: SampleKind?, bitPerfect: Boolean, channels: Int = 2) = MixerEntry(rate, channels, kind, bitPerfect)
+
+    private val usb = listOf(
+        e(44100, SampleKind.Int16, false), e(48000, SampleKind.Int16, false), e(96000, SampleKind.Int24, false),
+        e(44100, SampleKind.Int16, true), e(44100, SampleKind.Int24, true), e(44100, SampleKind.Int32, true),
+        e(96000, SampleKind.Int32, true), e(176400, SampleKind.Int32, true), e(192000, SampleKind.Int24, false),
+    )
+
+    @Test fun the_bit_perfect_mixer_at_the_tracks_own_rate_and_depth_comes_first() {
+        assertEquals(3, MixerChoice.pick(usb, 44100, 2, 16, dop = false))
+        assertEquals(4, MixerChoice.pick(usb, 44100, 2, 24, dop = false))
+    }
+
+    @Test fun a_wider_container_holds_the_samples_exactly() =
+        assertEquals(6, MixerChoice.pick(usb, 96000, 2, 24, dop = false))
+
+    @Test fun without_a_bit_perfect_entry_an_ordinary_one_at_the_rate_is_rate_matched() =
+        assertEquals(8, MixerChoice.pick(usb, 192000, 2, 24, dop = false))
+
+    @Test fun never_a_narrower_format_than_the_track() =
+        assertEquals(-1, MixerChoice.pick(listOf(e(48000, SampleKind.Int16, true)), 48000, 2, 24, dop = false))
+
+    @Test fun no_entry_at_the_tracks_rate_or_channels_means_shared() {
+        assertEquals(-1, MixerChoice.pick(usb, 88200, 2, 16, dop = false))
+        assertEquals(-1, MixerChoice.pick(usb, 44100, 1, 16, dop = false))
+    }
+
+    @Test fun a_float_decoder_takes_the_widest_whole_number_format() =
+        assertEquals(5, MixerChoice.pick(usb, 44100, 2, 0, dop = false))
+
+    @Test fun dop_takes_only_the_bit_perfect_mixer_in_24_or_32_bit() {
+        assertEquals(7, MixerChoice.pick(usb, 176400, 2, 0, dop = true))
+        assertEquals(-1, MixerChoice.pick(usb, 192000, 2, 0, dop = true))
+        assertEquals(setOf(44100, 96000, 176400), MixerChoice.dopRates(usb, 2))
+    }
+
+    @Test fun entries_of_unknown_formats_are_never_chosen() =
+        assertEquals(-1, MixerChoice.pick(listOf(e(48000, null, true)), 48000, 2, 16, dop = false))
+
+    @Test fun the_summary_groups_by_behaviour() {
+        assertEquals(
+            "bit-perfect: 44.1, 96, 176.4 kHz · 16, 24, 32-bit · 2 ch\ndefault: 44.1, 48, 96, 192 kHz · 16, 24-bit · 2 ch",
+            MixerChoice.summary(usb),
+        )
+        assertEquals("none", MixerChoice.summary(emptyList()))
+    }
+
+    // ---------- the readout ----------
+
+    @Test fun bit_perfect_readout() =
+        assertEquals("USB · 96 kHz / 24-bit (bit-perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 96000, 24, 96000, false))
+
+    @Test fun dop_readout() =
+        assertEquals("USB · 176.4 kHz · DSD over PCM (bit-perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 176400, 24, 176400, true))
+
+    @Test fun rate_matched_never_says_bit_perfect() =
+        assertEquals("USB · 96 kHz / 24-bit (rate matched)", OutputReadout.describe(OutputRoute.Usb, OutputPath.RateMatched, 96000, 24, 96000, false))
+
+    @Test fun the_source_rate_way_is_bit_perfect_only_when_the_system_runs_at_the_tracks_rate() {
+        assertEquals("Headphones · 96 kHz / 24-bit (bit-perfect)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 96000, 24, 96000, false))
+        assertEquals("Headphones · 48 kHz (resampled)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 48000, 24, 96000, false))
+    }
+
+    @Test fun shared_readout_names_the_route() {
+        assertEquals("Speaker · Shared · 48 kHz (resampled)", OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 24, 44100, false))
+        assertEquals("Bluetooth · Shared · 48 kHz", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 16, 48000, false))
+    }
+
+    @Test fun an_unknown_output_rate_says_only_the_route() =
+        assertEquals("Bluetooth · Shared", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 0, 0, 44100, false))
+}

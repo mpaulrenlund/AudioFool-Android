@@ -7,7 +7,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **1. Project, theme and library** (spec §1, §2, §8) — 2026-10-24
 - [x] **2. Library screens, navigation and search** (§2, §3, §4) — 2026-10-24
 - [x] **3. Playback** (§3, §5, §6.1, §6.3) — 2026-10-24
-- [ ] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6)
+- [x] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6) — 2026-10-24
 - [ ] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7)
 
 ## Decisions made in the design
@@ -29,6 +29,62 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+Session 4 (2026-10-24):
+
+- **Research first** (shown to the user before building): Android 14+'s
+  `setPreferredMixerAttributes` with `MIXER_BEHAVIOR_BIT_PERFECT` is optional for phone
+  makers (AOSP: "optional", AIDL HAL only); recent Samsung reports (Z Fold 7 on Android 16,
+  S23, A53) say Samsung lists no bit-perfect entries, so the S24 may not offer one. Only
+  the plain mixer entries are required for USB. FiiO documents "no SRC for third-party
+  apps" only for the old X5 III; reviews say the M21 bypasses Android's resampling for
+  every app. An app can't read the hardware's rate or `dumpsys` on either device.
+- **USB on Android 14+ (the S24):** with BP on, the bit-perfect mixer entry at the song's
+  rate and channels, in the narrowest whole-number format that holds its samples (16-bit
+  as 16, else 24, else 32; never narrower than the song); **else an ordinary entry at the
+  song's rate, "rate matched"** (the user's call: no resampling, but still the mixer, so
+  never called bit-perfect); else shared. `MixerChoice` in core, with tests. The
+  `AudioTrack` uses the chosen entry's own `AudioFormat`, as Google's sample does, so an
+  index channel mask (seen on a Fold 7) still matches.
+- **The M21's way, and USB on Android 13** (the M21 with a DAC): with BP on, the song's own
+  rate in whole-number samples (float decoders go out as 32-bit, then 24-bit) at full
+  volume. The readout calls it bit-perfect only when `getNativeOutputSampleRate` shows the
+  system output at the song's rate; "resampled" otherwise. On the emulator it says
+  "Headphones · 48 kHz (resampled)", which is the honest answer there.
+- **Greyed out:** Bluetooth, the speaker, anything else (HDMI, the earpiece), and a USB
+  device that lists no mixer entries at all. The setting keeps its value; the BP label
+  and the Settings dot show it, dimmed.
+- **DoP** (desktop `DopRule`, ported with its tests): only on the bit-perfect mixer, at a
+  rate it offers in 24- or 32-bit stereo. BASSDSD makes the DoP samples
+  (`BASS_DSD_DOP`, float, which holds them exactly). A DoP song that doesn't get a
+  bit-perfect output is reopened as PCM and the rate isn't tried again on that device, as
+  the desktop does. DoP never joins PCM. Rate-matched is not bit-perfect, so DSD goes as PCM there.
+- **Android caps `AudioFormat` at 192 kHz on the emulator** (a hidden limit set per device):
+  DSD128 over DoP needs 352.8 kHz, so it may not be possible on the S24 either; it falls
+  back to PCM if not. On the S24 list.
+- **Route changes and the setting reopen the output** at the place heard (`ReopenPoint`),
+  the decoder too (DSD may switch between DoP and PCM). A shared output isn't reopened
+  for a route change: Android moves it by itself.
+- **No ducking on a bit-perfect path:** a navigation prompt pauses the music and it
+  carries on afterwards (bit-perfect means nothing changes the samples).
+- **The readout** puts the route first: "USB · 96 kHz / 24-bit (bit-perfect)",
+  "Speaker · Shared · 48 kHz (resampled)". The shared rate is now
+  `AudioTrack.getNativeOutputSampleRate` (the output media actually goes to, Bluetooth's
+  too), not the primary mixer's property. No Bluetooth codec: the codec API is system-only.
+- **The Settings row's chip toggles Bit-Perfect** (the row too), greyed in the same cases as
+  BP, with `status.bitPerfectOn` / `Off` for the dot. Saved in SharedPreferences
+  (`bitPerfect`, off when unset).
+- **`MODIFY_AUDIO_SETTINGS`** added to the manifest (needed for the mixer calls; a normal
+  permission, no prompt).
+- **A "Pretend route" switch on Statistics > Playback** (not saved; the emulator has no USB
+  DAC or headphone jack): Headphones, or USB with a made-up list of bit-perfect entries that
+  is never sent to Android. It's how the bit-perfect paths, DoP and the reopen were played
+  through on the emulator. It ships in the test builds; it changes nothing until tapped.
+- **Debug numbers** (Statistics > Playback) for the user to report: the route and the
+  device's rates and formats, Bit-Perfect and its way here, how the output was opened, the
+  system output's rate, whether Android says it would play the song's format direct, the
+  USB device's mixer entries grouped by behaviour, and the mixer set (read back from
+  Android) with the last attempt.
+
 Session 3 (2026-10-24):
 
 - **BASS 2.4 for Android, vendored unchanged** in `third_party/bass` (as the desktop keeps
@@ -47,7 +103,7 @@ Session 3 (2026-10-24):
   `AudioTrack` (gapless); one in another format reopens it after the last song has been
   heard out ([TrackEnd], ported, with the output treated like the desktop's exclusive mode).
 - **DSD is converted to PCM at 88.2 kHz** (`BASS_CONFIG_DSD_FREQ`, the desktop's fallback
-  rate), as float. DoP is session 4.
+  rate), as float. DoP is session 4 (above).
 - **What's shown is what's heard:** the desktop's `HearingTimeline` is ported; the
   `AudioTrack`'s playback head says which song and place are coming out, so the screens
   change song at the join, not half a second early.
@@ -141,6 +197,41 @@ Session 1:
 
 ## To test on the S24
 
+### v0.0.5 (session 4: Bit-Perfect)
+
+Not released yet (the tag and notes are confirmed with the user first). Installs over
+v0.0.4 (same key). Report from logo > **Statistics** > **Playback**: Output, Route,
+Bit-Perfect, Opened as, System output, Direct, USB mixers, Mixer set. A photo of the panel
+is fine.
+
+- [ ] **What the S24 offers your DAC.** Plug the DAC in, open Statistics > Playback: report
+  **USB mixers** (two lines, "bit-perfect: …" and "default: …", or "none") and **Route**.
+  This answers whether Samsung gives the S24 a bit-perfect mixer at all.
+- [ ] **24/96 FLAC, Bit-Perfect on and off.** Play it with BP off, then tap BP (Now Playing):
+  report Output and Mixer set for each. Expected with BP on: "USB · 96 kHz / 24-bit
+  (bit-perfect)" or "(rate matched)"; with BP off: "USB · Shared · 48 kHz (resampled)" or
+  similar. Does the DAC's own display (if it has one) show 96 kHz with BP on?
+- [ ] **16/44 FLAC, Bit-Perfect on and off.** The same: "USB · 44.1 kHz / 16-bit (…)".
+- [ ] **A rate change without cutting the end.** An album or queue going from a 44.1 kHz song
+  to a 96 kHz one with BP on: the end of the first song is heard in full, then a short gap
+  (the output reopens at the new rate), and the readout changes to 96 kHz.
+- [ ] **DSD64 over DoP.** With BP on, play a DSF/DFF: does the DAC show DSD (or DoP), and does
+  it sound right (not hiss)? Output should say "USB · 176.4 kHz · DSD over PCM
+  (bit-perfect)". If it says "/ 32-bit float … (rate matched)" or 88.2 kHz, it went as PCM:
+  report Mixer set. A DSD128 file too, if you have one: it needs 352.8 kHz, which Android may
+  not allow (then PCM).
+- [ ] **Volume.** With BP on through the DAC, the phone's volume keys: do they change the
+  DAC's volume, or nothing? (Bit-perfect leaves the volume to the DAC.) Do notification
+  sounds still play, and where?
+- [ ] **BP greyed on Bluetooth and the speaker.** Unplug the DAC: BP and the Settings chip go
+  dim and can't be tapped; Output says "Speaker · Shared · …". Same with Bluetooth
+  connected: "Bluetooth · Shared · … ".
+- [ ] **Switching routes mid-song.** While playing with BP on: plug the DAC in (it should move
+  to the DAC and reopen bit-perfect at the place it was), pull it out (it pauses, as an
+  unplug does), connect Bluetooth (BP goes grey, it plays on Bluetooth).
+- [ ] **A navigation prompt with BP on** (through the DAC): the music pauses for it and
+  carries on after, rather than getting quieter.
+
 ### v0.0.4 (session 3: playback)
 
 Released 2026-10-24 as pre-release
@@ -221,6 +312,27 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+Session 4 (`v0.0.5`), the M21's first playback build. Report from logo > **Statistics** >
+**Playback** (a photo is fine).
+
+- [ ] **Install over the last build** and play something from the SD card through the 3.5 mm or
+  4.4 mm out: it plays, Now Playing shows the waveform, the notification works. Report
+  Route (it should say "Headphones" and the device type).
+- [ ] **Bit-Perfect on the headphone out.** BP should be tappable. Play a 44.1 kHz FLAC, then a
+  96 kHz one, with BP on: report Output, System output and Direct for each. **The key
+  question is System output:** if it follows the song (44.1 kHz, then 96 kHz), FiiO's
+  bypass is in the path and Output says "(bit-perfect)"; if it stays at 48 kHz, it says
+  "(resampled)". Then the same with BP off.
+- [ ] **FiiO's own setting.** Is there a setting on the M21 for the SRC bypass (in Settings or
+  the pull-down)? Does turning it on or off change System output?
+- [ ] **DSD on the M21.** A DSF/DFF plays (as PCM: Output "… 88.2 kHz …"); no DoP to the
+  internal DAC.
+- [ ] **Gapless** across a live album, BP on and off: Playback > Joins, 0 underruns.
+- [ ] **Bluetooth on the M21:** BP greyed, "Bluetooth · Shared · …".
+- [ ] **Unplugging headphones** pauses.
+- [ ] (If you have a USB DAC for the M21) **USB on Android 13:** BP works the M21's way;
+  report Output and System output.
+
 Session 2 (`v0.0.2`), with the full library on the SD card:
 
 - **First scan (2026-10-24, in progress):** 27,115 files found; 12,000 read after a little
@@ -252,6 +364,55 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### Session 4 — Bit-Perfect, DSD over DoP, and an M21 test build (2026-10-24)
+
+**Researched first** (shown to the user, who chose the rate-matched fallback): see
+Decisions. Sources: Android's "Improve audio playback" page, AOSP's "Preferred mixer
+attributes", the SDK's own `AudioManager` docs (on this PC), jastreamer PRs #53/#56 (Fold 7),
+LastWave #118 (S23), aurora #7 (A53), Roon's community (S24 Ultra, FiiO M23), FiiO's X5 III
+FAQ, and M21 reviews (SoundStage! Simplifi, Headfonia).
+
+**Built:** `OutputRoutes` (the route from `getAudioDevicesForAttributes`, followed by an
+`AudioDeviceCallback`; a USB device's mixer entries; setting and clearing the mixer; the
+debug numbers), the output stage opening each output by `OutputPlan` (mixer entry,
+source rate, shared) with `fixedVolume` and a reopen on a route or setting change, DSD
+as DoP through BASSDSD, the player's Bit-Perfect setting (saved), focus pausing instead of
+ducking on a bit-perfect path, the readout with the route, the BP button wired (on, off,
+greyed), the Settings row's chip, and Statistics > Playback's new rows with the pretend
+route switch. Ported with their tests: `DopRule` (and the DoP cases of
+`PlaybackDecisionTests`). New, with tests: `BitPerfectRule`, `MixerChoice`, the routed
+`OutputReadout.describe`.
+
+**Verified:**
+- `:core:test` (21 new: DoP 3, Bit-Perfect 18), `:app:testDebugUnitTest`, 289 in all, 0
+  failures. `verifyRoborazziDebug`: every earlier picture unchanged; 16 new: Now Playing with
+  BP on (USB bit-perfect readout) and greyed (speaker), and Settings with BP on (rate
+  matched) and greyed (Bluetooth), both themes, both sizes.
+- Emulator, release build (versionCode 5) installed over v0.0.4:
+  - The speaker: BP and the Settings chip greyed, a tap does nothing; "Speaker · Shared · 48
+    kHz (resampled)"; Statistics shows the route ("speaker \"sdk_gphone64_x86_64\""), "way
+    here: None (greyed)".
+  - `Gapless Live`: 2 gapless joins, 0 underruns, shared and on the (pretend) bit-perfect mixer.
+  - Pretend Headphones, BP tapped on mid-song: reopened at the place as SourceRate, 96 kHz /
+    24-bit; readout "Headphones · 48 kHz (resampled)" (the emulator's output stays at 48 kHz).
+  - Pretend USB: 24/96 FLAC opened "(BitPerfect)" at 96 kHz / 24-bit; the DFF opened as **DoP,
+    176.4 kHz / 24-bit**, "USB · 176.4 kHz · DSD over PCM (bit-perfect)"; BP off mid-song
+    reopened it as 88.2 kHz float PCM, shared; on again, DoP again.
+  - The setting survives a restart (on); the pretend switch doesn't (off).
+  - The media session still shows the song.
+- Found and fixed on the emulator: `AudioFormat` refuses rates above 192 kHz there (the
+  pretend list crashed building 352.8 kHz).
+- **Not checkable on the emulator** (on the S24 and M21 lists): any real USB DAC (what Samsung
+  lists, whether the mixer is set, DoP into a DAC), the M21's bypass (System output), the
+  volume keys on a bit-perfect output, Bluetooth, unplugging, and a ducking prompt.
+
+**Differences from the spec** (the spec is updated, §6.2 and §6.3): the rate-matched
+fallback (the user's call); the M21's way checks the system output's rate before calling
+itself bit-perfect; a USB device with no mixer entries greys BP out; no Bluetooth codec in
+the readout (system-only API); the shared readout has the route first ("Speaker · Shared ·
+48 kHz"), so the mockup's "Shared · 48 kHz / 32-bit (resampled)" isn't what the app shows
+(ThemeLab's mockup picture keeps the mockup's text).
 
 ### Session 3 — Playback (2026-10-24)
 

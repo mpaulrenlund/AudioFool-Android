@@ -32,7 +32,9 @@ import com.mpaulrenlund.audiofool.ui.TokenSheet
 import com.mpaulrenlund.audiofool.ui.NowPlayingActions
 import com.mpaulrenlund.audiofool.ui.NowPlayingScreen
 import com.mpaulrenlund.audiofool.core.playback.OutputMode
+import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
+import com.mpaulrenlund.audiofool.core.playback.OutputRoute
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -124,10 +126,45 @@ class ThemeLabTest {
             }
             NowPlayingScreen(np, NowPlayingActions())
         }
+        // BP's other two states (spec 6.4; off is the mockup's): on through a USB DAC's
+        // bit-perfect mixer, and greyed out on the phone speaker.
+        shoot(device, "now-playing-bp-on") {
+            val np = nowPlaying(readout = OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 96000, 24, 96000, false)).apply {
+                bitPerfect = true
+            }
+            NowPlayingScreen(np, NowPlayingActions())
+        }
+        shoot(device, "now-playing-bp-greyed") {
+            val np = nowPlaying(readout = OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 0, 96000, false)).apply {
+                bitPerfectGreyed = true
+            }
+            NowPlayingScreen(np, NowPlayingActions())
+        }
+        shoot(device, "settings-bp-on") {
+            SettingsScreen(
+                folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                actions = SettingsActions(),
+                readout = OutputReadout.describe(OutputRoute.Usb, OutputPath.RateMatched, 96000, 24, 96000, false),
+                bitPerfect = true,
+            )
+        }
+        shoot(device, "settings-bp-greyed") {
+            SettingsScreen(
+                folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                actions = SettingsActions(),
+                readout = OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 0, 44100, false),
+                bitPerfect = true,
+                bitPerfectGreyed = true,
+            )
+        }
     }
 
     /** Now Playing's mockup state: third of ten, 2:18 in, its waveform and the readout the shared output gives. */
-    private fun nowPlaying(playing: Boolean = true, waveform: FloatArray? = ThemeLabFixtures.mockupWaveform) = NowPlaying().apply {
+    private fun nowPlaying(
+        playing: Boolean = true,
+        waveform: FloatArray? = ThemeLabFixtures.mockupWaveform,
+        readout: String = OutputReadout.describe(OutputMode.Shared, 48000, 0, 96000, false),
+    ) = NowPlaying().apply {
         showForPictures(
             ThemeLabFixtures.nowPlayingTrack,
             playing = playing,
@@ -135,7 +172,7 @@ class ThemeLabTest {
             size = 10,
             positionMs = ThemeLabFixtures.NOW_PLAYING_POSITION_MS,
             waveform = waveform,
-            readout = OutputReadout.describe(OutputMode.Shared, 48000, 0, 96000, false),
+            readout = readout,
         )
     }
 

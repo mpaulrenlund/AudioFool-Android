@@ -4,6 +4,7 @@ import android.media.AudioFormat
 import com.mpaulrenlund.audiofool.core.library.AudioFormats
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.un4seen.bass.BASS
+import com.un4seen.bass.BASSDSD
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -13,7 +14,13 @@ import java.nio.ByteOrder
  * sample rate and bit depth wherever the route allows). Two tracks with the same
  * format play through the same `AudioTrack`, which is what makes them gapless.
  */
-data class PcmFormat(val sampleRate: Int, val channels: Int, val encoding: Int) {
+data class PcmFormat(
+    val sampleRate: Int,
+    val channels: Int,
+    val encoding: Int,
+    /** DSD over PCM: the samples carry DSD and its markers, and must reach the DAC untouched. Never joins PCM. */
+    val dop: Boolean = false,
+) {
     val bytesPerSample: Int get() = when (encoding) {
         AudioFormat.ENCODING_PCM_16BIT -> 2
         AudioFormat.ENCODING_PCM_24BIT_PACKED -> 3
@@ -43,8 +50,9 @@ data class PcmFormat(val sampleRate: Int, val channels: Int, val encoding: Int) 
  * One track opened for decoding: a BASS decode-only stream giving 32-bit float
  * samples, which [read] converts to the output's encoding. Float holds a 24-bit
  * source exactly (and a 16-bit one), so the conversion gives back the file's own
- * samples. DSD is converted to PCM by BASSDSD at its default rate (88.2 kHz for
- * DSD64); DoP comes in session 4.
+ * samples. DSD is converted to PCM by BASSDSD (at 88.2 kHz), or, where a
+ * bit-perfect output can carry it, opened as DoP: BASSDSD packs the DSD into
+ * 24-bit samples with the DoP markers, which float also holds exactly.
  *
  * Not thread-safe: the output stage's thread owns it.
  */
@@ -128,14 +136,22 @@ class Decoder private constructor(
         /**
          * Opens [track] at [startMs], or null when the file isn't there (a removed
          * SD card) or BASS can't decode it. [lastError] says which.
+         *
+         * A DSD file opens as DoP when [mayOpenDop] allows its DoP rate (the
+         * desktop's `TryCreateDopStream`: Bit-Perfect on, and a bit-perfect output
+         * at that rate); otherwise it is converted to PCM.
          */
-        fun open(track: Track, startMs: Long = 0): Decoder? {
+        fun open(track: Track, startMs: Long = 0, mayOpenDop: (Int) -> Boolean = { false }): Decoder? {
             val path = track.filePath
             if (!File(path).isFile) {
                 lastError = "not found"
                 return null
             }
             val flags = BASS.BASS_STREAM_DECODE or BASS.BASS_SAMPLE_FLOAT
+            if (AudioFormats.isDsd(path)) openDop(track, flags, mayOpenDop)?.let { dop ->
+                if (startMs > 0) dop.seek(startMs)
+                return dop
+            }
             val module = AudioFormats.isModule(path)
             val handle = if (module) {
                 BASS.BASS_MusicLoad(path, 0, 0, flags or BASS.BASS_MUSIC_PRESCAN, 0)
@@ -158,6 +174,22 @@ class Decoder private constructor(
             val decoder = Decoder(track, handle, module, PcmFormat(info.freq, info.chans, encodingFor(track)), 0)
             if (startMs > 0) decoder.seek(startMs)
             return decoder
+        }
+
+        /** A DSD file as DoP, or null when [mayOpenDop] says no at its rate (or BASSDSD can't). */
+        private fun openDop(track: Track, flags: Int, mayOpenDop: (Int) -> Boolean): Decoder? {
+            val handle = try {
+                BASSDSD.BASS_DSD_StreamCreateFile(track.filePath, 0, 0, flags or BASSDSD.BASS_DSD_DOP, 0)
+            } catch (e: UnsatisfiedLinkError) {
+                return null
+            }
+            if (handle == 0) return null
+            val info = BASS.BASS_CHANNELINFO()
+            if (!BASS.BASS_ChannelGetInfo(handle, info) || info.freq <= 0 || info.chans <= 0 || !mayOpenDop(info.freq)) {
+                BASS.BASS_StreamFree(handle)
+                return null
+            }
+            return Decoder(track, handle, false, PcmFormat(info.freq, info.chans, AudioFormat.ENCODING_PCM_24BIT_PACKED, dop = true), 0)
         }
 
         @Volatile var lastError: String = ""

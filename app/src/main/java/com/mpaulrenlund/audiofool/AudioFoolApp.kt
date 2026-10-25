@@ -15,6 +15,7 @@ import com.mpaulrenlund.audiofool.theme.AppTokens
 import com.mpaulrenlund.audiofool.art.Thumbnails
 import com.mpaulrenlund.audiofool.core.playback.ResumePoint
 import com.mpaulrenlund.audiofool.playback.NowPlaying
+import com.mpaulrenlund.audiofool.playback.OutputRoutes
 import com.mpaulrenlund.audiofool.playback.PlaybackService
 import com.mpaulrenlund.audiofool.playback.Player
 import com.mpaulrenlund.audiofool.playback.SystemControls
@@ -55,6 +56,8 @@ class AudioFoolApp : Application() {
             scope = scope,
             resumePath = File(noBackupFilesDir, "resume.json").path,
             waveforms = WaveformReader(File(noBackupFilesDir, "waveforms"), tokens.mobile.number("nowPlaying.waveformBars").toInt()),
+            routes = OutputRoutes(this),
+            settings = settings,
         ).also { p ->
             p.onChange = {
                 systemControls.update()

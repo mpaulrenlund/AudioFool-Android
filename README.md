@@ -5,8 +5,8 @@ Galaxy S24 Ultra (Android 17) and a FiiO M21 (Android 13). Kotlin and Jetpack Co
 with the desktop's two themes, PS2 Dark and PS1 Light, and its library rules ported
 from `AudioFool.Core`.
 
-Status: session 3 of 5 (playback). Bit-Perfect and DSD over DoP, then Last.fm and
-Statistics follow; see `design/session-prompts.md` and `design/progress.md`.
+Status: session 4 of 5 (Bit-Perfect and DSD over DoP). Last.fm, Statistics and the
+0.1.0 release follow; see `design/session-prompts.md` and `design/progress.md`.
 
 ## How it works
 
@@ -40,12 +40,30 @@ Statistics follow; see `design/session-prompts.md` and `design/progress.md`.
   24-bit as 24-bit, lossy files as float), so the app decides what reaches the output.
   The next song is opened while one plays and joined on in the same output, so an
   album plays without gaps; a song in another format reopens the output once the last
-  one has been heard out. DSD is converted to PCM at 88.2 kHz (DoP comes in session 4).
+  one has been heard out. DSD is converted to PCM at 88.2 kHz, or sent as DoP (below).
   A tap on a song plays it with the rest of its album after it; Previous, Next, shuffle
   and repeat follow the desktop's `PlayOrder`.
+- **Bit-Perfect** (the BP button, and the same setting in Settings). Off: the normal shared
+  output, which Android's mixer resamples to its own rate. On, it depends on the route:
+  - **A USB DAC on Android 14+ (the S24):** the app asks Android for the DAC's bit-perfect
+    mixer at each song's rate (`setPreferredMixerAttributes`, `MIXER_BEHAVIOR_BIT_PERFECT`):
+    no mixing, no volume, no effects. If the phone offers no bit-perfect entry at that rate,
+    an ordinary mixer entry at the song's rate instead: no resampling, but still mixed, so
+    the readout says "rate matched".
+  - **A headphone out, or USB on Android 13 (the M21):** the song's own rate in whole-number
+    samples at full volume, left to the system (FiiO's SRC bypass). It's called bit-perfect
+    only when the system's output is seen running at the song's rate.
+  - **Bluetooth and the speaker:** BP is greyed out.
+  - **DSD over DoP:** with the bit-perfect mixer at the DoP rate (176.4 kHz for DSD64), DSD
+    goes to the DAC as DSD inside 24-bit PCM (the desktop's `DopRule`); otherwise it is
+    converted to PCM.
+  A change of route or of the setting reopens the output where the song was. The readout
+  under Now Playing's controls says what reaches the output, route first: "USB · 96 kHz /
+  24-bit (bit-perfect)", "Speaker · Shared · 48 kHz (resampled)".
 - **The system's controls.** A foreground media service and a media session: the lock
   screen, the notification (with the cover), headset and Bluetooth buttons. Another
-  app's sound pauses or ducks it (audio focus); unplugging headphones pauses it.
+  app's sound pauses or ducks it (audio focus; on a bit-perfect path it pauses instead of
+  ducking); unplugging headphones pauses it.
 - **Resume.** The queue, the song, the place heard (the desktop's `ReopenPoint`), shuffle
   and repeat are saved (`resume.json`) and restored, paused, when the app opens again.
 - **The theme.** The desktop's token files are the app's theme, read by JSON path

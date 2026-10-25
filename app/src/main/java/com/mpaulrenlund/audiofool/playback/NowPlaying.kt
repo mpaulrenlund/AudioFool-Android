@@ -39,6 +39,14 @@ class NowPlaying {
     var readout: String by mutableStateOf("")
         internal set
 
+    /** The Bit-Perfect setting (spec 6.2, 6.4): the BP button's label and the Settings chip's dot. */
+    var bitPerfect: Boolean by mutableStateOf(false)
+        internal set
+
+    /** Bit-Perfect can't work on this route (Bluetooth, the speaker): BP is greyed out and can't be tapped. */
+    var bitPerfectGreyed: Boolean by mutableStateOf(true)
+        internal set
+
     /** The track's waveform levels (0 to 1), or null until worked out (spec 5: a flat bar meanwhile). */
     var waveform: FloatArray? by mutableStateOf(null)
         internal set
@@ -75,7 +83,11 @@ class NowPlaying {
         positionMs: Long = 0,
         waveform: FloatArray? = null,
         readout: String = "",
+        bitPerfect: Boolean = false,
+        bitPerfectGreyed: Boolean = false,
     ) {
+        this.bitPerfect = bitPerfect
+        this.bitPerfectGreyed = bitPerfectGreyed
         this.track = track
         isPlaying = playing
         queueIndex = index

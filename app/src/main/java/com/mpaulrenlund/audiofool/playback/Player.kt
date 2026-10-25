@@ -13,11 +13,13 @@ import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.SafeFile
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
-import com.mpaulrenlund.audiofool.core.playback.OutputMode
+import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
+import com.mpaulrenlund.audiofool.core.playback.OutputRoute
 import com.mpaulrenlund.audiofool.core.playback.PlayOrder
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import com.mpaulrenlund.audiofool.core.playback.ResumePoint
+import com.mpaulrenlund.audiofool.settings.AppSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -33,7 +35,9 @@ import java.io.IOException
  * date for the screens, and the system's controls through [onChange].
  *
  * Also holds what the phone asks of a player: audio focus (another app's sound
- * pauses or ducks it), and a pause when headphones are unplugged.
+ * pauses or ducks it), and a pause when headphones are unplugged; and
+ * Bit-Perfect (spec 6.2): the setting, greyed out where the route can't do it,
+ * and the output opened again when either changes during playback.
  *
  * Main thread only; the output stage's news is posted here.
  */
@@ -43,13 +47,15 @@ class Player(
     private val scope: CoroutineScope,
     private val resumePath: String,
     private val waveforms: WaveformReader,
+    private val routes: OutputRoutes,
+    private val settings: AppSettings,
 ) : OutputStage.Listener {
     private val main = Handler(Looper.getMainLooper())
     private var engineMade = false
     private val engine: OutputStage by lazy {
         BassRuntime.initialise()
         engineMade = true
-        OutputStage(this)
+        OutputStage(this, routes)
     }
     private val audioManager = context.getSystemService(AudioManager::class.java)
 
@@ -70,6 +76,11 @@ class Player(
 
     init {
         state.positionSource = ::positionMs
+        routes.bitPerfectOn = settings.bitPerfect.value
+        state.bitPerfect = routes.bitPerfectOn
+        routes.onChange = ::routeChanged
+        routes.start()
+        showRoute()
     }
 
     val hasQueue: Boolean get() = queue.isNotEmpty()
@@ -187,6 +198,68 @@ class Player(
         if (engineMade) engine.setVolume(level)
     }
 
+    // ---- Bit-Perfect (spec 6.2, 6.4) ----
+
+    /** The BP button and the Settings chip: on or off, saved; nothing where it is greyed out. */
+    fun toggleBitPerfect() {
+        if (routes.greyed) return
+        val on = !routes.bitPerfectOn
+        settings.setBitPerfect(on)
+        routes.bitPerfectOn = on
+        state.bitPerfect = on
+        if (engaged && engineMade) engine.reconfigure() else if (!on) routes.clearMixer()
+        showRoute()
+        onChange()
+    }
+
+    /** A USB DAC, headphones or Bluetooth came or went (main thread). */
+    private fun routeChanged() {
+        // Android moves a shared output by itself; a bit-perfect one (or one that
+        // could now be) is opened again the new route's way.
+        if (engaged && engineMade && (routes.bitPerfectOn || engine.openedPath != OutputPath.Shared)) engine.reconfigure()
+        showRoute()
+    }
+
+    private fun showRoute() {
+        state.bitPerfectGreyed = routes.greyed
+        state.readout = readoutFor(state.track)
+        // The system output's rate settles once the track plays: look again shortly.
+        main.removeCallbacks(readoutAgain)
+        main.postDelayed(readoutAgain, READOUT_SETTLE_MS)
+    }
+
+    private val readoutAgain = Runnable { state.readout = readoutFor(state.track) }
+
+    /** The debug screen's emulator switch ([OutputRoutes.pretend]): off, Headphones, USB, off. */
+    fun cyclePretendRoute() {
+        routes.setPretend(
+            when (routes.pretend) {
+                null -> OutputRoute.Headphones
+                OutputRoute.Headphones -> OutputRoute.Usb
+                else -> null
+            },
+        )
+    }
+
+    val pretendRoute: String get() = routes.pretend?.let { if (it == OutputRoute.Usb) "USB (made-up bit-perfect mixer)" else it.label } ?: "off: the real route"
+
+    /** For the debug screen: the route, the USB mixer and what the system reports, for the user to send back. */
+    fun outputDetails(): List<Pair<String, String>> {
+        val opened = if (engineMade) engine.openedFormat else null
+        val asked = if (engineMade) engine.askedFormat else null
+        return listOf(
+            "Route" to "${routes.route.label} · ${routes.deviceSummary()}",
+            "Bit-Perfect" to "${if (routes.bitPerfectOn) "on" else "off"} · way here: ${routes.way.name}" +
+                if (routes.greyed) " (greyed)" else "",
+            "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),
+            "System output" to routes.systemOutputRate().let { if (it > 0) Display.sampleRate(it) else "–" } +
+                " (mixer property ${audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE) ?: "–"} Hz)",
+            "Direct" to (asked?.let { "${describe(it)}: ${routes.directSupport(it)}" } ?: "–"),
+            "USB mixers" to routes.mixerSummary(),
+            "Mixer set" to "${routes.preferredMixer()}${routes.lastMixerNote.takeIf { it.isNotEmpty() }?.let { " · last: $it" } ?: ""}",
+        )
+    }
+
     // ---- resume (spec 6.1) ----
 
     /**
@@ -261,11 +334,12 @@ class Player(
         state.skippedLog = (tracks.map { it.filePath.substringAfterLast('/') + ": " + Decoder.lastError } + state.skippedLog).take(LOG_SIZE)
     }.let { }
 
-    override fun onOpened(track: Track, asked: PcmFormat, opened: PcmFormat) = main.post {
-        val line = "${track.displayTitle} (${track.kind}): ${describe(asked)} → output ${describe(opened)}"
-        android.util.Log.i(TAG, "opened $line")
+    override fun onOpened(track: Track, asked: PcmFormat, opened: PcmFormat, path: OutputPath) = main.post {
+        val how = if (path == OutputPath.Shared) "" else " (${path.name})"
+        val line = "${track.displayTitle} (${track.kind}): ${describe(asked)} → output ${describe(opened)}$how"
+        android.util.Log.i(TAG, "opened $line · ${routes.route.label}")
         state.openedLog = (listOf(line) + state.openedLog).take(LOG_SIZE)
-        state.readout = readoutFor(track)
+        showRoute()
     }.let { }
 
     override fun onFinished() = main.post {
@@ -324,8 +398,10 @@ class Player(
         state.track = track
         state.queueIndex = order.positionOf(index).takeIf { state.shuffle && it >= 0 } ?: index
         state.queueSize = queue.size
-        state.readout = readoutFor(track)
-        if (changed) loadWaveform(track)
+        if (changed) {
+            showRoute()
+            loadWaveform(track)
+        }
     }
 
     private fun loadWaveform(track: Track) {
@@ -338,15 +414,23 @@ class Player(
     }
 
     /**
-     * The readout (spec 6.3) for the shared output, which is all session 3 opens:
-     * the system mixer's rate, and "(resampled)" when the track's rate differs.
-     * The mixer's bit depth isn't something Android tells an app, so it is left
-     * out (the desktop's readout does the same when WASAPI doesn't say).
+     * The readout (spec 6.3): the route, then the rate and depth, then a note
+     * ([OutputReadout]). A mixer entry's rate and depth are what was set; the
+     * shared output and the M21's way read the rate the system's media output
+     * runs at, and its depth isn't something Android tells an app, so the shared
+     * readout leaves it out (the desktop's does the same when WASAPI doesn't say).
      */
-    private fun readoutFor(track: Track): String {
-        val mixer = audioManager.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)?.toIntOrNull() ?: 48000
-        val source = (if (engineMade) engine.openedFormat?.sampleRate else null) ?: track.sampleRate ?: 0
-        return OutputReadout.describe(OutputMode.Shared, mixer, 0, source, false)
+    private fun readoutFor(track: Track?): String {
+        val route = routes.route
+        val opened = if (engineMade) engine.openedFormat else null
+        val asked = if (engineMade) engine.askedFormat else null
+        val source = asked?.sampleRate ?: track?.sampleRate ?: 0
+        if (opened == null) return OutputReadout.describe(route, OutputPath.Shared, routes.systemOutputRate(), 0, source, false)
+        return when (val path = engine.openedPath) {
+            OutputPath.BitPerfect, OutputPath.RateMatched -> OutputReadout.describe(route, path, opened.sampleRate, opened.bits, source, opened.dop)
+            OutputPath.SourceRate -> OutputReadout.describe(route, path, routes.systemOutputRate(), opened.bits, source, false)
+            OutputPath.Shared -> OutputReadout.describe(route, path, routes.systemOutputRate(), 0, source, false)
+        }
     }
 
     private fun indexOf(track: Track, near: Int): Int {
@@ -402,7 +486,13 @@ class Player(
                 resumeOnFocusGain = state.isPlaying
                 if (state.isPlaying) pause()
             }
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> setVolume(DUCKED)
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> if (engineMade && engine.fixedVolume) {
+                // A bit-perfect path is never turned down: pause for the prompt instead.
+                resumeOnFocusGain = state.isPlaying
+                if (state.isPlaying) pause()
+            } else {
+                setVolume(DUCKED)
+            }
             AudioManager.AUDIOFOCUS_GAIN -> {
                 setVolume(1f)
                 if (resumeOnFocusGain) {
@@ -441,7 +531,10 @@ class Player(
         const val SAVE_EVERY_MS = 10_000L
         const val DUCKED = 0.2f
 
-        fun describe(f: PcmFormat) = "${Display.sampleRate(f.sampleRate)} / ${f.depthName}, ${f.channels} ch"
+        /** How long after an output opens the readout looks at the system's rate again. */
+        const val READOUT_SETTLE_MS = 1_000L
+
+        fun describe(f: PcmFormat) = OutputRoutes.describe(f)
     }
 }
 

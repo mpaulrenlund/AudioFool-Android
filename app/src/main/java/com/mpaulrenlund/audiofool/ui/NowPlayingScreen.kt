@@ -74,8 +74,8 @@ class NowPlayingActions(
     val seek: (Long) -> Unit = {},
     val cycleRepeat: () -> Unit = {},
     val toggleShuffle: () -> Unit = {},
-    /** Bit-Perfect comes in session 4: the button shows its off state and does nothing yet. */
-    val toggleBitPerfect: (() -> Unit)? = null,
+    /** The BP button (spec 6.4); not called while it is greyed out. */
+    val toggleBitPerfect: () -> Unit = {},
     /** A swipe down: back to the screen underneath (spec 5). */
     val close: () -> Unit = {},
 )
@@ -88,7 +88,7 @@ class NowPlayingActions(
  * right for a right thumb) and the output readout.
  */
 @Composable
-fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions, bitPerfect: Boolean = false) {
+fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
     val t = LocalAppTheme.current
     val track = nowPlaying.track
     val scope = rememberCoroutineScope()
@@ -126,7 +126,7 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions, bitPerf
                     Seekbar(nowPlaying, actions.seek)
                 }
                 Spacer(Modifier.weight(t.number("nowPlaying.spaceBelowTimesWeight").toFloat()))
-                Controls(nowPlaying, actions, bitPerfect, screenHeight)
+                Controls(nowPlaying, actions, screenHeight)
                 Line(
                     nowPlaying.readout,
                     t.text("nowPlaying.outputSize", "color.text.muted").copy(textAlign = TextAlign.Center),
@@ -299,7 +299,7 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit) {
  * screen height between a min and a max.
  */
 @Composable
-private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, bitPerfect: Boolean, screenHeight: Dp) {
+private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp) {
     val t = LocalAppTheme.current
     fun scaled(path: String): Dp =
         (screenHeight.value * t.number("$path.ofScreenHeight")).coerceIn(t.number("$path.min"), t.number("$path.max")).dp
@@ -330,7 +330,8 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, bitPerf
             RoundButton(mode, mode, mode, actions.toggleShuffle) {
                 Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) "color.control.shuffleOn" else "color.control.iconOff")
             }
-            BitPerfectButton(bitPerfect, actions.toggleBitPerfect)
+            val greyed = nowPlaying.bitPerfectGreyed
+            BitPerfectButton(nowPlaying.bitPerfect, if (greyed) null else actions.toggleBitPerfect, greyed)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
             val skipIcon = skip * t.number("nowPlaying.skipIconOfButton").toFloat()
@@ -370,8 +371,8 @@ private fun RepeatOneBadge(modifier: Modifier) {
 /**
  * The BP button (spec 6.4): a `modeButton` round button labelled "BP" (12/700),
  * `bpLabel.on` when Bit-Perfect is on and `bpLabel.off` when off. Greyed out
- * (`disabledOpacity`) and not tappable where it can't work, which is decided in
- * session 4; [onClick] null draws it greyed.
+ * (`disabledOpacity`) and not tappable where it can't work (spec 6.2: Bluetooth,
+ * the speaker): [greyed], with [onClick] null.
  */
 @Composable
 fun BitPerfectButton(on: Boolean, onClick: (() -> Unit)?, greyed: Boolean = false) {

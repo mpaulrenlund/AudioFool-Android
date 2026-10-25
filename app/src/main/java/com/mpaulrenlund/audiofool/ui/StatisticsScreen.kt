@@ -40,6 +40,11 @@ class PlaybackNumbers(
     val missing: () -> String,
     /** Gapless joins, reopens and underruns since the app started. */
     val joins: () -> String = { "–" },
+    /** Session 4: the route, Bit-Perfect, the USB mixer entries and what the system reports. */
+    val output: () -> List<Pair<String, String>> = { emptyList() },
+    /** The emulator's pretend route (it has no USB DAC or headphones), and a tap to cycle it. */
+    val pretendRoute: () -> String = { "" },
+    val cyclePretendRoute: () -> Unit = {},
 )
 
 class DebugActions(
@@ -82,6 +87,7 @@ fun StatisticsScreen(state: LibraryState, numbers: DebugNumbers, actions: DebugA
 /**
  * Playback's numbers (session 3): BASS and its add-ons, what is heard, and for
  * each track the rate and format its decoder asked for and the output took.
+ * Session 4 adds the route, Bit-Perfect and the mixer, for the user to report.
  */
 @Composable
 private fun PlaybackPanel(numbers: PlaybackNumbers) {
@@ -91,9 +97,11 @@ private fun PlaybackPanel(numbers: PlaybackNumbers) {
         SettingRow("Formats", numbers.formats().ifEmpty { "–" })
         numbers.missing().takeIf { it.isNotEmpty() }?.let { SettingRow("Missing add-ons", it) }
         SettingRow("Output", np.readout.ifEmpty { "–" })
+        for ((label, value) in numbers.output()) SettingRow(label, value)
         SettingRow("Joins", numbers.joins())
         SettingRow("Opened", if (np.openedLog.isEmpty()) "nothing played yet" else np.openedLog.joinToString("\n"))
         if (np.skippedLog.isNotEmpty()) SettingRow("Skipped", np.skippedLog.joinToString("\n"))
+        SettingRow("Pretend route (emulator test)", numbers.pretendRoute(), onClick = numbers.cyclePretendRoute)
     }
 }
 

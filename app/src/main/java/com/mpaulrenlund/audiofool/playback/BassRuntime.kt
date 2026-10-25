@@ -73,9 +73,9 @@ object BassRuntime {
         availableFormats = available
         missingFormats = missing
 
-        // DSD is converted to PCM until DoP (session 4). The desktop picks the highest
-        // 44.1-family rate its exclusive device clocks, else 88.2 kHz; the shared output
-        // here resamples anyway, so 88.2 kHz (DSD64's rate over 32).
+        // DSD that isn't sent as DoP is converted to PCM. The desktop picks the highest
+        // 44.1-family rate its exclusive device clocks, else 88.2 kHz; here always
+        // 88.2 kHz (DSD64's rate over 32), which USB DACs and the M21 all take.
         BASS.BASS_SetConfig(BASSDSD.BASS_CONFIG_DSD_FREQ, DSD_PCM_RATE)
         isInitialised = true
         return true

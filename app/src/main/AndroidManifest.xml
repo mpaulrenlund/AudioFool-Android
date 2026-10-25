@@ -10,6 +10,8 @@
     <!-- Playback (spec 6.1): a foreground media service keeps playing out of sight. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <!-- setPreferredMixerAttributes (Bit-Perfect on a USB DAC, Android 14+). A normal permission: no prompt. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
         android:name=".AudioFoolApp"

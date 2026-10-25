@@ -6,7 +6,7 @@ import com.mpaulrenlund.audiofool.core.format.Display
  * The output readout under Now Playing's controls and on the Settings row
  * (spec 6.3): "Shared · 48 kHz / 32-bit (resampled)" or "Exclusive · 44.1 kHz".
  * Ported from the desktop's `AudioFool.Core/Playback/OutputReadout.cs`; session 4
- * puts the route (USB, Bluetooth) in front of it.
+ * puts the route (USB, Bluetooth) in front of it ([describe] with a route).
  */
 object OutputReadout {
     /**
@@ -30,6 +30,53 @@ object OutputReadout {
         return "Shared · $rate$depth$resampled"
     }
 
+    /**
+     * The phone's readout (spec 6.3): the route, then the rate and depth, then a
+     * note. "USB · 96 kHz / 24-bit (bit-perfect)", "USB · 96 kHz / 24-bit (rate
+     * matched)", "Headphones · 96 kHz / 24-bit (bit-perfect)", "Speaker · Shared ·
+     * 48 kHz (resampled)". The note never says bit-perfect unless it is: a rate
+     * matched mixer still mixes, and the M21's way is only called bit-perfect when
+     * the system output is seen running at the track's rate.
+     *
+     * @param path How the output was opened.
+     * @param outputRate The rate the output runs at, in Hz: the mixer entry's,
+     *   or for [OutputPath.Shared] and [OutputPath.SourceRate] the system
+     *   output's (`AudioTrack.getNativeOutputSampleRate`). 0 when unknown.
+     * @param bits The bit depth sent, or 0 when it isn't known.
+     * @param sourceRate The track's decoded rate, or 0 when unknown.
+     * @param isDop DSD passed through as DSD over PCM.
+     */
+    fun describe(route: OutputRoute, path: OutputPath, outputRate: Int, bits: Int, sourceRate: Int, isDop: Boolean): String {
+        val name = route.label
+        if (outputRate <= 0) return "$name · Shared"
+        val rate = rate(outputRate)
+        val depth = if (bits > 0) " / $bits-bit" else ""
+        val matches = sourceRate <= 0 || sourceRate == outputRate
+        return when (path) {
+            OutputPath.BitPerfect ->
+                if (isDop) "$name · $rate · DSD over PCM (bit-perfect)" else "$name · $rate$depth (bit-perfect)"
+            OutputPath.RateMatched -> "$name · $rate$depth (rate matched)"
+            OutputPath.SourceRate ->
+                if (matches) "$name · $rate$depth (bit-perfect)" else "$name · $rate (resampled)"
+            OutputPath.Shared -> "$name · " + describe(OutputMode.Shared, outputRate, 0, sourceRate, false)
+        }
+    }
+
     /** "44.1 kHz", "96 kHz". */
     fun rate(hz: Int): String = Display.sampleRate(hz)
+}
+
+/** How the output stage opened the output for a track (session 4). */
+enum class OutputPath {
+    /** The normal shared output: Android's mixer at its own rate. */
+    Shared,
+
+    /** A USB device's bit-perfect mixer at the track's rate (`MIXER_BEHAVIOR_BIT_PERFECT`). */
+    BitPerfect,
+
+    /** A USB device's ordinary mixer, set to the track's rate: no resampling, but still mixed. */
+    RateMatched,
+
+    /** Opened at the track's own rate for the system to pass on (the M21's SRC bypass). */
+    SourceRate,
 }

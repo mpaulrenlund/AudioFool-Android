@@ -31,6 +31,16 @@ class AppSettings(context: Context) {
         prefs.edit().putString(KEY_THEME, if (dark) THEME_DARK else THEME_LIGHT).apply()
     }
 
+    private val _bitPerfect = MutableStateFlow(prefs.getBoolean(KEY_BIT_PERFECT, false))
+
+    /** Bit-Perfect (spec 6.2): off when nothing is saved, which means the normal shared output. */
+    val bitPerfect: StateFlow<Boolean> = _bitPerfect.asStateFlow()
+
+    fun setBitPerfect(on: Boolean) {
+        _bitPerfect.value = on
+        prefs.edit().putBoolean(KEY_BIT_PERFECT, on).apply()
+    }
+
     private val _folders = MutableStateFlow(readFolders())
 
     /** The music folders, in the order they were added. */
@@ -62,6 +72,7 @@ class AppSettings(context: Context) {
         const val FILE = "settings"
         private const val KEY_THEME = "theme"
         private const val KEY_FOLDERS = "musicFolders"
+        private const val KEY_BIT_PERFECT = "bitPerfect"
         private const val THEME_DARK = "dark"
         private const val THEME_LIGHT = "light"
     }

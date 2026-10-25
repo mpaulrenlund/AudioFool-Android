@@ -1,12 +1,14 @@
 package com.mpaulrenlund.audiofool.playback
 
-import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Process
 import android.os.SystemClock
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.core.playback.DopRule
 import com.mpaulrenlund.audiofool.core.playback.HearingTimeline
+import com.mpaulrenlund.audiofool.core.playback.OutputMode
+import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
 import com.mpaulrenlund.audiofool.core.playback.ReopenPoint
 import com.mpaulrenlund.audiofool.core.playback.TrackEnd
@@ -32,11 +34,18 @@ import java.util.concurrent.TimeUnit
  * coming out, so the screens show the song being heard, not the one being
  * decoded half a second ahead.
  *
+ * **Bit-Perfect** (spec 6.2, session 4): before each output is opened, [routes]
+ * says how ([OutputPlan]): through a USB mixer entry it has just set (the
+ * `AudioTrack` then takes exactly that entry's format), at the track's own rate
+ * in whole-number samples (the M21), or shared. Bit-perfect paths are never
+ * turned down: [fixedVolume]. A change of route or of the setting reopens the
+ * output where the song was heard ([reconfigure]).
+ *
  * Everything runs on one thread that owns BASS's streams and the `AudioTrack`;
  * the rest of the app talks to it through commands, and hears back through the
  * [Listener], on that thread.
  */
-class OutputStage(private val listener: Listener) {
+class OutputStage(private val listener: Listener, private val routes: OutputRoutes) {
     interface Listener {
         /** The decoder has moved onto [track]: started, or joined on after the last. The next one is wanted now. */
         fun onDecoding(track: Track)
@@ -47,8 +56,8 @@ class OutputStage(private val listener: Listener) {
         /** Songs that wouldn't open and were passed over. */
         fun onSkipped(tracks: List<Track>)
 
-        /** The output was opened for [track]: what its decoder asked for and what the output took. */
-        fun onOpened(track: Track, asked: PcmFormat, opened: PcmFormat)
+        /** The output was opened for [track]: what its decoder asked for, what the output took, and how. */
+        fun onOpened(track: Track, asked: PcmFormat, opened: PcmFormat, path: OutputPath)
 
         /** The last song has been heard out (or nothing in a play would open). */
         fun onFinished()
@@ -59,6 +68,7 @@ class OutputStage(private val listener: Listener) {
         class Upcoming(val tracks: List<Track>) : Command
         class Seek(val ms: Long) : Command
         class Volume(val level: Float) : Command
+        data object Reconfigure : Command
         data object Pause : Command
         data object Resume : Command
         data object Stop : Command
@@ -75,8 +85,16 @@ class OutputStage(private val listener: Listener) {
     @Volatile var openedFormat: PcmFormat? = null
         private set
 
+    /** How the open output was opened (shared, bit-perfect, rate matched, at the source rate). */
+    @Volatile var openedPath: OutputPath = OutputPath.Shared
+        private set
+
+    /** A bit-perfect path: the samples go out as decoded, so nothing turns them down (focus pauses instead of ducking). */
+    val fixedVolume: Boolean get() = openedFormat != null && (openedPath == OutputPath.BitPerfect || openedPath == OutputPath.SourceRate)
+
     /** What the track the output was opened for asked for; a next track asking the same joins. */
-    private var askedFormat: PcmFormat? = null
+    @Volatile var askedFormat: PcmFormat? = null
+        private set
 
     @Volatile var isPlaying: Boolean = false
         private set
@@ -138,8 +156,15 @@ class OutputStage(private val listener: Listener) {
     fun resume() = commands.put(Command.Resume)
     fun stop() = commands.put(Command.Stop)
 
-    /** For audio focus: ducked while another app speaks. */
+    /** For audio focus: ducked while another app speaks. Not on a bit-perfect path ([fixedVolume]). */
     fun setVolume(level: Float) = commands.put(Command.Volume(level))
+
+    /**
+     * The route or the Bit-Perfect setting changed: the output is opened again
+     * the way [routes] now says, carrying on from what was heard (the desktop
+     * reopens for "Bit-Perfect switched mid-track" and "a change of sound device").
+     */
+    fun reconfigure() = commands.put(Command.Reconfigure)
 
     // ---- the thread ----
 
@@ -172,8 +197,9 @@ class OutputStage(private val listener: Listener) {
             is Command.Seek -> seekTo(command.ms)
             is Command.Volume -> {
                 volume = command.level
-                output?.setVolume(volume)
+                output?.setVolume(outputVolume())
             }
+            Command.Reconfigure -> reopenTheNewWay()
             Command.Pause -> {
                 output?.pause()
                 isPlaying = false
@@ -201,10 +227,8 @@ class OutputStage(private val listener: Listener) {
         val skipped = ArrayList<Track>()
         var opened: Decoder? = null
         for ((i, track) in candidates.withIndex()) {
-            opened = Decoder.open(track, if (i == 0) startMs else 0)
-            if (opened != null && openOutput(opened.format, opened.track, reuse = true)) break
-            opened?.close()
-            opened = null
+            opened = Decoder.open(track, if (i == 0) startMs else 0, routes::mayOpenDop)?.let { openFor(it, reuse = true) }
+            if (opened != null) break
             skipped += track
         }
         if (skipped.isNotEmpty()) listener.onSkipped(skipped)
@@ -229,53 +253,110 @@ class OutputStage(private val listener: Listener) {
 
     /**
      * Opens the output for [format], or, with [reuse], empties the one already
-     * open in that format (a skip: immediate, not gapless). Tries the track's own
-     * encoding, then float, then 16-bit. False when nothing would open.
+     * open in that format (a skip: immediate, not gapless). False when nothing
+     * would open.
+     *
+     * How is [routes]' call ([OutputPlan]): a USB mixer entry it has set, in
+     * exactly its format; the track's rate in whole-number samples (the M21);
+     * or shared, trying the track's own encoding, then float, then 16-bit. A
+     * bit-perfect way that won't open falls back to shared.
      */
     private fun openOutput(format: PcmFormat, track: Track, reuse: Boolean): Boolean {
         val open = output
         if (reuse && open != null && askedFormat == format) {
             open.pause()
             open.flush()
-            open.setVolume(volume)
+            open.setVolume(outputVolume())
             resetCounting(format.sampleRate)
-            listener.onOpened(track, format, openedFormat!!)
+            listener.onOpened(track, format, openedFormat!!, openedPath)
             return true
         }
 
         releaseOutput()
+        when (val plan = routes.prepare(format)) {
+            is OutputPlan.Mixer -> {
+                val f = plan.format
+                val opened = PcmFormat(f.sampleRate, f.channelCount, f.encoding, format.dop)
+                if (use(build(opened, exact = f), opened, format, if (plan.bitPerfect) OutputPath.BitPerfect else OutputPath.RateMatched, track)) return true
+                routes.clearMixer()
+            }
+            OutputPlan.SourceRate -> {
+                // Whole-number samples only: a float decoder's go out as 32-bit, then 24-bit.
+                val encodings = if (format.encoding == AudioFormat.ENCODING_PCM_FLOAT) {
+                    listOf(AudioFormat.ENCODING_PCM_32BIT, AudioFormat.ENCODING_PCM_24BIT_PACKED)
+                } else {
+                    listOf(format.encoding, AudioFormat.ENCODING_PCM_32BIT, AudioFormat.ENCODING_PCM_24BIT_PACKED).distinct()
+                }
+                for (encoding in encodings) {
+                    val f = format.withEncoding(encoding)
+                    if (use(build(f), f, format, OutputPath.SourceRate, track)) return true
+                }
+            }
+            OutputPlan.Shared -> Unit
+        }
         val encodings = listOf(format.encoding, AudioFormat.ENCODING_PCM_FLOAT, AudioFormat.ENCODING_PCM_16BIT).distinct()
         for (encoding in encodings) {
             val f = format.withEncoding(encoding)
-            val made = build(f) ?: continue
-            output = made
-            openedFormat = f
-            askedFormat = format
-            made.setVolume(volume)
-            resetCounting(f.sampleRate)
-            listener.onOpened(track, format, f)
-            return true
+            if (use(build(f), f, format, OutputPath.Shared, track)) return true
         }
         return false
     }
 
-    private fun build(format: PcmFormat): AudioTrack? {
-        val mask = when (format.channels) {
-            1 -> AudioFormat.CHANNEL_OUT_MONO
-            2 -> AudioFormat.CHANNEL_OUT_STEREO
-            4 -> AudioFormat.CHANNEL_OUT_QUAD
-            6 -> AudioFormat.CHANNEL_OUT_5POINT1
-            8 -> AudioFormat.CHANNEL_OUT_7POINT1_SURROUND
-            else -> return null
+    /** Takes [made] as the output, if it was made. */
+    private fun use(made: AudioTrack?, opened: PcmFormat, asked: PcmFormat, path: OutputPath, track: Track): Boolean {
+        made ?: return false
+        output = made
+        openedFormat = opened
+        askedFormat = asked
+        openedPath = path
+        made.setVolume(outputVolume())
+        resetCounting(opened.sampleRate)
+        listener.onOpened(track, asked, opened, path)
+        return true
+    }
+
+    private fun outputVolume(): Float = if (fixedVolume) 1f else volume
+
+    /**
+     * Opens the output for [decoder] and returns the decoder that will play: a
+     * DoP decoder whose output didn't come out bit-perfect at its rate is
+     * reopened as PCM (the desktop's "DoP refused ... opened as PCM instead"),
+     * and the rate isn't tried for DoP again. Null when nothing would open; the
+     * decoders tried are closed.
+     */
+    private fun openFor(decoder: Decoder, reuse: Boolean): Decoder? {
+        if (openOutput(decoder.format, decoder.track, reuse)) {
+            val mode = if (openedPath == OutputPath.BitPerfect) OutputMode.Exclusive else OutputMode.Shared
+            if (!decoder.format.dop || DopRule.mayPlayOn(mode, openedFormat?.sampleRate ?: 0, decoder.format.sampleRate)) return decoder
         }
+        if (!decoder.format.dop) {
+            decoder.close()
+            return null
+        }
+        android.util.Log.i("AudioFoolPlay", "DoP refused at ${decoder.format.sampleRate} Hz: ${decoder.track.filePath.substringAfterLast('/')} opened as PCM instead")
+        routes.refuse(decoder.format.sampleRate)
+        val at = (decoder.positionSeconds * 1000).toLong()
+        decoder.close()
+        releaseOutput()
+        val pcm = Decoder.open(decoder.track, at) ?: return null
+        if (openOutput(pcm.format, pcm.track, reuse = false)) return pcm
+        pcm.close()
+        return null
+    }
+
+    /** Builds an `AudioTrack` for [format]; [exact] is a mixer entry's own format, used as it is. */
+    private fun build(format: PcmFormat, exact: AudioFormat? = null): AudioTrack? {
+        // A mixer entry may give its channels as an index mask; the buffer size only needs the count.
+        val mask = OutputRoutes.maskOf(format.channels)
+        if (mask == AudioFormat.CHANNEL_INVALID) return null
         return try {
-            val audioFormat = AudioFormat.Builder().setSampleRate(format.sampleRate).setEncoding(format.encoding).setChannelMask(mask).build()
+            val audioFormat = exact ?: AudioFormat.Builder().setSampleRate(format.sampleRate).setEncoding(format.encoding).setChannelMask(mask).build()
             val min = AudioTrack.getMinBufferSize(format.sampleRate, mask, format.encoding)
             if (min <= 0) return null
             // About half a second: room to open the next track while this one plays.
             val size = maxOf(min * 2, format.bytesPerFrame * format.sampleRate / 2)
             val track = AudioTrack.Builder()
-                .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
+                .setAudioAttributes(OutputRoutes.MEDIA)
                 .setAudioFormat(audioFormat)
                 .setBufferSizeInBytes(size - size % format.bytesPerFrame)
                 .setTransferMode(AudioTrack.MODE_STREAM)
@@ -368,7 +449,7 @@ class OutputStage(private val listener: Listener) {
             nextOpened = next != null,
             sharedOutput = false,
             nextAtOutputRate = next != null && next?.format == askedFormat,
-            nextIsDop = false,
+            nextIsDop = next?.format?.dop == true,
             nextMidSave = false,
             hasNext = upcoming.isNotEmpty(),
         )
@@ -412,13 +493,15 @@ class OutputStage(private val listener: Listener) {
         val nextDecoder = next
         if (afterDrain == TrackEndAction.Reopen && nextDecoder != null) {
             current?.close()
-            current = nextDecoder
             next = null
             nextTried = false
-            if (openOutput(nextDecoder.format, nextDecoder.track, reuse = true)) {
+            // The mixer is set for the new rate only now, after the last song was heard out.
+            val playing = openFor(nextDecoder, reuse = true)
+            current = playing
+            if (playing != null) {
                 formatReopens++
                 output?.play()
-                listener.onDecoding(nextDecoder.track)
+                listener.onDecoding(playing.track)
                 return
             }
             listener.onSkipped(listOf(nextDecoder.track))
@@ -434,7 +517,7 @@ class OutputStage(private val listener: Listener) {
         nextTried = true
         val skipped = ArrayList<Track>()
         for (track in upcoming) {
-            val decoder = Decoder.open(track)
+            val decoder = Decoder.open(track, mayOpenDop = routes::mayOpenDop)
             if (decoder != null) {
                 next = decoder
                 break
@@ -460,12 +543,46 @@ class OutputStage(private val listener: Listener) {
     private fun reopenAfterLoss(decoder: Decoder) {
         val at = ReopenPoint.choose(decoder.track, heard, (decoder.positionSeconds * 1000).toLong())
         decoder.seek(at)
-        if (!openOutput(decoder.format, decoder.track, reuse = false)) {
+        current = null
+        val playing = openFor(decoder, reuse = false)
+        if (playing == null) {
             closeAll()
             listener.onFinished()
             return
         }
-        heard = HeardPoint(decoder.track, at)
+        current = playing
+        heard = HeardPoint(playing.track, at)
+        if (isPlaying) output?.play()
+    }
+
+    /**
+     * Opens the output again the way [routes] now says (the route or the
+     * setting changed), from where the song was heard. The song's decoder is
+     * opened again too: DSD may go from PCM to DoP or back. Paused stays paused.
+     */
+    private fun reopenTheNewWay() {
+        val decoder = current
+        if (decoder == null || output == null) {
+            if (output == null) routes.clearMixer()
+            return
+        }
+        val at = ReopenPoint.choose(decoder.track, heard, (decoder.positionSeconds * 1000).toLong())
+        next?.close()
+        next = null
+        nextTried = false
+        draining = false
+        decoder.close()
+        current = null
+        releaseOutput()
+        val playing = Decoder.open(decoder.track, at, routes::mayOpenDop)?.let { openFor(it, reuse = false) }
+        if (playing == null) {
+            closeAll()
+            listener.onSkipped(listOf(decoder.track))
+            listener.onFinished()
+            return
+        }
+        current = playing
+        heard = HeardPoint(playing.track, at)
         if (isPlaying) output?.play()
     }
 
@@ -492,10 +609,12 @@ class OutputStage(private val listener: Listener) {
         output = null
         openedFormat = null
         askedFormat = null
+        openedPath = OutputPath.Shared
     }
 
     private fun closeAll() {
         releaseOutput()
+        routes.clearMixer()
         current?.close()
         current = null
         next?.close()

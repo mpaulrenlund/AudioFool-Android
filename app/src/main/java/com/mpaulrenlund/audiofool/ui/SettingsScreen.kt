@@ -26,6 +26,7 @@ class SettingsActions(
     val rescan: () -> Unit = {},
     val addFolder: () -> Unit = {},
     val setIncluded: (String, Boolean) -> Unit = { _, _ -> },
+    val toggleBitPerfect: () -> Unit = {},
 )
 
 /** A music folder as Settings lists it: "SD card · Music", its path, and whether it can be reached. */
@@ -33,12 +34,18 @@ class FolderLine(val folder: MusicFolder, val name: String, val unavailable: Boo
 
 /**
  * Settings (spec 4.5): Appearance, Playback, Music folders and Last.fm.
- * Bit-Perfect and Last.fm are shown in their off state; sessions 4 and 5 wire
- * them up. [readout] is the output readout (spec 6.3), blank until something
- * has been played.
+ * Last.fm is shown in its off state; session 5 wires it up. [readout] is the
+ * output readout (spec 6.3); Bit-Perfect's row is the BP button's setting
+ * ([bitPerfect]), greyed out in the same cases ([bitPerfectGreyed]).
  */
 @Composable
-fun SettingsScreen(folders: List<FolderLine>, actions: SettingsActions, readout: String = "") {
+fun SettingsScreen(
+    folders: List<FolderLine>,
+    actions: SettingsActions,
+    readout: String = "",
+    bitPerfect: Boolean = false,
+    bitPerfectGreyed: Boolean = false,
+) {
     val t = LocalAppTheme.current
     TitledScreen("Settings") {
         Panel("Appearance") {
@@ -49,9 +56,13 @@ fun SettingsScreen(folders: List<FolderLine>, actions: SettingsActions, readout:
             }
         }
         Panel("Playback") {
-            SettingRow("Bit-Perfect", readout.ifEmpty { "Shared" }) {
-                Chip {
-                    StatusDot("color.status.bitPerfectOff")
+            val toggle = actions.toggleBitPerfect.takeUnless { bitPerfectGreyed }
+            SettingRow("Bit-Perfect", readout.ifEmpty { "Shared" }, onClick = toggle) {
+                Chip(
+                    Modifier.alpha(if (bitPerfectGreyed) t.number("disabledOpacity").toFloat() else 1f),
+                    onClick = toggle,
+                ) {
+                    StatusDot(if (bitPerfect) "color.status.bitPerfectOn" else "color.status.bitPerfectOff")
                     ChipText("Bit-Perfect")
                 }
             }

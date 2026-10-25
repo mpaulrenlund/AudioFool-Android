@@ -3,9 +3,11 @@ package com.mpaulrenlund.audiofool.core.playback
 import com.mpaulrenlund.audiofool.core.model.Track
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 // Ported from the desktop's tests/AudioFool.Core.Tests/PlaybackDecisionTests.cs
-// (the end of a track and where a reopen carries on; DoP comes in session 4) and
+// (the end of a track, where a reopen carries on, and when DSD goes out as DoP) and
 // PlaybackBarTextTests.cs (the output readout).
 
 class PlaybackDecisionTest {
@@ -78,4 +80,26 @@ class PlaybackDecisionTest {
 
     @Test fun exclusive_dop_readout_says_so() =
         assertEquals("Exclusive · 176.4 kHz · DSD over PCM", OutputReadout.describe(OutputMode.Exclusive, 176400, 24, 176400, true))
+
+    // ---------- DoP ----------
+
+    private val deviceRates = listOf(44100, 48000, 88200, 96000, 176400, 192000, 352800, 384000)
+
+    @Test fun dop_needs_bit_perfect_and_a_rate_the_device_clocks() {
+        assertTrue(DopRule.mayOpen(OutputMode.Exclusive, 176400, deviceRates, emptyList()))
+        assertFalse(DopRule.mayOpen(OutputMode.Shared, 176400, deviceRates, emptyList()))
+        assertFalse(DopRule.mayOpen(OutputMode.Exclusive, 705600, deviceRates, emptyList()))
+        assertFalse(DopRule.mayOpen(OutputMode.Exclusive, 0, deviceRates, emptyList()))
+    }
+
+    @Test fun dop_is_never_opened_at_a_rate_exclusive_mode_refused() {
+        assertFalse(DopRule.mayOpen(OutputMode.Exclusive, 176400, deviceRates, listOf(176400)))
+        assertTrue(DopRule.mayOpen(OutputMode.Exclusive, 352800, deviceRates, listOf(176400)))
+    }
+
+    @Test fun dop_plays_only_on_an_exclusive_output_at_its_rate() {
+        assertTrue(DopRule.mayPlayOn(OutputMode.Exclusive, 176400, 176400))
+        assertFalse(DopRule.mayPlayOn(OutputMode.Shared, 176400, 176400))
+        assertFalse(DopRule.mayPlayOn(OutputMode.Exclusive, 88200, 176400))
+    }
 }

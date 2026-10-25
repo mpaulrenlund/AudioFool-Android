@@ -137,15 +137,15 @@ Repeat: off `control.iconOff`; on `control.repeatOn`; repeat-one adds the deskto
 
 | Output | What BP does |
 |---|---|
-| S24 + USB DAC | On: the app asks Android for the bit-perfect mixer on the USB device (`AudioManager.setPreferredMixerAttributes` with `MIXER_BEHAVIOR_BIT_PERFECT`, Android 14+), at each track's rate. |
-| M21 headphone out | On: the app opens output at the track's own rate and leaves the rest to FiiO's system SRC bypass. What can be confirmed there is for session 4 to find out and the user to test. |
+| S24 + USB DAC | On: the app asks Android for the bit-perfect mixer on the USB device (`AudioManager.setPreferredMixerAttributes` with `MIXER_BEHAVIOR_BIT_PERFECT`, Android 14+), at each track's rate. Where the phone offers no bit-perfect entry at that rate, it sets an ordinary mixer entry at the track's rate instead: no resampling, but still Android's mixer, so the readout says "rate matched", never "bit-perfect" (the user's call, session 4). No entry at the rate at all: shared. A USB device that lists no mixer entries greys BP out. |
+| M21 headphone out (and a USB DAC on the M21, which has no mixer API on Android 13) | On: the app opens the output at the track's own rate, in whole-number samples, at full volume, and leaves the rest to FiiO's system SRC bypass. An app can't read the hardware's rate, so the readout says "bit-perfect" only when the system's media output (`AudioTrack.getNativeOutputSampleRate`) is seen running at the track's rate, and "resampled" otherwise. |
 | Bluetooth, phone speaker | Not possible. BP is greyed out (`disabledOpacity`) and can't be tapped. |
 
-The setting is saved. Off means the normal shared output.
+The setting is saved. Off means the normal shared output. Turning it on or off, or a change of route (a DAC plugged in, Bluetooth connecting), reopens the output where the song was heard. On a bit-perfect path the app never turns the volume down: a prompt that would duck the music pauses it instead.
 
 ### 6.3 Output readout
 
-One line describing what actually reaches the output, built like the desktop's `OutputReadout`: route, then rate and depth, then a note. Examples: "USB · 96 kHz / 24-bit (bit-perfect)", "Shared · 48 kHz / 32-bit (resampled)", "Bluetooth · LDAC". Shown under Now Playing's controls and on the Settings row.
+One line describing what actually reaches the output, built like the desktop's `OutputReadout`: route, then rate and depth, then a note. Examples: "USB · 96 kHz / 24-bit (bit-perfect)", "USB · 96 kHz / 24-bit (rate matched)", "USB · 176.4 kHz · DSD over PCM (bit-perfect)", "Headphones · 96 kHz / 24-bit (bit-perfect)", "Speaker · Shared · 48 kHz (resampled)", "Bluetooth · Shared · 48 kHz (resampled)". The shared output's depth isn't known to an app, so it is left out; the Bluetooth codec isn't either (it's a system-only API), so there's no "LDAC". Shown under Now Playing's controls and on the Settings row.
 
 ### 6.4 BP button
 
