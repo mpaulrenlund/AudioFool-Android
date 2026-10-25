@@ -1,6 +1,6 @@
 package com.mpaulrenlund.audiofool.ui
 
-import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.Orientation
@@ -63,6 +63,7 @@ import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import com.mpaulrenlund.audiofool.theme.WindowBackground
 import com.mpaulrenlund.audiofool.theme.tokenSurface
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
@@ -108,7 +109,7 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             val art = minOf(maxWidth - padX * 2, screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth)
 
             Column(Modifier.fillMaxSize()) {
-                SwipeToSkip(art, actions) {
+                SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
                         BigArt(track, art)
                     }
@@ -136,36 +137,63 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
  * is Next, right is Previous (the button's rule, so more than 3 s in it restarts
  * the song). They follow the finger, fading toward `swipeFadeTo` over the art's
  * width; past `swipeSkipDistance`, or flung faster than `swipeSkipVelocity`, the
- * song changes, and either way they spring back. The seekbar keeps its own drag.
+ * song changes and they are back in place at once with the new song; short of it
+ * they spring back. The seekbar keeps its own drag.
+ *
+ * 0.2.0 left them stuck part-way off the screen after every skip on the S24 (never
+ * on the emulator): the spring back ran after the skip and something stopped it.
+ * Now a skip involves no animation at all, the finger's place is set as it moves
+ * (not by a coroutine per move, which could land after the spring had started and
+ * stop it), and any song change puts them back in place.
  */
 @Composable
-private fun SwipeToSkip(art: Dp, actions: NowPlayingActions, content: @Composable ColumnScope.() -> Unit) {
+private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, content: @Composable ColumnScope.() -> Unit) {
     val t = LocalAppTheme.current
     val scope = rememberCoroutineScope()
-    val drag = remember { Animatable(0f) }
+    var offset by remember { mutableFloatStateOf(0f) }
+    var springBack by remember { mutableStateOf<Job?>(null) }
+    var dragging by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val skipAtPx = with(density) { t.dp("nowPlaying.swipeSkipDistance").toPx() }
     val flingPx = with(density) { t.dp("nowPlaying.swipeSkipVelocity").toPx() }
     val artPx = with(density) { art.toPx() }
     val fadeTo = t.number("nowPlaying.swipeFadeTo").toFloat()
+    LaunchedEffect(track?.filePath) {
+        if (!dragging) {
+            springBack?.cancel()
+            offset = 0f
+        }
+    }
     Column(
         Modifier
             .fillMaxWidth()
             .draggable(
-                rememberDraggableState { delta -> scope.launch { drag.snapTo(drag.value + delta) } },
+                rememberDraggableState { delta -> offset += delta },
                 Orientation.Horizontal,
+                onDragStarted = {
+                    springBack?.cancel()
+                    dragging = true
+                },
                 onDragStopped = { velocity ->
+                    dragging = false
+                    val from = offset
                     // A fling counts only away from the middle, not one flicked back.
-                    when {
-                        drag.value < -skipAtPx || (velocity < -flingPx && drag.value < 0) -> actions.next()
-                        drag.value > skipAtPx || (velocity > flingPx && drag.value > 0) -> actions.previous()
+                    val skip = when {
+                        from < -skipAtPx || (velocity < -flingPx && from < 0) -> actions.next
+                        from > skipAtPx || (velocity > flingPx && from > 0) -> actions.previous
+                        else -> null
                     }
-                    drag.animateTo(0f)
+                    if (skip != null) {
+                        offset = 0f
+                        skip()
+                    } else {
+                        springBack = scope.launch { animate(from, 0f) { value, _ -> offset = value } }
+                    }
                 },
             )
             .graphicsLayer {
-                translationX = drag.value
-                alpha = 1f - (1f - fadeTo) * (abs(drag.value) / artPx).coerceAtMost(1f)
+                translationX = offset
+                alpha = 1f - (1f - fadeTo) * (abs(offset) / artPx).coerceAtMost(1f)
             },
         content = content,
     )

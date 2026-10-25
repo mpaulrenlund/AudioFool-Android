@@ -108,8 +108,7 @@ class ThemeLabTest {
         shoot(device, "artists-first-scan-starting") {
             ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 0))
         }
-        // The letter strip (0.2.0, no mockup): as it shows while the list scrolls, and with a finger on H.
-        shoot(device, "artists-index") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive", indexPreview = IndexPreview()) }
+        // The letter strip (0.2.0, no mockup) with a finger on H; the other Artists pictures show it at rest.
         shoot(device, "artists-index-pressed") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive", indexPreview = IndexPreview("H")) }
         shoot(device, "artists-sd-card-out") { ArtistsScreen(browse(unavailable = listOf(ThemeLabFixtures.SD_CARD)), actions) }
         shoot(device, "settings-sd-card-out") {

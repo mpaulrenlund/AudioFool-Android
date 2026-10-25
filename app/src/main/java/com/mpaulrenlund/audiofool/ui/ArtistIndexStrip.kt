@@ -1,7 +1,5 @@
 package com.mpaulrenlund.audiofool.ui
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
@@ -27,7 +25,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -37,43 +34,41 @@ import androidx.compose.ui.unit.Dp
 import com.mpaulrenlund.audiofool.core.library.ArtistIndex
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import com.mpaulrenlund.audiofool.theme.tokenSurface
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** What ThemeLab pictures of the strip show: the strip, and the letter under a finger (or none). */
-data class IndexPreview(val pressedLabel: String? = null)
+/** What ThemeLab pictures of the strip show: the letter under a finger. */
+data class IndexPreview(val pressedLabel: String)
+
+/** Whether [index] gets a strip: it needs two letters or more. */
+fun showsStrip(index: ArtistIndex): Boolean = index.sections.size >= 2
 
 /**
- * The Artists list's letter strip (`artists.index.*`; the user's call, 0.2.0). Hidden
- * at rest, so the list has no visible scrollbar (spec 2); it fades in while [list]
- * scrolls and out `hideDelayMs` after it stops. While shown, a finger on it or
+ * The width the rows leave free at the list's right for the strip: the strip and
+ * `marginEnd` either side of it.
+ */
+@Composable
+fun stripRoom(): Dp {
+    val t = LocalAppTheme.current
+    return t.dp("artists.index.width") + t.dp("artists.index.marginEnd") * 2
+}
+
+/**
+ * The Artists list's letter strip (`artists.index.*`; the user's call, 0.2.0, always
+ * shown since 0.2.1). The rows end short of it ([stripRoom]). A finger on it or
  * sliding along it jumps the list to that letter's first artist, with a tick at
  * each new letter, and the bubble shows the letter in the middle of the list.
- * Hidden, it takes no touches, so a row's right end opens the row as before.
  */
 @Composable
 fun BoxScope.ArtistIndexStrip(index: ArtistIndex, list: LazyListState, preview: IndexPreview? = null) {
-    if (index.sections.size < 2) return
+    if (!showsStrip(index)) return
     val t = LocalAppTheme.current
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
     var pressed by remember { mutableStateOf<Int?>(preview?.pressedLabel?.let { l -> index.sections.indexOfFirst { it.label == l }.takeIf { it >= 0 } }) }
-    var shown by remember { mutableStateOf(preview != null) }
-    val scrolling = list.isScrollInProgress
     if (preview != null) {
         // The picture shows the list where the finger took it.
         LaunchedEffect(Unit) { pressed?.let { list.scrollToItem(index.sections[it].firstIndex) } }
-    } else {
-        LaunchedEffect(scrolling, pressed != null) {
-            if (scrolling || pressed != null) shown = true
-            else if (shown) {
-                delay(t.number("artists.index.hideDelayMs").toLong())
-                shown = false
-            }
-        }
     }
-    val alpha by animateFloatAsState(if (shown) 1f else 0f, tween(t.number("artists.index.fadeMs").toInt()), label = "index")
-    if (alpha == 0f) return
 
     val current = pressed ?: index.sectionAt(list.firstVisibleItemIndex)
     val sections by rememberUpdatedState(index.sections)
@@ -81,8 +76,7 @@ fun BoxScope.ArtistIndexStrip(index: ArtistIndex, list: LazyListState, preview: 
         Modifier
             .align(Alignment.CenterEnd)
             .fillMaxHeight()
-            .width(t.dp("artists.index.touchWidth"))
-            .alpha(alpha),
+            .width(t.dp("artists.index.touchWidth")),
         contentAlignment = Alignment.CenterEnd,
     ) {
         val paddingY = t.dp("artists.index.paddingY")

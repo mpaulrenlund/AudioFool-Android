@@ -19,8 +19,13 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   pre-releases, v0.0.5 skipped, v0.1.0 the first full release, v0.1.1 to v0.1.5 and v0.2.0
   pre-releases (2026-10-25). Confirm the tag and the notes with the user before
   `gh release create`.
-- **Waiting on the user:** how 0.2.0 feels on the phones (the 0.2.0 items on both lists in
-  `design/progress.md`).
+- **On `main`, not released: 0.2.1** (versionCode 14), from the user's 0.2.0 report: the letter
+  strip always shown (rows end short of it), and swipe to skip reworked because it left the
+  art stuck off the screen after every skip on the S24. That bug was never reproduced here
+  (emulator, or `SwipeToSkipTest`); the rework removes the animation from the skip, so the
+  S24 must confirm it. Confirm the tag and notes before releasing.
+- **Waiting on the user:** 0.2.1 on the S24 (the stuck art), then the rest of the 0.2.0 items
+  on both lists in `design/progress.md`.
 - **Nothing is broken that the user knows of.** Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
   Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
@@ -348,9 +353,13 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **A song that opens but stops at once at 0:00** (the queue "ends") on the emulator is likely a
   damaged sample file: check it with `ffmpeg -v error -i file -f null -`. The SD card's
   `SD Card Band` pair was damaged and rebuilt on 2026-10-25.
-- **ThemeLab pictures of the letter strip** pass `indexPreview` to `ArtistsScreen`: it shows
-  the strip without a scroll and starts no hide timer (a `delay` there would keep the
-  picture from settling). On the emulator the strip's letters sit near x = 1012 px.
+- **ThemeLab's pressed letter strip** passes `indexPreview` to `ArtistsScreen` (the letter under
+  the finger, and the list scrolled to it).
+- **A gesture bug the S24 shows and the emulator doesn't**: `adb shell input` swipes arrive
+  50–100 ms per event; a phone's touch screen sends one every 8 ms or so. Robolectric's
+  `performTouchInput` gets closer (`SwipeToSkipTest`), but neither caught 0.2.0's stuck art.
+- **A background read that fails in ThemeLab** (TagLib) goes uncaught and fails the *next*
+  compose test with `UncaughtExceptionsBeforeTest`; guard cover and tag reads on `LocalArt`. On the emulator the strip's letters sit near x = 1012 px.
 - **An endless frame loop hangs ThemeLab.** Roborazzi waits for the screen to settle; a
   `LaunchedEffect` that asks for every frame (`withFrameMillis` in a loop) never lets it,
   and the test run hangs with no output. Now Playing's seekbar ticks only while playing and

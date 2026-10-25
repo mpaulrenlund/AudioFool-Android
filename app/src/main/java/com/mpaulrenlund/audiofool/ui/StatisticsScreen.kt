@@ -227,7 +227,9 @@ private fun ArtCheck(state: LibraryState) {
     val track = album.tracks.firstOrNull() ?: return
     val sizePx = with(LocalDensity.current) { t.dp("artists.thumb").roundToPx() }
     var cover by remember(track.filePath) { mutableStateOf<Pair<ImageBitmap?, String>?>(null) }
-    LaunchedEffect(track.filePath) {
+    // Not in ThemeLab (no LocalArt there, as Now Playing's art): TagLib can't load in a
+    // JVM test, and the failed read went uncaught into the next test.
+    if (LocalArt.current != null) LaunchedEffect(track.filePath) {
         cover = withContext(Dispatchers.IO) {
             val read = CoverArt.read(track)
             val bitmap = read?.let { c ->

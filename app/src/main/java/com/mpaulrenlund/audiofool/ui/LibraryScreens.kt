@@ -66,8 +66,11 @@ fun ArtistsScreen(
             } else {
                 val list = rememberLazyListState()
                 val index = remember(artists) { ArtistIndex.of(artists) }
+                val pad = t.dp("panel.listPadding")
+                // The rows end short of the letter strip, which is always shown (0.2.1).
+                val padEnd = if (showsStrip(index)) stripRoom() else pad
                 Box(Modifier.weight(1f).fillMaxWidth()) {
-                    LazyColumn(Modifier.fillMaxSize(), state = list, contentPadding = PaddingValues(t.dp("panel.listPadding"))) {
+                    LazyColumn(Modifier.fillMaxSize(), state = list, contentPadding = PaddingValues(start = pad, top = pad, end = padEnd, bottom = pad)) {
                         items(artists, key = { it.name }, contentType = { "artist" }) { artist ->
                             ArtistRow(artist, browse, selected = artist.name == selected) {
                                 selected = artist.name

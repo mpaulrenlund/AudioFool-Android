@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — built and checked on the emulator 2026-10-25, not released
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
 ## Decisions made in the design
@@ -34,6 +35,27 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.2.1, not released yet (2026-10-25), from the user's report on 0.2.0 (S24):
+
+- **The letter strip is always shown** (the user's call: "that would work better"), so the
+  rows end short of it: `artists.index.width` + 2 × `marginEnd` (32 dp) from the list's edge
+  instead of `panel.listPadding`, which shortens long names a little. The fade, the hide
+  timer and their tokens are gone. Not shown, and no room kept, with fewer than two letters.
+  Spec 2 and 4.1 updated. Every Artists picture changed (the strip; the rows' right end).
+- **Swipe to skip left the art stuck part-way off the screen** after every skip on the S24
+  (the user: every swipe that changed the song; it stayed until leaving Now Playing). Not
+  reproduced: not on the emulator (its injected swipes are slow), not in seven new Robolectric
+  tests with a phone's timing, a swipe inside one frame and a cancelled one
+  (`SwipeToSkipTest`). 0.2.0 ran the spring back after the skip, and set the finger's place
+  through one coroutine per move, which could land after the spring started and stop it.
+  Now a skip puts the art and title back in place at once with the new song (no animation
+  to be stopped), the finger's place is set directly, a new swipe cancels a running spring
+  back, and any song change puts them back in place. A short swipe still springs back.
+  Spec 5 updated. **To confirm on the S24.**
+- **ThemeLab's Statistics cover check** no longer reads covers without `LocalArt` (as Now
+  Playing's art): TagLib can't load in a JVM test, and the failed read went uncaught and
+  failed whichever compose test ran next (it hit the new swipe test). The app is unchanged.
 
 0.2.0 (2026-10-25), released as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0) ("AudioFool 0.2.0", versionCode 13):
 
@@ -382,6 +404,14 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.1 (not released yet)
+
+- [ ] **Swipe to skip, again.** Swipe the cover left and right several times: each skip, the
+  new song's cover is in the middle at once, never stuck to the side. A short swipe slides
+  back.
+- [ ] **Letter strip, always there.** It shows without scrolling; tap or slide on it. Do the
+  rows' right ends look right next to it?
+
 ### 0.2.0 (the letter strip, swipe to skip, the gliding seekbar)
 
 Released 2026-10-25 as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0)
@@ -706,6 +736,18 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.2.1 — the strip always shown, the stuck art (2026-10-25)
+
+**Changed:** `ArtistIndexStrip.kt` (no fade or timer; `showsStrip`, `stripRoom`), the Artists
+list's end padding, `SwipeToSkip` (direct offset, no animation on a skip, reset on a song
+change), `StatisticsScreen`'s `ArtCheck` guard, `SwipeToSkipTest` (7 tests), spec 2, 4.1, 5.
+
+**Verified:** `:core:test`, `:app:testDebugUnitTest` (every suite, no failures), recorded
+pictures (Artists changed, Statistics unchanged), the release build on the emulator: the
+strip at rest and after 3 s, a tap on S jumps; a swipe left skips with the new song centred
+0.15 s later; a swipe right restarts; a short swipe springs back. **The stuck art itself was
+never seen here**, so the S24 has to confirm it.
 
 ### 0.2.0 — the Artists letter strip, swipe to skip, the gliding seekbar (2026-10-25)
 
