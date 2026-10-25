@@ -501,7 +501,9 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.1.5 (unplug), checked on the M21 itself over adb (2026-10-25):
+0.1.5 (unplug, and the readout by FiiO's rate), checked on the M21 itself over adb (2026-10-25);
+released as pre-release [`v0.1.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.5)
+("AudioFool 0.1.5", versionCode 12):
 
 - [x] **Unplugging pauses** (4.4 mm, BP on): "it paused when i unplugged!", and the
   broadcast history shows "becoming noisy" delivered to AudioFool.

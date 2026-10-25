@@ -6,7 +6,9 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.5** (versionCode 12; installed on the M21 over adb and checked there): unplug
+- **0.1.5** (versionCode 12) is released as a pre-release (2026-10-25,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.5>, `dist/AudioFool-0.1.5.apk`;
+  also installed on the M21 over adb and checked there): unplug
   pauses on the M21, and its readout goes by FiiO's reported DAC rate ("Headphones · 96 kHz
   / 32-bit (bit-perfect)" seen on the M21). Its "becoming noisy" comes from FiiO's status bar (an app uid), so the
   receiver must be exported. FiiO's `SAMPLE_RATE_CHANGED` carries the rate its DAC runs at;
