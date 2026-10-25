@@ -23,8 +23,8 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 - **Device reports still open** (don't block on them): the v0.0.2, v0.0.4 and v0.0.5 items on
   both lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
   cold start (v0.0.1), and the M21's first scan (v0.0.3).
-- **Releases:** `v0.0.1` to `v0.0.4` are out (pre-releases); `v0.0.5` was skipped; `0.1.0`
-  is session 5's (see *Where things stand*).
+- **Releases:** `v0.0.1` to `v0.0.4` are pre-releases; `v0.0.5` was skipped; `v0.1.0` is
+  the first full release (session 5). Next: `0.1.1`, versionCode 7, for fixes.
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
   the key never goes in the repo). The user reports from Settings > Last.fm (its status and
   queue line) and their last.fm profile.
@@ -223,7 +223,10 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   in ThemeLab; SD card out while playing and idle, a call, and cold start on the emulator.
   Fixed: the app was killed when the card was ejected with a song on it open
   (`Player.letGoOf`), and Now Playing's readout fell off the M21 at font size 1.3.
-- **0.1.0**: see `design/progress.md` (*To test on the S24* / *M21*) for what to check.
+- **0.1.0 is released** (2026-10-24, a full release, versionCode 6):
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.0>, with
+  `dist/AudioFool-0.1.0.apk`. What to check on each phone is in `design/progress.md`
+  (*To test on the S24* / *M21*).
 
 ## Where things stood after session 4
 

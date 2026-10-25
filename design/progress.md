@@ -8,7 +8,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **2. Library screens, navigation and search** (§2, §3, §4) — 2026-10-24
 - [x] **3. Playback** (§3, §5, §6.1, §6.3) — 2026-10-24
 - [x] **4. Bit-Perfect, DSD over DoP, and an M21 test build** (§6) — 2026-10-24
-- [ ] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7)
+- [x] **5. Last.fm, Statistics, polish and release** (§4.5, §4.6, §7) — 2026-10-24, released as v0.1.0
 
 ## Decisions made in the design
 
@@ -242,7 +242,9 @@ Session 1:
 
 ### 0.1.0 (session 5: Last.fm, Statistics, edge cases)
 
-Installs over v0.0.4 (same key). Also holds v0.0.5's Bit-Perfect items below, which were
+Released 2026-10-24 as
+[`v0.1.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.0)
+("AudioFool for Android 0.1.0", a full release, versionCode 6). Installs over v0.0.4 (same key). Also holds v0.0.5's Bit-Perfect items below, which were
 never released.
 
 - [ ] **Connect Last.fm.** Settings > Last.fm > Connect: paste the desktop's API key and shared
