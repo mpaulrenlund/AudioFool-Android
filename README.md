@@ -5,7 +5,7 @@ Galaxy S24 Ultra (Android 17) and a FiiO M21 (Android 13). Kotlin and Jetpack Co
 with the desktop's two themes, PS2 Dark and PS1 Light, and its library rules ported
 from `AudioFool.Core`.
 
-Status: version 1 (0.1.0), after five build sessions; see `design/progress.md` for
+Status: version 1 (0.1.5), after five build sessions and five fix releases from the first device reports; see `design/progress.md` for
 every decision and what is still to be checked on the phones.
 
 ## How it works

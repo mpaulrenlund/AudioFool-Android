@@ -367,12 +367,12 @@ but the readout kept saying "resampled" with BP on.
   matched)", BP off "USB · 48 kHz (resampled)". BP keeps hi-res at its own rate on the S24.
 - [ ] **Route** row with the DAC: does the DAC itself list 44.1 kHz ("rates: …")? If it does,
   Samsung leaves 44.1 out of the mixer; if not, the DAC doesn't offer it over USB.
-- [ ] **The readout with BP on.** Through the DAC, play a 16/44 and a 24/96 FLAC with BP on, and
+- [x] **The readout with BP on.** Through the DAC, play a 16/44 and a 24/96 FLAC with BP on, and
   send a photo of logo > Statistics > Playback for each (Output, Route, Bit-Perfect, Opened
   as, USB mixers, Mixer set). That says whether the S24 offers the DAC a mixer at those
   rates and what happened when it was asked.
-- [ ] **Tapping a song opens Now Playing**, from an album and from Search; back returns to the list.
-- [ ] **No glitch or gap between songs** through the DAC: a live or continuous album (BP off, then on).
+- [x] **Tapping a song opens Now Playing**, from an album and from Search; back returns to the list.
+- [x] **No glitch or gap between songs** through the DAC: a live or continuous album (BP off, then on).
   Reported on 0.1.0: a loud glitch at the end of every song, and no gapless.
 
 ### 0.1.0 (session 5: Last.fm, Statistics, edge cases)
@@ -408,10 +408,10 @@ items are tested on 0.1.0, which installs over v0.0.4 (same key). Report from lo
 Bit-Perfect, Opened as, System output, Direct, USB mixers, Mixer set. A photo of the panel
 is fine.
 
-- [ ] **What the S24 offers your DAC.** Plug the DAC in, open Statistics > Playback: report
+- [x] **What the S24 offers your DAC.** Plug the DAC in, open Statistics > Playback: report
   **USB mixers** (two lines, "bit-perfect: …" and "default: …", or "none") and **Route**.
   This answers whether Samsung gives the S24 a bit-perfect mixer at all.
-- [ ] **24/96 FLAC, Bit-Perfect on and off.** Play it with BP off, then tap BP (Now Playing):
+- [x] **24/96 FLAC, Bit-Perfect on and off.** Play it with BP off, then tap BP (Now Playing):
   report Output and Mixer set for each. Expected with BP on: "USB · 96 kHz / 24-bit
   (bit-perfect)" or "(rate matched)"; with BP off: "USB · Shared · 48 kHz (resampled)" or
   similar. Does the DAC's own display (if it has one) show 96 kHz with BP on?
@@ -548,10 +548,10 @@ on the M21 only, mostly at a restart and at a tapped song, BP on or off.
 (2026-10-25): Output still "Speaker" on the 3.5 mm and 4.4 mm jacks, BP greyed, unplugging
 while playing doesn't pause, and no FiiO bypass setting that they know of.
 
-- [ ] **BP can be turned on**, Output starts "Headphones". If not, report the **Phone** row.
-- [ ] **Unplugging pauses** (3.5 mm and 4.4 mm). Either way, report the **Jack** row after
+- [x] **BP can be turned on**, Output starts "Headphones". If not, report the **Phone** row.
+- [x] **Unplugging pauses** (3.5 mm and 4.4 mm). Either way, report the **Jack** row after
   plugging in and pulling out: "nothing yet" means the M21 doesn't send the jack's signal.
-- [ ] **With BP on**, a 44.1 kHz and a 96 kHz FLAC: Output and System output.
+- [x] **With BP on**, a 44.1 kHz and a 96 kHz FLAC: Output and System output.
 
 0.1.2 (the M21's headphone out), released 2026-10-25 as pre-release
 [`v0.1.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.2)
@@ -559,13 +559,13 @@ while playing doesn't pause, and no FiiO bypass setting that they know of.
 cleanly now and the join glitch is gone, but BP still couldn't be turned on through the
 4.4 mm jack; Output "Speaker · Shared · 48 kHz", and Android lists no headphone output.
 
-- [ ] **BP can be turned on** through the 4.4 mm (and 3.5 mm) jack, and Output starts with
+- [x] **BP can be turned on** through the 4.4 mm (and 3.5 mm) jack, and Output starts with
   "Headphones". Statistics > Playback > Route ends "FiiO M21: its speaker is the headphone out".
-- [ ] **With BP on**, a 44.1 kHz and a 96 kHz FLAC: report Output and System output. If System
+- [x] **With BP on**, a 44.1 kHz and a 96 kHz FLAC: report Output and System output. If System
   output stays 48 kHz, Output says "(resampled)": FiiO's bypass isn't changing Android's rate.
-- [ ] **FiiO's own setting:** is there an SRC bypass / "All to All" / bit-perfect switch in the
+- [x] **FiiO's own setting:** is there an SRC bypass / "All to All" / bit-perfect switch in the
   M21's settings or pull-down? Does it change System output?
-- [ ] **Unplugging the headphones** pauses (the M21 may not tell apps, since Android sees no
+- [x] **Unplugging the headphones** pauses (the M21 may not tell apps, since Android sees no
   headphones).
 - [ ] **Bluetooth** still greys BP ("Bluetooth · Shared · …").
 
@@ -574,13 +574,13 @@ cleanly now and the join glitch is gone, but BP still couldn't be turned on thro
 4.4 mm out, 24-bit songs were loud static with the music barely audible (16-bit and MP3
 fine); BP couldn't be turned on.
 
-- [ ] **24-bit songs play cleanly** through the 4.4 mm out with BP off (a 24/96 and a 24/44.1
+- [x] **24-bit songs play cleanly** through the 4.4 mm out with BP off (a 24/96 and a 24/44.1
   FLAC), and through the 3.5 mm out.
-- [ ] **BP can be turned on** with headphones in. If it still can't, send a photo of Statistics >
+- [x] **BP can be turned on** with headphones in. If it still can't, send a photo of Statistics >
   Playback: **Route** and **Outputs** say what the M21 calls its headphone outs.
-- [ ] **With BP on**, the same 24-bit songs: clean? Report Output, Opened as and System output.
-- [ ] **Tapping a song opens Now Playing.**
-- [ ] **No glitch or gap between songs** through the 4.4 mm out: a live or continuous album.
+- [x] **With BP on**, the same 24-bit songs: clean? Report Output, Opened as and System output.
+- [x] **Tapping a song opens Now Playing.**
+- [x] **No glitch or gap between songs** through the 4.4 mm out: a live or continuous album.
   Reported on 0.1.0: a loud glitch at the end of every song, and no gapless.
 
 0.1.0 (session 5), with the full library on the SD card:

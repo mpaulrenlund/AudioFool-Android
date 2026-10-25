@@ -1,83 +1,76 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 fixes (the first device reports). Read this
-with `README.md` (how the app works) and `design/progress.md` (every decision, and the
-lists of what to test on each device). The spec is `design/android-spec.md`.
+Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases (the user's first device reports).
+Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
+and the lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.5** (versionCode 12) is released as a pre-release (2026-10-25,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.5>, `dist/AudioFool-0.1.5.apk`;
-  also installed on the M21 over adb and checked there): unplug
-  pauses on the M21, and its readout goes by FiiO's reported DAC rate ("Headphones · 96 kHz
-  / 32-bit (bit-perfect)" seen on the M21). Its "becoming noisy" comes from FiiO's status bar (an app uid), so the
-  receiver must be exported. FiiO's `SAMPLE_RATE_CHANGED` carries the rate its DAC runs at;
-  `OutputReadout.hardwareRate` uses it. Next fix: 0.1.6, versionCode 13. **The M21 can be connected to this PC** when the user plugs it in: pick it with
-  `adb -t <transport_id>` (its serial shows as "?").
-- **0.1.4** (versionCode 10) is released as a pre-release (2026-10-25,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4>, `dist/AudioFool-0.1.4.apk`). The click on the M21 at a restart or a tapped song: the
-  desktop's 5 ms seek fade, ported (`SeekFade`; a `VolumeShaper` fades the old sound out
-  before `OutputStage.cut`, the decoder fades the new in after a jump; never DoP). M21 BP
-  works since 0.1.3. The click is gone (user, 2026-10-25). **Open:** unplug-pause on the M21:
-  no noisy broadcast, no `ACTION_HEADSET_PLUG`, the jack files can't be read (all
-  reported); FiiO's player pauses by something of FiiO's own. Only a logcat at an unplug
-  can say what; the user decides whether that's worth it. Next fix: 0.1.5, versionCode 11.
-- **0.1.3** (versionCode 9) is released as a pre-release (2026-10-25,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.3>, `dist/AudioFool-0.1.3.apk`). 0.1.2's FiiO check (maker or brand exactly "FiiO") didn't catch
-  the M21. Now "FiiO" anywhere in maker, brand, model or the speaker's name; Statistics shows
-  a **Phone** row. Unplugging didn't pause on the M21 (Android sees no headphones, so no
-  "becoming noisy"): the player also pauses on the jack's `ACTION_HEADSET_PLUG` unplug, and a
-  **Jack** row shows what the jack reported. **Waiting on** the M21's Output, Phone and Jack
-  rows. Next fix: 0.1.4, versionCode 10.
-- **0.1.2** (versionCode 8) is released as a pre-release (2026-10-25,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.2>, `dist/AudioFool-0.1.2.apk`). The M21 lists its headphone jacks to Android as the built-in
-  speaker (Outputs: earpiece, speaker, telephony; no wired device), so a FiiO player's
-  speaker route is now Headphones (`SpeakerlessPlayers`) and BP can be turned on. 0.1.1's
-  other fixes are confirmed on the phones (2026-10-25): the join glitch, Now Playing on a
-  tap, 24-bit on the M21, BP through the S24's DAC. **Open:** what the M21's System output
-  does with BP on (48 kHz means "(resampled)"); ask about FiiO's own bypass setting before
-  changing the readout rule. Next fix: 0.1.3, versionCode 9.
-- **0.1.1** (versionCode 7) is released as a pre-release (2026-10-25,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.1>, `dist/AudioFool-0.1.1.apk`). It fixes the first reports: a song tap opens Now Playing; the end-of-song glitch and gap; no 24-bit
-  packed output (the M21 turned it into static: shared now sends 24-bit as float, the M21's
-  way as 32-bit); the headphone route on the M21 (BP was greyed); an **Outputs** row in
-  Statistics > Playback. **Waiting on:** the M21 saying 24-bit is clean and BP turns on (else
-  its Route and Outputs rows), and the S24's Statistics > Playback with BP on through the DAC
-  (its readout said "resampled": the mixer wasn't set; Mixer set says why). Next fix: 0.1.2,
-  versionCode 8.
-- **Never open a 24-bit packed `AudioTrack`.** The emulator plays it; the M21 makes static.
-- **The glitch and gap at the end of every song** (both phones, 0.1.0) was `Decoder.read` leaving the
-  buffer looking full when a song ran out: its old contents went out at every gapless join.
-- **Version 1 is built.** The five planned sessions are done. What's left is the user's
-  device reports: the 0.1.0, v0.0.5 and v0.0.4 items on both lists in `design/progress.md`
-  (Last.fm on the profile, Bit-Perfect through a real DAC, the M21's bypass, a physical SD
-  card pull, the full library's cold start). Fix what they turn up; middle number for new
-  features, last for fixes (`0.1.1` next for fixes, versionCode 7).
-- **v0.0.5 was skipped** (the user's call): built, never released. 0.1.0 is versionCode 6.
-- Read, in order: `CLAUDE.md`, this file, and in `design/progress.md` the Decisions sections
-  and the session 5 notes.
-- **The S24 lists no bit-perfect mixer** (confirmed 2026-10-25 with the user's DAC: default
-  entries only, at 48, 88.2, 96, 176.4, 192, 352.8, 384 kHz, **no 44.1 kHz**), so BP gives
-  "rate matched" there, and a 44.1 kHz song is shared and resampled to 48 kHz. A truly bit-perfect S24 would need the app's own USB driver
-  (libusb, as USB Audio Player Pro does): a new dependency and a spec change, so ask.
-- **If the M21's System output stays at 48 kHz**, its readout says "(resampled)" even if
-  FiiO's bypass works some other way; ask the user what the M21's own setting shows before
-  changing the rule (`OutputReadout.describe`, `OutputPath.SourceRate`).
-- **Device reports still open** (don't block on them): the v0.0.2, v0.0.4 and v0.0.5 items on
-  both lists in `design/progress.md`. Done so far: the S24's install, counts, first scan and
-  cold start (v0.0.1), and the M21's first scan (v0.0.3).
-- **Releases:** `v0.0.1` to `v0.0.4` are pre-releases; `v0.0.5` was skipped; `v0.1.0` is
-  the first full release (session 5). Next: `0.1.1`, versionCode 7, for fixes.
-- **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
-  the key never goes in the repo). The user reports from Settings > Last.fm (its status and
-  queue line) and their last.fm profile.
-  Confirm the tag and notes with the user before `gh release create`.
+- **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
+  sections (0.1.5 down to 0.1.1 at the top, then session 5) and the newest session notes.
+- **Latest: 0.1.5** (versionCode 12), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.5>,
+  `dist/AudioFool-0.1.5.apk`. Next: **0.1.6, versionCode 13** for fixes; 0.2.0 for a new
+  feature. Releases so far: v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first
+  full release, v0.1.1 to v0.1.5 pre-releases (all fixes, 2026-10-25). Confirm the tag and
+  the notes with the user before `gh release create`.
+- **Nothing is waiting on the user, and nothing is broken that they know of.** Confirmed on
+  the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
+  Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
+  the readout by FiiO's rate, no click at a restart or a tap, unplug pauses on both jacks.
+- **Open, the user's call (not started):** true bit-perfect on the S24 would need the app's
+  own USB driver (libusb, as USB Audio Player Pro does): a new dependency and a spec change.
+  Write up what it takes before building anything. The user also might want BP remembered
+  per output; only if they ask.
+- **Still unreported** (don't block on them; the unticked items on both lists in
+  `design/progress.md`): Last.fm on a real profile, the lock screen and notification, Bluetooth
+  buttons, a call, battery, DSD over DoP, a rate change mid-album with BP on, Bluetooth greying
+  BP on the M21, the SD card pulled while playing, the full library's cold start and
+  Statistics on the M21, and the S24 DAC's **Route** row (does the DAC itself list 44.1 kHz?).
+
+### What the phones turned out to do (2026-10-25)
+
+- **FiiO M21** (Android 13; `Build.MANUFACTURER` "QUALCOMM", `BRAND` "qti", `MODEL` "FiiO M21"):
+  - Android lists no headphone device: the 3.5 mm and 4.4 mm jacks are the built-in
+    "speaker" (48 kHz, 16-bit, per Android). `SpeakerlessPlayers` spots a FiiO by "FiiO" in
+    any of those names (or the speaker's name) and takes the speaker route as Headphones.
+  - Its "becoming noisy" at an unplug comes from FiiO's status bar (`com.android.systemui`,
+    uid 10089, an app), so the receiver must be `RECEIVER_EXPORTED` or it never hears it. No
+    `ACTION_HEADSET_PLUG` is ever sent, and the kernel's jack files can't be read.
+  - FiiO's own broadcasts reach an exported receiver: `fiio.intent.action.SAMPLE_RATE_CHANGED`
+    (`rate`: the DAC's rate, 0 when stopped; `format`) and `fiio.intent.action.HEADSET_TYPE_CHANGED`
+    (`type` 8 with headphones in, 0 out). The readout goes by that rate
+    (`OutputReadout.hardwareRate`); Statistics > Playback > FiiO signals lists them.
+  - The DAC runs at the song's rate even with BP off ("Headphones · Shared · 96 kHz"); BP adds
+    the full-volume, whole-number-sample path. 24-bit songs go as 32-bit with BP on, as
+    float with it off: **24-bit packed `AudioTrack`s come out as static there.**
+- **S24 Ultra + the user's USB dongle DAC:** the mixer list is default entries only, at 48,
+  88.2, 96, 176.4, 192, 352.8 and 384 kHz (16, 24, 32-bit), **no bit-perfect entry and no
+  44.1 kHz**. So BP on is "rate matched" at 48 kHz and up ("USB · 96 kHz / 24-bit (rate
+  matched)"), and a 44.1 kHz song is shared and resampled to 48 kHz either way.
+
+### Reaching the phones
+
+- **The M21 can be plugged into this PC** (the user did, 2026-10-25). adb shows it as
+  `model:FiiO_M21` with the serial "?", so pick it with `adb -t <transport_id>` from
+  `adb devices -l` (the emulator is the other device). adb isn't on the PATH: it is
+  `$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe`. `adb install -r` of a release build
+  updates in place (same key, data kept). Useful: `dumpsys activity broadcasts history` (each
+  broadcast, its sender and who received it; extras show as STRIPPED),
+  `dumpsys activity broadcasts` (registered receivers), and `uiautomator dump` to read the
+  app's screen without the user typing it out. A plain `adb logcat` capture dropped when
+  USB reconnected and caught little.
+- **The S24 can't use a cable while testing the DAC** (one USB-C port). Wireless debugging
+  was tried and the user couldn't get the pairing step to work, so S24 results come as typed
+  readings from Statistics > Playback. Never type a pairing code for the user.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
-  albums of silent MP3s, `Gapless Live/`: a sweep cut into three songs; and on the SD card,
-  `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute
-  FLACs for pulling the card mid-song) and the session 5 release build, with Bit-Perfect
-  saved **on**, Last.fm not connected, and Long Song 1 (on the card) paused in the queue.
-  `dist/` (ignored by git) holds the released APKs.
+  albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
+  `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
+  for pulling the card mid-song) and a 0.1.4 release build, with Bit-Perfect saved **on** and
+  Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
+  captured reports (`m21-*.txt`).
+- **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
+  the key never goes in the repo).
 
 ---
 
@@ -89,7 +82,7 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 | The desktop app (read-only) | `C:\MusicPlayer`; its `src/AudioFool.Core` is what gets ported |
 | Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/`, `playback/`, `analysis/` |
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
-| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`; `OutputReadout`) and `core/.../analysis/` |
+| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
@@ -258,7 +251,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ---
 
-## Where things stand (after session 5)
+## Where things stood after session 5
 
 - **Last.fm** is ported and wired: now playing, scrobbles from the heard position, the
   offline queue, Connect / Disconnect in Settings. Not yet seen on a real profile.
