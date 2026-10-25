@@ -2,6 +2,7 @@ package com.mpaulrenlund.audiofool.playback
 
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.VolumeShaper
 import android.os.Process
 import android.os.SystemClock
 import com.mpaulrenlund.audiofool.core.model.Track
@@ -11,6 +12,7 @@ import com.mpaulrenlund.audiofool.core.playback.OutputMode
 import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
 import com.mpaulrenlund.audiofool.core.playback.ReopenPoint
+import com.mpaulrenlund.audiofool.core.playback.SeekFade
 import com.mpaulrenlund.audiofool.core.playback.TrackEnd
 import com.mpaulrenlund.audiofool.core.playback.TrackEndAction
 import java.nio.ByteBuffer
@@ -114,6 +116,10 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     @Volatile var underruns = 0
         private set
     private var underrunsSeen = 0
+
+    /** Times a playing song was faded out before a cut (a seek, a skip, a tap), for the debug panel. */
+    @Volatile var fadedCuts = 0
+        private set
 
     // ---- the thread's own state ----
     private var current: Decoder? = null
@@ -239,6 +245,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
             return
         }
         current = decoder
+        if (startMs > 0) decoder.fadeInNext()
         heard = HeardPoint(decoder.track, (decoder.positionSeconds * 1000).toLong())
         lastHeardTrack = decoder.track
         listener.onDecoding(decoder.track)
@@ -264,8 +271,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     private fun openOutput(format: PcmFormat, track: Track, reuse: Boolean): Boolean {
         val open = output
         if (reuse && open != null && askedFormat == format) {
-            open.pause()
-            open.flush()
+            cut(open)
             open.setVolume(outputVolume())
             resetCounting(format.sampleRate)
             listener.onOpened(track, format, openedFormat!!, openedPath)
@@ -536,9 +542,9 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         val decoder = current ?: return
         val out = output ?: return
         draining = false
-        out.pause()
-        out.flush()
+        cut(out)
         decoder.seek(ms)
+        decoder.fadeInNext()
         resetCounting(openedFormat?.sampleRate ?: 44100)
         heard = HeardPoint(decoder.track, ms)
         if (isPlaying) out.play()
@@ -548,6 +554,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     private fun reopenAfterLoss(decoder: Decoder) {
         val at = ReopenPoint.choose(decoder.track, heard, (decoder.positionSeconds * 1000).toLong())
         decoder.seek(at)
+        decoder.fadeInNext()
         current = null
         val playing = openFor(decoder, reuse = false)
         if (playing == null) {
@@ -580,6 +587,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         current = null
         releaseOutput()
         val playing = Decoder.open(decoder.track, at, routes::mayOpenDop)?.let { openFor(it, reuse = false) }
+        playing?.fadeInNext()
         if (playing == null) {
             closeAll()
             listener.onSkipped(listOf(decoder.track))
@@ -590,6 +598,32 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         heard = HeardPoint(playing.track, at)
         if (isPlaying) output?.play()
     }
+
+    /**
+     * Pauses [out] and empties it. If a song is still being heard from it, it is
+     * faded out first, as the desktop fades 5 ms out before a seek ([SeekFade]):
+     * cut off mid-wave, it clicks (the M21, 0.1.3). What was handed over can't be
+     * changed any more, so the fade is a `VolumeShaper` on the track, given time
+     * to reach the speakers before the pause. Never for DoP.
+     */
+    private fun cut(out: AudioTrack) {
+        val shaper = if (stillSounding(out)) fadeOut(out) else null
+        runCatching { out.pause() }
+        runCatching { out.flush() }
+        // Emptied, so the volume going back up is silent.
+        shaper?.let { runCatching { it.close() } }
+    }
+
+    private fun stillSounding(out: AudioTrack): Boolean =
+        isPlaying && openedFormat?.dop == false && out.playState == AudioTrack.PLAYSTATE_PLAYING && timeline.totalFrames > head.read(out)
+
+    private fun fadeOut(out: AudioTrack): VolumeShaper? = runCatching {
+        out.createVolumeShaper(FADE_OUT).also {
+            it.apply(VolumeShaper.Operation.PLAY)
+            SystemClock.sleep(FADE_OUT_WAIT_MS)
+            fadedCuts++
+        }
+    }.getOrNull()
 
     private fun updateHeard() {
         if (output == null) return
@@ -607,8 +641,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
 
     private fun releaseOutput() {
         output?.let {
-            runCatching { it.pause() }
-            runCatching { it.flush() }
+            cut(it)
             it.release()
         }
         output = null
@@ -628,6 +661,21 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         draining = false
         isPlaying = false
         pending.clear().limit(0)
+    }
+
+    private companion object {
+        /** [SeekFade]'s 5 ms, falling as a raised cosine does (the cubic curve is the nearest). */
+        val FADE_OUT: VolumeShaper.Configuration = VolumeShaper.Configuration.Builder()
+            .setDuration((SeekFade.SECONDS * 1000).toLong())
+            .setCurve(floatArrayOf(0f, 1f), floatArrayOf(1f, 0f))
+            .setInterpolatorType(VolumeShaper.Configuration.INTERPOLATOR_TYPE_CUBIC)
+            .build()
+
+        /**
+         * How long the fade is given before the pause: Android applies a shaper at
+         * its next mix and ramps over that mix, so the fade plus a mix or two.
+         */
+        const val FADE_OUT_WAIT_MS = 40L
     }
 
     /**

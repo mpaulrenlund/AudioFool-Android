@@ -12,6 +12,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.1 fixes** from the first device reports — 2026-10-25
 - [x] **0.1.2**: the M21's headphone out — 2026-10-25 (didn't take: 0.1.3)
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
+- [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 
 ## Decisions made in the design
 
@@ -31,6 +32,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.1.4 (2026-10-25):
+
+- **The click at a restart or a tap (M21, BP on or off)** was the playing song cut off
+  mid-wave (pause and flush). Ported the desktop's rule (`OutputChain`: 5 ms raised-cosine
+  fade out before a seek's jump, 5 ms in after; never DoP) as `SeekFade` in core, with
+  tests. The phone can't change samples already handed to the `AudioTrack`, so the fade
+  out is a 5 ms `VolumeShaper` given 40 ms to reach the speakers before the pause (a skip
+  or tap is that much slower to answer); the fade in is applied to the decoded samples
+  after a seek, a reopen and a start part-way in. A song started from its beginning isn't
+  faded in, as on the desktop. Debug: Joins counts "cuts faded".
+- **Unplug on the M21:** 0.1.3's `ACTION_HEADSET_PLUG` never arrives ("Jack: nothing yet"),
+  yet FiiO's own player pauses on an unplug, so FiiO signals it some other way. A **Jack
+  files** row reads the kernel's jack switches (`/sys/class/switch`, `/sys/class/extcon`)
+  in case an app may; on the emulator neither can be read. If the M21's can't either, the
+  options are FiiO's own broadcast (its name unknown) or leaving unplug-pause out there.
+- **M21 Bit-Perfect works** (0.1.3, the user's report).
 
 0.1.3 (2026-10-25):
 
@@ -457,6 +475,15 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+0.1.4 (the click). The user's report on 0.1.3 (2026-10-25): BP works; unplugging doesn't
+pause and Jack says "nothing yet"; FiiO's own player does pause on an unplug; a small click
+on the M21 only, mostly at a restart and at a tapped song, BP on or off.
+
+- [ ] **No click** at a restart (Previous after 3 s), a tapped song while another plays, Next,
+  and a drag on the seekbar. BP on and off.
+- [ ] **Jack files**: open Statistics with headphones in, note the Jack files row, pull them
+  out, open Statistics again: did any line change? ("can't be read" means apps can't see them.)
+
 0.1.3 (the M21 by its speaker's name, and the jack), released 2026-10-25 as pre-release
 [`v0.1.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.3)
 ("AudioFool 0.1.3", versionCode 9). The user's report on 0.1.2
@@ -562,6 +589,22 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.1.4 — no click at a restart or a tap (2026-10-25)
+
+**Reported** (0.1.3): M21 BP works. Unplugging doesn't pause ("Jack: nothing yet"), though
+FiiO's own player pauses. A small click on the M21, at a restart and a tapped song.
+
+**Changed:** `SeekFade` (core, ported from the desktop's `OutputChain`, with
+`SeekFadeTest`); `OutputStage.cut` fades a playing song out with a `VolumeShaper` before
+any pause-and-flush (seek, skip, tap, reopen); `Decoder.fadeInNext` fades in after a jump;
+Statistics' Jack files row and "cuts faded".
+
+**Verified:** `:core:test` (`SeekFadeTest`), `:app:testDebugUnitTest`,
+`verifyRoborazziDebug`, the release build. Emulator: a restart with Previous and a tap on
+another song: "2 cuts faded" (the shaper made and applied), the next gapless join 12.01 s
+later with 0 underruns; Jack files "can't be read" for both folders. **Not checked here:**
+whether the M21's click is gone (only listening can say), and its jack files.
 
 ### 0.1.3 — the M21 by its speaker's name, and the jack (2026-10-25)
 

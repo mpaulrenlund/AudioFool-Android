@@ -3,6 +3,7 @@ package com.mpaulrenlund.audiofool.playback
 import android.media.AudioFormat
 import com.mpaulrenlund.audiofool.core.library.AudioFormats
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.core.playback.SeekFade
 import com.un4seen.bass.BASS
 import com.un4seen.bass.BASSDSD
 import java.io.File
@@ -73,6 +74,17 @@ class Decoder private constructor(
     var ended = false
         private set
 
+    /** The next chunk starts with [SeekFade]'s 5 ms fade in. */
+    private var fadeIn = false
+
+    /**
+     * Fades the next chunk in, after a jump into the middle of the song (a seek, a
+     * reopen, a start part-way in), as the desktop does. Never for DoP.
+     */
+    fun fadeInNext() {
+        if (!format.dop) fadeIn = true
+    }
+
     /** Where the next frame read comes from, in seconds into the track. */
     val positionSeconds: Double get() = startSeconds + framesDecoded.toDouble() / format.sampleRate
 
@@ -102,6 +114,10 @@ class Decoder private constructor(
         val samples = got / 4
         val frames = samples / format.channels
         val floats = floatBuffer.asFloatBuffer()
+        if (fadeIn) {
+            fadeIn = false
+            SeekFade.fadeIn(frames, format.channels, SeekFade.frames(format.sampleRate), floats::get) { i, v -> floats.put(i, v) }
+        }
         when (encoding) {
             AudioFormat.ENCODING_PCM_FLOAT -> for (i in 0 until samples) out.putFloat(floats.get(i))
             AudioFormat.ENCODING_PCM_16BIT -> for (i in 0 until samples) out.putShort(toInt(floats.get(i), 32768.0, 32767).toShort())

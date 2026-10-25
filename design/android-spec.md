@@ -134,6 +134,7 @@ Repeat: off `control.iconOff`; on `control.repeatOn`; repeat-one adds the deskto
 - **DSD**: DoP when the output is bit-perfect and the DAC takes it; otherwise converted to PCM (follow the desktop's `DopRule`).
 - **Media session** (a foreground media service): lock screen and notification controls with art, headset and Bluetooth buttons, audio focus, and a pause when headphones are unplugged.
 - **Resume**: reopening the app restores the queue, track and position, paused (desktop `ReopenPoint`).
+- **No click at a jump** (0.1.4, the desktop's rule): a seek, a skip or a song tapped while another plays fades the old sound out over 5 ms before it is cut, and a jump into the middle of a song fades in over 5 ms. DoP is never faded.
 
 ### 6.2 Bit-Perfect
 

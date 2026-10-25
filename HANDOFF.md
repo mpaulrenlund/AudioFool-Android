@@ -6,6 +6,12 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
+- **0.1.4** (versionCode 10): the click on the M21 at a restart or a tapped song: the
+  desktop's 5 ms seek fade, ported (`SeekFade`; a `VolumeShaper` fades the old sound out
+  before `OutputStage.cut`, the decoder fades the new in after a jump; never DoP). M21 BP
+  works since 0.1.3. **Open:** unplug-pause on the M21 (no `ACTION_HEADSET_PLUG`; FiiO's
+  player does pause): the Jack files row says whether the kernel's jack switches can be
+  read. Next fix: 0.1.5, versionCode 11.
 - **0.1.3** (versionCode 9) is released as a pre-release (2026-10-25,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.3>, `dist/AudioFool-0.1.3.apk`). 0.1.2's FiiO check (maker or brand exactly "FiiO") didn't catch
   the M21. Now "FiiO" anywhere in maker, brand, model or the speaker's name; Statistics shows
@@ -341,6 +347,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **BASS add-ons load by file name** (`BASS_PluginLoad("libbassflac.so")`): no extracted
   libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
 - **A buffer from `Decoder.read` must be empty when it returns false** (`limit(0)`): `clear()` makes it look full of old samples, which `pump` then writes.
+- **Anything that cuts a playing `AudioTrack` goes through `OutputStage.cut`**, which fades it out first; a bare `pause()`/`flush()` clicks on the M21.
 - **The M21 has no headphone device in Android's eyes**: its jacks are the "speaker" (48 kHz, 16-bit, per Android). Don't look for `TYPE_WIRED_*` there.
 - **24-bit packed `AudioTrack`s are static on the M21** (Android 13) though the emulator plays them: shared sends 24-bit as float, the M21's way as 32-bit.
 - **An `AudioTrack` must use the mixer entry's own `AudioFormat`** (`OutputPlan.Mixer.format`)

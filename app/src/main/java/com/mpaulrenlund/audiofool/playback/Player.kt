@@ -223,7 +223,7 @@ class Player(
     /** For the debug panel: how tracks joined, and whether the output ran dry while fed. */
     fun outputStats(): String =
         if (!engineMade) "–"
-        else "${engine.gaplessJoins} gapless joins · ${engine.formatReopens} reopened for a new format · ${engine.underruns} underruns"
+        else "${engine.gaplessJoins} gapless joins · ${engine.formatReopens} reopened for a new format · ${engine.underruns} underruns · ${engine.fadedCuts} cuts faded"
 
     /** For audio focus: ducked while another app speaks briefly. */
     private fun setVolume(level: Float) {
@@ -285,6 +285,7 @@ class Player(
             "Phone" to "${Build.MANUFACTURER} · ${Build.BRAND} · ${Build.MODEL}" +
                 if (routes.speakerIsHeadphones) " · speaker taken as headphones" else "",
             "Jack" to jackReport,
+            "Jack files" to jackFiles(),
             "Bit-Perfect" to "${if (routes.bitPerfectOn) "on" else "off"} · way here: ${routes.way.name}" +
                 if (routes.greyed) " (greyed)" else "",
             "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),
@@ -594,6 +595,27 @@ class Player(
 
     /** What the headphone jack last said, for the debug screen. */
     private var jackReport = "nothing yet"
+
+    /**
+     * For the debug screen: the kernel's jack switches, where an app may read
+     * them. The M21 sends no plug broadcast (0.1.3), yet FiiO's own player pauses
+     * on an unplug; if one of these changes with the plug, the app can watch it.
+     */
+    private fun jackFiles(): String {
+        val found = listOf("/sys/class/switch", "/sys/class/extcon").flatMap { dir ->
+            val entries = runCatching { File(dir).listFiles()?.toList() }.getOrNull()
+            when {
+                entries == null -> listOf("$dir: can't be read (or isn't there)")
+                entries.isEmpty() -> listOf("$dir: empty")
+                else -> entries.sortedBy { it.name }.map { e ->
+                    val name = runCatching { File(e, "name").readText().trim() }.getOrNull()
+                    val state = runCatching { File(e, "state").readText().trim().replace('\n', ' ') }.getOrElse { "not readable" }
+                    "${e.name}${name?.let { " ($it)" } ?: ""} = $state"
+                }
+            }
+        }
+        return found.joinToString("\n")
+    }
 
     init {
         context.registerReceiver(jack, IntentFilter(AudioManager.ACTION_HEADSET_PLUG), Context.RECEIVER_NOT_EXPORTED)
