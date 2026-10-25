@@ -80,9 +80,16 @@ object Storage {
      * mounted, removed or ejected, so the library can tell a removed SD card
      * from a deleted folder (DriveChange).
      */
-    fun watchVolumes(context: Context, onChange: (arrived: Boolean) -> Unit): BroadcastReceiver {
+    fun watchVolumes(
+        context: Context,
+        onEjecting: (root: String) -> Unit = {},
+        onChange: (arrived: Boolean) -> Unit,
+    ): BroadcastReceiver {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
+                // Eject comes first, about 250 ms before vold ends every process still
+                // holding a file open on the volume (seen on the emulator, session 5).
+                if (intent.action == Intent.ACTION_MEDIA_EJECT) intent.data?.path?.let(onEjecting)
                 onChange(intent.action == Intent.ACTION_MEDIA_MOUNTED)
             }
         }

@@ -210,6 +210,7 @@
     "paddingX": 20,
     "artTop": 6,
     "artHeightReserve": 426,
+    "artReserveText": 140,
     "artToText": 14,
     "titleSize": 22,
     "titleWeight": 600,

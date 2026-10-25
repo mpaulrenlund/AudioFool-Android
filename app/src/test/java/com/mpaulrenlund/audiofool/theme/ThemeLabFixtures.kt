@@ -99,6 +99,25 @@ object ThemeLabFixtures {
     /** The Now Playing mockup's position: 2:18 of 5:32. */
     const val NOW_PLAYING_POSITION_MS = 138_000L
 
+    // ---- edge cases (session 5): very long names and a 120-song album ----
+
+    const val LONG_ARTIST = "The Extraordinarily Long-Named Philharmonic Orchestra and Chorus of Greater Somewhere"
+    const val LONG_ALBUM = "Complete Symphonies, Overtures, Incidental Music and Assorted Fragments (Remastered Deluxe Anniversary Edition)"
+    const val BIG_ALBUM = "The Complete Sessions"
+
+    val edgeTracks: List<Track> = buildList {
+        add(track(INTERNAL, LONG_ARTIST, LONG_ALBUM, 2019, 1,
+            "Symphony No. 9 in D Minor, Op. 125 \"Choral\": IV. Presto – Allegro assai – Andante maestoso – Allegro energico, sempre ben marcato", "24:51"))
+        addAll(filler(INTERNAL, LONG_ARTIST, LONG_ALBUM, 2019, 7).drop(1))
+        addAll(filler(INTERNAL, "Aphelion Drive", BIG_ALBUM, 2024, 120))
+        addAll(tracks)
+    }
+
+    val edgeLibrary: MusicLibrary = LibraryScanner.build(edgeTracks)
+
+    /** The long-named song, playing. */
+    val longPlaying: Track = edgeTracks.first()
+
     /** The Now Playing mockup's made-up waveform (its `renderVals`), as levels of 0 to 1. */
     val mockupWaveform: FloatArray = FloatArray(96) { i ->
         val env = 0.55 + 0.35 * kotlin.math.sin(i / 9.0) + 0.1 * kotlin.math.sin(i / 2.3)

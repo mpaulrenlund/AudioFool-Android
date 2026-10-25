@@ -41,6 +41,7 @@ import com.mpaulrenlund.audiofool.core.scrobbling.ScrobblerState
 import com.mpaulrenlund.audiofool.lastfm.LastFm
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -187,6 +188,64 @@ class ThemeLabTest {
         }
     }
 
+    /**
+     * Edge cases (session 5): very long names, a 120-song album, an empty
+     * library, and the main screens at a font scale of 1.3.
+     */
+    private fun edgeCases(device: String) {
+        val actions = AppActions()
+        val long = ThemeLabFixtures.LONG_ARTIST
+        fun edge(track: com.mpaulrenlund.audiofool.core.model.Track = ThemeLabFixtures.longPlaying) = Browse(
+            library = ThemeLabFixtures.edgeLibrary,
+            unavailableFolders = emptyList(),
+            nowPlaying = NowPlaying().apply { showForPictures(track) },
+        )
+        shoot(device, "edge-artists-long") { ArtistsScreen(edge(), actions, initialSelected = long) }
+        shoot(device, "edge-albums-long") { AlbumsScreen(long, edge(), actions, initialSelected = ThemeLabFixtures.LONG_ALBUM) }
+        shoot(device, "edge-album-long") { AlbumScreen(long, ThemeLabFixtures.LONG_ALBUM, edge(), actions) }
+        shoot(device, "edge-album-120") {
+            val big = ThemeLabFixtures.edgeLibrary.allTracks.first { it.album == ThemeLabFixtures.BIG_ALBUM && it.trackNumber == 3 }
+            AlbumScreen("Aphelion Drive", ThemeLabFixtures.BIG_ALBUM, edge(big), actions)
+        }
+        shoot(device, "edge-search-long") { SearchScreen(edge(), actions, initialQuery = "symphon") }
+        shoot(device, "edge-now-playing-long") {
+            NowPlayingScreen(
+                NowPlaying().apply {
+                    showForPictures(ThemeLabFixtures.longPlaying, index = 0, size = 7, positionMs = 754_000, waveform = ThemeLabFixtures.mockupWaveform,
+                        readout = OutputReadout.describe(OutputMode.Shared, 48000, 0, 44100, false))
+                },
+                NowPlayingActions(),
+            )
+        }
+        shoot(device, "edge-artists-empty") { ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions) }
+        shoot(device, "edge-search-empty") { SearchScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, initialQuery = "polygon") }
+    }
+
+    /** The main screens with Android's font size at 1.3. */
+    private fun fontScale(device: String) {
+        RuntimeEnvironment.setFontScale(1.3f)
+        val actions = AppActions()
+        shoot(device, "font130-artists") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive") }
+        shoot(device, "font130-albums") { AlbumsScreen("Aphelion Drive", browse(), actions, initialSelected = "Second Sight") }
+        shoot(device, "font130-album") { AlbumScreen("Aphelion Drive", "Second Sight", browse(), actions) }
+        shoot(device, "font130-search") { SearchScreen(browse(), actions, initialQuery = "polygon") }
+        shoot(device, "font130-now-playing") { NowPlayingScreen(nowPlaying().apply { repeat = RepeatMode.All }, NowPlayingActions()) }
+        shoot(device, "font130-settings") {
+            SettingsScreen(
+                folders = listOf(
+                    FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false),
+                    FolderLine(MusicFolder(ThemeLabFixtures.SD_CARD), "SD card · Music", unavailable = false),
+                ),
+                actions = SettingsActions(),
+                lastFm = LastFm.Status(state = ScrobblerState.Scrobbling, userName = "mpaulrenlund"),
+            )
+        }
+        shoot(device, "font130-statistics") {
+            StatisticsScreen(LibraryState(library = ThemeLabFixtures.library), DebugNumbers(StartTimes()), actions = DebugActions(),
+                stats = ThemeLabFixtures.fullLibraryStats, listening = ListeningTime(totalMs = 51_720_000, sinceUtc = 1_792_800_000_000))
+        }
+    }
+
     /** Now Playing's mockup state: third of ten, 2:18 in, its waveform and the readout the shared output gives. */
     private fun nowPlaying(
         playing: Boolean = true,
@@ -220,6 +279,22 @@ class ThemeLabTest {
     @Test
     @Config(qualifiers = M21)
     fun screens_m21() = screens("m21")
+
+    @Test
+    @Config(qualifiers = S24)
+    fun edge_cases_s24() = edgeCases("s24")
+
+    @Test
+    @Config(qualifiers = M21)
+    fun edge_cases_m21() = edgeCases("m21")
+
+    @Test
+    @Config(qualifiers = S24)
+    fun font_scale_s24() = fontScale("s24")
+
+    @Test
+    @Config(qualifiers = M21)
+    fun font_scale_m21() = fontScale("m21")
 
     companion object {
         /** Galaxy S24 Ultra: 1440 x 3120 px, shown at 384 x 832 dp. */

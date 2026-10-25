@@ -50,8 +50,8 @@ class AudioFoolApp : Application() {
     val startTimes = StartTimes()
     val nowPlaying = NowPlaying()
 
-    /** The queue and playback (spec 6.1); the output stage starts on the first play. */
-    val player: Player by lazy {
+    // Before `player`, which delegates to it; kept so a volume's eject can ask whether there is a player yet.
+    private val playerLazy = lazy {
         Player(
             context = this,
             state = nowPlaying,
@@ -69,6 +69,9 @@ class AudioFoolApp : Application() {
             }
         }
     }
+
+    /** The queue and playback (spec 6.1); the output stage starts on the first play. */
+    val player: Player by playerLazy
 
     /** The listening time Statistics shows (spec 4.6), counted from the first run of this version on. */
     val listening: Listening by lazy { Listening(File(noBackupFilesDir, "listening.json").path, scope) }
@@ -108,7 +111,7 @@ class AudioFoolApp : Application() {
         prefillCovers()
         restoreQueue()
 
-        Storage.watchVolumes(this) { arrived ->
+        Storage.watchVolumes(this, onEjecting = { root -> if (playerLazy.isInitialized()) player.letGoOf(root) }) { arrived ->
             val folders = settings.folders.value.filter { it.included }.map { it.path }
             val unavailable = library.state.value.unavailableFolders
             if (DriveChange.worthRefresh(folders, unavailable, arrived) { File(it).isDirectory }) library.rescan()

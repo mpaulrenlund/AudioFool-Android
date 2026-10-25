@@ -10,6 +10,7 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import com.mpaulrenlund.audiofool.core.format.Display
+import com.mpaulrenlund.audiofool.core.library.LibraryRelocator
 import com.mpaulrenlund.audiofool.core.library.SafeFile
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
@@ -183,6 +184,30 @@ class Player(
         if (engaged) engine.setUpcoming(upcomingAfter(decodingIndex))
         save()
         onChange()
+    }
+
+    /**
+     * A volume is being ejected (spec 8: the SD card can go at any time). Android
+     * ends any process still holding a file open on it a moment later, so its
+     * songs are let go at once: one playing (or being decoded) stops, paused where
+     * it was heard, and one opened ahead for a gapless join is dropped. Its songs
+     * stay in the queue, unavailable until the card is back.
+     */
+    fun letGoOf(root: String) {
+        if (!engaged) return
+        val on = { t: Track -> LibraryRelocator.isUnder(t.filePath, root) }
+        val heard = queue.getOrNull(heardIndex)
+        val decoding = queue.getOrNull(decodingIndex)
+        if ((heard != null && on(heard)) || (decoding != null && on(decoding))) {
+            state.heldPositionMs = positionMs()
+            engine.stop()
+            engaged = false
+            setPlaying(false)
+            save()
+            onChange()
+        } else {
+            engine.setUpcoming(upcomingAfter(decodingIndex).filterNot(on))
+        }
     }
 
     /** Where in the heard track the speakers are. */

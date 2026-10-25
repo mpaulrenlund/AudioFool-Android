@@ -113,7 +113,10 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             val screenHeight = maxHeight + barHeights()
             val padX = t.dp("nowPlaying.paddingX")
             // Spec 5: the smaller of (width − 40) and (height − artHeightReserve), so the M21 keeps room for the controls.
-            val art = minOf(maxWidth - padX * 2, screenHeight - t.dp("nowPlaying.artHeightReserve"))
+            // The reserve holds artReserveText of text, which grows with Android's font size (session 5: at 1.3 the
+            // M21 lost the readout off the bottom).
+            val textGrowth = t.dp("nowPlaying.artReserveText") * (LocalDensity.current.fontScale - 1f).coerceAtLeast(0f)
+            val art = minOf(maxWidth - padX * 2, screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth)
 
             Column(Modifier.fillMaxSize()) {
                 Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
