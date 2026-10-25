@@ -6,7 +6,8 @@ lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **0.1.4** (versionCode 10): the click on the M21 at a restart or a tapped song: the
+- **0.1.4** (versionCode 10) is released as a pre-release (2026-10-25,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4>, `dist/AudioFool-0.1.4.apk`). The click on the M21 at a restart or a tapped song: the
   desktop's 5 ms seek fade, ported (`SeekFade`; a `VolumeShaper` fades the old sound out
   before `OutputStage.cut`, the decoder fades the new in after a jump; never DoP). M21 BP
   works since 0.1.3. **Open:** unplug-pause on the M21 (no `ACTION_HEADSET_PLUG`; FiiO's

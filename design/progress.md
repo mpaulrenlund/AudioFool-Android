@@ -475,7 +475,9 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.1.4 (the click). The user's report on 0.1.3 (2026-10-25): BP works; unplugging doesn't
+0.1.4 (the click), released 2026-10-25 as pre-release
+[`v0.1.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.4)
+("AudioFool 0.1.4", versionCode 10). The user's report on 0.1.3 (2026-10-25): BP works; unplugging doesn't
 pause and Jack says "nothing yet"; FiiO's own player does pause on an unplug; a small click
 on the M21 only, mostly at a restart and at a tapped song, BP on or off.
 
