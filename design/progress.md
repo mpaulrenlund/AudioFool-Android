@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised — built and checked on the emulator 2026-10-25, not released
+- [ ] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised; Now Playing's new controls layout and a bigger cover on the M21 — built and checked on the emulator 2026-10-25, not released
 - [x] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — 2026-10-25, released as a pre-release (the stuck art still to confirm on the S24)
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
@@ -70,6 +70,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
   Settings pictures re-recorded (the readout and the line; ThemeLab has no real covers, so the
   border shows only on the emulator); on the emulator: list and Now Playing covers drawn with no
   frame, "FLAC · 99 kbps · 16-Bit · 44.1 kHz", "Speaker · 48 kHz (Resampled)".
+- **Now Playing's controls** (the user's call): Repeat and Shuffle side by side, tops level
+  with Play/Pause's; BP centred under them, bottom level with Play/Pause's. The left group is
+  now as tall as Play/Pause (78 dp on the M21) instead of the old 118 dp column. On the S24 the
+  pair (76 dp) and the full-size transport (279 dp) don't fit in 344 dp, so the transport's
+  gaps shrink to fit with at least `modeToTransportGap` (12 dp, new) before Previous: about
+  10 dp there instead of 22 (mine: keeps the buttons' size for the thumb). The M21 keeps 17 dp.
+- **A bigger cover on the M21, the title lower** (the user asked, "keeping the M21 in mind"):
+  `artHeightReserve` 426 → 366 dp, the height the controls (about 40 dp) and the one-line
+  quality (about 20 dp) gave up, so the M21's cover is 301 dp (from 241) with the same space
+  round the text. The S24's cover is limited by the screen's width and stays 344 dp; the
+  room it gained goes to the space above the quality line.
+- **Checked:** ThemeLab Now Playing pictures, both themes and sizes, font size 1.3 on the M21
+  (the readout still on screen), Repeat One's badge, the S24 with BP greyed; the tops and
+  bottoms measured level on the M21's picture; on the emulator Repeat, Shuffle and Play
+  respond at their new places.
 
 0.2.1 (2026-10-25), released as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1) ("AudioFool 0.2.1", versionCode 14), from the user's report on 0.2.0 (S24):
 
@@ -448,6 +463,9 @@ Session 1:
 - [ ] **The output row**: no "Shared"; e.g. "USB · 96 kHz / 24-Bit (Bit-Perfect)" through the DAC
   with BP on, "(Rate Matched)" at 48 kHz and up, "(Resampled)" on the speaker.
 - [ ] **Statistics > Debug** opens the playback and debug numbers; back returns.
+- [ ] **Now Playing's controls:** Repeat and Shuffle side by side at the top of Play/Pause, BP
+  under them at its bottom. On the S24, are Previous/Play/Next still easy to hit with their
+  tighter spacing?
 
 ### 0.2.1 (the strip always shown, the stuck art)
 
@@ -647,6 +665,13 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 - [ ] **Token sheet.** Debug > Token sheet: tap through the four pages in both themes; back returns.
 
 ## To test on the M21
+
+0.2.2 (not released yet):
+
+- [ ] **Now Playing's bigger cover**: the title, artist, album and "3 / 12" sit lower, the cover
+  larger, and the readout still fits under the controls (also at a larger font size).
+- [ ] **Now Playing's controls**: Repeat and Shuffle side by side at the top of Play/Pause, BP
+  under them at its bottom.
 
 0.2.0, released as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0) (versionCode 13):
 

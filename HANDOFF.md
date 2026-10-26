@@ -12,8 +12,9 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   Library, Formats and Listening; its last row opens a **Debug** screen with the Playback and
   Debug panels. The FiiO signals and Outputs rows are gone. Also: no border round covers
   (placeholders keep theirs), Now Playing's quality on one line ("FLAC · 1,901 kbps · 24-Bit ·
-  48 kHz"), and the readout without "Shared", capitalised ("Speaker · 48 kHz (Resampled)").
-  Confirm before releasing.
+  48 kHz"), and the readout without "Shared", capitalised ("Speaker · 48 kHz (Resampled)"). Now
+  Playing's controls: Repeat and Shuffle side by side over BP, the group as tall as Play/Pause;
+  the M21's cover 301 dp (`artHeightReserve` 366). Confirm before releasing.
 - **Latest: 0.2.1** (versionCode 14), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1>,
   `dist/AudioFool-0.2.1.apk`, from the user's 0.2.0 report: the Artists letter strip always

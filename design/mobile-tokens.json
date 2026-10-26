@@ -223,7 +223,7 @@
   "nowPlaying": {
     "paddingX": 20,
     "artTop": 6,
-    "artHeightReserve": 426,
+    "artHeightReserve": 366,
     "artReserveText": 140,
     "artToText": 14,
     "titleSize": 22,
@@ -251,6 +251,8 @@
     "modeButton": 34,
     "modeIcon": 15,
     "modeGap": 8,
+    "$modeNote": "0.2.2 (the user's call): Repeat and Shuffle side by side, modeGap apart, their tops level with Play/Pause's; BP centred under them, its bottom level with Play/Pause's. At least modeToTransportGap between them and Previous; where the screen is too narrow (the S24), the transport's gaps shrink to fit.",
+    "modeToTransportGap": 12,
     "bpLabelSize": 12,
     "bpLabelWeight": 700,
     "bpLabelLetterSpacingEm": 0.02,

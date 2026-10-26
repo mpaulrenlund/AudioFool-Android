@@ -372,10 +372,13 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit) {
 }
 
 /**
- * The controls row (spec 5): on the left a column of three `modeButton` round
- * buttons, `modeGap` apart (Repeat, Shuffle, BP); on the right Previous,
- * Play/Pause and Next, centred on Shuffle's height, sized as a fraction of the
- * screen height between a min and a max.
+ * The controls row (spec 5): on the left Repeat and Shuffle side by side,
+ * `modeGap` apart, their tops level with Play/Pause's, and BP centred under them
+ * with its bottom level with Play/Pause's (the user's call, 0.2.2; a column of
+ * three until then); on the right Previous, Play/Pause and Next, sized as a
+ * fraction of the screen height between a min and a max. At least
+ * `modeToTransportGap` lies between the two groups: where the screen is too
+ * narrow for the transport's own gaps (the S24), they shrink to fit.
  */
 @Composable
 private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp) {
@@ -384,42 +387,60 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
         (screenHeight.value * t.number("$path.ofScreenHeight")).coerceIn(t.number("$path.min"), t.number("$path.max")).dp
     val skip = scaled("nowPlaying.skipButton")
     val play = scaled("nowPlaying.playButton")
-    val gap = scaled("nowPlaying.transportGap")
     val mode = t.dp("nowPlaying.modeButton")
+    val modeGap = t.dp("nowPlaying.modeGap")
     val modeIcon = t.dp("nowPlaying.modeIcon")
+    val padX = t.dp("nowPlaying.paddingX")
 
-    Row(
-        Modifier.fillMaxWidth().padding(
-            start = t.dp("nowPlaying.paddingX"),
-            end = t.dp("nowPlaying.paddingX"),
-            top = t.dp("nowPlaying.controlsPaddingTop"),
-            bottom = t.dp("nowPlaying.controlsPaddingBottom"),
-        ),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.modeGap"))) {
-            val repeat = nowPlaying.repeat
-            Box {
-                RoundButton(mode, mode, mode, actions.cycleRepeat) {
-                    Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) "color.control.iconOff" else "color.control.repeatOn")
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val modesWidth = mode * 2 + modeGap
+        val room = maxWidth - padX * 2 - modesWidth - t.dp("nowPlaying.modeToTransportGap") - skip * 2 - play
+        val gap = minOf(scaled("nowPlaying.transportGap"), (room / 2).coerceAtLeast(Dp(0f)))
+        Row(
+            Modifier.fillMaxWidth().padding(
+                start = padX,
+                end = padX,
+                top = t.dp("nowPlaying.controlsPaddingTop"),
+                bottom = t.dp("nowPlaying.controlsPaddingBottom"),
+            ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // As tall as Play/Pause: Repeat and Shuffle at its top, BP at its bottom.
+            Box(Modifier.size(modesWidth, play)) {
+                Row(Modifier.align(Alignment.TopStart), horizontalArrangement = Arrangement.spacedBy(modeGap)) {
+                    val repeat = nowPlaying.repeat
+                    Box {
+                        RoundButton(mode, mode, mode, actions.cycleRepeat) {
+                            Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) "color.control.iconOff" else "color.control.repeatOn")
+                        }
+                        if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd))
+                    }
+                    RoundButton(mode, mode, mode, actions.toggleShuffle) {
+                        Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) "color.control.shuffleOn" else "color.control.iconOff")
+                    }
                 }
-                if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd))
+                Box(Modifier.align(Alignment.BottomCenter)) {
+                    val greyed = nowPlaying.bitPerfectGreyed
+                    BitPerfectButton(nowPlaying.bitPerfect, if (greyed) null else actions.toggleBitPerfect, greyed)
+                }
             }
-            RoundButton(mode, mode, mode, actions.toggleShuffle) {
-                Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) "color.control.shuffleOn" else "color.control.iconOff")
-            }
-            val greyed = nowPlaying.bitPerfectGreyed
-            BitPerfectButton(nowPlaying.bitPerfect, if (greyed) null else actions.toggleBitPerfect, greyed)
+            TransportButtons(nowPlaying, actions, skip, play, gap)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
-            val skipIcon = skip * t.number("nowPlaying.skipIconOfButton").toFloat()
-            RoundButton(skip, skip, skip, actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, "color.control.iconNeutral") }
-            RoundButton(play, play, play, actions.playPause, play = true) {
-                Icon(if (nowPlaying.isPlaying) AppIcons.PAUSE else AppIcons.PLAY, play * t.number("nowPlaying.playIconOfButton").toFloat(), "color.accent.playback")
-            }
-            RoundButton(skip, skip, skip, actions.next) { Icon(AppIcons.NEXT, skipIcon, "color.control.iconNeutral") }
+    }
+}
+
+/** Previous, Play/Pause and Next, [gap] apart, centred on Play/Pause. */
+@Composable
+private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions, skip: Dp, play: Dp, gap: Dp) {
+    val t = LocalAppTheme.current
+    Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
+        val skipIcon = skip * t.number("nowPlaying.skipIconOfButton").toFloat()
+        RoundButton(skip, skip, skip, actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, "color.control.iconNeutral") }
+        RoundButton(play, play, play, actions.playPause, play = true) {
+            Icon(if (nowPlaying.isPlaying) AppIcons.PAUSE else AppIcons.PLAY, play * t.number("nowPlaying.playIconOfButton").toFloat(), "color.accent.playback")
         }
+        RoundButton(skip, skip, skip, actions.next) { Icon(AppIcons.NEXT, skipIcon, "color.control.iconNeutral") }
     }
 }
 
