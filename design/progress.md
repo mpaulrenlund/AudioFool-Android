@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.2.6**: the M21 unplugged says "No Output"; the S24's buttons higher again — 2026-10-26, released as a pre-release
 - [x] **0.2.5**: the readout names the output (the DAC's name, the M21's 3.5mm / 4.4mm jack), "Exclusive" and dots; the S24's buttons higher — 2026-10-26, released as a pre-release
 - [x] **0.2.4**: a smooth waveform seekbar (the desktop's 600 columns); the S24's Now Playing buttons higher — 2026-10-26, released as a pre-release
 - [x] **0.2.3**: Now Playing's spacing on the S24; plugging in a USB DAC or adapter never starts the music — 2026-10-26, released as a pre-release
@@ -40,7 +41,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.2.6 (2026-10-26), not yet released:
+0.2.6 (2026-10-26), released as pre-release [`v0.2.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6) ("AudioFool 0.2.6", versionCode 19):
 
 - **The M21 unplugged says "No Output"** (the user: with nothing plugged in it still said 3.5 or
   4.4mm, "Shouldn't it say Speaker?"). Asked: the M21 is silent unplugged (it has no speaker),
@@ -566,7 +567,8 @@ Session 1:
 
 ### 0.2.6 (the buttons higher again)
 
-Not yet released.
+Released 2026-10-26 as pre-release [`v0.2.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6)
+("AudioFool 0.2.6", versionCode 19). Installs over 0.2.5 (same key).
 
 - [ ] **Now Playing's six buttons** another 16 dp higher (56 dp above the output row): right now?
 
@@ -825,7 +827,7 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ### 0.2.6 (No Output)
 
-Not yet released.
+Released 2026-10-26 as pre-release [`v0.2.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6) (versionCode 19).
 
 - [ ] **Unplug the headphones**: the output row says "No Output"; close and reopen the app with
   nothing plugged in: still "No Output"; plug into either jack: "3.5mm" or "4.4mm" again.

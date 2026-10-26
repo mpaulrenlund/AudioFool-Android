@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-26, after 0.2.5. Read this with `README.md` (how the app works) and
+Updated 2026-10-26, after 0.2.6. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, and the lists of what to test on each device). The
 spec is `design/android-spec.md`.
 
@@ -8,13 +8,13 @@ spec is `design/android-spec.md`.
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
   sections (0.2.2 down to 0.1.1 at the top, then session 5) and the newest session notes.
-- **Latest: 0.2.5** (versionCode 18), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5>,
-  `dist/AudioFool-0.2.5.apk`. Installed on the M21 over adb. Everything on `main` is in it.
-- **Next release:** **0.2.6, versionCode 19** for fixes; **0.3.0** for a new feature. Bump both in
+- **Latest: 0.2.6** (versionCode 19), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6>,
+  `dist/AudioFool-0.2.6.apk`. Everything on `main` is in it.
+- **Next release:** **0.2.7, versionCode 20** for fixes; **0.3.0** for a new feature. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
-  release (2026-10-24), then v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2, all pre-releases (2026-10-25), and v0.2.3 to v0.2.5 (2026-10-26).
+  release (2026-10-24), then v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2, all pre-releases (2026-10-25), and v0.2.3 to v0.2.6 (2026-10-26).
 
 ### What 0.2.x changed (the user's UI requests, all 2026-10-25)
 
@@ -36,11 +36,12 @@ spec is `design/android-spec.md`.
   row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
   **not yet on a phone**.
 
-### Since 0.2.5 (on `main`, not released)
+### What 0.2.6 changed (2026-10-26)
 
 - **The M21 unplugged says "No Output"** (FiiO `type` 0, saved like the jacks; the M21 has no
   speaker, the user confirmed). **The S24's buttons** 56 dp above the readout (from 40).
-  Goes into **0.2.6**; release only when the user says.
+  Released as pre-release `v0.2.6`. **Not yet seen on a phone:** "No Output" on the M21, the
+  buttons' height on the S24.
 
 ### What 0.2.5 changed (2026-10-26)
 
@@ -79,7 +80,8 @@ spec is `design/android-spec.md`.
 
 ### Where things stand
 
-- **Waiting on the user:** how 0.2.5 does on the S24 (the DAC's name, the buttons), 0.2.4's smooth
+- **Waiting on the user:** 0.2.6 on the M21 ("No Output" unplugged) and the S24 (the buttons),
+  0.2.5's DAC name on the S24, 0.2.4's smooth
   seekbar on the S24 (confirmed on the M21),
   0.2.3's Now Playing spacing, and the 0.2.2 items on both lists in
   `design/progress.md`, above all whether Previous / Play / Next are still easy to hit on the
@@ -154,7 +156,7 @@ spec is `design/android-spec.md`.
   for pulling the card mid-song, rebuilt 2026-10-25 as 3-minute tones after the old pair was
   found damaged, and **damaged again by 2026-10-26**: ffmpeg fails at the start of both; rebuild
   them before relying on them), and `/sdcard/Music/Waveform Test/`: one 60 s pink-noise FLAC with
-  swells and a near-silent dip at 24–27 s, for checking the waveform's shape and the 0.2.5 release build, with Bit-Perfect saved **on**, Repeat All and
+  swells and a near-silent dip at 24–27 s, for checking the waveform's shape and the 0.2.6 release build, with Bit-Perfect saved **on**, Repeat All and
   Shuffle left **on** (from a tap test), and Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
   captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
