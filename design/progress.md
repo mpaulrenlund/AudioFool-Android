@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.2.3**: Now Playing's spacing on the S24; plugging in a USB DAC or adapter never starts the music — 2026-10-26, released as a pre-release
 - [x] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised; Now Playing's new controls layout and a bigger cover on the M21 — 2026-10-25, released as a pre-release
 - [x] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — 2026-10-25, released as a pre-release (the stuck art still to confirm on the S24)
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
@@ -37,7 +38,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.2.3 (2026-10-26), not yet released:
+0.2.3 (2026-10-26), released as pre-release [`v0.2.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.3) ("AudioFool 0.2.3", versionCode 16):
 
 - **The S24's empty space on Now Playing** (the user: "a little too much empty space on the
   s24u"; the M21 "looks great"). The S24's cover is limited by its width, so the height it
@@ -490,7 +491,8 @@ Session 1:
 
 ### 0.2.3 (Now Playing's spacing, plugging in)
 
-Not yet released.
+Released 2026-10-26 as pre-release [`v0.2.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.3)
+("AudioFool 0.2.3", versionCode 16). Installs over 0.2.2 (same key).
 
 - [ ] **Now Playing's spacing:** no large gap over the quality line; the space over the
   seekbar and over the controls about even; a taller waveform, still easy to drag.
@@ -868,8 +870,8 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 Plug guard row, `SystemControls.onPlay`, spec 6.1.
 
 **Verified:** `:core:test`, `:app:testDebugUnitTest`, `verifyRoborazziDebug` (M21 unchanged),
-the plug guard on the emulator with a release build (above; versionCode not bumped yet). Not
-yet released.
+the plug guard on the emulator with a release build (above); the signed 0.2.3 APK installed over
+it on the emulator and played. Released as `v0.2.3`.
 
 ### 0.2.2 — a Debug screen; covers, the quality line, the readout (2026-10-25)
 

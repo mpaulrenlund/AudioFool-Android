@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-26, after 0.2.2, the S24 spacing change and the plug guard. Read this with `README.md` (how the app works) and
+Updated 2026-10-26, after 0.2.3. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, and the lists of what to test on each device). The
 spec is `design/android-spec.md`.
 
@@ -8,13 +8,13 @@ spec is `design/android-spec.md`.
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
   sections (0.2.2 down to 0.1.1 at the top, then session 5) and the newest session notes.
-- **Latest: 0.2.2** (versionCode 15), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2>,
-  `dist/AudioFool-0.2.2.apk`. Everything on `main` is in it.
-- **Next release:** **0.2.3, versionCode 16** for fixes; **0.3.0** for a new feature. Bump both in
+- **Latest: 0.2.3** (versionCode 16), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.3>,
+  `dist/AudioFool-0.2.3.apk`. Everything on `main` is in it.
+- **Next release:** **0.2.4, versionCode 17** for fixes; **0.3.0** for a new feature. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
-  release (2026-10-24), then v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2, all pre-releases (2026-10-25).
+  release (2026-10-24), then v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2, all pre-releases (2026-10-25), and v0.2.3 (2026-10-26).
 
 ### What 0.2.x changed (the user's UI requests, all 2026-10-25)
 
@@ -36,7 +36,7 @@ spec is `design/android-spec.md`.
   row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
   **not yet on a phone**.
 
-### Since 0.2.2 (on `main`, not released)
+### What 0.2.3 changed (2026-10-26)
 
 - **Now Playing's spacing on the S24** (2026-10-26, the user's call): the height the S24's
   width-limited cover can't use (the "spare height", 0 on the M21) grows the waveform to 64 dp
@@ -46,12 +46,13 @@ spec is `design/android-spec.md`.
   → `Player.resumeFromSystem`) within 3 s after a USB or wired device came or went, and pauses
   one that came up to 3 s before. Checked on the emulator with the Pretend route row as the
   plug; the real adapter's behaviour is on the S24 list. Statistics > Debug > **Plug guard**.
-- Both go into **0.2.3** with whatever the user reports next; release only when they say.
+- Released as pre-release `v0.2.3`. **Not yet seen on a phone:** the 0.2.3 items on the S24 list in `design/progress.md`.
 
 ### Where things stand
 
-- **Waiting on the user:** how 0.2.2 looks on the phones (the 0.2.2 items on both lists in
-  `design/progress.md`), above all whether Previous / Play / Next are still easy to hit on the
+- **Waiting on the user:** how 0.2.3 does on the S24 (Now Playing's spacing; plugging in the
+  DAC and the adapter, with the Plug guard row), and the 0.2.2 items on both lists in
+  `design/progress.md`, above all whether Previous / Play / Next are still easy to hit on the
   S24 with the tighter spacing.
 - **Nothing is broken that the user knows of.** Confirmed on the phones: gapless with no
   glitch at the joins (both); a song tap opens Now Playing (both); the S24 + USB DAC plays
@@ -118,7 +119,7 @@ spec is `design/android-spec.md`.
   albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
   `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
   for pulling the card mid-song, rebuilt 2026-10-25 as 3-minute tones after the old pair was
-  found damaged) and a release build of `main` after 0.2.2 (the plug guard; still versionCode 15), with Bit-Perfect saved **on**, Repeat All and
+  found damaged) and the 0.2.3 release build, with Bit-Perfect saved **on**, Repeat All and
   Shuffle left **on** (from a tap test), and Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
   captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
