@@ -38,6 +38,18 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.2.4 (2026-10-26), not yet released:
+
+- **The S24's six buttons higher** (the user: "too close to the bottom of the screen, which
+  makes pressing them a little awkward. The output row can stay where it is"; S24 only). A
+  gap of `controlsLift` between the controls row and the readout: 0.2 of the spare height (as
+  0.2.3's), up to 24 dp. 24 dp on the S24 (16 at font size 1.3), 0 on the M21. The readout
+  stays put; the room comes out of the two flexible gaps above, so the quality line, seekbar
+  and times sit about 12 dp higher too (mine: the simplest way, and the gaps stay even).
+- **Checked:** `:core:test`, `:app:testDebugUnitTest`, ThemeLab re-recorded: only the 12 S24 Now
+  Playing pictures changed (both themes, font size 1.3 included); the readout is at the same
+  place, the buttons 24 dp higher.
+
 0.2.3 (2026-10-26), released as pre-release [`v0.2.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.3) ("AudioFool 0.2.3", versionCode 16):
 
 - **The S24's empty space on Now Playing** (the user: "a little too much empty space on the
@@ -489,6 +501,13 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.4 (Now Playing's buttons higher)
+
+Not yet released.
+
+- [ ] **Now Playing's six buttons** sit higher, the output row where it was: are they
+  comfortable to press now?
+
 ### 0.2.3 (Now Playing's spacing, plugging in)
 
 Released 2026-10-26 as pre-release [`v0.2.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.3)
@@ -496,7 +515,8 @@ Released 2026-10-26 as pre-release [`v0.2.3`](https://github.com/mpaulrenlund/Au
 
 - [ ] **Now Playing's spacing:** no large gap over the quality line; the space over the
   seekbar and over the controls about even; a taller waveform, still easy to drag.
-- [ ] **Plugging in never starts the music:** paused, plug in the USB DAC, then the USB-C
+- [x] **Plugging in never starts the music** (the user, 2026-10-26: "unplugging/plugging back in
+  is fixed. music isn't automatically playing anymore"): paused, plug in the USB DAC, then the USB-C
   adapter, a few times each: it stays paused. Statistics > Debug > **Plug guard**: the last
   plug's time, and whether a play was ignored or undone (if both stay 0 and it never started,
   the adapter wasn't sending one that time). Unplugged then plugged back while playing: it

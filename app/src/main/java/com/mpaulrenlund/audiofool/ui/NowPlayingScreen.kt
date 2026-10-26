@@ -116,6 +116,9 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             val aboveWeight = t.number("nowPlaying.spaceAboveQualityWeight").toFloat()
             val belowWeight = t.number("nowPlaying.spaceBelowTimesWeight").toFloat()
             val evenness = (spare / t.dp("nowPlaying.spareEvenAt")).coerceIn(0f, 1f)
+            // 0.2.4 (the user's call): the S24's six buttons sat too low to press comfortably; spare height
+            // between them and the readout lifts them, the readout staying put.
+            val controlsLift = minOf(spare * t.number("nowPlaying.controlsLift.ofSpare").toFloat(), t.dp("nowPlaying.controlsLift.max"))
 
             Column(Modifier.fillMaxSize()) {
                 SwipeToSkip(track, art, actions) {
@@ -131,6 +134,7 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
                 }
                 Spacer(Modifier.weight(belowWeight + (aboveWeight - belowWeight) * evenness))
                 Controls(nowPlaying, actions, screenHeight)
+                Spacer(Modifier.height(controlsLift))
                 Line(
                     nowPlaying.readout,
                     t.text("nowPlaying.outputSize", "color.text.muted").copy(textAlign = TextAlign.Center),

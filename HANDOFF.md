@@ -36,6 +36,13 @@ spec is `design/android-spec.md`.
   row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
   **not yet on a phone**.
 
+### Since 0.2.3 (on `main`, not released)
+
+- **The S24's Now Playing buttons 24 dp higher** (2026-10-26, the user's call): a
+  `controlsLift` gap from the spare height between the controls and the readout, which stays
+  put. M21 pictures unchanged. Goes into **0.2.4**; release only when the user says.
+- **Confirmed on the S24 (0.2.3):** plugging in or out no longer starts the music.
+
 ### What 0.2.3 changed (2026-10-26)
 
 - **Now Playing's spacing on the S24** (2026-10-26, the user's call): the height the S24's
