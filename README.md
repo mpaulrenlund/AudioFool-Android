@@ -62,7 +62,7 @@ every decision and what is still to be checked on the phones.
     converted to PCM.
   A change of route or of the setting reopens the output where the song was. The readout
   under Now Playing's controls says what reaches the output, route first: "USB · 96 kHz /
-  24-bit (bit-perfect)", "Speaker · Shared · 48 kHz (resampled)".
+  24-Bit (Bit-Perfect)", "Speaker · 48 kHz (Resampled)".
 - **The system's controls.** A foreground media service and a media session: the lock
   screen, the notification (with the cover), headset and Bluetooth buttons. Another
   app's sound pauses or ducks it (audio focus; on a bit-perfect path it pauses instead of
@@ -91,7 +91,7 @@ WMA, Musepack, AC-3, DTS, WAV, AIFF, APE, WavPack, TAK, DSD (DSF, DFF) and the t
 formats. Tags come from TagLib 2.3.2, which reads all of them except TAK, AC-3, DTS, MTM,
 UMX and MO3; those show with what their file name gives, as on the desktop.
 
-Playback covers what BASS and its add-ons decode (the debug panel lists them):
+Playback covers what BASS and its add-ons decode (Statistics > Debug lists them):
 
 | Format | Provided by |
 |---|---|

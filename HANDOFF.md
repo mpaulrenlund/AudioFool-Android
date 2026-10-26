@@ -1,8 +1,8 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and 0.2.0 to 0.2.2 (the user's UI requests).
-Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
-and the lists of what to test on each device). The spec is `design/android-spec.md`.
+Updated 2026-10-25, after 0.2.2. Read this with `README.md` (how the app works) and
+`design/progress.md` (every decision, and the lists of what to test on each device). The
+spec is `design/android-spec.md`.
 
 ## Starting the next session
 
@@ -10,37 +10,62 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   sections (0.2.2 down to 0.1.1 at the top, then session 5) and the newest session notes.
 - **Latest: 0.2.2** (versionCode 15), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2>,
-  `dist/AudioFool-0.2.2.apk`, the user's UI requests: covers drawn with no border (only
-  placeholders keep theirs), Now Playing's quality on one line ("FLAC · 1,901 kbps · 24-Bit ·
-  48 kHz"), the readout without "Shared" and capitalised ("Speaker · 48 kHz (Resampled)"),
-  Repeat and Shuffle side by side over BP (the group as tall as Play/Pause), the M21's cover
-  301 dp (`artHeightReserve` 366), and Statistics' Playback and Debug panels on their own
-  Debug screen (Statistics' last row), without the FiiO signals and Outputs rows. Checked in
-  ThemeLab and on the emulator. Next: **0.2.3, versionCode 16** for fixes; 0.3.0 for a new
-  feature. Releases so far: v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first
-  full release, v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 pre-releases (2026-10-25). Confirm the
-  tag and the notes with the user before `gh release create`.
-- **Before that:** 0.2.1 (versionCode 14): the Artists letter strip always shown, and swipe to
-  skip reworked after 0.2.0 left the art stuck off the screen on the S24 (confirmed fixed).
-  0.2.0 (13) brought the strip (spec 4.1, `ui/ArtistIndexStrip.kt`,
-  `core/.../library/ArtistIndex.kt`), swipe to skip in place of swipe-down (spec 5,
-  `SwipeToSkip` in `NowPlayingScreen.kt`) and the gliding seekbar.
-- **Waiting on the user:** the 0.2.2 items on both lists, then the rest of the 0.2.0 ones (the S24
-  confirmed 0.2.1's swipe and strip)
-  on both lists in `design/progress.md`.
-- **Nothing else is broken that the user knows of** (the stuck art, fixed in 0.2.1, confirmed on the S24). Confirmed on
-  the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
-  Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
-  the readout by FiiO's rate, no click at a restart or a tap, unplug pauses on both jacks.
+  `dist/AudioFool-0.2.2.apk`. Everything on `main` is in it.
+- **Next release:** **0.2.3, versionCode 16** for fixes; **0.3.0** for a new feature. Bump both in
+  `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
+- **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
+  release (2026-10-24), then v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2, all pre-releases (2026-10-25).
+
+### What 0.2.x changed (the user's UI requests, all 2026-10-25)
+
+- **0.2.0:** the Artists **letter strip** (spec 4.1; `ui/ArtistIndexStrip.kt`, which letter an
+  artist files under in `core/.../library/ArtistIndex.kt`); Now Playing **swipe to skip**
+  (left Next, right Previous) in place of swipe-down to close (spec 5; `SwipeToSkip` in
+  `ui/NowPlayingScreen.kt`); the **seekbar glides** (split at the exact place, as the desktop's
+  `WaveformView`).
+- **0.2.1:** the strip **always shown**, rows ending short of it; swipe to skip reworked after
+  0.2.0 left the cover stuck off the screen after every skip on the S24 (never reproduced
+  here; now a skip has no animation). **Both confirmed on the S24.**
+- **0.2.2:** covers drawn **with no border** everywhere (placeholders keep theirs); Now Playing's
+  quality on **one line** ("FLAC · 1,901 kbps · 24-Bit · 48 kHz", `QualityLines`); the readout
+  **without "Shared"** and capitalised ("Speaker · 48 kHz (Resampled)", the phone's
+  `OutputReadout.describe(route, …)`; the desktop's port by mode is unchanged); **Repeat and
+  Shuffle side by side over BP**, the group as tall as Play/Pause (on the S24 the transport's
+  gaps shrink to about 10 dp to fit); the M21's **cover 301 dp** (`artHeightReserve` 366, from
+  426); Statistics' Playback and Debug panels on their own **Debug screen** (Statistics' last
+  row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
+  **not yet on a phone**.
+
+### Where things stand
+
+- **Waiting on the user:** how 0.2.2 looks on the phones (the 0.2.2 items on both lists in
+  `design/progress.md`), above all whether Previous / Play / Next are still easy to hit on the
+  S24 with the tighter spacing.
+- **Nothing is broken that the user knows of.** Confirmed on the phones: gapless with no
+  glitch at the joins (both); a song tap opens Now Playing (both); the S24 + USB DAC plays
+  24-bit with BP on and off; M21: 24-bit clean, BP on, the readout by FiiO's rate, no click
+  at a restart or a tap, unplug pauses on both jacks; S24: swipe to skip and the letter strip
+  (0.2.1).
 - **Open, the user's call (not started):** true bit-perfect on the S24 would need the app's
   own USB driver (libusb, as USB Audio Player Pro does): a new dependency and a spec change.
   Write up what it takes before building anything. The user also might want BP remembered
   per output; only if they ask.
 - **Still unreported** (don't block on them; the unticked items on both lists in
-  `design/progress.md`): Last.fm on a real profile, the lock screen and notification, Bluetooth
-  buttons, a call, battery, DSD over DoP, a rate change mid-album with BP on, Bluetooth greying
-  BP on the M21, the SD card pulled while playing, the full library's cold start and
-  Statistics on the M21, and the S24 DAC's **Route** row (does the DAC itself list 44.1 kHz?).
+  `design/progress.md`): the seekbar gliding (0.2.0), Last.fm on a real profile, the lock
+  screen and notification, Bluetooth buttons, a call, battery, DSD over DoP, a rate change
+  mid-album with BP on, Bluetooth greying BP on the M21, the SD card pulled while playing,
+  the full library's cold start and Statistics on the M21, and the S24 DAC's **Route** row
+  (Statistics > Debug: does the DAC itself list 44.1 kHz?).
+
+### How the user works
+
+- Sends a few UI requests at a time, often several in one message, and says when to release:
+  build them all into one version, then show the release notes and ask before publishing.
+- Answers design questions quickly when they come as short choices, with a recommended option
+  first. For a bug that can't be reproduced here, ask what they saw (when, how often, which
+  phone) before guessing: that is what found 0.2.0's stuck cover.
+- Reports back in a sentence ("Swiping seems much better"); tick the matching items in
+  `design/progress.md` and push.
 
 ### What the phones turned out to do (2026-10-25)
 
@@ -55,13 +80,13 @@ and the lists of what to test on each device). The spec is `design/android-spec.
     (`rate`: the DAC's rate, 0 when stopped; `format`) and `fiio.intent.action.HEADSET_TYPE_CHANGED`
     (`type` 8 with headphones in, 0 out). The readout goes by that rate
     (`OutputReadout.hardwareRate`). 0.1.5's FiiO signals row was dropped in 0.2.2.
-  - The DAC runs at the song's rate even with BP off ("Headphones · Shared · 96 kHz"); BP adds
+  - The DAC runs at the song's rate even with BP off ("Headphones · 96 kHz"); BP adds
     the full-volume, whole-number-sample path. 24-bit songs go as 32-bit with BP on, as
     float with it off: **24-bit packed `AudioTrack`s come out as static there.**
 - **S24 Ultra + the user's USB dongle DAC:** the mixer list is default entries only, at 48,
   88.2, 96, 176.4, 192, 352.8 and 384 kHz (16, 24, 32-bit), **no bit-perfect entry and no
-  44.1 kHz**. So BP on is "rate matched" at 48 kHz and up ("USB · 96 kHz / 24-bit (rate
-  matched)"), and a 44.1 kHz song is shared and resampled to 48 kHz either way.
+  44.1 kHz**. So BP on is "rate matched" at 48 kHz and up ("USB · 96 kHz / 24-Bit (Rate
+  Matched)"), and a 44.1 kHz song is shared and resampled to 48 kHz either way.
 
 ### Reaching the phones
 
@@ -80,8 +105,9 @@ and the lists of what to test on each device). The spec is `design/android-spec.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
   albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
   `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
-  for pulling the card mid-song) and a 0.1.4 release build, with Bit-Perfect saved **on** and
-  Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
+  for pulling the card mid-song, rebuilt 2026-10-25 as 3-minute tones after the old pair was
+  found damaged) and the 0.2.2 release build, with Bit-Perfect saved **on**, Repeat All and
+  Shuffle left **on** (from a tap test), and Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
   captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
   the key never goes in the repo).
@@ -98,10 +124,10 @@ and the lists of what to test on each device). The spec is `design/android-spec.
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
-| Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` |
+| Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
-| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `StatisticsScreen.kt` (debug numbers), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts) |
+| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `ArtistIndexStrip.kt` (Artists' letter strip), `NowPlayingScreen.kt` (with `SwipeToSkip`), `StatisticsScreen.kt` (Statistics and Debug), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts, `AlbumArt`) |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
 | TagLib 2.3.2 (C++, vendored unchanged) | `third_party/taglib/`; the JNI bridge is `app/src/main/cpp/tagreader_jni.cpp` |
 | Selawik font | `app/src/main/res/font/` (Regular, Semibold, Bold), licence in `third_party/selawik/` |
@@ -257,6 +283,14 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.
   Session 2 used 200 artists × 2 albums.
 - Taps are in device pixels (1080 × 2400): a 360-wide screenshot is a third of that.
+- Artists' letter strip sits near x = 1012 px; the mini player at about (300, 2210). On Now
+  Playing (the emulator's tall screen) Repeat is near (96, 2052), Shuffle (207, 2052), Play
+  (657, 2130).
+- **`uiautomator dump` drops a text that holds quote marks** (the Route row's `speaker "…"`):
+  take a screenshot to read those.
+- **Measuring something that moves** (the seekbar's split): crop one pixel row of rapid
+  screenshots with ffmpeg (`crop=1080:1:0:<y>`, `-f rawvideo -pix_fmt rgb24`) and find the
+  colour edge with a few lines of node.
 - The back gesture held halfway: `adb shell "input motionevent DOWN 3 1200; input motionevent MOVE 400 1200"`,
   take the screenshot, then `input motionevent UP 400 1200`.
 - Text the screen shows: `adb shell uiautomator dump /sdcard/ui.xml` and grep `text=`.
@@ -358,11 +392,15 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   `SD Card Band` pair was damaged and rebuilt on 2026-10-25.
 - **ThemeLab's pressed letter strip** passes `indexPreview` to `ArtistsScreen` (the letter under
   the finger, and the list scrolled to it).
+- **A drag's moves set state directly** (`rememberDraggableState { offset += it }`), never through
+  a coroutine per move: one landing after the release can stop the animation that follows.
+  And an action that changes what's shown (a skip) shouldn't wait on an animation to put
+  things back. Both were suspects in 0.2.0's stuck cover; 0.2.1 removed both.
 - **A gesture bug the S24 shows and the emulator doesn't**: `adb shell input` swipes arrive
   50–100 ms per event; a phone's touch screen sends one every 8 ms or so. Robolectric's
   `performTouchInput` gets closer (`SwipeToSkipTest`), but neither caught 0.2.0's stuck art.
 - **A background read that fails in ThemeLab** (TagLib) goes uncaught and fails the *next*
-  compose test with `UncaughtExceptionsBeforeTest`; guard cover and tag reads on `LocalArt`. On the emulator the strip's letters sit near x = 1012 px.
+  compose test with `UncaughtExceptionsBeforeTest`; guard cover and tag reads on `LocalArt`.
 - **An endless frame loop hangs ThemeLab.** Roborazzi waits for the screen to settle; a
   `LaunchedEffect` that asks for every frame (`withFrameMillis` in a loop) never lets it,
   and the test run hangs with no output. Now Playing's seekbar ticks only while playing and
