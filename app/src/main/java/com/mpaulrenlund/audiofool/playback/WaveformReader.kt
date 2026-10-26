@@ -24,7 +24,7 @@ import kotlin.coroutines.coroutineContext
  * Kept per file in [folder] (the file's path, size and date make the name), so
  * each song is decoded once; a changed file gets a new one.
  */
-class WaveformReader(private val folder: File, private val columns: Int) {
+class WaveformReader(private val folder: File, private val columns: Int = WaveformLevels.COLUMNS) {
     /** The levels for [track], from the cache or decoded now. Null when the file can't be read. */
     suspend fun levels(track: Track): FloatArray? {
         val cached = cacheFile(track)

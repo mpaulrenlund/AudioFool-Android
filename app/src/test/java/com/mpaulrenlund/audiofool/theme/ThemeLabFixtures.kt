@@ -126,10 +126,16 @@ object ThemeLabFixtures {
     /** The long-named song, playing. */
     val longPlaying: Track = edgeTracks.first()
 
-    /** The Now Playing mockup's made-up waveform (its `renderVals`), as levels of 0 to 1. */
-    val mockupWaveform: FloatArray = FloatArray(96) { i ->
-        val env = 0.55 + 0.35 * kotlin.math.sin(i / 9.0) + 0.1 * kotlin.math.sin(i / 2.3)
-        val fade = minOf(1.0, i / 6.0, (96 - i) / 8.0)
-        kotlin.math.abs(env * fade * (0.75 + 0.25 * kotlin.math.sin(i * 1.7))).coerceAtMost(1.0).toFloat()
+    /**
+     * The Now Playing mockup's made-up waveform (its `renderVals`, 96 values) as levels of 0
+     * to 1, spread over the real 600 columns (0.2.4) with the same outline and a finer texture.
+     */
+    val mockupWaveform: FloatArray = FloatArray(600) { i ->
+        val x = i * 96.0 / 600
+        val env = 0.55 + 0.35 * kotlin.math.sin(x / 9.0) + 0.1 * kotlin.math.sin(x / 2.3)
+        val fade = minOf(1.0, x / 6.0, (96 - x) / 8.0)
+        // Uneven detail, as a real song's: no single sine, which lines up into a comb at 600 columns.
+        val detail = 0.8 + 0.1 * kotlin.math.sin(i * 0.37) + 0.06 * kotlin.math.sin(i * 1.13 + 1.0) + 0.04 * kotlin.math.sin(i * 2.71 + 2.0)
+        kotlin.math.abs(env * fade * detail).coerceAtMost(1.0).toFloat()
     }
 }

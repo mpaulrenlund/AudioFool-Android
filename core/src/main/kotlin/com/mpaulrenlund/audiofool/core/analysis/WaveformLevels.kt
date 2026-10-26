@@ -80,7 +80,14 @@ class WaveformLevels(private val channels: Int, totalFrames: Long, private val c
         count = 0
     }
 
-    private companion object {
-        const val UNKNOWN_LENGTH_BLOCK_FRAMES = 2048L
+    companion object {
+        /**
+         * The desktop's `Waveform.Columns`: "enough for about two pixels a column on
+         * the widest seekbar". The phone used 96 bars until 0.2.4 (the user's call:
+         * one smooth shape, as the desktop draws it).
+         */
+        const val COLUMNS = 600
+
+        private const val UNKNOWN_LENGTH_BLOCK_FRAMES = 2048L
     }
 }

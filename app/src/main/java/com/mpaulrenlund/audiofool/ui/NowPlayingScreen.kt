@@ -38,11 +38,12 @@ import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -67,7 +68,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
-import kotlin.math.roundToInt
 
 /** What Now Playing can ask for. */
 class NowPlayingActions(
@@ -299,11 +299,10 @@ private fun Quality(track: Track) {
 
 /**
  * The waveform seekbar (spec 5): full width, [height] tall (`waveformHeight`, more
- * with spare height), the track's
- * waveform as `waveformBars` hard-edged bars centred on the middle line, the
- * played part `slider.seekFill`, the rest `slider.track`, split at the exact
- * place so it glides while playing. Until the waveform is
- * ready, a flat bar `waveformFloor` high. Drag or tap to seek; the bar follows
+ * with spare height), the track's waveform as one filled shape mirrored about the
+ * middle line (0.2.4, the user's call; 96 hard-edged bars before), the played part
+ * `slider.seekFill`, the rest `slider.track`, split at the exact place so it
+ * glides while playing. Until the waveform is ready, a flat bar `waveformFloor` high. Drag or tap to seek; the bar follows
  * the finger and the seek happens on letting go. The elapsed and total times
  * sit under it.
  */
@@ -321,11 +320,11 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp) {
     }
     val position = if (ticking) ticked else nowPlaying.positionMs()
     val fraction = dragging ?: if (duration > 0) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f
-    val bars = t.number("nowPlaying.waveformBars").toInt()
     val floor = t.dp("nowPlaying.waveformFloor")
     val played = t.color("color.slider.seekFill")
     val rest = t.color("color.slider.track")
     val levels = nowPlaying.waveform
+    val shape = remember(levels) { WaveShape(levels) }
 
     Canvas(
         Modifier
@@ -352,36 +351,48 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp) {
                 )
             },
     ) {
-        val barWidth = size.width / bars
-        val floorPx = floor.toPx()
-        // The split falls at the exact place, cutting through the bar being played, as
-        // the desktop's WaveformView clips its shape there; a whole-bar split moved only
-        // every 1/96 of the song (about 3 s in a 5-minute one).
+        val path = shape.pathFor(size, floor.toPx())
+        // The split falls at the exact place, the shape clipped there, as the desktop's WaveformView does.
         val split = fraction * size.width
-        for (i in 0 until bars) {
-            // The levels are 96 columns already; shorter tracks give fewer, spread out.
-            val level = when {
-                levels == null || levels.isEmpty() -> 0f
-                else -> levels[(i.toLong() * levels.size / bars).toInt().coerceIn(0, levels.size - 1)]
-            }
-            val h = maxOf(floorPx, minOf(size.height, level * size.height))
-            val left = (i * barWidth).roundToInt().toFloat()
-            val right = ((i + 1) * barWidth).roundToInt().toFloat()
-            val top = (size.height - h) / 2
-            when {
-                right <= split -> drawRect(played, Offset(left, top), Size(right - left, h))
-                left >= split -> drawRect(rest, Offset(left, top), Size(right - left, h))
-                else -> {
-                    drawRect(played, Offset(left, top), Size(split - left, h))
-                    drawRect(rest, Offset(split, top), Size(right - split, h))
-                }
-            }
-        }
+        clipRect(right = split) { drawPath(path, played) }
+        clipRect(left = split) { drawPath(path, rest) }
     }
     val shown = if (dragging != null) (fraction * duration).toLong() else position
     Row(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.timesTop")), horizontalArrangement = Arrangement.SpaceBetween) {
         Line(Display.time(shown), t.text("nowPlaying.timeSize", "color.text.muted"))
         Line(Display.time(duration), t.text("nowPlaying.timeSize", "color.text.muted"))
+    }
+}
+
+/**
+ * The waveform's outline, ported from the desktop's `WaveformView.Build`: along
+ * the top edge from left to right, then back along the bottom, one point per
+ * level at the middle of its column, mirrored about the middle line. Silence
+ * still gets the floor, so the shape never breaks up; with no levels it is a flat
+ * bar the floor high. Built once per size, not every frame.
+ */
+private class WaveShape(private val levels: FloatArray?) {
+    private var builtFor: Size? = null
+    private val path = Path()
+
+    fun pathFor(size: Size, floor: Float): Path {
+        if (builtFor == size) return path
+        builtFor = size
+        path.reset()
+        val middle = size.height / 2
+        val levels = levels?.takeIf { it.isNotEmpty() } ?: floatArrayOf(0f)
+        val reach = maxOf(0f, middle - floor / 2)
+        val column = size.width / levels.size
+        fun half(i: Int) = floor / 2 + levels[i].coerceIn(0f, 1f) * reach
+
+        path.moveTo(0f, middle - half(0))
+        for (i in levels.indices) path.lineTo((i + 0.5f) * column, middle - half(i))
+        path.lineTo(size.width, middle - half(levels.size - 1))
+        path.lineTo(size.width, middle + half(levels.size - 1))
+        for (i in levels.indices.reversed()) path.lineTo((i + 0.5f) * column, middle + half(i))
+        path.lineTo(0f, middle + half(0))
+        path.close()
+        return path
     }
 }
 

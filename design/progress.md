@@ -40,6 +40,27 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 0.2.4 (2026-10-26), not yet released:
 
+- **The seekbar drawn as one smooth shape** (the user sent a reference picture: "ignoring
+  colors ... could we make our seekbar style look more like this?"). It showed a peak outline
+  with RMS inside, left and right stacked, and a playhead line, at a high resolution. The
+  user's choices: **RMS only, smooth** (not the peak + RMS layers I recommended), **both
+  channels combined**, **no playhead line**, and **delete the old waveform files**. So the
+  phone now does what the desktop does: 600 RMS columns (`WaveformLevels.COLUMNS`, the
+  desktop's `Waveform.Columns`) drawn as one outline through the middle of each column,
+  mirrored, clipped at the split (`WaveShape`, ported from `WaveformView.Build`; built once
+  per size). `nowPlaying.waveformBars` (96) is gone from the tokens.
+- **Stored data:** waveforms now live in `no_backup/waveforms-600/`; the old
+  `no_backup/waveforms/` (96 levels each) is deleted at start, and each song's waveform is
+  decoded again the first time it plays (the user's call).
+- **ThemeLab's made-up waveform** is 600 columns with the mockup's outline and an uneven
+  texture (a single sine lined up into a comb at that resolution).
+- **Checked:** `:core:test`, `:app:testDebugUnitTest`, ThemeLab re-recorded (every Now
+  Playing picture, both themes and sizes); on the emulator with a release build, a new
+  60-second pink-noise test song (`/sdcard/Music/Waveform Test`, made with ffmpeg: two swells,
+  a near-silent dip at 24–27 s) draws as expected. The SD card's `SD Card Band` FLACs are
+  damaged again (ffmpeg: "invalid residual" at the start), so their waveform is a few
+  columns stretched across: the files, not the app.
+
 - **The S24's six buttons higher** (the user: "too close to the bottom of the screen, which
   makes pressing them a little awkward. The output row can stay where it is"; S24 only). A
   gap of `controlsLift` between the controls row and the readout: 0.2 of the spare height (as
@@ -507,6 +528,9 @@ Not yet released.
 
 - [ ] **Now Playing's six buttons** sit higher, the output row where it was: are they
   comfortable to press now?
+- [ ] **The seekbar** is one smooth waveform instead of bars. The first play of each song
+  works it out again (a flat bar for a moment, as for a new song); later plays show it at once.
+  Seeking by tap and drag as before.
 
 ### 0.2.3 (Now Playing's spacing, plugging in)
 

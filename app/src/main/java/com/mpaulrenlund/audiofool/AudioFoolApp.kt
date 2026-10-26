@@ -57,7 +57,7 @@ class AudioFoolApp : Application() {
             state = nowPlaying,
             scope = scope,
             resumePath = File(noBackupFilesDir, "resume.json").path,
-            waveforms = WaveformReader(File(noBackupFilesDir, "waveforms"), tokens.mobile.number("nowPlaying.waveformBars").toInt()),
+            waveforms = WaveformReader(File(noBackupFilesDir, WAVEFORMS)),
             routes = OutputRoutes(this),
             settings = settings,
         ).also { p ->
@@ -107,6 +107,8 @@ class AudioFoolApp : Application() {
             folders = { settings.folders.value },
         )
         scope.launch(Dispatchers.IO) { tokens }
+        // 0.2.4: the 96-bar waveforms are no longer read (the user's call: delete them); each song's is worked out again.
+        scope.launch(Dispatchers.IO) { File(noBackupFilesDir, OLD_WAVEFORMS).deleteRecursively() }
         startLibrary()
         prefillCovers()
         restoreQueue()
@@ -162,6 +164,14 @@ class AudioFoolApp : Application() {
             settings.setFolders(Storage.defaultMusicFolders(this).map { MusicFolder(it) })
         }
         scope.launch(Dispatchers.IO) { library.start() }
+    }
+
+    private companion object {
+        /** In `no_backup`: the seekbar's waveforms, 600 columns each (0.2.4). */
+        const val WAVEFORMS = "waveforms-600"
+
+        /** The 96-bar ones before 0.2.4, deleted at start. */
+        const val OLD_WAVEFORMS = "waveforms"
     }
 }
 

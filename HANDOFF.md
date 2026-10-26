@@ -40,7 +40,11 @@ spec is `design/android-spec.md`.
 
 - **The S24's Now Playing buttons 24 dp higher** (2026-10-26, the user's call): a
   `controlsLift` gap from the spare height between the controls and the readout, which stays
-  put. M21 pictures unchanged. Goes into **0.2.4**; release only when the user says.
+  put. M21 pictures unchanged.
+- **The seekbar as one smooth shape** (2026-10-26, the user's call from a reference picture):
+  600 RMS columns drawn as the desktop's `WaveformView` outline (`WaveShape`). Waveforms moved
+  to `no_backup/waveforms-600/`; the old `waveforms/` is deleted at start (the user approved).
+- Both go into **0.2.4**; release only when the user says.
 - **Confirmed on the S24 (0.2.3):** plugging in or out no longer starts the music.
 
 ### What 0.2.3 changed (2026-10-26)
@@ -126,7 +130,9 @@ spec is `design/android-spec.md`.
   albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
   `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
   for pulling the card mid-song, rebuilt 2026-10-25 as 3-minute tones after the old pair was
-  found damaged) and the 0.2.3 release build, with Bit-Perfect saved **on**, Repeat All and
+  found damaged, and **damaged again by 2026-10-26**: ffmpeg fails at the start of both; rebuild
+  them before relying on them), and `/sdcard/Music/Waveform Test/`: one 60 s pink-noise FLAC with
+  swells and a near-silent dip at 24–27 s, for checking the waveform's shape and the 0.2.3 release build, with Bit-Perfect saved **on**, Repeat All and
   Shuffle left **on** (from a tap test), and Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
   captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
@@ -161,7 +167,7 @@ spec is `design/android-spec.md`.
 | On the phone: listening time | `no_backup/listening.json` (+ `.bak`): total ms and since when |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
 | On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat |
-| On the phone: waveforms | `no_backup/waveforms/*.wave` (96 levels per file, named from path, size and date) |
+| On the phone: waveforms | `no_backup/waveforms-600/*.wave` (600 levels per file, named from path, size, date and columns; the old 96-level `waveforms/` is deleted at start since 0.2.4) |
 
 Release key SHA-256: `1F:DE:FE:0A:0E:C5:F4:B6:63:61:39:B3:5B:F3:9D:B8:9E:EA:2C:68:9A:3A:A1:7A:BC:12:D8:CE:C5:BE:2C:21`.
 Every APK the user gets is signed with it. A build signed with anything else won't
