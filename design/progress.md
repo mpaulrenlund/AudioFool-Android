@@ -40,6 +40,20 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.2.6 (2026-10-26), not yet released:
+
+- **The M21 unplugged says "No Output"** (the user: with nothing plugged in it still said 3.5 or
+  4.4mm, "Shouldn't it say Speaker?"). Asked: the M21 is silent unplugged (it has no speaker),
+  and the user chose "No Output". FiiO's `type` 0 (sent at an unplug) is now saved and named
+  like the jacks, so a fresh start after unplugging says it too; the readout is just "No
+  Output", with no rate after it. BP is unchanged there.
+- **The S24's buttons higher again** (the user: "could still go a little higher"):
+  `controlsLift` 0.33 / 40 dp → 0.46 / 56 dp. 56 dp on the S24 (37 at font size 1.3), 0 on the M21.
+- **Checked:** `:core:test` (a new `OutputNames` test for type 0), `:app:testDebugUnitTest`,
+  ThemeLab re-recorded: only the 12 S24 Now Playing pictures changed; font size 1.3 still fits.
+  Not on the M21: it was unplugged from this PC by then (the type 0 broadcast itself was seen
+  over adb in 0.2.5).
+
 0.2.5 (2026-10-26), released as pre-release [`v0.2.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5) ("AudioFool 0.2.5", versionCode 18):
 
 - **The S24's buttons higher still** (the user: "Could we move the buttons slightly higher?"):
@@ -550,12 +564,19 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.6 (the buttons higher again)
+
+Not yet released.
+
+- [ ] **Now Playing's six buttons** another 16 dp higher (56 dp above the output row): right now?
+
 ### 0.2.5 (the readout reworded, the buttons higher)
 
 Released 2026-10-26 as pre-release [`v0.2.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5)
 ("AudioFool 0.2.5", versionCode 18). Installs over 0.2.4 (same key).
 
-- [ ] **Now Playing's six buttons** another 16 dp higher: comfortable now?
+- [x] **Now Playing's six buttons** another 16 dp higher: comfortable now? (The user, 2026-10-26:
+  "could still go a little higher": 0.2.6.)
 - [ ] **The output row through the DAC**: the DAC's own name, e.g. "Shanling UA2 Plus · 96 kHz ·
   24-Bit · Exclusive" or "· Rate Matched". If it says "USB" or an odd name, send the Route row
   (Statistics > Debug): the name in quotes is what Android calls it.
@@ -802,13 +823,21 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
+### 0.2.6 (No Output)
+
+Not yet released.
+
+- [ ] **Unplug the headphones**: the output row says "No Output"; close and reopen the app with
+  nothing plugged in: still "No Output"; plug into either jack: "3.5mm" or "4.4mm" again.
+
 ### 0.2.5 (the jack names)
 
 Released as [`v0.2.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5); installed on the M21 over adb (the update kept the saved jack: "3.5mm").
 Checked over adb already (above); on the phone:
 
-- [ ] **The output row** says "3.5mm" or "4.4mm" for the jack in use, also after the app is
-  closed and started again.
+- [x] **The output row** says "3.5mm" or "4.4mm" for the jack in use, also after the app is
+  closed and started again (the user, 2026-10-26: "Output updates correctly"; unplugged it kept
+  the last jack: 0.2.6).
 
 ### 0.2.4
 

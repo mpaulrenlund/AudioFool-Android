@@ -501,6 +501,8 @@ class Player(
         val source = asked?.sampleRate ?: track?.sampleRate ?: 0
         // The DAC's own name, or the jack in use (0.2.5, the user's call).
         val name = OutputNames.of(route, routes.deviceName, Build.MODEL, routes.speakerIsHeadphones, fiioJackType)
+        // Nothing heard (the M21 unplugged, 0.2.6): no rate or note after it.
+        if (name == OutputNames.NO_OUTPUT) return name
         if (opened == null) return OutputReadout.describe(name, OutputPath.Shared, routes.systemOutputRate(), 0, source, false)
         // A FiiO's own headphone out: the rate FiiO says its DAC runs at, once it has said (0.1.5).
         val fiio = route == OutputRoute.Headphones && routes.speakerIsHeadphones
@@ -633,9 +635,9 @@ class Player(
                 fiioRate = rate
                 state.readout = readoutFor(state.track)
             }
-            // The jack in use (0.2.5): 1 is 3.5 mm, 8 is 4.4 mm, 0 unplugged, which keeps the last one.
-            val jack = intExtra(intent, "type")
-            if (intent.action == FIIO_HEADSET_TYPE_CHANGED && jack > 0) {
+            // The jack in use (0.2.5): 1 is 3.5 mm, 8 is 4.4 mm; 0 is nothing plugged in (0.2.6: "No Output").
+            if (intent.action == FIIO_HEADSET_TYPE_CHANGED && extras?.containsKey("type") == true) {
+                val jack = intExtra(intent, "type")
                 fiioJackType = jack
                 settings.fiioJack = jack
                 state.readout = readoutFor(state.track)

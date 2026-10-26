@@ -34,6 +34,10 @@ class OutputNamesTest {
         assertEquals("4.4mm", OutputNames.headphones(isFiio = true, fiioJack = 8))
     }
 
+    // 0.2.6: the M21 has no speaker, so with nothing plugged in (type 0) nothing is heard.
+    @Test fun a_fiio_with_nothing_plugged_in_has_no_output() =
+        assertEquals("No Output", OutputNames.headphones(isFiio = true, fiioJack = 0))
+
     @Test fun the_route_decides_which_name() {
         assertEquals("Shanling UA2 Plus", OutputNames.of(OutputRoute.Usb, "Shanling UA2 Plus", "SM-S928B", isFiio = false, fiioJack = -1))
         assertEquals("Speaker", OutputNames.of(OutputRoute.Speaker, "SM-S928B", "SM-S928B", isFiio = false, fiioJack = -1))

@@ -35,11 +35,14 @@ object OutputNames {
     const val JACK_3_5 = "3.5mm"
     const val JACK_4_4 = "4.4mm"
 
+    /** A FiiO player with nothing plugged in: it has no speaker, so nothing is heard (0.2.6, the user's word). */
+    const val NO_OUTPUT = "No Output"
+
     private const val USB_AUDIO_PREFIX = "USB-Audio - "
 
     /**
      * FiiO's `HEADSET_TYPE_CHANGED` `type` values, read off the M21 over adb (0.2.5):
      * 1 with headphones in the 3.5 mm jack, 8 in the 4.4 mm, 0 unplugged.
      */
-    private val FIIO_JACKS: Map<Int, String> = mapOf(1 to JACK_3_5, 8 to JACK_4_4)
+    private val FIIO_JACKS: Map<Int, String> = mapOf(0 to NO_OUTPUT, 1 to JACK_3_5, 8 to JACK_4_4)
 }

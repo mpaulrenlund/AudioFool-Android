@@ -36,13 +36,20 @@ spec is `design/android-spec.md`.
   row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
   **not yet on a phone**.
 
+### Since 0.2.5 (on `main`, not released)
+
+- **The M21 unplugged says "No Output"** (FiiO `type` 0, saved like the jacks; the M21 has no
+  speaker, the user confirmed). **The S24's buttons** 56 dp above the readout (from 40).
+  Goes into **0.2.6**; release only when the user says.
+
 ### What 0.2.5 changed (2026-10-26)
 
 - **The readout reworded** (0.2.5, the user's list): "Shanling UA2 Plus · 96 kHz · 24-Bit ·
   Exclusive", "4.4mm · 44.1 kHz · 16-Bit · Exclusive", "Speaker · 48 kHz · Resampled"
   (`OutputNames`, `OutputReadout.describe(name, …)`).
 - **The M21's jacks**: FiiO's `HEADSET_TYPE_CHANGED` `type` is 1 for 3.5 mm, 8 for 4.4 mm, 0
-  unplugged; sent only at a plug, so the last one is saved (`settings` → `fiioJack`).
+  unplugged ("No Output" since 0.2.6: the M21 has no speaker); sent only at a plug, so the last
+  one is saved (`settings` → `fiioJack`).
 - **The S24's buttons** 40 dp above the readout (from 24).
 - Checked on the M21 over adb. Released as pre-release `v0.2.5`. **Not yet seen:** the S24 DAC's
   real name in the readout, the adapter's, and the buttons' new height (the 0.2.5 S24 items).
