@@ -37,6 +37,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.2.3 (2026-10-26), not yet released:
+
+- **The S24's empty space on Now Playing** (the user: "a little too much empty space on the
+  s24u"; the M21 "looks great"). The S24's cover is limited by its width, so the height it
+  can't use, about 120 dp, all went to the flexible spaces, three quarters of it over the
+  quality line. Of the options offered (spread it evenly; grow the waveform; a "Next:" line),
+  the user chose the first two and "leave the M21 as it is". Both go by the **spare height**:
+  screen height − `artHeightReserve` − the font growth − the cover's side, which is exactly
+  0 wherever the height limits the cover (the M21). The waveform grows by 0.2 of it, up to
+  24 dp (`waveformGrowth`): 64 dp on the S24. The space below the times grows from weight 1
+  toward the space above's 3, level with it at 96 dp of spare (`spareEvenAt`): on the S24
+  the gaps over the quality line and over the controls are now about 57 dp each (from about
+  97 and 42). Spec 5 updated. Tokens added to `mobile-tokens.json` → `nowPlaying`.
+- **Checked:** `:core:test`, `:app:testDebugUnitTest`, ThemeLab re-recorded: only the 12 S24
+  Now Playing pictures changed (both themes; font size 1.3 keeps the readout on screen); every
+  M21 picture is pixel-identical.
+
 0.2.2 (2026-10-25), released as pre-release [`v0.2.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2) ("AudioFool 0.2.2", versionCode 15):
 
 - **Statistics cleaned up** (the user asked; my recommendation, their call): Statistics shows
@@ -454,6 +471,13 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.3 (Now Playing's spacing)
+
+Not yet released.
+
+- [ ] **Now Playing's spacing:** no large gap over the quality line; the space over the
+  seekbar and over the controls about even; a taller waveform, still easy to drag.
+
 ### 0.2.2 (covers, the quality line, the readout, the controls, Debug)
 
 Released 2026-10-25 as pre-release [`v0.2.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2)
@@ -812,6 +836,14 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.2.3 — Now Playing's spacing on the S24 (2026-10-26)
+
+**Changed:** `NowPlayingScreen.kt` (the spare height, `Seekbar`'s height), `mobile-tokens.json`
+(`waveformGrowth`, `spareEvenAt`), spec 5, the S24 Now Playing pictures.
+
+**Verified:** `:core:test`, `:app:testDebugUnitTest`, recorded pictures (M21 unchanged). Not
+yet built as a release or seen on the emulator.
 
 ### 0.2.2 — a Debug screen; covers, the quality line, the readout (2026-10-25)
 

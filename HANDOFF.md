@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after 0.2.2. Read this with `README.md` (how the app works) and
+Updated 2026-10-26, after 0.2.2 and the S24 spacing change. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, and the lists of what to test on each device). The
 spec is `design/android-spec.md`.
 
@@ -35,6 +35,13 @@ spec is `design/android-spec.md`.
   426); Statistics' Playback and Debug panels on their own **Debug screen** (Statistics' last
   row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
   **not yet on a phone**.
+
+### Since 0.2.2 (on `main`, not released)
+
+- **Now Playing's spacing on the S24** (2026-10-26, the user's call): the height the S24's
+  width-limited cover can't use (the "spare height", 0 on the M21) grows the waveform to 64 dp
+  and evens the two flexible gaps. M21 pictures unchanged. Goes into **0.2.3** with whatever
+  the user reports next; release only when they say.
 
 ### Where things stand
 

@@ -106,7 +106,16 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             // The reserve holds artReserveText of text, which grows with Android's font size (session 5: at 1.3 the
             // M21 lost the readout off the bottom).
             val textGrowth = t.dp("nowPlaying.artReserveText") * (LocalDensity.current.fontScale - 1f).coerceAtLeast(0f)
-            val art = minOf(maxWidth - padX * 2, screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth)
+            val heightForArt = screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth
+            val art = minOf(maxWidth - padX * 2, heightForArt)
+            // Spare height (0.2.3, the user's call): where the width limits the cover (the S24), the height it
+            // can't use. The waveform takes a share and the space below the times grows toward the space above,
+            // so it isn't one gap over the quality line. None on the M21, which stays as it was.
+            val spare = (heightForArt - art).coerceAtLeast(Dp(0f))
+            val waveformGrowth = minOf(spare * t.number("nowPlaying.waveformGrowth.ofSpare").toFloat(), t.dp("nowPlaying.waveformGrowth.max"))
+            val aboveWeight = t.number("nowPlaying.spaceAboveQualityWeight").toFloat()
+            val belowWeight = t.number("nowPlaying.spaceBelowTimesWeight").toFloat()
+            val evenness = (spare / t.dp("nowPlaying.spareEvenAt")).coerceIn(0f, 1f)
 
             Column(Modifier.fillMaxSize()) {
                 SwipeToSkip(track, art, actions) {
@@ -115,12 +124,12 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
                     }
                     TitleBlock(nowPlaying, track)
                 }
-                Spacer(Modifier.weight(t.number("nowPlaying.spaceAboveQualityWeight").toFloat()))
+                Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
                     track?.let { Quality(it) }
-                    Seekbar(nowPlaying, actions.seek)
+                    Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth)
                 }
-                Spacer(Modifier.weight(t.number("nowPlaying.spaceBelowTimesWeight").toFloat()))
+                Spacer(Modifier.weight(belowWeight + (aboveWeight - belowWeight) * evenness))
                 Controls(nowPlaying, actions, screenHeight)
                 Line(
                     nowPlaying.readout,
@@ -285,7 +294,8 @@ private fun Quality(track: Track) {
 }
 
 /**
- * The waveform seekbar (spec 5): full width, `waveformHeight` tall, the track's
+ * The waveform seekbar (spec 5): full width, [height] tall (`waveformHeight`, more
+ * with spare height), the track's
  * waveform as `waveformBars` hard-edged bars centred on the middle line, the
  * played part `slider.seekFill`, the rest `slider.track`, split at the exact
  * place so it glides while playing. Until the waveform is
@@ -294,7 +304,7 @@ private fun Quality(track: Track) {
  * sit under it.
  */
 @Composable
-private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit) {
+private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp) {
     val t = LocalAppTheme.current
     val duration = nowPlaying.durationMs
     // Read every frame while playing, and only then; the rest of the screen doesn't
@@ -317,7 +327,7 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit) {
         Modifier
             .fillMaxWidth()
             .padding(top = t.dp("nowPlaying.waveformTop"))
-            .height(t.dp("nowPlaying.waveformHeight"))
+            .height(height)
             .pointerInput(duration) {
                 if (duration <= 0) return@pointerInput
                 detectTapGestures { offset -> seek((offset.x / size.width * duration).toLong().coerceIn(0, duration)) }
