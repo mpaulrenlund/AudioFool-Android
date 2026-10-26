@@ -21,9 +21,9 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   pre-releases, v0.0.5 skipped, v0.1.0 the first full release, v0.1.1 to v0.1.5, v0.2.0 and
   v0.2.1 pre-releases (2026-10-25). Confirm the tag and the notes with the user before
   `gh release create`.
-- **Waiting on the user:** 0.2.1 on the S24 (the stuck art), then the rest of the 0.2.0 items
+- **Waiting on the user:** the rest of the 0.2.0 items (the S24 confirmed 0.2.1's swipe and strip)
   on both lists in `design/progress.md`.
-- **Nothing else is broken that the user knows of** (the stuck art is fixed in 0.2.1, unconfirmed). Confirmed on
+- **Nothing else is broken that the user knows of** (the stuck art, fixed in 0.2.1, confirmed on the S24). Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
   Playing (both); S24 + USB DAC plays 24-bit with BP on and off; M21: 24-bit clean, BP on,
   the readout by FiiO's rate, no click at a restart or a tap, unplug pauses on both jacks.

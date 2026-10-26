@@ -409,10 +409,10 @@ Session 1:
 Released 2026-10-25 as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1)
 ("AudioFool 0.2.1", versionCode 14). Installs over 0.2.0 (same key).
 
-- [ ] **Swipe to skip, again.** Swipe the cover left and right several times: each skip, the
+- [x] **Swipe to skip, again** (the user, 2026-10-25, on 0.2.1: "Swiping seems much better"). Swipe the cover left and right several times: each skip, the
   new song's cover is in the middle at once, never stuck to the side. A short swipe slides
   back.
-- [ ] **Letter strip, always there.** It shows without scrolling; tap or slide on it. Do the
+- [x] **Letter strip, always there** (the user, 2026-10-25, on 0.2.1: "working well"). It shows without scrolling; tap or slide on it. Do the
   rows' right ends look right next to it?
 
 ### 0.2.0 (the letter strip, swipe to skip, the gliding seekbar)
@@ -420,11 +420,11 @@ Released 2026-10-25 as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/Au
 Released 2026-10-25 as pre-release [`v0.2.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.0)
 ("AudioFool 0.2.0", versionCode 13). Installs over 0.1.5 (same key).
 
-- [ ] **Letter strip.** Flick Artists: the strip fades in at the right, and out about 1.5 s after
+- [x] **Letter strip** (superseded by 0.2.1's always-shown strip, confirmed above). Flick Artists: the strip fades in at the right, and out about 1.5 s after
   the list stops. Slide a thumb down it: the bubble follows, the list jumps letter by letter,
   with a light tick each time. "The …" artists sit under their second word's letter. Is it
   easy to hit with a thumb, and does the tick feel right?
-- [ ] **Swipe to skip on Now Playing.** Swipe the cover left: next song; right: back a song
+- [x] **Swipe to skip on Now Playing** (0.2.0 left the cover stuck after each skip; fixed in 0.2.1, confirmed above). Swipe the cover left: next song; right: back a song
   (or the start of this one if more than 3 s in). A swipe down does nothing; back closes it.
   Does the distance feel right, and does a quick flick work?
 - [ ] **Seekbar glides.** While a long song plays, the blue part of the waveform creeps
