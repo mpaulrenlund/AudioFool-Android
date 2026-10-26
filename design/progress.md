@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised; Now Playing's new controls layout and a bigger cover on the M21 — built and checked on the emulator 2026-10-25, not released
+- [x] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised; Now Playing's new controls layout and a bigger cover on the M21 — 2026-10-25, released as a pre-release
 - [x] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — 2026-10-25, released as a pre-release (the stuck art still to confirm on the S24)
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
@@ -37,7 +37,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.2.2, not released yet (2026-10-25):
+0.2.2 (2026-10-25), released as pre-release [`v0.2.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2) ("AudioFool 0.2.2", versionCode 15):
 
 - **Statistics cleaned up** (the user asked; my recommendation, their call): Statistics shows
   Library, Formats and Listening, then a DEBUG panel whose one row opens a new **Debug**
@@ -454,7 +454,10 @@ Session 1:
 
 ## To test on the S24
 
-### 0.2.2 (not released yet)
+### 0.2.2 (covers, the quality line, the readout, the controls, Debug)
+
+Released 2026-10-25 as pre-release [`v0.2.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2)
+("AudioFool 0.2.2", versionCode 15). Installs over 0.2.1 (same key).
 
 - [ ] **Covers without a frame.** Artists, Albums, an album's header, the mini player and Now
   Playing: no light outline round any cover.
@@ -666,7 +669,7 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ## To test on the M21
 
-0.2.2 (not released yet):
+0.2.2, released as pre-release [`v0.2.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2) (versionCode 15):
 
 - [ ] **Now Playing's bigger cover**: the title, artist, album and "3 / 12" sit lower, the cover
   larger, and the readout still fits under the controls (also at a larger font size).

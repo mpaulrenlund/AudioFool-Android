@@ -1,34 +1,32 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases, 0.2.0 (the Artists letter strip, swipe to skip, the gliding seekbar) and 0.2.1.
+Updated 2026-10-25, after the 0.1.1 to 0.1.5 fix releases and 0.2.0 to 0.2.2 (the user's UI requests).
 Read this with `README.md` (how the app works) and `design/progress.md` (every decision,
 and the lists of what to test on each device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
-  sections (0.2.1 down to 0.1.1 at the top, then session 5) and the newest session notes.
-- **On `main`, not released: 0.2.2** (versionCode 15, the user's call): Statistics shows only
-  Library, Formats and Listening; its last row opens a **Debug** screen with the Playback and
-  Debug panels. The FiiO signals and Outputs rows are gone. Also: no border round covers
-  (placeholders keep theirs), Now Playing's quality on one line ("FLAC · 1,901 kbps · 24-Bit ·
-  48 kHz"), and the readout without "Shared", capitalised ("Speaker · 48 kHz (Resampled)"). Now
-  Playing's controls: Repeat and Shuffle side by side over BP, the group as tall as Play/Pause;
-  the M21's cover 301 dp (`artHeightReserve` 366). Confirm before releasing.
-- **Latest: 0.2.1** (versionCode 14), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1>,
-  `dist/AudioFool-0.2.1.apk`, from the user's 0.2.0 report: the Artists letter strip always
-  shown (rows end short of it), and swipe to skip reworked because 0.2.0 left the art stuck
-  off the screen after every skip on the S24. That bug was never reproduced here (emulator,
-  or `SwipeToSkipTest`); the rework takes the animation out of a skip, so the S24 must
-  confirm it. 0.2.0 (versionCode 13) brought the strip (spec 4.1, `ui/ArtistIndexStrip.kt`,
+  sections (0.2.2 down to 0.1.1 at the top, then session 5) and the newest session notes.
+- **Latest: 0.2.2** (versionCode 15), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2>,
+  `dist/AudioFool-0.2.2.apk`, the user's UI requests: covers drawn with no border (only
+  placeholders keep theirs), Now Playing's quality on one line ("FLAC · 1,901 kbps · 24-Bit ·
+  48 kHz"), the readout without "Shared" and capitalised ("Speaker · 48 kHz (Resampled)"),
+  Repeat and Shuffle side by side over BP (the group as tall as Play/Pause), the M21's cover
+  301 dp (`artHeightReserve` 366), and Statistics' Playback and Debug panels on their own
+  Debug screen (Statistics' last row), without the FiiO signals and Outputs rows. Checked in
+  ThemeLab and on the emulator. Next: **0.2.3, versionCode 16** for fixes; 0.3.0 for a new
+  feature. Releases so far: v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first
+  full release, v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 pre-releases (2026-10-25). Confirm the
+  tag and the notes with the user before `gh release create`.
+- **Before that:** 0.2.1 (versionCode 14): the Artists letter strip always shown, and swipe to
+  skip reworked after 0.2.0 left the art stuck off the screen on the S24 (confirmed fixed).
+  0.2.0 (13) brought the strip (spec 4.1, `ui/ArtistIndexStrip.kt`,
   `core/.../library/ArtistIndex.kt`), swipe to skip in place of swipe-down (spec 5,
-  `SwipeToSkip` in `NowPlayingScreen.kt`) and the gliding seekbar. Next: **0.2.2,
-  versionCode 15** for fixes; 0.3.0 for a new feature. Releases so far: v0.0.1 to v0.0.4
-  pre-releases, v0.0.5 skipped, v0.1.0 the first full release, v0.1.1 to v0.1.5, v0.2.0 and
-  v0.2.1 pre-releases (2026-10-25). Confirm the tag and the notes with the user before
-  `gh release create`.
-- **Waiting on the user:** the rest of the 0.2.0 items (the S24 confirmed 0.2.1's swipe and strip)
+  `SwipeToSkip` in `NowPlayingScreen.kt`) and the gliding seekbar.
+- **Waiting on the user:** the 0.2.2 items on both lists, then the rest of the 0.2.0 ones (the S24
+  confirmed 0.2.1's swipe and strip)
   on both lists in `design/progress.md`.
 - **Nothing else is broken that the user knows of** (the stuck art, fixed in 0.2.1, confirmed on the S24). Confirmed on
   the phones (2026-10-25): gapless with no glitch at the joins (both); a song tap opens Now
