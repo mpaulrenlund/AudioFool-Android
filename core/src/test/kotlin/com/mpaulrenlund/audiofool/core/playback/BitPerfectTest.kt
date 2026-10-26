@@ -105,17 +105,17 @@ class BitPerfectTest {
     // ---------- the readout ----------
 
     @Test fun bit_perfect_readout() =
-        assertEquals("USB · 96 kHz / 24-bit (bit-perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 96000, 24, 96000, false))
+        assertEquals("USB · 96 kHz / 24-Bit (Bit-Perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 96000, 24, 96000, false))
 
     @Test fun dop_readout() =
-        assertEquals("USB · 176.4 kHz · DSD over PCM (bit-perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 176400, 24, 176400, true))
+        assertEquals("USB · 176.4 kHz · DSD over PCM (Bit-Perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 176400, 24, 176400, true))
 
     @Test fun rate_matched_never_says_bit_perfect() =
-        assertEquals("USB · 96 kHz / 24-bit (rate matched)", OutputReadout.describe(OutputRoute.Usb, OutputPath.RateMatched, 96000, 24, 96000, false))
+        assertEquals("USB · 96 kHz / 24-Bit (Rate Matched)", OutputReadout.describe(OutputRoute.Usb, OutputPath.RateMatched, 96000, 24, 96000, false))
 
     @Test fun the_source_rate_way_is_bit_perfect_only_when_the_system_runs_at_the_tracks_rate() {
-        assertEquals("Headphones · 96 kHz / 24-bit (bit-perfect)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 96000, 24, 96000, false))
-        assertEquals("Headphones · 48 kHz (resampled)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 48000, 24, 96000, false))
+        assertEquals("Headphones · 96 kHz / 24-Bit (Bit-Perfect)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 96000, 24, 96000, false))
+        assertEquals("Headphones · 48 kHz (Resampled)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 48000, 24, 96000, false))
     }
 
     // The M21 (0.1.5): FiiO reports its DAC's rate; Android's system output always says 48 kHz.
@@ -127,26 +127,27 @@ class BitPerfectTest {
 
     @Test fun the_m21_at_the_tracks_rate_is_bit_perfect_by_fiios_report() =
         assertEquals(
-            "Headphones · 44.1 kHz / 16-bit (bit-perfect)",
+            "Headphones · 44.1 kHz / 16-Bit (Bit-Perfect)",
             OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 44100), 16, 44100, false),
         )
 
     @Test fun the_m21_says_resampled_when_fiio_reports_another_rate_or_none_yet() {
         assertEquals(
-            "Headphones · 48 kHz (resampled)",
+            "Headphones · 48 kHz (Resampled)",
             OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), 24, 96000, false),
         )
         assertEquals(
-            "Headphones · 48 kHz (resampled)",
+            "Headphones · 48 kHz (Resampled)",
             OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 0), 16, 44100, false),
         )
     }
 
-    @Test fun shared_readout_names_the_route() {
-        assertEquals("Speaker · Shared · 48 kHz (resampled)", OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 24, 44100, false))
-        assertEquals("Bluetooth · Shared · 48 kHz", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 16, 48000, false))
+    // 0.2.2: no "Shared", and the words capitalised (the user's call).
+    @Test fun shared_readout_names_the_route_and_not_shared() {
+        assertEquals("Speaker · 48 kHz (Resampled)", OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 24, 44100, false))
+        assertEquals("Bluetooth · 48 kHz", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 16, 48000, false))
     }
 
     @Test fun an_unknown_output_rate_says_only_the_route() =
-        assertEquals("Bluetooth · Shared", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 0, 0, 44100, false))
+        assertEquals("Bluetooth", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 0, 0, 44100, false))
 }

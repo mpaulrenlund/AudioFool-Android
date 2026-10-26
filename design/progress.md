@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen — built and checked on the emulator 2026-10-25, not released
+- [ ] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised — built and checked on the emulator 2026-10-25, not released
 - [x] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — 2026-10-25, released as a pre-release (the stuck art still to confirm on the S24)
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
@@ -51,6 +51,25 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Checked:** ThemeLab `debug` (new) and `statistics-empty` (the new row), both themes and
   sizes; on the emulator: Statistics ends with the row, Debug shows Playback (Route, Phone,
   Bit-Perfect, …, no Outputs or FiiO rows) and Debug, Back returns to Statistics.
+- **No border round covers** (the user saw "a white border" everywhere): it was the 1 dp
+  `art.border` / `art.thumbBorder` frame, a mid grey in Dark (#33373F) that reads as a light
+  outline beside a dark cover, with the picture inset inside it. Covers are now drawn edge
+  to edge in `AlbumArt` (lists, album header, mini player) and Now Playing's `BigArt`. The
+  placeholder keeps its frame (mine: without it the square vanishes into the panel). The
+  token files are unchanged; the token sheet still shows the frame.
+- **The quality line** is one line, right-aligned over the seekbar, in the user's order:
+  "FLAC · 1,901 kbps · 24-Bit · 48 kHz" (`QualityLines`, tests updated). The user wrote the
+  separator as "-"; I kept the app's " · ". "24-Bit" capitalised and hyphenated to match the
+  readout. `nowPlaying.qualityLineGap` removed.
+- **The readout** drops "Shared" and capitalises its words: "Speaker · 48 kHz (Resampled)",
+  "USB · 96 kHz / 24-Bit (Bit-Perfect)", "(Rate Matched)". Only the phone's
+  `OutputReadout.describe(route, …)` changed; the desktop's ported `describe(mode, …)` and its
+  tests are as they were (the phone no longer calls it). "DSD over PCM" keeps its lower-case
+  "over". The Settings row still says "Shared" before anything has played (left as it was).
+- **Checked:** `:core:test` (readout and quality tests updated), ThemeLab Now Playing and
+  Settings pictures re-recorded (the readout and the line; ThemeLab has no real covers, so the
+  border shows only on the emulator); on the emulator: list and Now Playing covers drawn with no
+  frame, "FLAC · 99 kbps · 16-Bit · 44.1 kHz", "Speaker · 48 kHz (Resampled)".
 
 0.2.1 (2026-10-25), released as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1) ("AudioFool 0.2.1", versionCode 14), from the user's report on 0.2.0 (S24):
 
@@ -420,6 +439,16 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.2 (not released yet)
+
+- [ ] **Covers without a frame.** Artists, Albums, an album's header, the mini player and Now
+  Playing: no light outline round any cover.
+- [ ] **Now Playing's quality line**, one line over the seekbar: e.g. "FLAC · 1,901 kbps ·
+  24-Bit · 48 kHz".
+- [ ] **The output row**: no "Shared"; e.g. "USB · 96 kHz / 24-Bit (Bit-Perfect)" through the DAC
+  with BP on, "(Rate Matched)" at 48 kHz and up, "(Resampled)" on the speaker.
+- [ ] **Statistics > Debug** opens the playback and debug numbers; back returns.
+
 ### 0.2.1 (the strip always shown, the stuck art)
 
 Released 2026-10-25 as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1)
@@ -756,7 +785,7 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 
 ## Session notes
 
-### 0.2.2 — a Debug screen (2026-10-25)
+### 0.2.2 — a Debug screen; covers, the quality line, the readout (2026-10-25)
 
 **Changed:** `StatisticsScreen.kt` (`DebugScreen`, the row, `DebugActions.openDebug`),
 `Route.Debug`, `AppRoot` (one `DebugNumbers` for both screens), `Player.outputDetails` and

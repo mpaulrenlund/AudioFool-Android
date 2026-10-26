@@ -207,7 +207,11 @@ private fun barHeights(): Dp {
     return with(density) { (insets.getTop(this) + insets.getBottom(this)).toDp() }
 }
 
-/** The cover, square, with a 1 dp `art.border` and `shadow.headerArt`; the full picture decoded at its size. */
+/**
+ * The cover, square, with `shadow.headerArt`; the full picture decoded at its size.
+ * No border round a cover (the user's call, 0.2.2: it read as a light frame); the
+ * placeholder keeps its 1 dp `art.border`, or its square would vanish into the page.
+ */
 @Composable
 private fun BigArt(track: Track?, side: Dp) {
     val t = LocalAppTheme.current
@@ -220,15 +224,21 @@ private fun BigArt(track: Track?, side: Dp) {
             }
         }
     }
+    val bitmap = image
     Box(
         Modifier
             .size(side)
-            .tokenSurface(RectangleShape, t.color("color.panel.bg"), t.shadow("shadow.headerArt"), t.color("color.art.border"), t.dp("borderWidth")),
+            .tokenSurface(
+                RectangleShape,
+                t.color("color.panel.bg"),
+                t.shadow("shadow.headerArt"),
+                if (bitmap == null) t.color("color.art.border") else null,
+                t.dp("borderWidth"),
+            ),
         contentAlignment = Alignment.Center,
     ) {
-        val bitmap = image
         if (bitmap != null) {
-            Image(bitmap, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize().padding(t.dp("borderWidth")))
+            Image(bitmap, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         } else {
             // The desktop's album-header placeholder, the biggest art it draws.
             Icon(AppIcons.MUSIC_NOTE, t.desktopNumber("albumHeader.placeholderIconSize").dp, "color.text.muted")
@@ -263,20 +273,15 @@ private fun TitleBlock(nowPlaying: NowPlaying, track: Track?) {
     }
 }
 
-/** Two right-aligned lines: "FLAC · 96 kHz", then "24 bit · 1,140 kbps" (spec 5). */
+/** One right-aligned line over the seekbar: "FLAC · 1,901 kbps · 24-Bit · 48 kHz" (spec 5; 0.2.2). */
 @Composable
 private fun Quality(track: Track) {
     val t = LocalAppTheme.current
-    val (first, second) = QualityLines.of(track)
-    val style = t.text("nowPlaying.qualitySize", "color.text.secondary").copy(textAlign = TextAlign.End)
-    Column(
+    Line(
+        QualityLines.of(track),
+        t.text("nowPlaying.qualitySize", "color.text.secondary").copy(textAlign = TextAlign.End),
         Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.qualityTop")),
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.qualityLineGap")),
-    ) {
-        Line(first, style)
-        Line(second, style)
-    }
+    )
 }
 
 /**

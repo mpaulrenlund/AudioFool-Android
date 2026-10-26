@@ -33,7 +33,6 @@ import com.mpaulrenlund.audiofool.ui.StatisticsScreen
 import com.mpaulrenlund.audiofool.ui.TokenSheet
 import com.mpaulrenlund.audiofool.ui.NowPlayingActions
 import com.mpaulrenlund.audiofool.ui.NowPlayingScreen
-import com.mpaulrenlund.audiofool.core.playback.OutputMode
 import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
@@ -220,7 +219,7 @@ class ThemeLabTest {
             NowPlayingScreen(
                 NowPlaying().apply {
                     showForPictures(ThemeLabFixtures.longPlaying, index = 0, size = 7, positionMs = 754_000, waveform = ThemeLabFixtures.mockupWaveform,
-                        readout = OutputReadout.describe(OutputMode.Shared, 48000, 0, 44100, false))
+                        readout = OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 0, 44100, false))
                 },
                 NowPlayingActions(),
             )
@@ -262,7 +261,7 @@ class ThemeLabTest {
     private fun nowPlaying(
         playing: Boolean = true,
         waveform: FloatArray? = ThemeLabFixtures.mockupWaveform,
-        readout: String = OutputReadout.describe(OutputMode.Shared, 48000, 0, 96000, false),
+        readout: String = OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 0, 96000, false),
     ) = NowPlaying().apply {
         showForPictures(
             ThemeLabFixtures.nowPlayingTrack,

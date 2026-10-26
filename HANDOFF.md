@@ -10,7 +10,10 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   sections (0.2.1 down to 0.1.1 at the top, then session 5) and the newest session notes.
 - **On `main`, not released: 0.2.2** (versionCode 15, the user's call): Statistics shows only
   Library, Formats and Listening; its last row opens a **Debug** screen with the Playback and
-  Debug panels. The FiiO signals and Outputs rows are gone. Confirm before releasing.
+  Debug panels. The FiiO signals and Outputs rows are gone. Also: no border round covers
+  (placeholders keep theirs), Now Playing's quality on one line ("FLAC · 1,901 kbps · 24-Bit ·
+  48 kHz"), and the readout without "Shared", capitalised ("Speaker · 48 kHz (Resampled)").
+  Confirm before releasing.
 - **Latest: 0.2.1** (versionCode 14), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1>,
   `dist/AudioFool-0.2.1.apk`, from the user's 0.2.0 report: the Artists letter strip always

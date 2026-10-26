@@ -240,7 +240,6 @@
     "spaceBelowTimesWeight": 1,
     "qualityTop": 10,
     "qualitySize": 13,
-    "qualityLineGap": 3,
     "waveformTop": 14,
     "waveformHeight": 40,
     "waveformBars": 96,

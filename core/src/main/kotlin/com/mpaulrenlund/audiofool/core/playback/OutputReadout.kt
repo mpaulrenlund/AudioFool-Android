@@ -32,11 +32,16 @@ object OutputReadout {
 
     /**
      * The phone's readout (spec 6.3): the route, then the rate and depth, then a
-     * note. "USB · 96 kHz / 24-bit (bit-perfect)", "USB · 96 kHz / 24-bit (rate
-     * matched)", "Headphones · 96 kHz / 24-bit (bit-perfect)", "Speaker · Shared ·
-     * 48 kHz (resampled)". The note never says bit-perfect unless it is: a rate
-     * matched mixer still mixes, and the M21's way is only called bit-perfect when
-     * the system output is seen running at the track's rate.
+     * note. "USB · 96 kHz / 24-Bit (Bit-Perfect)", "USB · 96 kHz / 24-Bit (Rate
+     * Matched)", "Headphones · 96 kHz / 24-Bit (Bit-Perfect)", "Speaker · 48 kHz
+     * (Resampled)". The note never says bit-perfect unless it is: a rate matched
+     * mixer still mixes, and the M21's way is only called bit-perfect when the
+     * system output is seen running at the track's rate.
+     *
+     * 0.2.2 (the user's call): no "Shared" (an output that isn't bit-perfect or rate
+     * matched is shared, so it said nothing), and the words capitalised, as the
+     * Now Playing quality line's "24-Bit". The desktop's [describe] by mode is
+     * unchanged.
      *
      * @param path How the output was opened.
      * @param outputRate The rate the output runs at, in Hz: the mixer entry's,
@@ -48,17 +53,18 @@ object OutputReadout {
      */
     fun describe(route: OutputRoute, path: OutputPath, outputRate: Int, bits: Int, sourceRate: Int, isDop: Boolean): String {
         val name = route.label
-        if (outputRate <= 0) return "$name · Shared"
+        if (outputRate <= 0) return name
         val rate = rate(outputRate)
-        val depth = if (bits > 0) " / $bits-bit" else ""
+        val depth = if (bits > 0) " / $bits-Bit" else ""
         val matches = sourceRate <= 0 || sourceRate == outputRate
         return when (path) {
             OutputPath.BitPerfect ->
-                if (isDop) "$name · $rate · DSD over PCM (bit-perfect)" else "$name · $rate$depth (bit-perfect)"
-            OutputPath.RateMatched -> "$name · $rate$depth (rate matched)"
+                if (isDop) "$name · $rate · DSD over PCM (Bit-Perfect)" else "$name · $rate$depth (Bit-Perfect)"
+            OutputPath.RateMatched -> "$name · $rate$depth (Rate Matched)"
             OutputPath.SourceRate ->
-                if (matches) "$name · $rate$depth (bit-perfect)" else "$name · $rate (resampled)"
-            OutputPath.Shared -> "$name · " + describe(OutputMode.Shared, outputRate, 0, sourceRate, false)
+                if (matches) "$name · $rate$depth (Bit-Perfect)" else "$name · $rate (Resampled)"
+            // The shared output's depth isn't known (Android mixes in its own), as the desktop leaves it out.
+            OutputPath.Shared -> if (matches) "$name · $rate" else "$name · $rate (Resampled)"
         }
     }
 

@@ -276,10 +276,11 @@ fun ListRow(
 }
 
 /**
- * An album's cover in a square frame: a 1 dp [borderPath] border, the panel's
- * colour under it, and the desktop's placeholder note (`albums.placeholderIconSize`,
- * `text.muted`) when there is no cover. [header] picks the album header's larger
- * copy. Loaded off the main thread; a cover already in memory shows at once.
+ * An album's cover, square, edge to edge (no border since 0.2.2, the user's call:
+ * it read as a light frame). With no cover, the desktop's placeholder note
+ * (`albums.placeholderIconSize`, `text.muted`) on the panel's colour in a 1 dp
+ * [borderPath] frame, so the square still shows. [header] picks the album header's
+ * larger copy. Loaded off the main thread; a cover already in memory shows at once.
  */
 @Composable
 fun AlbumArt(
@@ -297,19 +298,18 @@ fun AlbumArt(
     if (entry == null && key != null && album != null && thumbnails != null) {
         LaunchedEffect(key) { entry = thumbnails.load(album, key) }
     }
-    val border = t.dp("borderWidth")
+    val image = entry?.image
     Box(
         Modifier
             .size(size)
-            .tokenSurface(RectangleShape, t.color("color.panel.bg"), shadows, t.color(borderPath), border),
+            .tokenSurface(RectangleShape, t.color("color.panel.bg"), shadows, if (image == null) t.color(borderPath) else null, t.dp("borderWidth")),
         contentAlignment = Alignment.Center,
     ) {
-        val image = entry?.image
         if (image != null) {
             Image(
                 image,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize().padding(border),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
                 filterQuality = FilterQuality.Medium,
             )

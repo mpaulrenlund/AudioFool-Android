@@ -11,28 +11,28 @@ import kotlin.test.assertTrue
 // it reopens to (spec 6.1, Resume).
 
 class NowPlayingTextTest {
-    // ---------- quality lines ----------
+    // ---------- the quality line (one line since 0.2.2, the user's order) ----------
 
-    @Test fun lossless_shows_format_rate_then_depth_and_bitrate() {
-        val track = Track(filePath = "a.flac", kind = "FLAC", sampleRate = 96000, bitDepth = 24, bitrate = 1140)
-        assertEquals("FLAC · 96 kHz" to "24 bit · 1,140 kbps", QualityLines.of(track))
+    @Test fun lossless_shows_format_bitrate_depth_then_rate() {
+        val track = Track(filePath = "a.flac", kind = "FLAC", sampleRate = 48000, bitDepth = 24, bitrate = 1901)
+        assertEquals("FLAC · 1,901 kbps · 24-Bit · 48 kHz", QualityLines.of(track))
     }
 
-    @Test fun lossy_has_no_bit_depth_only_the_bitrate() {
+    @Test fun lossy_has_no_bit_depth() {
         val track = Track(filePath = "a.mp3", kind = "MP3", sampleRate = 44100, bitDepth = null, bitrate = 320)
-        assertEquals("MP3 · 44.1 kHz" to "320 kbps", QualityLines.of(track))
+        assertEquals("MP3 · 320 kbps · 44.1 kHz", QualityLines.of(track))
     }
 
-    @Test fun dsd_shows_its_rate_in_megahertz_and_one_bit() {
+    @Test fun dsd_shows_one_bit_and_its_rate_in_megahertz() {
         val dsd64 = Track(filePath = "a.dsf", kind = "DSD", sampleRate = 2_822_400, bitDepth = 1, bitrate = 5645)
-        assertEquals("DSD · 2.8 MHz" to "1 bit", QualityLines.of(dsd64))
+        assertEquals("DSD · 5,645 kbps · 1-Bit · 2.8 MHz", QualityLines.of(dsd64))
         val dsd128 = Track(filePath = "b.dff", kind = "DSD", sampleRate = 5_644_800, bitDepth = 1)
-        assertEquals("DSD · 5.6 MHz" to "1 bit", QualityLines.of(dsd128))
+        assertEquals("DSD · 1-Bit · 5.6 MHz", QualityLines.of(dsd128))
     }
 
     @Test fun what_is_unknown_is_left_out() {
-        assertEquals("WAV" to "16 bit", QualityLines.of(Track(filePath = "a.wav", kind = "WAV", bitDepth = 16)))
-        assertEquals("Opus · 48 kHz" to "", QualityLines.of(Track(filePath = "a.opus", kind = "Opus", sampleRate = 48000)))
+        assertEquals("WAV · 16-Bit", QualityLines.of(Track(filePath = "a.wav", kind = "WAV", bitDepth = 16)))
+        assertEquals("Opus · 48 kHz", QualityLines.of(Track(filePath = "a.opus", kind = "Opus", sampleRate = 48000)))
     }
 
     // ---------- the saved queue ----------
