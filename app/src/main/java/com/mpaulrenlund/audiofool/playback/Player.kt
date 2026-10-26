@@ -16,6 +16,7 @@ import com.mpaulrenlund.audiofool.core.library.LibraryRelocator
 import com.mpaulrenlund.audiofool.core.library.SafeFile
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
+import com.mpaulrenlund.audiofool.core.playback.OutputNames
 import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
@@ -322,6 +323,8 @@ class Player(
             "Direct" to (asked?.let { "${describe(it)}: ${routes.directSupport(it)}" } ?: "–"),
             "USB mixers" to routes.mixerSummary(),
             "Mixer set" to "${routes.preferredMixer()}${routes.lastMixerNote.takeIf { it.isNotEmpty() }?.let { " · last: $it" } ?: ""}",
+            "FiiO jack" to (if (fiioJackType < 0) "nothing yet (FiiO says at a plug or unplug)"
+                else "type $fiioJackType → ${OutputNames.headphones(isFiio = true, fiioJack = fiioJackType)}"),
             "Plug guard" to (plugGuard.sincePlug(SystemClock.elapsedRealtime())?.let { "last plug ${Display.time(it)} ago" } ?: "no plug yet") +
                 " · ${plugGuard.ignored} plays ignored · ${plugGuard.undone} undone",
         )
@@ -496,14 +499,16 @@ class Player(
         val opened = if (engineMade) engine.openedFormat else null
         val asked = if (engineMade) engine.askedFormat else null
         val source = asked?.sampleRate ?: track?.sampleRate ?: 0
-        if (opened == null) return OutputReadout.describe(route, OutputPath.Shared, routes.systemOutputRate(), 0, source, false)
+        // The DAC's own name, or the jack in use (0.2.5, the user's call).
+        val name = OutputNames.of(route, routes.deviceName, Build.MODEL, routes.speakerIsHeadphones, fiioJackType)
+        if (opened == null) return OutputReadout.describe(name, OutputPath.Shared, routes.systemOutputRate(), 0, source, false)
         // A FiiO's own headphone out: the rate FiiO says its DAC runs at, once it has said (0.1.5).
         val fiio = route == OutputRoute.Headphones && routes.speakerIsHeadphones
         val rate = if (fiio) OutputReadout.hardwareRate(routes.systemOutputRate(), fiioRate) else routes.systemOutputRate()
         return when (val path = engine.openedPath) {
-            OutputPath.BitPerfect, OutputPath.RateMatched -> OutputReadout.describe(route, path, opened.sampleRate, opened.bits, source, opened.dop)
-            OutputPath.SourceRate -> OutputReadout.describe(route, path, rate, opened.bits, source, false)
-            OutputPath.Shared -> OutputReadout.describe(route, path, rate, 0, source, false)
+            OutputPath.BitPerfect, OutputPath.RateMatched -> OutputReadout.describe(name, path, opened.sampleRate, opened.bits, source, opened.dop)
+            OutputPath.SourceRate -> OutputReadout.describe(name, path, rate, opened.bits, source, false)
+            OutputPath.Shared -> OutputReadout.describe(name, path, rate, 0, source, false)
         }
     }
 
@@ -619,14 +624,30 @@ class Player(
      */
     private val fiio = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
+            val extras = intent.extras
+            android.util.Log.i(TAG, "FiiO ${intent.action?.substringAfterLast('.')}: " +
+                (extras?.keySet()?.joinToString { "$it=${anyExtra(extras, it)}" } ?: "no extras"))
             // The DAC's rate (0 when stopped, which keeps the last one): the readout's, from now on.
-            val rate = intent.extras?.let { anyExtra(it, "rate") }.let { (it as? Number)?.toInt() ?: it?.toString()?.toIntOrNull() } ?: 0
+            val rate = intExtra(intent, "rate")
             if (intent.action == FIIO_SAMPLE_RATE_CHANGED && rate > 0) {
                 fiioRate = rate
                 state.readout = readoutFor(state.track)
             }
+            // The jack in use (0.2.5): 1 is 3.5 mm, 8 is 4.4 mm, 0 unplugged, which keeps the last one.
+            val jack = intExtra(intent, "type")
+            if (intent.action == FIIO_HEADSET_TYPE_CHANGED && jack > 0) {
+                fiioJackType = jack
+                settings.fiioJack = jack
+                state.readout = readoutFor(state.track)
+            }
         }
     }
+
+    private fun intExtra(intent: Intent, key: String): Int =
+        intent.extras?.let { anyExtra(it, key) }.let { (it as? Number)?.toInt() ?: it?.toString()?.toIntOrNull() } ?: 0
+
+    /** FiiO's last `HEADSET_TYPE_CHANGED` `type` (0.2.5: which jack), saved, or -1 until it has sent one. */
+    private var fiioJackType = settings.fiioJack
 
     /**
      * The rate FiiO last said its DAC runs at for the output open now, or 0 until

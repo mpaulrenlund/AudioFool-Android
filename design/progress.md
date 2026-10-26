@@ -39,6 +39,32 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.2.5 (2026-10-26), not yet released:
+
+- **The S24's buttons higher still** (the user: "Could we move the buttons slightly higher?"):
+  `controlsLift` 0.2 / 24 dp → 0.33 / 40 dp of the spare height. 40 dp on the S24 (26 at font
+  size 1.3), 0 on the M21. The readout stays put.
+- **The readout reworded** (the user's list): the USB device's own name in place of "USB"
+  ("Shanling UA2 Plus": `AudioDeviceInfo.productName`, without a "USB-Audio - " in front; "USB"
+  when blank or the phone's model); "3.5mm" or "4.4mm" in place of "Headphones";
+  "Exclusive" in place of "(Bit-Perfect)"; "Rate Matched" without brackets; a dot before the
+  note and in place of the "/" between rate and depth. "(Resampled)" became "· Resampled" too
+  (asked: the user chose it). `OutputReadout.describe` takes a name; `OutputNames` (core, new,
+  with tests) picks it. The desktop's readout by mode is unchanged.
+- **Which M21 jack** (found with the M21 on this PC over adb, the user plugging in): FiiO's
+  `HEADSET_TYPE_CHANGED` sends `type` **1 for the 3.5 mm jack, 8 for the 4.4 mm**, 0 at an
+  unplug. It isn't sticky and nothing an app can read (properties, settings, `dumpsys audio`)
+  says which jack is in, so the last type FiiO named is **saved** (`settings` → `fiioJack`, the
+  user's call) and shown after a fresh start until FiiO says again. Any other phone's
+  headphone jack is "3.5mm". Statistics > Debug gains a **FiiO jack** row ("type 8 → 4.4mm"),
+  and every FiiO broadcast is logged under `AudioFoolPlay`.
+- **Checked on the M21** (release build over adb): plugged into 4.4 mm, "type 8 → 4.4mm"; after
+  a force-stop and fresh start with no plug, Output "4.4mm · 44.1 kHz"; moved to 3.5 mm,
+  "3.5mm · 44.1 kHz"; playing with BP on, "3.5mm · 44.1 kHz · 16-Bit · Exclusive". ThemeLab:
+  every Now Playing and Settings picture re-recorded (the readout's text); the M21's are
+  pixel-identical above the readout; the S24's buttons 16 dp higher. The S24 DAC's real name
+  can only be seen on the S24 (ThemeLab shows "Shanling UA2 Plus" as a sample).
+
 0.2.4 (2026-10-26), released as pre-release [`v0.2.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.4) ("AudioFool 0.2.4", versionCode 17):
 
 - **The seekbar drawn as one smooth shape** (the user sent a reference picture: "ignoring
@@ -523,13 +549,23 @@ Session 1:
 
 ## To test on the S24
 
+### 0.2.5 (the readout reworded, the buttons higher)
+
+Not yet released.
+
+- [ ] **Now Playing's six buttons** another 16 dp higher: comfortable now?
+- [ ] **The output row through the DAC**: the DAC's own name, e.g. "Shanling UA2 Plus · 96 kHz ·
+  24-Bit · Exclusive" or "· Rate Matched". If it says "USB" or an odd name, send the Route row
+  (Statistics > Debug): the name in quotes is what Android calls it.
+- [ ] **Through the USB-C 3.5 mm adapter**: the adapter's own name.
+
 ### 0.2.4 (Now Playing's buttons higher, the smooth seekbar)
 
 Released 2026-10-26 as pre-release [`v0.2.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.4)
 ("AudioFool 0.2.4", versionCode 17). Installs over 0.2.3 (same key).
 
-- [ ] **Now Playing's six buttons** sit higher, the output row where it was: are they
-  comfortable to press now?
+- [x] **Now Playing's six buttons** sit higher, the output row where it was: are they
+  comfortable to press now? (The user, 2026-10-26: "slightly higher" still: 0.2.5.)
 - [ ] **The seekbar** is one smooth waveform instead of bars. The first play of each song
   works it out again (a flat bar for a moment, as for a new song); later plays show it at once.
   Seeking by tap and drag as before.
@@ -763,6 +799,17 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 - [ ] **Token sheet.** Debug > Token sheet: tap through the four pages in both themes; back returns.
 
 ## To test on the M21
+
+### 0.2.5 (the jack names)
+
+Not yet released. Checked over adb already (above); on the phone:
+
+- [ ] **The output row** says "3.5mm" or "4.4mm" for the jack in use, also after the app is
+  closed and started again.
+
+### 0.2.4
+
+- [x] **The smooth seekbar** (the user, 2026-10-26: "Seekbar is working/looking great").
 
 0.2.2, released as pre-release [`v0.2.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.2) (versionCode 15):
 

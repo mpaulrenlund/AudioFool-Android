@@ -103,19 +103,22 @@ class BitPerfectTest {
     }
 
     // ---------- the readout ----------
+    // 0.2.5 (the user's call): the device's name, "Exclusive" for bit-perfect, dots throughout.
+
+    private val dac = "Shanling UA2 Plus"
 
     @Test fun bit_perfect_readout() =
-        assertEquals("USB · 96 kHz / 24-Bit (Bit-Perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 96000, 24, 96000, false))
+        assertEquals("Shanling UA2 Plus · 96 kHz · 24-Bit · Exclusive", OutputReadout.describe(dac, OutputPath.BitPerfect, 96000, 24, 96000, false))
 
     @Test fun dop_readout() =
-        assertEquals("USB · 176.4 kHz · DSD over PCM (Bit-Perfect)", OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 176400, 24, 176400, true))
+        assertEquals("Shanling UA2 Plus · 176.4 kHz · DSD over PCM · Exclusive", OutputReadout.describe(dac, OutputPath.BitPerfect, 176400, 24, 176400, true))
 
-    @Test fun rate_matched_never_says_bit_perfect() =
-        assertEquals("USB · 96 kHz / 24-Bit (Rate Matched)", OutputReadout.describe(OutputRoute.Usb, OutputPath.RateMatched, 96000, 24, 96000, false))
+    @Test fun rate_matched_never_says_exclusive() =
+        assertEquals("Shanling UA2 Plus · 96 kHz · 24-Bit · Rate Matched", OutputReadout.describe(dac, OutputPath.RateMatched, 96000, 24, 96000, false))
 
-    @Test fun the_source_rate_way_is_bit_perfect_only_when_the_system_runs_at_the_tracks_rate() {
-        assertEquals("Headphones · 96 kHz / 24-Bit (Bit-Perfect)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 96000, 24, 96000, false))
-        assertEquals("Headphones · 48 kHz (Resampled)", OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, 48000, 24, 96000, false))
+    @Test fun the_source_rate_way_is_exclusive_only_when_the_system_runs_at_the_tracks_rate() {
+        assertEquals("4.4mm · 96 kHz · 24-Bit · Exclusive", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 96000, 24, 96000, false))
+        assertEquals("4.4mm · 48 kHz · Resampled", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 48000, 24, 96000, false))
     }
 
     // The M21 (0.1.5): FiiO reports its DAC's rate; Android's system output always says 48 kHz.
@@ -125,29 +128,29 @@ class BitPerfectTest {
         assertEquals(48000, OutputReadout.hardwareRate(systemRate = 48000, reportedRate = 0))
     }
 
-    @Test fun the_m21_at_the_tracks_rate_is_bit_perfect_by_fiios_report() =
+    @Test fun the_m21_at_the_tracks_rate_is_exclusive_by_fiios_report() =
         assertEquals(
-            "Headphones · 44.1 kHz / 16-Bit (Bit-Perfect)",
-            OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 44100), 16, 44100, false),
+            "3.5mm · 44.1 kHz · 16-Bit · Exclusive",
+            OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 44100), 16, 44100, false),
         )
 
     @Test fun the_m21_says_resampled_when_fiio_reports_another_rate_or_none_yet() {
         assertEquals(
-            "Headphones · 48 kHz (Resampled)",
-            OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), 24, 96000, false),
+            "3.5mm · 48 kHz · Resampled",
+            OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), 24, 96000, false),
         )
         assertEquals(
-            "Headphones · 48 kHz (Resampled)",
-            OutputReadout.describe(OutputRoute.Headphones, OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 0), 16, 44100, false),
+            "3.5mm · 48 kHz · Resampled",
+            OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 0), 16, 44100, false),
         )
     }
 
     // 0.2.2: no "Shared", and the words capitalised (the user's call).
-    @Test fun shared_readout_names_the_route_and_not_shared() {
-        assertEquals("Speaker · 48 kHz (Resampled)", OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 24, 44100, false))
-        assertEquals("Bluetooth · 48 kHz", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 16, 48000, false))
+    @Test fun shared_readout_names_the_output_and_not_shared() {
+        assertEquals("Speaker · 48 kHz · Resampled", OutputReadout.describe("Speaker", OutputPath.Shared, 48000, 24, 44100, false))
+        assertEquals("Bluetooth · 48 kHz", OutputReadout.describe("Bluetooth", OutputPath.Shared, 48000, 16, 48000, false))
     }
 
-    @Test fun an_unknown_output_rate_says_only_the_route() =
-        assertEquals("Bluetooth", OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 0, 0, 44100, false))
+    @Test fun an_unknown_output_rate_says_only_the_name() =
+        assertEquals("Bluetooth", OutputReadout.describe("Bluetooth", OutputPath.Shared, 0, 0, 44100, false))
 }

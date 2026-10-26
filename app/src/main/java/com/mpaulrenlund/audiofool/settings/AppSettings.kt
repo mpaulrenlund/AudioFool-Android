@@ -41,6 +41,15 @@ class AppSettings(context: Context) {
         prefs.edit().putBoolean(KEY_BIT_PERFECT, on).apply()
     }
 
+    /**
+     * The last headphone jack a FiiO player named (its `HEADSET_TYPE_CHANGED` `type`),
+     * or -1 when none has: FiiO says only at a plug, so a fresh start shows this one
+     * until it says again (0.2.5, the user's call).
+     */
+    var fiioJack: Int
+        get() = prefs.getInt(KEY_FIIO_JACK, -1)
+        set(value) = prefs.edit().putInt(KEY_FIIO_JACK, value).apply()
+
     private val _folders = MutableStateFlow(readFolders())
 
     /** The music folders, in the order they were added. */
@@ -73,6 +82,7 @@ class AppSettings(context: Context) {
         private const val KEY_THEME = "theme"
         private const val KEY_FOLDERS = "musicFolders"
         private const val KEY_BIT_PERFECT = "bitPerfect"
+        private const val KEY_FIIO_JACK = "fiioJack"
         private const val THEME_DARK = "dark"
         private const val THEME_LIGHT = "light"
     }

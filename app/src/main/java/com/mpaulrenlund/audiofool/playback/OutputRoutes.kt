@@ -63,6 +63,9 @@ class OutputRoutes(context: Context) {
     /** The device media plays to now, or null when Android doesn't say. */
     @Volatile private var device: AudioDeviceInfo? = null
 
+    /** What Android calls that device (a USB DAC's own name, for the readout), or null. */
+    val deviceName: String? get() = device?.productName?.toString()
+
     /** The USB device's mixer entries (Android 14+), and the platform's objects for them. */
     @Volatile private var usbMixers: UsbMixers = UsbMixers.None
 

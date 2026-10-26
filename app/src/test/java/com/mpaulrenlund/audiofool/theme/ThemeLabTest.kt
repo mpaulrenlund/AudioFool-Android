@@ -150,13 +150,13 @@ class ThemeLabTest {
         // BP's other two states (spec 6.4; off is the mockup's): on through a USB DAC's
         // bit-perfect mixer, and greyed out on the phone speaker.
         shoot(device, "now-playing-bp-on") {
-            val np = nowPlaying(readout = OutputReadout.describe(OutputRoute.Usb, OutputPath.BitPerfect, 96000, 24, 96000, false)).apply {
+            val np = nowPlaying(readout = OutputReadout.describe("Shanling UA2 Plus", OutputPath.BitPerfect, 96000, 24, 96000, false)).apply {
                 bitPerfect = true
             }
             NowPlayingScreen(np, NowPlayingActions())
         }
         shoot(device, "now-playing-bp-greyed") {
-            val np = nowPlaying(readout = OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 0, 96000, false)).apply {
+            val np = nowPlaying(readout = OutputReadout.describe(OutputRoute.Speaker.label, OutputPath.Shared, 48000, 0, 96000, false)).apply {
                 bitPerfectGreyed = true
             }
             NowPlayingScreen(np, NowPlayingActions())
@@ -165,7 +165,7 @@ class ThemeLabTest {
             SettingsScreen(
                 folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
                 actions = SettingsActions(),
-                readout = OutputReadout.describe(OutputRoute.Usb, OutputPath.RateMatched, 96000, 24, 96000, false),
+                readout = OutputReadout.describe("Shanling UA2 Plus", OutputPath.RateMatched, 96000, 24, 96000, false),
                 bitPerfect = true,
             )
         }
@@ -173,7 +173,7 @@ class ThemeLabTest {
             SettingsScreen(
                 folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
                 actions = SettingsActions(),
-                readout = OutputReadout.describe(OutputRoute.Bluetooth, OutputPath.Shared, 48000, 0, 44100, false),
+                readout = OutputReadout.describe(OutputRoute.Bluetooth.label, OutputPath.Shared, 48000, 0, 44100, false),
                 bitPerfect = true,
                 bitPerfectGreyed = true,
             )
@@ -219,7 +219,7 @@ class ThemeLabTest {
             NowPlayingScreen(
                 NowPlaying().apply {
                     showForPictures(ThemeLabFixtures.longPlaying, index = 0, size = 7, positionMs = 754_000, waveform = ThemeLabFixtures.mockupWaveform,
-                        readout = OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 0, 44100, false))
+                        readout = OutputReadout.describe(OutputRoute.Speaker.label, OutputPath.Shared, 48000, 0, 44100, false))
                 },
                 NowPlayingActions(),
             )
@@ -261,7 +261,7 @@ class ThemeLabTest {
     private fun nowPlaying(
         playing: Boolean = true,
         waveform: FloatArray? = ThemeLabFixtures.mockupWaveform,
-        readout: String = OutputReadout.describe(OutputRoute.Speaker, OutputPath.Shared, 48000, 0, 96000, false),
+        readout: String = OutputReadout.describe(OutputRoute.Speaker.label, OutputPath.Shared, 48000, 0, 96000, false),
     ) = NowPlaying().apply {
         showForPictures(
             ThemeLabFixtures.nowPlayingTrack,

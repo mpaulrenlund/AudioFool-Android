@@ -36,6 +36,16 @@ spec is `design/android-spec.md`.
   row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
   **not yet on a phone**.
 
+### Since 0.2.4 (on `main`, not released)
+
+- **The readout reworded** (0.2.5, the user's list): "Shanling UA2 Plus · 96 kHz · 24-Bit ·
+  Exclusive", "4.4mm · 44.1 kHz · 16-Bit · Exclusive", "Speaker · 48 kHz · Resampled"
+  (`OutputNames`, `OutputReadout.describe(name, …)`).
+- **The M21's jacks**: FiiO's `HEADSET_TYPE_CHANGED` `type` is 1 for 3.5 mm, 8 for 4.4 mm, 0
+  unplugged; sent only at a plug, so the last one is saved (`settings` → `fiioJack`).
+- **The S24's buttons** 40 dp above the readout (from 24).
+- Checked on the M21 over adb. Goes into **0.2.5**; release only when the user says.
+
 ### What 0.2.4 changed (2026-10-26)
 
 - **The S24's Now Playing buttons 24 dp higher** (2026-10-26, the user's call): a
@@ -114,7 +124,10 @@ spec is `design/android-spec.md`.
 
 ### Reaching the phones
 
-- **The M21 can be plugged into this PC** (the user did, 2026-10-25). adb shows it as
+- **The M21 can be plugged into this PC** (the user did, 2026-10-25 and 2026-10-26). If adb
+  doesn't list it and Windows shows no FiiO device (VID 2972), ask for: USB debugging on, the
+  USB notification set to "File transfer", "Allow" on the prompt, a data cable. Its screen:
+  the logo (menu) is at (56, 104) in its 750 × 1334 px. adb shows it as
   `model:FiiO_M21` with the serial "?", so pick it with `adb -t <transport_id>` from
   `adb devices -l` (the emulator is the other device). adb isn't on the PATH: it is
   `$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe`. `adb install -r` of a release build
@@ -162,7 +175,7 @@ spec is `design/android-spec.md`.
 | **Release keystore** | `C:\Users\MarcusRenlund\AndroidKeys\audiofool-release.jks`, passwords in `audiofool-release.properties` beside it. **Outside the repo.** Back up both files together |
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
-| On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`) |
+| On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`, `fiioJack`: the last jack a FiiO named, since 0.2.5) |
 | On the phone: Last.fm | SharedPreferences `lastfm` (API key, secret, user, session: each AES-GCM encrypted with the Keystore key `audiofool.lastfm`); `no_backup/scrobbles.json` (+ `.bak`): the queue |
 | On the phone: listening time | `no_backup/listening.json` (+ `.bak`): total ms and since when |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
