@@ -29,7 +29,8 @@ import kotlinx.coroutines.withContext
 class SystemControls(private val context: Context, private val player: Player, private val scope: CoroutineScope) {
     val session = MediaSession(context, "AudioFool").apply {
         setCallback(object : MediaSession.Callback() {
-            override fun onPlay() = player.resume()
+            // Keys, the lock screen and the notification: never started by a plug (0.2.3).
+            override fun onPlay() = player.resumeFromSystem()
             override fun onPause() = player.pause()
             override fun onSkipToNext() = player.next()
             override fun onSkipToPrevious() = player.previous()

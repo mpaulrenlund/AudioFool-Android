@@ -135,6 +135,7 @@ Repeat: off `control.iconOff`; on `control.repeatOn`; repeat-one adds the deskto
 - **Gapless**: the next track is decoded and queued before the current one ends, with no gap between album tracks.
 - **DSD**: DoP when the output is bit-perfect and the DAC takes it; otherwise converted to PCM (follow the desktop's `DopRule`).
 - **Media session** (a foreground media service): lock screen and notification controls with art, headset and Bluetooth buttons, audio focus, and a pause when headphones are unplugged.
+- **Plugging in never starts the music** (0.2.3, the user's call): a play from outside the app (a headset or Bluetooth key, the lock screen, the notification) within 3 s after a USB or wired device comes or goes is ignored, and one up to 3 s before it (the key can arrive before Android names the device) is undone with a pause. A USB-C adapter often "presses" play as it connects. The app's own buttons are never held back. `PlugGuard` in `core`; Statistics > Debug's **Plug guard** row counts what it did.
 - **Resume**: reopening the app restores the queue, track and position, paused (desktop `ReopenPoint`).
 - **No click at a jump** (0.1.4, the desktop's rule): a seek, a skip or a song tapped while another plays fades the old sound out over 5 ms before it is cut, and a jump into the middle of a song fades in over 5 ms. DoP is never faded.
 

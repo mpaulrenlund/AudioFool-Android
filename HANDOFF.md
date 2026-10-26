@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-26, after 0.2.2 and the S24 spacing change. Read this with `README.md` (how the app works) and
+Updated 2026-10-26, after 0.2.2, the S24 spacing change and the plug guard. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, and the lists of what to test on each device). The
 spec is `design/android-spec.md`.
 
@@ -40,8 +40,13 @@ spec is `design/android-spec.md`.
 
 - **Now Playing's spacing on the S24** (2026-10-26, the user's call): the height the S24's
   width-limited cover can't use (the "spare height", 0 on the M21) grows the waveform to 64 dp
-  and evens the two flexible gaps. M21 pictures unchanged. Goes into **0.2.3** with whatever
-  the user reports next; release only when they say.
+  and evens the two flexible gaps. M21 pictures unchanged.
+- **Plugging in never starts the music** (2026-10-26, the user asked): `PlugGuard` (core)
+  ignores a play from outside the app (keys, lock screen, notification: `SystemControls.onPlay`
+  → `Player.resumeFromSystem`) within 3 s after a USB or wired device came or went, and pauses
+  one that came up to 3 s before. Checked on the emulator with the Pretend route row as the
+  plug; the real adapter's behaviour is on the S24 list. Statistics > Debug > **Plug guard**.
+- Both go into **0.2.3** with whatever the user reports next; release only when they say.
 
 ### Where things stand
 
@@ -113,7 +118,7 @@ spec is `design/android-spec.md`.
   albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
   `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
   for pulling the card mid-song, rebuilt 2026-10-25 as 3-minute tones after the old pair was
-  found damaged) and the 0.2.2 release build, with Bit-Perfect saved **on**, Repeat All and
+  found damaged) and a release build of `main` after 0.2.2 (the plug guard; still versionCode 15), with Bit-Perfect saved **on**, Repeat All and
   Shuffle left **on** (from a tap test), and Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
   captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
@@ -391,6 +396,10 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   the app crashes at start with a null delegate.
 - **`adb shell mkdir` with a space** needs inner quotes (`"'/storage/…/SD Card Band'"`), or it
   makes one folder per word.
+- **A play from outside the app goes through `Player.resumeFromSystem`**, never `resume()`
+  directly, so a plug can't start the music (`PlugGuard`). The app's own buttons call `resume()`.
+- **On the emulator, the Debug screen's rows move** as its Opened log fills: find a row's
+  place again (uiautomator) right before tapping it, not from an earlier dump.
 - **The listening time and scrobbles count the heard position**, not the clock: anything
   that changes how `positionMs()` behaves changes both.
 

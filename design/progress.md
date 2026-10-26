@@ -50,7 +50,24 @@ The user made these while the mockups were designed (October 2026). The spec alr
   toward the space above's 3, level with it at 96 dp of spare (`spareEvenAt`): on the S24
   the gaps over the quality line and over the controls are now about 57 dp each (from about
   97 and 42). Spec 5 updated. Tokens added to `mobile-tokens.json` → `nowPlaying`.
-- **Checked:** `:core:test`, `:app:testDebugUnitTest`, ThemeLab re-recorded: only the 12 S24
+- **Plugging in a USB DAC or adapter never starts the music** (the user asked). The app never
+  played at a plug itself (a route change keeps paused paused); the play comes through the
+  media session, most likely the adapter "pressing" its button as it connects, or the system
+  passing one on. Not reproduced (the S24 isn't here). `PlugGuard` (core, new, 8 tests): a play
+  from outside the app (`SystemControls.onPlay`: keys, lock screen, notification) within 3 s
+  after a USB or wired device came or went is ignored; one up to 3 s before it is undone with a
+  pause (the key can beat Android's notice of the device). The app's own buttons skip it.
+  Devices already there when the app starts aren't a plug (registering the callback reports
+  them all). Bluetooth isn't counted (the user asked about USB). A play from the lock screen in
+  the 3 s after plugging is held back too (mine: rare, and safer than telling them apart). The
+  Debug screen's **Plug guard** row shows the last plug and what was ignored or undone; the
+  Pretend route row counts as a plug, so it can be tried on the emulator.
+- **Checked on the emulator** (release build): a play key with no plug plays; a play key, a
+  play/pause key and a headset hook 0.5–1 s after a plug are ignored; a play key 4.5 s after
+  plays; a play key 0.4 s before a plug is paused again ("undone" in the log); the app's own
+  Play 0.35 s after a plug plays; starting the app shows "no plug yet". Lint: no new issues
+  (its one error, `NotificationPermission` in `PlaybackService`, was there before).
+- **Checked (spacing):** `:core:test`, `:app:testDebugUnitTest`, ThemeLab re-recorded: only the 12 S24
   Now Playing pictures changed (both themes; font size 1.3 keeps the readout on screen); every
   M21 picture is pixel-identical.
 
@@ -471,12 +488,18 @@ Session 1:
 
 ## To test on the S24
 
-### 0.2.3 (Now Playing's spacing)
+### 0.2.3 (Now Playing's spacing, plugging in)
 
 Not yet released.
 
 - [ ] **Now Playing's spacing:** no large gap over the quality line; the space over the
   seekbar and over the controls about even; a taller waveform, still easy to drag.
+- [ ] **Plugging in never starts the music:** paused, plug in the USB DAC, then the USB-C
+  adapter, a few times each: it stays paused. Statistics > Debug > **Plug guard**: the last
+  plug's time, and whether a play was ignored or undone (if both stay 0 and it never started,
+  the adapter wasn't sending one that time). Unplugged then plugged back while playing: it
+  pauses at the unplug and stays paused. Play still works from the lock screen or a headset
+  button a few seconds after plugging in.
 
 ### 0.2.2 (covers, the quality line, the readout, the controls, Debug)
 
@@ -837,13 +860,16 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 
 ## Session notes
 
-### 0.2.3 — Now Playing's spacing on the S24 (2026-10-26)
+### 0.2.3 — Now Playing's spacing on the S24; plugging in never plays (2026-10-26)
 
 **Changed:** `NowPlayingScreen.kt` (the spare height, `Seekbar`'s height), `mobile-tokens.json`
-(`waveformGrowth`, `spareEvenAt`), spec 5, the S24 Now Playing pictures.
+(`waveformGrowth`, `spareEvenAt`), spec 5, the S24 Now Playing pictures. `core/.../PlugGuard.kt`
+(+ test), `OutputRoutes.onPlug` (and the pretend route), `Player.resumeFromSystem` and the
+Plug guard row, `SystemControls.onPlay`, spec 6.1.
 
-**Verified:** `:core:test`, `:app:testDebugUnitTest`, recorded pictures (M21 unchanged). Not
-yet built as a release or seen on the emulator.
+**Verified:** `:core:test`, `:app:testDebugUnitTest`, `verifyRoborazziDebug` (M21 unchanged),
+the plug guard on the emulator with a release build (above; versionCode not bumped yet). Not
+yet released.
 
 ### 0.2.2 — a Debug screen; covers, the quality line, the readout (2026-10-25)
 

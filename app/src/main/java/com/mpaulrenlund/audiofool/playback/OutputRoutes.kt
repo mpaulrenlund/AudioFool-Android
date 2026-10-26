@@ -85,12 +85,31 @@ class OutputRoutes(context: Context) {
     /** BP is greyed out and can't be tapped (spec 6.2). */
     val greyed: Boolean get() = way == BitPerfectWay.None
 
+    /** Called on the main thread when a USB or wired device comes or goes (the player's `PlugGuard`). */
+    var onPlug: () -> Unit = {}
+
     private val callback = object : AudioDeviceCallback() {
-        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) = devicesChanged()
-        override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) = devicesChanged()
+        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) = devicesChanged(added)
+        override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) = devicesChanged(removed)
+    }
+
+    /** The USB and wired devices there now, by id: registering the callback reports them all again, which is no plug. */
+    private val pluggedIds = HashSet<Int>()
+
+    private fun pluggedNow(into: MutableSet<Int>) {
+        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS or AudioManager.GET_DEVICES_INPUTS)
+            .filter { it.type in PLUGGED_TYPES }.mapTo(into) { it.id }
     }
 
     /** Android may move media to a new device a moment after saying it came: look now, and again shortly. */
+    private fun devicesChanged(devices: Array<out AudioDeviceInfo>) {
+        val before = pluggedIds.toSet()
+        pluggedIds.clear()
+        pluggedNow(pluggedIds)
+        if (devices.any { it.type in PLUGGED_TYPES } && pluggedIds != before) onPlug()
+        devicesChanged()
+    }
+
     private fun devicesChanged() {
         refresh()
         main.removeCallbacks(refreshAgain)
@@ -100,6 +119,7 @@ class OutputRoutes(context: Context) {
     private val refreshAgain = Runnable { refresh() }
 
     fun start() {
+        pluggedNow(pluggedIds)
         audioManager.registerAudioDeviceCallback(callback, main)
         refresh()
     }
@@ -152,6 +172,8 @@ class OutputRoutes(context: Context) {
 
     fun setPretend(route: OutputRoute?) {
         pretend = route
+        // The emulator's stand-in for plugging a device in or out, so the plug guard can be tried there.
+        onPlug()
         refresh()
     }
 
@@ -329,6 +351,15 @@ class OutputRoutes(context: Context) {
 
         /** How long after a device comes or goes the route is looked at again. */
         private const val SETTLE_MS = 1_000L
+
+        /** Devices plugged in by hand: a USB DAC or adapter, wired headphones. Not Bluetooth. */
+        private val PLUGGED_TYPES = setOf(
+            AudioDeviceInfo.TYPE_USB_DEVICE,
+            AudioDeviceInfo.TYPE_USB_HEADSET,
+            AudioDeviceInfo.TYPE_USB_ACCESSORY,
+            AudioDeviceInfo.TYPE_WIRED_HEADSET,
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+        )
 
         /** Media: the only usage mixer attributes apply to, and what every `AudioTrack` here plays as. */
         val MEDIA: AudioAttributes = AudioAttributes.Builder()

@@ -10,6 +10,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.LibraryRelocator
 import com.mpaulrenlund.audiofool.core.library.SafeFile
@@ -19,6 +20,7 @@ import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
 import com.mpaulrenlund.audiofool.core.playback.PlayOrder
+import com.mpaulrenlund.audiofool.core.playback.PlugGuard
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import com.mpaulrenlund.audiofool.core.playback.ResumePoint
 import com.mpaulrenlund.audiofool.settings.AppSettings
@@ -87,6 +89,7 @@ class Player(
         routes.bitPerfectOn = settings.bitPerfect.value
         state.bitPerfect = routes.bitPerfectOn
         routes.onChange = ::routeChanged
+        routes.onPlug = ::plugged
         routes.start()
         showRoute()
     }
@@ -104,13 +107,39 @@ class Player(
 
     fun play(tracks: List<Track>, index: Int) {
         if (index !in tracks.indices) return
+        plugGuard.settled()
         queue = tracks
         order.reset(tracks.size, index, state.shuffle)
         startAt(index, 0)
     }
 
     fun playPause() {
+        plugGuard.settled()
         if (state.isPlaying) pause() else resume()
+    }
+
+    /** Never started by a plug (0.2.3): see [PlugGuard]. */
+    private val plugGuard = PlugGuard()
+
+    /**
+     * Play asked for from outside the app: a headset or Bluetooth key, the lock
+     * screen, the notification. Ignored just after a USB or wired device came or went.
+     */
+    fun resumeFromSystem() {
+        if (state.isPlaying) return
+        if (!plugGuard.mayStart(SystemClock.elapsedRealtime())) {
+            android.util.Log.i(TAG, "play from outside ignored: ${plugGuard.sincePlug(SystemClock.elapsedRealtime())} ms after a plug")
+            return
+        }
+        resume()
+    }
+
+    /** A USB or wired device came or went (main thread): a play from outside just before it is undone. */
+    private fun plugged() {
+        if (plugGuard.plugged(SystemClock.elapsedRealtime()) && state.isPlaying) {
+            android.util.Log.i(TAG, "play from outside undone: a device was plugged in or out")
+            pause()
+        }
     }
 
     fun resume() {
@@ -128,6 +157,7 @@ class Player(
     }
 
     fun pause() {
+        plugGuard.settled()
         if (engaged) engine.pause()
         state.heldPositionMs = positionMs()
         setPlaying(false)
@@ -292,6 +322,8 @@ class Player(
             "Direct" to (asked?.let { "${describe(it)}: ${routes.directSupport(it)}" } ?: "–"),
             "USB mixers" to routes.mixerSummary(),
             "Mixer set" to "${routes.preferredMixer()}${routes.lastMixerNote.takeIf { it.isNotEmpty() }?.let { " · last: $it" } ?: ""}",
+            "Plug guard" to (plugGuard.sincePlug(SystemClock.elapsedRealtime())?.let { "last plug ${Display.time(it)} ago" } ?: "no plug yet") +
+                " · ${plugGuard.ignored} plays ignored · ${plugGuard.undone} undone",
         )
     }
 
