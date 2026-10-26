@@ -8,6 +8,9 @@ and the lists of what to test on each device). The spec is `design/android-spec.
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
   sections (0.2.1 down to 0.1.1 at the top, then session 5) and the newest session notes.
+- **On `main`, not released: 0.2.2** (versionCode 15, the user's call): Statistics shows only
+  Library, Formats and Listening; its last row opens a **Debug** screen with the Playback and
+  Debug panels. The FiiO signals and Outputs rows are gone. Confirm before releasing.
 - **Latest: 0.2.1** (versionCode 14), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1>,
   `dist/AudioFool-0.2.1.apk`, from the user's 0.2.0 report: the Artists letter strip always
@@ -49,7 +52,7 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   - FiiO's own broadcasts reach an exported receiver: `fiio.intent.action.SAMPLE_RATE_CHANGED`
     (`rate`: the DAC's rate, 0 when stopped; `format`) and `fiio.intent.action.HEADSET_TYPE_CHANGED`
     (`type` 8 with headphones in, 0 out). The readout goes by that rate
-    (`OutputReadout.hardwareRate`); Statistics > Playback > FiiO signals lists them.
+    (`OutputReadout.hardwareRate`). 0.1.5's FiiO signals row was dropped in 0.2.2.
   - The DAC runs at the song's rate even with BP off ("Headphones · Shared · 96 kHz"); BP adds
     the full-volume, whole-number-sample path. 24-bit songs go as 32-bit with BP on, as
     float with it off: **24-bit packed `AudioTrack`s come out as static there.**
@@ -71,7 +74,7 @@ and the lists of what to test on each device). The spec is `design/android-spec.
   USB reconnected and caught little.
 - **The S24 can't use a cable while testing the DAC** (one USB-C port). Wireless debugging
   was tried and the user couldn't get the pairing step to work, so S24 results come as typed
-  readings from Statistics > Playback. Never type a pairing code for the user.
+  readings from Statistics > Debug (Playback). Never type a pairing code for the user.
 - **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
   albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
   `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
@@ -181,7 +184,7 @@ Playback, as the emulator shows it (release builds too):
 
 - `adb logcat -s AudioFoolPlay:I` logs each output opened ("44.1 kHz / 16-bit, 2 ch →
   output 44.1 kHz / 16-bit, 2 ch") and each song heard, with the joins, reopens and
-  underruns so far. Statistics > Playback shows the same.
+  underruns so far. Statistics > Debug > Playback shows the same.
 - Gapless: play `Gapless Live` (three songs of exactly 12.000 s). Two joins and 0 underruns
   means one `AudioTrack` that never ran dry, **not** that the join is clean: also check
   the logcat `heard` lines come about 12.0 s apart. Up to 0.1.0 they came 12.7 s apart,
@@ -194,12 +197,12 @@ Playback, as the emulator shows it (release builds too):
 - The shade's media player: `adb shell cmd statusbar expand-notifications`. The AVD has no
   lock screen set, so waking it shows the app; the lock screen is checked on the S24.
 - **Bit-Perfect on the emulator:** its only output is the speaker, so BP is greyed. Statistics >
-  Playback > **Pretend route (emulator test)** cycles off → Headphones (the M21's way) → USB
+  Debug > Playback > **Pretend route (emulator test)** cycles off → Headphones (the M21's way) → USB
   (a made-up bit-perfect mixer, never sent to Android) → off; not saved. With USB and BP on,
   a 24/96 FLAC opens "(BitPerfect)" and the DFF opens as DoP at 176.4 kHz. The logcat
   `opened` lines end with the path and the route.
-- The logo button is at (74, 137) in device pixels; Statistics' Pretend row is at the bottom
-  of the Playback panel (swipe up twice). Too many BACKs leave the app, and the next tap
+- The logo button is at (74, 137) in device pixels; the Debug screen is the last row of
+  Statistics (swipe up three times), and its Pretend row ends the Playback panel. Too many BACKs leave the app, and the next tap
   lands on the home screen.
 
 Then, with `MSYS_NO_PATHCONV=1`:
@@ -229,8 +232,9 @@ Then, with `MSYS_NO_PATHCONV=1`:
    `design/progress.md`.
 
 Logs can't be read off the phones, so anything the user reports back is on the screen:
-logo > **Statistics** shows the library line and the Debug panel (counts, start times,
-cache and scan numbers, formats, covers filled, the mini player preview, the token sheet).
+logo > **Statistics** shows the library line; its last row opens **Debug** (since 0.2.2): the
+Playback panel (route, Bit-Perfect, mixers, what each song opened as) and the Debug panel
+(start times, cache and scan numbers, formats, covers filled, the token sheet).
 
 ### Checking a screen against the mockups
 
@@ -284,7 +288,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   changes. The readout names the route.
 - **Checked only on the emulator**, with the pretend route: nothing about a real DAC or the
   M21's bypass is known yet; that's the v0.0.5 lists in `design/progress.md`.
-- **What the user reports** is on Statistics > Playback: Route, Bit-Perfect, Opened as,
+- **What the user reports** is on Statistics > Debug > Playback: Route, Bit-Perfect, Opened as,
   System output, Direct, USB mixers, Mixer set.
 
 ## Where things stood after session 3
@@ -324,7 +328,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **GitHub:** the repo is public (the user's call). This PC pushes and releases as
   `marcusrenlund`, a collaborator with write access; `gh` is signed in as that account.
 - **Keep the debug numbers reachable** (the user reports them back, and later sessions
-  add to them): `ui/StatisticsScreen.kt`'s `DebugPanel`.
+  add to them): `ui/StatisticsScreen.kt`'s `DebugScreen` (Playback and Debug panels).
 - `LibraryRepository` is the library: cache first, then a background rescan; the scan
   reuses tags for files whose size and date haven't changed, and carries over every
   track of a folder it can't reach.

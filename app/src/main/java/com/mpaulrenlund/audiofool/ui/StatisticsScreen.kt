@@ -70,14 +70,16 @@ class PlaybackNumbers(
 class DebugActions(
     val showTokenSheet: () -> Unit = {},
     val forgetCache: () -> Unit = {},
+    /** Statistics' last row: the Debug screen. */
+    val openDebug: () -> Unit = {},
 )
 
 /**
  * Statistics, from the logo menu (spec 4.6): the library's totals, its formats
  * and the time listened, built as the desktop's Statistics window is (figures in
- * `type.statValue`, labelled bars), in two columns for a phone. Below them, the
- * numbers the user reports back from the phones (the user's call, session 2):
- * playback, start and scan times, and the debug switches.
+ * `type.statValue`, labelled bars), in two columns for a phone. Its last row opens
+ * the Debug screen ([DebugScreen]; the user's call, 0.2.2: until then the
+ * Playback and Debug panels sat here, under the statistics).
  */
 @Composable
 fun StatisticsScreen(
@@ -120,6 +122,20 @@ fun StatisticsScreen(
                 Figures(listOf(Display.longDuration(listening.totalMs) to "Listened since ${date(listening.sinceUtc)}"))
             }
         }
+        Panel("Debug") {
+            SettingRow("Playback and debug numbers", "what to read off when reporting from a phone", onClick = actions.openDebug)
+        }
+    }
+}
+
+/**
+ * The numbers the user reports back from the phones (the user's call, session 2;
+ * a screen of its own since 0.2.2, reached from Statistics): playback, the route
+ * and Bit-Perfect, start and scan times, and the debug switches.
+ */
+@Composable
+fun DebugScreen(state: LibraryState, numbers: DebugNumbers, actions: DebugActions) {
+    TitledScreen("Debug") {
         numbers.playback?.let { PlaybackPanel(it) }
         DebugPanel(state, numbers, actions)
     }

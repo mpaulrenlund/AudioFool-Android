@@ -72,6 +72,31 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             disconnect = lastFm::disconnect,
         )
     }
+    // Statistics and its Debug screen (0.2.2) read the same numbers.
+    val debugNumbers = remember {
+        DebugNumbers(
+            startTimes = app.startTimes,
+            thumbnailsDone = { app.art.list.prefilled to app.art.list.prefillTotal },
+            describeFolder = { Storage.describe(context, it) },
+            playback = PlaybackNumbers(
+                nowPlaying = app.nowPlaying,
+                bass = { if (BassRuntime.isInitialised) "BASS ${BassRuntime.version}" else BassRuntime.initError ?: "not started yet (starts on the first play)" },
+                formats = { BassRuntime.availableFormats.joinToString(", ") },
+                missing = { BassRuntime.missingFormats.joinToString(", ") },
+                joins = player::outputStats,
+                output = player::outputDetails,
+                pretendRoute = { player.pretendRoute },
+                cyclePretendRoute = player::cyclePretendRoute,
+            ),
+        )
+    }
+    val debugActions = remember(nav) {
+        DebugActions(
+            showTokenSheet = { nav.open(Route.TokenSheet(SheetPage.Colours1)) },
+            forgetCache = { app.library.deleteCache() },
+            openDebug = { nav.open(Route.Debug) },
+        )
+    }
     LaunchedEffect(openNowPlaying) {
         if (openNowPlaying > 0 && app.nowPlaying.track != null) nav.open(Route.NowPlaying)
     }
@@ -108,26 +133,10 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     state = state,
                     stats = remember(library) { LibraryStatistics.compute(library) },
                     listening = app.listening.time,
-                    numbers = DebugNumbers(
-                        startTimes = app.startTimes,
-                        thumbnailsDone = { app.art.list.prefilled to app.art.list.prefillTotal },
-                        describeFolder = { Storage.describe(context, it) },
-                        playback = PlaybackNumbers(
-                            nowPlaying = app.nowPlaying,
-                            bass = { if (BassRuntime.isInitialised) "BASS ${BassRuntime.version}" else BassRuntime.initError ?: "not started yet (starts on the first play)" },
-                            formats = { BassRuntime.availableFormats.joinToString(", ") },
-                            missing = { BassRuntime.missingFormats.joinToString(", ") },
-                            joins = player::outputStats,
-                            output = player::outputDetails,
-                            pretendRoute = { player.pretendRoute },
-                            cyclePretendRoute = player::cyclePretendRoute,
-                        ),
-                    ),
-                    actions = DebugActions(
-                        showTokenSheet = { nav.open(Route.TokenSheet(SheetPage.Colours1)) },
-                        forgetCache = { app.library.deleteCache() },
-                    ),
+                    numbers = debugNumbers,
+                    actions = debugActions,
                 )
+                Route.Debug -> DebugScreen(state, debugNumbers, debugActions)
                 is Route.TokenSheet -> TokenSheet(
                     route.page,
                     Modifier.clickable { nav.replaceTop(Route.TokenSheet(SheetPage.entries[(route.page.ordinal + 1) % SheetPage.entries.size])) },

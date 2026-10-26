@@ -281,10 +281,8 @@ class Player(
         val asked = if (engineMade) engine.askedFormat else null
         return listOf(
             "Route" to "${routes.route.label} · ${routes.deviceSummary()}",
-            "Outputs" to routes.outputsSummary(),
             "Phone" to "${Build.MANUFACTURER} · ${Build.BRAND} · ${Build.MODEL}" +
                 if (routes.speakerIsHeadphones) " · speaker taken as headphones" else "",
-            "FiiO signals" to fiioLog.joinToString("\n").ifEmpty { "none yet" },
             "Bit-Perfect" to "${if (routes.bitPerfectOn) "on" else "off"} · way here: ${routes.way.name}" +
                 if (routes.greyed) " (greyed)" else "",
             "Opened as" to (opened?.let { "${engine.openedPath.name} · ${describe(it)}" + if (it.dop) " · DoP" else "" } ?: "–"),
@@ -584,14 +582,11 @@ class Player(
     /**
      * FiiO's own signals (the M21, 0.1.5): `fiio.intent.action.HEADSET_TYPE_CHANGED`
      * at a plug or unplug and `fiio.intent.action.SAMPLE_RATE_CHANGED` when its
-     * output's rate changes, both sent by FiiO's status bar. What they carry isn't
-     * known yet, so the debug screen shows it, for the readout to use later.
+     * output's rate changes, both sent by FiiO's status bar. The rate is the
+     * readout's on the M21. (0.2.2 dropped the debug screen's log of them: done with.)
      */
     private val fiio = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val extras = intent.extras?.let { b -> b.keySet().sorted().joinToString(", ") { "$it=${anyExtra(b, it)}" } } ?: "no extras"
-            val line = "${java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())} ${intent.action?.substringAfterLast('.')}: $extras"
-            fiioLog = (listOf(line) + fiioLog).take(LOG_SIZE)
             // The DAC's rate (0 when stopped, which keeps the last one): the readout's, from now on.
             val rate = intent.extras?.let { anyExtra(it, "rate") }.let { (it as? Number)?.toInt() ?: it?.toString()?.toIntOrNull() } ?: 0
             if (intent.action == FIIO_SAMPLE_RATE_CHANGED && rate > 0) {
@@ -606,9 +601,6 @@ class Player(
      * it says (forgotten whenever an output opens). The M21's readout goes by it.
      */
     private var fiioRate = 0
-
-    /** FiiO's signals as they came, newest first, for the debug screen. */
-    private var fiioLog: List<String> = emptyList()
 
     /** An extra of a type not known in advance (the typed getters need it known). */
     @Suppress("DEPRECATION")

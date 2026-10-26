@@ -247,10 +247,6 @@ class OutputRoutes(context: Context) {
     /** The rate the system's media output runs at now (what the M21's check compares with the track's). */
     fun systemOutputRate(): Int = runCatching { AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC) }.getOrDefault(0)
 
-    /** Every output Android lists now, for the debug screen: which one the route was taken from. */
-    fun outputsSummary(): String =
-        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).joinToString(", ") { "${typeName(it.type)} \"${it.productName}\"" }.ifEmpty { "none" }
-
     /** The USB device's mixer entries, grouped, for the debug screen. */
     fun mixerSummary(): String = if (route != OutputRoute.Usb) "–" else if (!MIXER_API) "Android 13: no mixer API" else MixerChoice.summary(usbMixers.entries)
 

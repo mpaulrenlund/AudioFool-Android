@@ -20,6 +20,7 @@ import com.mpaulrenlund.audiofool.ui.AppActions
 import com.mpaulrenlund.audiofool.ui.ArtistsScreen
 import com.mpaulrenlund.audiofool.ui.Browse
 import com.mpaulrenlund.audiofool.ui.DebugActions
+import com.mpaulrenlund.audiofool.ui.DebugScreen
 import com.mpaulrenlund.audiofool.ui.DebugNumbers
 import com.mpaulrenlund.audiofool.ui.FolderLine
 import com.mpaulrenlund.audiofool.ui.IndexPreview
@@ -129,6 +130,10 @@ class ThemeLabTest {
                 stats = ThemeLabFixtures.fullLibraryStats,
                 listening = ListeningTime(totalMs = 51_720_000, sinceUtc = 1_792_800_000_000),
             )
+        }
+        // 0.2.2: the Debug screen, reached from Statistics' last row (no playback numbers in ThemeLab).
+        shoot(device, "debug") {
+            DebugScreen(LibraryState(library = ThemeLabFixtures.library), DebugNumbers(StartTimes()), DebugActions())
         }
         shoot(device, "statistics-empty") {
             StatisticsScreen(LibraryState(library = MusicLibrary.Empty), DebugNumbers(StartTimes()), actions = DebugActions(), listening = ListeningTime(sinceUtc = 1_792_800_000_000))

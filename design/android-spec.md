@@ -108,7 +108,7 @@ There's no mockup. Build it from the same parts (panels, headers, rows, `type.st
 - **Formats**: tracks per format (FLAC, DSD, MP3, …), using the desktop's format names (`AudioFormats`).
 - **Listening time**: total time listened, recorded by the app from now on.
 
-As built (session 5, approved from screenshots): LIBRARY holds Tracks, Albums and Artists in one row and Play time and On disk in the next, as `type.statValue` figures with a label under each, then the scan line. FORMATS has one bar row per format (label; "count · share · size"; a `playbackBar.trackHeight` bar in `slider.volumeFill` on `slider.track`). LISTENING shows the time and "Listened since <date>". The Playback and Debug panels follow.
+As built (session 5, approved from screenshots): LIBRARY holds Tracks, Albums and Artists in one row and Play time and On disk in the next, as `type.statValue` figures with a label under each, then the scan line. FORMATS has one bar row per format (label; "count · share · size"; a `playbackBar.trackHeight` bar in `slider.volumeFill` on `slider.track`). LISTENING shows the time and "Listened since <date>". Then a DEBUG panel with one row, "Playback and debug numbers", which opens the **Debug** screen: the Playback and Debug panels (what the user reads off when reporting from a phone). They sat on Statistics itself until 0.2.2 (the user's call).
 
 ## 5. Now Playing
 

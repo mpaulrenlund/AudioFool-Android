@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen — built and checked on the emulator 2026-10-25, not released
 - [x] **0.2.1**: the letter strip always shown; swipe-to-skip no longer leaves the art off the screen — 2026-10-25, released as a pre-release (the stuck art still to confirm on the S24)
 - [x] **0.2.0**: the Artists letter strip; Now Playing swipes sideways to skip (no swipe down); the seekbar glides — 2026-10-25, released as a pre-release
 
@@ -35,6 +36,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.2.2, not released yet (2026-10-25):
+
+- **Statistics cleaned up** (the user asked; my recommendation, their call): Statistics shows
+  Library, Formats and Listening, then a DEBUG panel whose one row opens a new **Debug**
+  screen holding the Playback and Debug panels unchanged. They stay because open device
+  items are read off them (the S24 DAC's Route row, DoP, a rate change with BP on, BP greyed
+  on Bluetooth, the M21's full-library start and scan). Every "Statistics > Playback" in
+  the lists below is now **Statistics > Debug**.
+- **Dropped:** the **FiiO signals** row (0.1.5; the M21's readout uses the rate, the log was
+  only for finding it) and the **Outputs** row (0.1.1; only for naming the M21's jack), with
+  the code that fed them. The FiiO receiver stays for the rate.
+- **Checked:** ThemeLab `debug` (new) and `statistics-empty` (the new row), both themes and
+  sizes; on the emulator: Statistics ends with the row, Debug shows Playback (Route, Phone,
+  Bit-Perfect, …, no Outputs or FiiO rows) and Debug, Back returns to Statistics.
 
 0.2.1 (2026-10-25), released as pre-release [`v0.2.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.1) ("AudioFool 0.2.1", versionCode 14), from the user's report on 0.2.0 (S24):
 
@@ -739,6 +755,15 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
 ## Session notes
+
+### 0.2.2 — a Debug screen (2026-10-25)
+
+**Changed:** `StatisticsScreen.kt` (`DebugScreen`, the row, `DebugActions.openDebug`),
+`Route.Debug`, `AppRoot` (one `DebugNumbers` for both screens), `Player.outputDetails` and
+`OutputRoutes` (the two rows gone), ThemeLab `debug`, spec 4.6.
+
+**Verified:** `:core:test`, `:app:testDebugUnitTest`, recorded pictures, the release build
+on the emulator (above).
 
 ### 0.2.1 — the strip always shown, the stuck art (2026-10-25)
 
