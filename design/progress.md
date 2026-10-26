@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.2.5**: the readout names the output (the DAC's name, the M21's 3.5mm / 4.4mm jack), "Exclusive" and dots; the S24's buttons higher — 2026-10-26, released as a pre-release
 - [x] **0.2.4**: a smooth waveform seekbar (the desktop's 600 columns); the S24's Now Playing buttons higher — 2026-10-26, released as a pre-release
 - [x] **0.2.3**: Now Playing's spacing on the S24; plugging in a USB DAC or adapter never starts the music — 2026-10-26, released as a pre-release
 - [x] **0.2.2**: Statistics' Playback and Debug panels moved to a Debug screen; no border round covers; one quality line; the readout without "Shared", capitalised; Now Playing's new controls layout and a bigger cover on the M21 — 2026-10-25, released as a pre-release
@@ -39,7 +40,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.2.5 (2026-10-26), not yet released:
+0.2.5 (2026-10-26), released as pre-release [`v0.2.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5) ("AudioFool 0.2.5", versionCode 18):
 
 - **The S24's buttons higher still** (the user: "Could we move the buttons slightly higher?"):
   `controlsLift` 0.2 / 24 dp → 0.33 / 40 dp of the spare height. 40 dp on the S24 (26 at font
@@ -551,7 +552,8 @@ Session 1:
 
 ### 0.2.5 (the readout reworded, the buttons higher)
 
-Not yet released.
+Released 2026-10-26 as pre-release [`v0.2.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5)
+("AudioFool 0.2.5", versionCode 18). Installs over 0.2.4 (same key).
 
 - [ ] **Now Playing's six buttons** another 16 dp higher: comfortable now?
 - [ ] **The output row through the DAC**: the DAC's own name, e.g. "Shanling UA2 Plus · 96 kHz ·
@@ -802,7 +804,8 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 ### 0.2.5 (the jack names)
 
-Not yet released. Checked over adb already (above); on the phone:
+Released as [`v0.2.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.5); installed on the M21 over adb (the update kept the saved jack: "3.5mm").
+Checked over adb already (above); on the phone:
 
 - [ ] **The output row** says "3.5mm" or "4.4mm" for the jack in use, also after the app is
   closed and started again.
