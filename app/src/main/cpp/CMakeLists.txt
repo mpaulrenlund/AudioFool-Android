@@ -25,3 +25,7 @@ endforeach()
 list(REMOVE_DUPLICATES TAGLIB_INCLUDES)
 target_include_directories(audiofooltags PRIVATE ${TAGLIB_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR}/taglib)
 target_link_options(audiofooltags PRIVATE "-Wl,-z,max-page-size=16384")
+
+# The USB DAC's native side (0.3.0): giving the DAC back to Android's driver.
+add_library(audiofoolusb SHARED usbdac_jni.cpp)
+target_link_options(audiofoolusb PRIVATE "-Wl,-z,max-page-size=16384")

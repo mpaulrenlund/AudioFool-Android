@@ -38,6 +38,7 @@ import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.library.CoverArt
 import com.mpaulrenlund.audiofool.library.LibraryState
 import com.mpaulrenlund.audiofool.playback.NowPlaying
+import com.mpaulrenlund.audiofool.playback.UsbDac
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,6 +51,15 @@ class DebugNumbers(
     /** How "Unavailable: SD card · Music" names a folder. */
     val describeFolder: (String) -> String = { it },
     val playback: PlaybackNumbers? = null,
+    /** 0.3.0: the USB DAC read directly, and the take-and-give-back test. */
+    val usb: UsbDacNumbers? = null,
+)
+
+/** The USB DAC panel (0.3.0, the look-only build of true Bit-Perfect on the S24). */
+class UsbDacNumbers(
+    val dac: UsbDac,
+    /** Pauses the music before the DAC is taken from Android. */
+    val pause: () -> Unit,
 )
 
 /** What the user reports back about playback: BASS, the formats it plays, and how each track's output opened. */
@@ -137,7 +147,32 @@ fun StatisticsScreen(
 fun DebugScreen(state: LibraryState, numbers: DebugNumbers, actions: DebugActions) {
     TitledScreen("Debug") {
         numbers.playback?.let { PlaybackPanel(it) }
+        numbers.usb?.let { UsbDacPanel(it) }
         DebugPanel(state, numbers, actions)
+    }
+}
+
+/**
+ * The USB DAC as the app's own driver will see it (0.3.0): its descriptors, then a test of
+ * taking it from Android and giving it back, and the report to send.
+ */
+@Composable
+private fun UsbDacPanel(numbers: UsbDacNumbers) {
+    val dac = numbers.dac
+    Panel("USB DAC") {
+        SettingRow("DAC", dac.summary())
+        SettingRow(
+            "Read the DAC",
+            if (dac.described.isEmpty()) "asks for the DAC once, then shows what it offers" else dac.described.joinToString("\n"),
+            onClick = dac::read,
+        )
+        SettingRow(
+            "Take it and give it back",
+            if (dac.probed.isEmpty()) "pauses the music; other sounds use the speaker for a few seconds" else dac.probed.joinToString("\n"),
+            onClick = { dac.takeAndGiveBack(numbers.pause) },
+        )
+        if (dac.busy) SettingRow("Working…")
+        if (dac.report.isNotEmpty()) SettingRow("Send the report", "saved to Download as AudioFool-USB-DAC.txt", onClick = dac::share)
     }
 }
 

@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, not released yet
 - [x] **0.2.6**: the M21 unplugged says "No Output"; the S24's buttons higher again — 2026-10-26, released as a pre-release
 - [x] **0.2.5**: the readout names the output (the DAC's name, the M21's 3.5mm / 4.4mm jack), "Exclusive" and dots; the S24's buttons higher — 2026-10-26, released as a pre-release
 - [x] **0.2.4**: a smooth waveform seekbar (the desktop's 600 columns); the S24's Now Playing buttons higher — 2026-10-26, released as a pre-release
@@ -40,6 +41,34 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.3.0 (2026-10-27), not released yet (versionCode 20): **true Bit-Perfect on the S24, step 1 (look only)**.
+
+- **What it takes** is written up in `design/usb-bit-perfect.md`: the app drives the DAC itself
+  over USB (as USB Audio Player Pro does), since the S24 offers no bit-perfect mixer entry and
+  no 44.1 kHz. The user chose (2026-10-27): **libusb**, vendored unchanged (LGPL-2.1, its own
+  `.so`); **volume** by the DAC's own hardware volume, else the app's software volume with
+  "Exclusive" only at 100%; **hand the DAC back** to Android about a minute after a pause and
+  at once on BP off or stop; and **a look-only build first**, so the driver is built against
+  the user's real DAC. libusb is not in yet (it comes with the driver).
+- **Statistics > Debug > USB DAC** (new panel): the DAC's name and numbers; **Read the DAC**
+  (asks Android once from a tap, not at every plug: the manifest's "always" filter comes with
+  the driver) shows its descriptors parsed; **Take it and give it back** claims the audio
+  interfaces with force (Android's own driver lets go), asks the UAC2 clock for its rates and
+  the feature unit for its volume range (class requests to an interface need it claimed), then
+  releases them and binds Android's driver again with `USBDEVFS_CONNECT` (`usbdac_jni.cpp`, new
+  small library `audiofoolusb`), timing both changes as Android sees them. It pauses the music
+  first. **Send the report** saves `Download/AudioFool-USB-DAC.txt` and opens the share sheet
+  (the descriptors in words, the test's results, the raw bytes in hex).
+- **Core:** `core/.../usbaudio/UsbAudioDescriptors.kt` (new): UAC1 and UAC2 descriptors
+  (clocks, feature units, terminals, each playback setting's format, rates and endpoints),
+  UAC2 RANGE replies (`UacRanges`), the report's lines (`UsbAudioReport`). New, with tests
+  built from the specs (`UsbAudioDescriptorsTest`, 11); the user's own DAC's bytes join them.
+- **Manifest:** `android.hardware.usb.host`, not required (the M21 doesn't need it).
+- **Checked:** `:core:test`, `:app:testDebugUnitTest`, `:app:verifyRoborazziDebug` (no picture
+  changed: ThemeLab draws Debug without the panel), `:app:assembleRelease`. On the emulator
+  (no USB): the library loads, the panel says "none plugged in", a tap says "no USB DAC
+  plugged in". Everything with a DAC is on the S24 list.
 
 0.2.6 (2026-10-26), released as pre-release [`v0.2.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6) ("AudioFool 0.2.6", versionCode 19):
 
@@ -564,6 +593,23 @@ Session 1:
 - **The repo is public** (the user's call, 2026-10-24). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
+
+### 0.3.0 (true Bit-Perfect, look only: the USB DAC panel)
+
+Not released yet (versionCode 20). Playback is unchanged. All from logo > Statistics > Debug >
+**USB DAC**, with the DAC plugged in.
+
+- [ ] **DAC** names the DAC and its numbers (e.g. "Shanling UA2 Plus · 3302:XXXX").
+- [ ] **Read the DAC**: Android asks once ("Allow AudioFool to access …?", choose Allow), then
+  the row lists the USB Audio Class, the clock, the volume and one line per format. Does it ask
+  again after a replug?
+- [ ] **Take it and give it back** (pauses the music): the row says which interfaces were
+  claimed, whether Android let go of the DAC (and how fast), **the rates the DAC's clock
+  offers (is 44.1 kHz there?)**, the volume range, "gave back: … ok", and "Android has the DAC
+  again after … ms". Then play a song: does it come out of the DAC as before? A notification
+  sound during the test should come from the phone's speaker.
+- [ ] **Send the report**: send the text to this PC (also saved as Download/AudioFool-USB-DAC.txt).
+  Its raw bytes become the driver's tests.
 
 ### 0.2.6 (the buttons higher again)
 

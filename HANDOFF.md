@@ -12,8 +12,8 @@ device). The spec is `design/android-spec.md`.
 - **Latest: 0.2.6** (versionCode 19), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6>,
   `dist/AudioFool-0.2.6.apk`. Everything on `main` is in it; the working tree is clean.
-- **Next release:** **0.2.7, versionCode 20** for fixes; **0.3.0** for a new feature. Bump both in
-  `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
+- **Next release:** **0.3.0, versionCode 20** (already bumped in `app/build.gradle.kts`: the
+  USB DAC panel, below). Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
   (2026-10-26). All but v0.1.0 are pre-releases.
@@ -40,10 +40,18 @@ device). The spec is `design/android-spec.md`.
   notification; Bluetooth buttons; a call; battery; DSD over DoP; a rate change mid-album with BP
   on; the SD card pulled while playing; the full library's cold start and Statistics on the M21;
   the S24 DAC's **Route** row (does the DAC itself list 44.1 kHz?).
-- **Open, the user's call (not started):** true bit-perfect on the S24 would need the app's
-  own USB driver (libusb, as USB Audio Player Pro does): a new dependency and a spec change.
-  Write up what it takes before building anything. The user also might want BP remembered
-  per output; only if they ask.
+- **In progress: true bit-perfect on the S24** (2026-10-27). The plan and the user's four
+  choices are in `design/usb-bit-perfect.md` (libusb; the DAC's hardware volume else the app's;
+  hand the DAC back a minute after a pause; look-only first). **Step 1, 0.3.0 (versionCode 20),
+  is built but not released**: Statistics > Debug > **USB DAC** reads the DAC's descriptors,
+  tries taking it from Android and giving it back (`UsbDac`, `usbdac_jni.cpp`, core
+  `usbaudio/`), and shares a report with the raw bytes. **Next:** release it (confirm the notes),
+  get the user's report, add the DAC's bytes to `UsbAudioDescriptorsTest`, then vendor libusb
+  and build the driver (steps 2–4 in the write-up). The spec (§6.2) changes only when the
+  driver plays. The user also might want BP remembered per output; only if they ask.
+- **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
+  "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
+  can't stay on the cable while the DAC is in.
 - **Emulator housekeeping:** the SD card's `SD Card Band` FLACs are damaged again (ffmpeg
   fails at the start of both); rebuild them before relying on them. `/sdcard/Music/Waveform
   Test/` (a 60 s pink-noise FLAC with swells and a dip at 24–27 s) is the one to check the
@@ -152,6 +160,7 @@ device). The spec is `design/android-spec.md`.
 | Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/`, `playback/`, `analysis/` |
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
+| USB DAC, read directly (0.3.0) | `app/.../playback/UsbDac.kt` (permission, descriptors, take and give back, the report), `app/src/main/cpp/usbdac_jni.cpp` (`USBDEVFS_CONNECT`; library `audiofoolusb`), `core/.../usbaudio/UsbAudioDescriptors.kt` (UAC1/UAC2 parsing, RANGE replies); plan in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |

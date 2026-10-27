@@ -88,6 +88,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 pretendRoute = { player.pretendRoute },
                 cyclePretendRoute = player::cyclePretendRoute,
             ),
+            usb = UsbDacNumbers(app.usbDac, pause = player::pause),
         )
     }
     val debugActions = remember(nav) {

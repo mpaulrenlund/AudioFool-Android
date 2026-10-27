@@ -21,6 +21,7 @@ import com.mpaulrenlund.audiofool.playback.OutputRoutes
 import com.mpaulrenlund.audiofool.playback.PlaybackService
 import com.mpaulrenlund.audiofool.playback.Player
 import com.mpaulrenlund.audiofool.playback.SystemControls
+import com.mpaulrenlund.audiofool.playback.UsbDac
 import com.mpaulrenlund.audiofool.playback.WaveformReader
 import com.mpaulrenlund.audiofool.ui.ArtSources
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -72,6 +73,9 @@ class AudioFoolApp : Application() {
 
     /** The queue and playback (spec 6.1); the output stage starts on the first play. */
     val player: Player by playerLazy
+
+    /** The USB DAC read directly, for true Bit-Perfect on the S24 (0.3.0: look only, from Statistics > Debug). */
+    val usbDac: UsbDac by lazy { UsbDac(this) }
 
     /** The listening time Statistics shows (spec 4.6), counted from the first run of this version on. */
     val listening: Listening by lazy { Listening(File(noBackupFilesDir, "listening.json").path, scope) }
