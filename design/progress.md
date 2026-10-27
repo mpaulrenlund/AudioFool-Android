@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, not released yet
+- [x] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, released as a pre-release
 - [x] **0.2.6**: the M21 unplugged says "No Output"; the S24's buttons higher again — 2026-10-26, released as a pre-release
 - [x] **0.2.5**: the readout names the output (the DAC's name, the M21's 3.5mm / 4.4mm jack), "Exclusive" and dots; the S24's buttons higher — 2026-10-26, released as a pre-release
 - [x] **0.2.4**: a smooth waveform seekbar (the desktop's 600 columns); the S24's Now Playing buttons higher — 2026-10-26, released as a pre-release
@@ -42,7 +42,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.3.0 (2026-10-27), not released yet (versionCode 20): **true Bit-Perfect on the S24, step 1 (look only)**.
+0.3.0 (2026-10-27), released as pre-release [`v0.3.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.0) ("AudioFool 0.3.0", versionCode 20): **true Bit-Perfect on the S24, step 1 (look only)**.
 
 - **What it takes** is written up in `design/usb-bit-perfect.md`: the app drives the DAC itself
   over USB (as USB Audio Player Pro does), since the S24 offers no bit-perfect mixer entry and
@@ -596,7 +596,7 @@ Session 1:
 
 ### 0.3.0 (true Bit-Perfect, look only: the USB DAC panel)
 
-Not released yet (versionCode 20). Playback is unchanged. All from logo > Statistics > Debug >
+Released 2026-10-27 as pre-release [`v0.3.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.0) ("AudioFool 0.3.0", versionCode 20). Installs over 0.2.6 (same key). Playback is unchanged. All from logo > Statistics > Debug >
 **USB DAC**, with the DAC plugged in.
 
 - [ ] **DAC** names the DAC and its numbers (e.g. "Shanling UA2 Plus · 3302:XXXX").
