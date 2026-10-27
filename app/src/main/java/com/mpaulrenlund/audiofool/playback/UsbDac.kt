@@ -34,6 +34,7 @@ import kotlin.concurrent.thread
  * for the USB DAC, reads what it offers, and tries the one step the driver depends on, taking
  * the DAC from Android's own driver and giving it back. Playback never goes through here yet.
  * Statistics > Debug's **USB DAC** panel drives it; the report is saved and shared as text.
+ * 0.3.1 tries two ways of giving the DAC back, since 0.3.0's left it silent until a replug.
  */
 @Stable
 class UsbDac(private val context: Context) {
@@ -44,8 +45,8 @@ class UsbDac(private val context: Context) {
     var described: List<String> by mutableStateOf(emptyList())
         private set
 
-    /** What the panel shows under "Take it and give it back". */
-    var probed: List<String> by mutableStateOf(emptyList())
+    /** What the panel shows under each way of giving it back, once tried. */
+    var probed: Map<GiveBack, List<String>> by mutableStateOf(emptyMap())
         private set
 
     var busy: Boolean by mutableStateOf(false)
@@ -72,42 +73,75 @@ class UsbDac(private val context: Context) {
         if (bytes == null) return@withDevice done(described = listOf("no descriptors"))
         raw = bytes
         val d = UsbAudioDescriptors.parse(bytes)
-        done(described = UsbAudioReport.describe(d), probed = probed)
+        done(described = UsbAudioReport.describe(d))
     }
 
     /**
-     * Takes the DAC from Android (other sounds go to the speaker meanwhile), asks its clock for
-     * its rates and its volume control for its range, gives it back, and times both changes as
-     * Android sees them. [pause] stops the music first, since the DAC goes away under it.
+     * The two ways of giving the DAC back that 0.3.1 tries, after 0.3.0's (reattaching Android's
+     * driver straight away) left it silent until a replug. Each is a test of its own, so the
+     * one that brings the sound back is known.
      */
-    fun takeAndGiveBack(pause: () -> Unit) = withDevice { device ->
+    enum class GiveBack(val title: String) {
+        /** Reattach, then reset the DAC over USB, the nearest an app gets to a replug. */
+        Reset("with a USB reset"),
+
+        /**
+         * Wait first for Android to close its output to the DAC: if it still has the sound card
+         * open when the DAC is taken, the card that comes back gets a new number that Android
+         * never learns, which would explain the silence.
+         */
+        AfterWait("after a wait"),
+    }
+
+    /**
+     * Takes the DAC from Android, asks its clock for its rates and its volume control for its
+     * range, gives it back the [way] asked, and reports what Android and the kernel show before
+     * and after. [pause] stops the music first, since the DAC goes away under it. Afterwards the
+     * user plays a song to hear whether it worked.
+     */
+    fun takeAndGiveBack(way: GiveBack, pause: () -> Unit) = withDevice { device ->
         pause()
-        val connection = usb.openDevice(device) ?: return@withDevice done(probed = listOf("Android wouldn't open it"))
         val lines = mutableListOf<String>()
+        lines += "Android's USB output: ${androidOutputs()}"
+        if (way == GiveBack.AfterWait) {
+            SystemClock.sleep(WAIT_MS)
+            lines += "waited ${WAIT_MS / 1000} s for Android to close its output"
+        }
+        lines += "sound cards: ${soundCards()}"
+        val connection = usb.openDevice(device) ?: return@withDevice done(way, lines + "Android wouldn't open it")
         try {
-            val bytes = connection.rawDescriptors ?: return@withDevice done(probed = listOf("no descriptors"))
+            val bytes = connection.rawDescriptors ?: return@withDevice done(way, lines + "no descriptors")
             raw = bytes
             val d = UsbAudioDescriptors.parse(bytes)
-            if (!d.isAudio) return@withDevice done(probed = listOf("no USB Audio interface"))
-            lines += probe(device, connection, d)
+            if (!d.isAudio) return@withDevice done(way, lines + "no USB Audio interface")
+            lines += probe(device, connection, d, way)
         } catch (e: Exception) {
             lines += "failed: ${e.javaClass.simpleName}: ${e.message}"
         } finally {
             connection.close()
         }
-        val back = waitFor(present = true, 5000)
-        lines += if (back >= 0) "Android has the DAC again after $back ms" else "Android didn't get it back in 5 s: unplug the DAC and plug it in again"
-        done(described = UsbAudioReport.describe(UsbAudioDescriptors.parse(raw!!)), probed = lines)
+        // A reset that Android takes for a replug drops the DAC from its outputs and adds it again.
+        val dropped = waitFor(present = false, 3000)
+        if (dropped >= 0) {
+            val back = waitFor(present = true, 5000)
+            lines += "Android dropped the DAC after $dropped ms" +
+                if (back >= 0) " and set it up again $back ms later" else " and didn't get it back in 5 s"
+        } else {
+            lines += "Android never dropped the DAC"
+        }
+        lines += "Android's USB output now: ${androidOutputs()}"
+        lines += "sound cards now: ${soundCards()}"
+        lines += "now play a song: is it heard? If not, unplug the DAC and plug it in again"
+        done(way, lines, described = UsbAudioReport.describe(UsbAudioDescriptors.parse(raw!!)))
     }
 
-    private fun probe(device: UsbDevice, connection: UsbDeviceConnection, d: UsbAudioDescriptors): List<String> {
+    private fun probe(device: UsbDevice, connection: UsbDeviceConnection, d: UsbAudioDescriptors, way: GiveBack): List<String> {
         val lines = mutableListOf<String>()
         val numbers = (listOf(d.controlInterface) + d.playback.map { it.interfaceNumber }).distinct()
         val claimed = numbers.filter { n -> interfaceOf(device, n)?.let { connection.claimInterface(it, true) } == true }
         lines += "claimed interfaces ${claimed.joinToString(", ").ifEmpty { "none" }} of ${numbers.joinToString(", ")}"
-        if (d.controlInterface !in claimed) return lines + giveBack(device, connection, claimed)
-        val gone = waitFor(present = false, 3000)
-        lines += if (gone >= 0) "Android let go of the DAC after $gone ms" else "Android still lists the DAC after 3 s"
+        if (d.controlInterface !in claimed) return lines + giveBack(device, connection, claimed, way)
+        lines += "while held, sound cards: ${soundCards()}"
 
         if (d.uacVersion == 2) {
             for (clock in d.clockSources) {
@@ -135,16 +169,40 @@ class UsbDac(private val context: Context) {
                 (range?.let { (lo, hi, step) -> "${db(lo)} to ${db(hi)} dB in ${db(step)} dB steps" } ?: "no reply") +
                 (now?.let { " · now ${db(it)} dB" } ?: "")
         }
-        return lines + giveBack(device, connection, claimed)
+        return lines + giveBack(device, connection, claimed, way)
     }
 
-    /** Releases what was claimed and asks the kernel to bind Android's driver again, control interface first. */
-    private fun giveBack(device: UsbDevice, connection: UsbDeviceConnection, claimed: List<Int>): List<String> {
+    /**
+     * Releases what was claimed and asks the kernel to bind Android's driver again, control
+     * interface first; then, for [GiveBack.Reset], resets the DAC.
+     */
+    private fun giveBack(device: UsbDevice, connection: UsbDeviceConnection, claimed: List<Int>, way: GiveBack): List<String> {
         for (n in claimed) interfaceOf(device, n)?.let { connection.releaseInterface(it) }
         val results = claimed.map { n -> n to runCatching { reconnect(connection.fileDescriptor, n) }.getOrElse { -1 } }
         // EBUSY (16): Android's driver already took that interface along with the control interface.
-        return listOf("gave back: " + results.joinToString(", ") { (n, e) -> "$n " + if (e == 0) "ok" else if (e == 16) "already bound" else "error $e" })
+        val lines = mutableListOf("gave back: " + results.joinToString(", ") { (n, e) -> "$n " + if (e == 0) "ok" else if (e == 16) "already bound" else "error $e" })
+        if (way == GiveBack.Reset) {
+            val e = runCatching { reset(connection.fileDescriptor) }.getOrElse { -1 }
+            lines += "USB reset: " + if (e == 0) "ok" else "error $e"
+        }
+        return lines
     }
+
+    /**
+     * The USB outputs Android lists, with the sound card each one plays to: Android gives a USB
+     * device's address as "card=1;device=0".
+     */
+    private fun androidOutputs(): String = audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        .filter { it.type == AudioDeviceInfo.TYPE_USB_DEVICE || it.type == AudioDeviceInfo.TYPE_USB_HEADSET }
+        .joinToString(", ") { it.address.ifEmpty { "no address" } }
+        .ifEmpty { "none" }
+
+    /** The kernel's own list of sound cards, if Android lets the app read it. */
+    private fun soundCards(): String = runCatching {
+        File("/proc/asound/cards").readLines()
+            .mapNotNull { Regex("""^\s*(\d+)\s+\[[^]]*]:\s*(.*)$""").find(it)?.destructured?.let { (n, name) -> "$n ${name.trim()}" } }
+            .joinToString(", ").ifEmpty { "none" }
+    }.getOrElse { "not readable (${it.javaClass.simpleName})" }
 
     private fun rangeRequest(connection: UsbDeviceConnection, value: Int, index: Int, width: Int): ByteArray? {
         val head = ByteArray(2)
@@ -196,7 +254,7 @@ class UsbDac(private val context: Context) {
         if (busy) return
         val device = device() ?: run { described = listOf("no USB DAC plugged in"); return }
         busy = true
-        val run = { d: UsbDevice -> thread(name = "AudioFoolUsb") { runCatching { action(d) }.onFailure { done(probed = listOf("failed: ${it.message}")) } } }
+        val run = { d: UsbDevice -> thread(name = "AudioFoolUsb") { runCatching { action(d) }.onFailure { done(described = listOf("failed: ${it.message}")) } } }
         if (usb.hasPermission(device)) { run(device); return }
         described = listOf("asking for the DAC…")
         waiting = { run(it) }
@@ -213,21 +271,26 @@ class UsbDac(private val context: Context) {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(c: Context, intent: Intent) {
                 val device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
-                val next = waiting.also { waiting = null }
-                if (device != null && intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) && next != null) next(device)
+                // 0.3.1: an answer nothing is waiting for (a second one for the same ask) used to
+                // overwrite what had been read with "not allowed", as 0.3.0's report showed.
+                val next = waiting.also { waiting = null } ?: return
+                if (device != null && intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) next(device)
                 else done(described = listOf("not allowed: tap again and choose Allow"))
             }
         }
         context.registerReceiver(receiver, IntentFilter(ACTION_PERMISSION), Context.RECEIVER_NOT_EXPORTED)
     }
 
-    private fun done(described: List<String> = this.described, probed: List<String> = this.probed) {
+    private fun done(described: List<String>) = done(null, emptyList(), described)
+
+    /** Shows the results ([lines] under [way], if one was tried) and builds the report again. */
+    private fun done(way: GiveBack?, lines: List<String>, described: List<String> = this.described) {
         main.post {
             this.described = described
-            this.probed = probed
+            if (way != null) probed = probed + (way to lines)
             report = buildReport()
             busy = false
-            for (line in described + probed) Log.i(TAG, line)
+            for (line in described + lines) Log.i(TAG, line)
         }
     }
 
@@ -241,10 +304,10 @@ class UsbDac(private val context: Context) {
             appendLine()
             appendLine("Descriptors:")
             described.forEach { appendLine("  $it") }
-            if (probed.isNotEmpty()) {
+            for ((way, lines) in probed) {
                 appendLine()
-                appendLine("Take it and give it back:")
-                probed.forEach { appendLine("  $it") }
+                appendLine("Give it back ${way.title}:")
+                lines.forEach { appendLine("  $it") }
             }
             appendLine()
             appendLine("Raw (${bytes.size} bytes):")
@@ -259,6 +322,9 @@ class UsbDac(private val context: Context) {
         private const val ACTION_PERMISSION = "com.mpaulrenlund.audiofool.USB_PERMISSION"
         private const val TIMEOUT_MS = 1000
 
+        /** Longer than Android's usual 3 s before an idle output closes its sound card. */
+        private const val WAIT_MS = 5000L
+
         // UAC class requests to an interface, device to host; UAC2's CUR and RANGE.
         private const val CLASS_IN = 0xA1
         private const val CUR = 0x01
@@ -270,6 +336,9 @@ class UsbDac(private val context: Context) {
 
         /** USBDEVFS_CONNECT on one interface: lets the kernel bind its own driver again. 0, or the errno. */
         @JvmStatic private external fun reconnect(fd: Int, interfaceNumber: Int): Int
+
+        /** USBDEVFS_RESET: resets the DAC on the bus (0.3.1). 0, or the errno. */
+        @JvmStatic private external fun reset(fd: Int): Int
 
         private fun interfaceOf(device: UsbDevice, number: Int): UsbInterface? =
             (0 until device.interfaceCount).map { device.getInterface(it) }.firstOrNull { it.id == number && it.alternateSetting == 0 }

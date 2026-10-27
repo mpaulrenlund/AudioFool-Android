@@ -17,3 +17,10 @@ Java_com_mpaulrenlund_audiofool_playback_UsbDac_reconnect(JNIEnv*, jclass, jint 
     command.data = nullptr;
     return ioctl(fd, USBDEVFS_IOCTL, &command) < 0 ? errno : 0;
 }
+
+// 0.3.1: after 0.3.0's give-back the DAC played silent until a replug (the user, on the S24).
+// A USB reset is the nearest thing to a replug an app can ask for.
+extern "C" JNIEXPORT jint JNICALL
+Java_com_mpaulrenlund_audiofool_playback_UsbDac_reset(JNIEnv*, jclass, jint fd) {
+    return ioctl(fd, USBDEVFS_RESET, 0) < 0 ? errno : 0;
+}

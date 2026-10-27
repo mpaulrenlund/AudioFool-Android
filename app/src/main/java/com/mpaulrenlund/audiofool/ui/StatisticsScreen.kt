@@ -166,10 +166,16 @@ private fun UsbDacPanel(numbers: UsbDacNumbers) {
             if (dac.described.isEmpty()) "asks for the DAC once, then shows what it offers" else dac.described.joinToString("\n"),
             onClick = dac::read,
         )
+        // 0.3.1: 0.3.0's give-back left the DAC silent until a replug; each row tries one way out.
         SettingRow(
-            "Take it and give it back",
-            if (dac.probed.isEmpty()) "pauses the music; other sounds use the speaker for a few seconds" else dac.probed.joinToString("\n"),
-            onClick = { dac.takeAndGiveBack(numbers.pause) },
+            "Give it back with a USB reset",
+            dac.probed[UsbDac.GiveBack.Reset]?.joinToString("\n") ?: "pauses, takes the DAC, gives it back and resets it; then play a song",
+            onClick = { dac.takeAndGiveBack(UsbDac.GiveBack.Reset, numbers.pause) },
+        )
+        SettingRow(
+            "Give it back after a wait",
+            dac.probed[UsbDac.GiveBack.AfterWait]?.joinToString("\n") ?: "pauses and waits 5 s before taking the DAC; then play a song",
+            onClick = { dac.takeAndGiveBack(UsbDac.GiveBack.AfterWait, numbers.pause) },
         )
         if (dac.busy) SettingRow("Working…")
         if (dac.report.isNotEmpty()) SettingRow("Send the report", "saved to Download as AudioFool-USB-DAC.txt", onClick = dac::share)
