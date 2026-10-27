@@ -606,8 +606,10 @@ Released 2026-10-27 as pre-release [`v0.3.0`](https://github.com/mpaulrenlund/Au
   volume −63.5 to 0 dB in 0.5 dB steps; gave back (0 already bound, 1 ok). Android kept listing
   the DAC throughout (see `design/usb-bit-perfect.md`). **Still to answer:** does a song play
   through the DAC afterwards, and where did a notification sound go while it was held?
-- [ ] **Send the report**: saved as Download/AudioFool-USB-DAC.txt; **the file's text is still
-  needed** on this PC (its raw bytes become the driver's tests).
+- [x] **Send the report**: received 2026-10-27 (SM-S928U, Android 17). Its 361 raw bytes are
+  now `UsbAudioDescriptorsTest`'s `ua2Plus`, and parse to exactly what the S24 showed. A small
+  flaw in 0.3.0: the report's "Descriptors" part said "not allowed" (left from a tap before
+  Allow) although the bytes and the panel were read fine; fix it with the driver's Debug panel.
 
 ### 0.2.6 (the buttons higher again)
 

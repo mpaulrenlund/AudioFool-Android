@@ -8,7 +8,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 // New (0.3.0, the look-only build): descriptors laid out by hand from the USB Audio Class 1.0 and
-// 2.0 specs. Once the user's DAC has been read, its own bytes (Debug's report) join these.
+// 2.0 specs, and the user's own DAC's bytes from the S24 (Debug's report).
 
 class UsbAudioDescriptorsTest {
     private fun bytes(vararg v: Int) = ByteArray(v.size) { v[it].toByte() }
@@ -52,6 +52,55 @@ class UsbAudioDescriptorsTest {
         bytes(0x07, 0x24, 0x01, 0x01, 0x01, 0x01, 0x00) +
         bytes(0x0E, 0x24, 0x02, 0x01, 0x02, 0x02, 0x10, 0x02, 0x44, 0xAC, 0x00, 0x80, 0xBB, 0x00) +
         bytes(0x09, 0x05, 0x01, 0x09, 0xC8, 0x00, 0x01, 0x00, 0x00)
+
+    /** The user's Shanling UA2 Plus, as the S24 read it (0.3.0's report, 2026-10-27). */
+    private val ua2Plus = hex("""
+        12 01 00 02 EF 02 01 40 B1 20 28 30 01 02 01 02 03 01 09 02 57 01 03 01 00 80 32 08 0B 00 02 01
+        00 20 00 09 04 00 00 00 01 01 20 02 09 24 01 00 02 04 40 00 00 08 24 0A 05 03 07 00 00 11 24 02
+        01 01 01 00 05 02 03 00 00 00 00 00 00 00 12 24 06 03 01 0F 00 00 00 0C 00 00 00 0C 00 00 00 00
+        0C 24 03 04 01 03 00 03 05 00 00 00 09 04 01 00 00 01 02 20 04 09 04 01 01 02 01 02 20 00 10 24
+        01 01 05 01 01 00 00 00 02 03 00 00 00 00 06 24 02 01 02 10 07 05 01 05 08 03 01 08 25 01 00 00
+        00 00 00 07 05 81 11 04 00 04 09 04 01 02 02 01 02 20 00 10 24 01 01 05 01 01 00 00 00 02 03 00
+        00 00 00 06 24 02 01 03 18 07 05 01 05 08 03 01 08 25 01 00 00 00 00 00 07 05 81 11 04 00 04 09
+        04 01 03 02 01 02 20 00 10 24 01 01 05 01 01 00 00 00 02 03 00 00 00 00 06 24 02 01 04 20 07 05
+        01 05 08 03 01 08 25 01 00 00 00 00 00 07 05 81 11 04 00 04 09 04 01 04 02 01 02 20 00 10 24 01
+        01 05 01 00 00 00 80 02 03 00 00 00 00 06 24 02 01 04 20 07 05 01 05 08 03 01 08 25 01 00 00 00
+        00 00 07 05 81 11 04 00 04 09 04 02 00 02 03 00 00 00 09 21 11 01 00 01 22 4C 00 07 05 82 03 40
+        00 0A 07 05 03 03 40 00 0A
+    """)
+
+    private fun hex(s: String) = s.trim().split(Regex("\\s+")).map { it.toInt(16).toByte() }.toByteArray()
+
+    @Test fun reads_the_users_ua2_plus() {
+        val d = UsbAudioDescriptors.parse(ua2Plus)
+        assertEquals(361, ua2Plus.size)
+        assertEquals(0x20B1, d.vendorId)
+        assertEquals(0x3028, d.productId)
+        assertEquals(listOf(1, 2, 3, 4), d.playback.map { it.alternate })
+        assertEquals(listOf(2 to 16, 3 to 24, 4 to 32, 4 to 32), d.playback.map { it.subslotBytes to it.bits })
+        for (s in d.playback) {
+            assertEquals(776, s.dataEndpoint?.maxPacketBytes)
+            assertEquals(SyncType.Async, s.dataEndpoint?.sync)
+            assertEquals(0x81, s.feedbackEndpoint?.address)
+            assertEquals(5, d.clockFor(s))
+            assertEquals(3, d.volumeUnitFor(s)?.id)
+        }
+        assertEquals("raw (native DSD)", UsbAudioReport.formatName(2, d.playback[3].formats))
+    }
+
+    // What the S24 showed on Debug for it.
+    @Test fun describes_the_ua2_plus_as_the_s24_showed_it() = assertEquals(
+        listOf(
+            "USB Audio Class 2.0 · 20B1:3028 · control interface 0",
+            "clock 5: internal, programmable, rate settable",
+            "feature unit 3: volume, mute, channel volumes",
+            "interface 1 alt 1: PCM 16-bit in 2 bytes, 2 ch · clock 5 · async · feedback 0x81 · 776 B every 1 µframe",
+            "interface 1 alt 2: PCM 24-bit in 3 bytes, 2 ch · clock 5 · async · feedback 0x81 · 776 B every 1 µframe",
+            "interface 1 alt 3: PCM 32-bit in 4 bytes, 2 ch · clock 5 · async · feedback 0x81 · 776 B every 1 µframe",
+            "interface 1 alt 4: raw (native DSD) 32-bit in 4 bytes, 2 ch · clock 5 · async · feedback 0x81 · 776 B every 1 µframe",
+        ),
+        UsbAudioReport.describe(UsbAudioDescriptors.parse(ua2Plus)),
+    )
 
     @Test fun reads_a_uac2_dac() {
         val d = UsbAudioDescriptors.parse(uac2)

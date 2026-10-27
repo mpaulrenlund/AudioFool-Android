@@ -49,7 +49,7 @@ device). The spec is `design/android-spec.md`.
   UA2 Plus offers 44.1–768 kHz and a −63.5 to 0 dB hardware volume, and Samsung lets the app
   take and return it; but Android keeps listing the DAC while the app holds it (details in the
   write-up). **Next:**
-  get the report's text (still on the phone), add the DAC's bytes to `UsbAudioDescriptorsTest`, then vendor libusb
+  (the report's bytes are already `UsbAudioDescriptorsTest`'s `ua2Plus`) vendor libusb
   and build the driver (steps 2–4 in the write-up). The spec (§6.2) changes only when the
   driver plays. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
