@@ -599,17 +599,15 @@ Session 1:
 Released 2026-10-27 as pre-release [`v0.3.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.0) ("AudioFool 0.3.0", versionCode 20). Installs over 0.2.6 (same key). Playback is unchanged. All from logo > Statistics > Debug >
 **USB DAC**, with the DAC plugged in.
 
-- [ ] **DAC** names the DAC and its numbers (e.g. "Shanling UA2 Plus · 3302:XXXX").
-- [ ] **Read the DAC**: Android asks once ("Allow AudioFool to access …?", choose Allow), then
-  the row lists the USB Audio Class, the clock, the volume and one line per format. Does it ask
-  again after a replug? **No (the user, 2026-10-27): Android remembers the permission across a replug.**
-- [ ] **Take it and give it back** (pauses the music): the row says which interfaces were
-  claimed, whether Android let go of the DAC (and how fast), **the rates the DAC's clock
-  offers (is 44.1 kHz there?)**, the volume range, "gave back: … ok", and "Android has the DAC
-  again after … ms". Then play a song: does it come out of the DAC as before? A notification
-  sound during the test should come from the phone's speaker.
-- [ ] **Send the report**: send the text to this PC (also saved as Download/AudioFool-USB-DAC.txt).
-  Its raw bytes become the driver's tests.
+- [x] **DAC** names the DAC and its numbers: "Shanling UA2 Plus · 20B1:3028" (the user, 2026-10-27).
+- [x] **Read the DAC**: UAC 2.0, clock 5 (programmable), feature unit 3, alts 1–3 PCM 16/24/32-bit
+  and alt 4 native DSD, async with feedback 0x81. Android does not ask again after a replug.
+- [ ] **Take it and give it back**: claimed 0 and 1; **44.1 kHz is offered** (44.1 to 768 kHz);
+  volume −63.5 to 0 dB in 0.5 dB steps; gave back (0 already bound, 1 ok). Android kept listing
+  the DAC throughout (see `design/usb-bit-perfect.md`). **Still to answer:** does a song play
+  through the DAC afterwards, and where did a notification sound go while it was held?
+- [ ] **Send the report**: saved as Download/AudioFool-USB-DAC.txt; **the file's text is still
+  needed** on this PC (its raw bytes become the driver's tests).
 
 ### 0.2.6 (the buttons higher again)
 

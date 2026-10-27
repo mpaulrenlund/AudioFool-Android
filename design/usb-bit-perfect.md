@@ -95,3 +95,27 @@ applies, so DSD128 over DoP at 352.8 kHz becomes possible).
   Android sees the DAC again. That proves on the S24 that Samsung lets an app take and return
   the DAC before any of the driver is written.
 - Saves all of it as a text file the user can send.
+
+## What the S24 showed (0.3.0, the user, 2026-10-27)
+
+The DAC is a **Shanling UA2 Plus, `20B1:3028`** (an XMOS USB chip), **USB Audio Class 2.0**:
+
+- **Clock 5**, internal and programmable. **It offers 44100, 48000, 88200, 96000, 176400,
+  192000, 352800, 384000, 705600 and 768000 Hz** (it sat at 48000). So the DAC itself takes
+  44.1 kHz: the S24's missing 44.1 kHz is Android's mixer, not the DAC, and the driver is worth
+  building.
+- **Feature unit 3**: master volume **−63.5 to 0.0 dB in 0.5 dB steps** (at 0.0), mute, and
+  channel volumes. So the hardware volume (the user's first choice) is there.
+- **Interface 1**, all async with feedback endpoint `0x81`, 776 bytes a microframe (768 kHz ×
+  8 bytes ÷ 8,000, plus one frame): alt 1 **16-bit in 2 bytes**, alt 2 **24-bit in 3 bytes**,
+  alt 3 **32-bit in 4 bytes**, alt 4 **native DSD** (raw, 32-bit slots). All stereo.
+- **Samsung lets the app take it**: interfaces 0 and 1 were claimed with force, the clock and
+  volume requests were answered (they need the interface claimed), and giving back worked
+  (interface 0 was already back, interface 1 reattached "ok").
+- **But Android kept listing the DAC as an output the whole time** (`AudioManager` still had it
+  after 3 s). Android's list follows the USB device being attached, not its sound driver, so it
+  can't tell us when the DAC is ours, and the "every other sound comes from the speaker"
+  expectation above is unproven: other sounds may instead go to a USB output with no driver
+  behind it (silent). To check on the S24 with the driver. On the good side, holding the DAC
+  then triggers no route change or "becoming noisy" to guard against; a real unplug still has
+  to be caught by `USB_DEVICE_DETACHED`.

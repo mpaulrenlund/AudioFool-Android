@@ -45,8 +45,11 @@ device). The spec is `design/android-spec.md`.
   hand the DAC back a minute after a pause; look-only first). **Step 1, 0.3.0 (versionCode 20),
   is released as a pre-release** (<https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.0>, `dist/AudioFool-0.3.0.apk`): Statistics > Debug > **USB DAC** reads the DAC's descriptors,
   tries taking it from Android and giving it back (`UsbDac`, `usbdac_jni.cpp`, core
-  `usbaudio/`), and shares a report with the raw bytes. **Next:**
-  get the user's report, add the DAC's bytes to `UsbAudioDescriptorsTest`, then vendor libusb
+  `usbaudio/`), and shares a report with the raw bytes. **The S24 answered (2026-10-27):** the
+  UA2 Plus offers 44.1–768 kHz and a −63.5 to 0 dB hardware volume, and Samsung lets the app
+  take and return it; but Android keeps listing the DAC while the app holds it (details in the
+  write-up). **Next:**
+  get the report's text (still on the phone), add the DAC's bytes to `UsbAudioDescriptorsTest`, then vendor libusb
   and build the driver (steps 2–4 in the write-up). The spec (§6.2) changes only when the
   driver plays. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
