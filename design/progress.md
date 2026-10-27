@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, built, not yet released
+- [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, released as a pre-release
 - [x] **0.3.1**: true Bit-Perfect on the S24, a test build: two ways of giving the DAC back (a USB reset; waiting for Android to close its output first) — 2026-10-27, released as a pre-release
 - [x] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, released as a pre-release
 - [x] **0.2.6**: the M21 unplugged says "No Output"; the S24's buttons higher again — 2026-10-26, released as a pre-release
@@ -44,7 +44,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.4.0 (2026-10-27), built as versionCode 22, not yet released: **true Bit-Perfect on the S24, the
+0.4.0 (2026-10-27), released as pre-release [`v0.4.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.0) ("AudioFool 0.4.0", versionCode 22): **true Bit-Perfect on the S24, the
 driver.** The user said to start it after 0.3.1 proved the give-back. All in
 `design/usb-bit-perfect.md` > "The driver (0.4.0)". In short:
 
@@ -636,7 +636,7 @@ Session 1:
 
 ### 0.4.0 (true Bit-Perfect: the driver)
 
-Built 2026-10-27 (versionCode 22). Installs over 0.3.1 (same key). With the UA2 Plus plugged
+Released 2026-10-27 as pre-release [`v0.4.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.0) (versionCode 22). Installs over 0.3.1 (same key). With the UA2 Plus plugged
 in and **BP on**. The Driver row in logo > Statistics > Debug > USB DAC says what it is doing.
 
 - [ ] **Plugging in**: does Android offer "Open AudioFool when Shanling UA2 Plus is connected?"
