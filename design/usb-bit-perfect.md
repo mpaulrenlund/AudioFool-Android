@@ -119,3 +119,19 @@ The DAC is a **Shanling UA2 Plus, `20B1:3028`** (an XMOS USB chip), **USB Audio 
   behind it (silent). To check on the S24 with the driver. On the good side, holding the DAC
   then triggers no route change or "becoming noisy" to guard against; a real unplug still has
   to be caught by `USB_DEVICE_DETACHED`.
+
+### Giving it back silences the DAC (the user, 2026-10-27)
+
+After "Take it and give it back", AudioFool's song showed as playing but **nothing came out of
+the DAC**. Reattaching Android's driver to the interfaces (`USBDEVFS_CONNECT`) brings the
+kernel's sound driver back as a new sound card, but Android's audio service is never told: the
+USB device itself never left (the same reason Android kept listing it while it was held), so
+Android keeps writing to the old card, which is gone, and its mixer carries on in silence.
+
+So **giving back has to make Android see the DAC unplugged and plugged in again.** The likely
+way: after releasing the interfaces, **reset the USB device** (`USBDEVFS_RESET`, or libusb's
+`libusb_reset_device`), which makes it re-enumerate as if replugged; Android then rebuilds its
+USB audio device from scratch. That needs checking on the S24 before the driver is built round
+it: whether the sound comes back, whether permission survives (a replug keeps it), what the
+DAC's volume does, and that the app's own `USB_DEVICE_DETACHED`/"becoming noisy" handling
+doesn't take the replug for a real unplug.
