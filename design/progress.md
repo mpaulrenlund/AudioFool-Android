@@ -613,8 +613,10 @@ DAC**, with the DAC plugged in and a song paused or playing. Try one row, then p
 **if it's silent, unplug the DAC and plug it in again** before trying the other.
 
 - [ ] **Give it back with a USB reset**: is the song heard afterwards without a replug? Did
-  Android ask for access again? Is the DAC's volume as before?
-- [ ] **Give it back after a wait** (takes 5 s longer): is the song heard afterwards?
+  Android ask for access again? Is the DAC's volume as before? **The volume stayed the same;
+  Android asked for access again** (the user, 2026-10-27). Still to answer: was the song heard?
+- [x] **Give it back after a wait** (takes 5 s longer): **silent**, the song playing but nothing
+  heard (the user, 2026-10-27). Waiting doesn't help.
 - [x] **Send the report**: received 2026-10-27 15:08. The reset made Android drop the DAC and set it
   up again (102 ms, then 1,172 ms), like a replug; the wait didn't. Card 1 before and after both.
 

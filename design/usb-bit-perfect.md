@@ -146,3 +146,9 @@ doesn't take the replug for a real unplug.
 - **After a 5 s wait** (no reset): Android never dropped the DAC, as in 0.3.0.
 - Android's USB output was `card=1;device=0` before and after both, so the card number did
   not change. The kernel's list (`/proc/asound/cards`) isn't there for an app to read.
+- From the user: **after the wait the DAC was silent**, as in 0.3.0, so waiting is ruled out.
+  **After the reset the DAC's volume was unchanged, but Android asked for access again**: the
+  re-enumerated DAC is a new device to Android, and the permission went with the old one. So
+  the driver needs the manifest's `USB_DEVICE_ATTACHED` filter (the "always open AudioFool"
+  choice), which grants access at each attach without asking, before it can hand back with a
+  reset.
