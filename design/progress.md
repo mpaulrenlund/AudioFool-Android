@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.3.1**: true Bit-Perfect on the S24, a test build: two ways of giving the DAC back (a USB reset; waiting for Android to close its output first) — 2026-10-27, built, not yet released
+- [x] **0.3.1**: true Bit-Perfect on the S24, a test build: two ways of giving the DAC back (a USB reset; waiting for Android to close its output first) — 2026-10-27, released as a pre-release
 - [x] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, released as a pre-release
 - [x] **0.2.6**: the M21 unplugged says "No Output"; the S24's buttons higher again — 2026-10-26, released as a pre-release
 - [x] **0.2.5**: the readout names the output (the DAC's name, the M21's 3.5mm / 4.4mm jack), "Exclusive" and dots; the S24's buttons higher — 2026-10-26, released as a pre-release
@@ -43,7 +43,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.3.1 (2026-10-27), built as versionCode 21, not yet released: **a test of giving the DAC back.**
+0.3.1 (2026-10-27), released as pre-release [`v0.3.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.1) ("AudioFool 0.3.1", versionCode 21): **a test of giving the DAC back.**
 0.3.0's "Take it and give it back" left the DAC silent until a replug (the user, on the S24).
 The user chose a test build before the driver. Debug's USB DAC panel now has two rows, each
 one test: **Give it back with a USB reset** (reattach Android's driver, then `USBDEVFS_RESET`)
@@ -608,7 +608,7 @@ Session 1:
 
 ### 0.3.1 (true Bit-Perfect, a test: giving the DAC back)
 
-Installs over 0.3.0 (same key). Playback is unchanged. From logo > Statistics > Debug > **USB
+Released 2026-10-27 as pre-release [`v0.3.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.1). Installs over 0.3.0 (same key). Playback is unchanged. From logo > Statistics > Debug > **USB
 DAC**, with the DAC plugged in and a song paused or playing. Try one row, then play a song;
 **if it's silent, unplug the DAC and plug it in again** before trying the other.
 

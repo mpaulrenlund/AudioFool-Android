@@ -12,7 +12,7 @@ device). The spec is `design/android-spec.md`.
 - **Latest: 0.3.0** (versionCode 20), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.0>,
   `dist/AudioFool-0.3.0.apk`. Everything on `main` is in it; the working tree is clean.
-- **Next release:** **0.3.1, versionCode 21** is built (`dist/AudioFool-0.3.1.apk`), not yet released; then **0.3.2 / 22** for fixes, **0.4.0** for the driver. Bump both in `app/build.gradle.kts`.
+- **Next release:** **0.3.1 (versionCode 21) is released** as a pre-release (https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.1); next **0.3.2 / 22** for fixes, **0.4.0** for the driver. Bump both in `app/build.gradle.kts`.
   USB DAC panel, below). Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
