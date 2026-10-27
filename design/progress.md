@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.1**: the seekbar no longer flashes back after a seek; the driver's Debug row keeps its last eight notes — 2026-10-27, built, not yet released
 - [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, released as a pre-release
 - [x] **0.3.1**: true Bit-Perfect on the S24, a test build: two ways of giving the DAC back (a USB reset; waiting for Android to close its output first) — 2026-10-27, released as a pre-release
 - [x] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, released as a pre-release
@@ -43,6 +44,14 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.1 (2026-10-27), built as versionCode 23, not yet released: **two fixes from the S24's 0.4.0
+results.** The driver played well (44.1 kHz, hi-res, gapless, volume keys, unplug, BP off).
+- **The seek flash**: until the output stage has carried out a seek, the player gives the place
+  being sought (`OutputStage.seeksDone` against `Player.seeksAsked`), not the old heard place.
+  It was the gap between asking and the 5 ms fade and flush, on any output.
+- **The Driver row keeps its last eight notes with times**: the report showed only the last
+  give-back, so whether a minute's pause had handed the DAC back couldn't be told.
 
 0.4.0 (2026-10-27), released as pre-release [`v0.4.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.0) ("AudioFool 0.4.0", versionCode 22): **true Bit-Perfect on the S24, the
 driver.** The user said to start it after 0.3.1 proved the give-back. All in
@@ -634,34 +643,38 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.1 (the seek flash; the driver's last few notes)
+
+Built 2026-10-27 (versionCode 23). Installs over 0.4.0 (same key). BP on, the UA2 Plus in.
+
+- [ ] **Seek** a few times while playing: the seekbar goes straight to the new place, with no
+  flash back to the old one?
+- [ ] **Pause over a minute**, then look at the Driver row: "given back (paused a while)" among
+  its lines? A notification sound through the DAC then? Play carries on through the driver?
+- [ ] **A DSD file**, if there is one on the phone: "DSD over PCM"; a click at pause?
+- [ ] **Send the report** at the end.
+
 ### 0.4.0 (true Bit-Perfect: the driver)
 
-Released 2026-10-27 as pre-release [`v0.4.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.0) (versionCode 22). Installs over 0.3.1 (same key). With the UA2 Plus plugged
-in and **BP on**. The Driver row in logo > Statistics > Debug > USB DAC says what it is doing.
+Released 2026-10-27 as pre-release [`v0.4.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.0) (versionCode 22). The user's results, 2026-10-27:
 
-- [ ] **Plugging in**: does Android offer "Open AudioFool when Shanling UA2 Plus is connected?"
-  Tick **Always** and OK. (If instead "Allow AudioFool to access…?" comes when a song starts,
-  Allow.)
-- [ ] **A 16-bit 44.1 kHz FLAC**: the readout says "Shanling UA2 Plus · 44.1 kHz · 16-Bit ·
-  Exclusive"; it sounds right; the Driver row says "playing 44.1 kHz, 16-bit in 2 bytes
-  (setting 1)", its feedback values climb and underruns stay at 0.
-- [ ] **A few minutes of listening**: any clicks, dropouts or drift?
-- [ ] **A 24-bit 96 or 192 kHz album**, and one where the rate changes between tracks: gapless
-  within an album, a short gap at a rate change?
-- [ ] **Seek and skip**: no clicks.
-- [ ] **A DSD file**: the readout says "DSD over PCM"; does pausing it click?
-- [ ] **Volume keys** (screen on and off): do they change the DAC's volume? Did it start no
-  louder than before?
-- [ ] **Paused over a minute**: is the DAC handed back (Driver row: "given back (paused a
-  while)")? Does a notification sound come through the DAC then? Does Play carry on through
-  the driver? Did Android ask anything at the hand-back?
-- [ ] **BP off while playing**: keeps playing (after a second or two), through Android?
-- [ ] **Unplug while playing**: pauses; plug back in and Play.
-- [ ] **A notification while the driver holds the DAC**: heard anywhere?
-- [ ] **Send the report** after playing a while (paste the text).
-
-If AudioFool is closed by Android or swiped away while it holds the DAC, the DAC may stay silent
-until it is unplugged and plugged in again.
+- [x] **Plugging in**, Android's question answered.
+- [x] **A 16-bit 44.1 kHz FLAC**: "working well"; the Driver row says the setting it should.
+- [x] **A few minutes of listening**: working well (no clicks or drift reported).
+- [x] **Hi-res and rate changes**: working well; gapless works.
+- [x] **Seek and skip**: work, but the seekbar flashed back to where the song was for a moment
+  before jumping to the new place. Fixed in 0.4.1.
+- [ ] **A DSD file**: couldn't test.
+- [x] **Volume keys**: working well.
+- [ ] **Paused over a minute**: the Driver row didn't say "given back"; the readout said
+  "Shanling UA2 Plus · 48 kHz" (Android's output, so probably handed back). The report was taken
+  later and showed only the last note; 0.4.1 keeps the last eight with times. Still to check:
+  a notification through the DAC then, and Play carrying on through the driver.
+- [x] **BP off while playing**: plays on after about 2 seconds.
+- [x] **Unplug while playing**: worked.
+- [ ] **A notification while held**: not reported.
+- [x] **The report**: "given back (Bit-Perfect off): ok, LIBUSB_ERROR_BUSY, ok" (interface 1 was
+  already Android's again with interface 0, as in 0.3.x); "not held · allowed".
 
 ### 0.3.1 (true Bit-Perfect, a test: giving the DAC back)
 

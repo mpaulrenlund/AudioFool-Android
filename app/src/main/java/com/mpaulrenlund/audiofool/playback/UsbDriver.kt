@@ -23,6 +23,9 @@ import com.mpaulrenlund.audiofool.core.usbaudio.UacRanges
 import com.mpaulrenlund.audiofool.core.usbaudio.UsbAudioDescriptors
 import com.mpaulrenlund.audiofool.core.usbaudio.UsbFormatChoice
 import com.mpaulrenlund.audiofool.core.usbaudio.UsbVolume
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * True Bit-Perfect on a USB DAC through the app's own driver (0.4.0, design/usb-bit-perfect.md):
@@ -80,9 +83,18 @@ class UsbDriver(private val context: Context) {
     @Volatile private var refused: String? = null
     @Volatile private var asked: String? = null
 
-    /** What happened last, for the debug screen. */
+    /** What happened last, for the debug screen; the last few are kept with their times ([status]). */
     @Volatile var note: String = "not used yet"
-        private set
+        private set(value) {
+            field = value
+            synchronized(history) {
+                history.addFirst("${SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(Date())} $value")
+                while (history.size > HISTORY) history.removeLast()
+            }
+        }
+
+    /** 0.4.1: one note hid what came before it (the S24's report showed only the last give-back). */
+    private val history = ArrayDeque<String>()
 
     /** Until when the DAC dropping out and coming back is the app's own doing (a give-back's reset). */
     @Volatile private var handingBackUntil = 0L
@@ -387,13 +399,14 @@ class UsbDriver(private val context: Context) {
 
     // ---- the debug screen ----
 
-    /** What the driver is doing, a line each. */
+    /** What the driver is doing, a line each: its state now, then what happened lately, newest first. */
     fun status(): List<String> {
         val h = held
-        val lines = mutableListOf(note)
+        val lines = mutableListOf<String>()
+        val lately = synchronized(history) { history.toList() }.ifEmpty { listOf(note) }
         if (h == null) {
             lines += dacDevice()?.let { if (usb.hasPermission(it)) "not held · allowed" else "not held · not allowed yet" } ?: "no DAC plugged in"
-            return lines
+            return lines + lately
         }
         lines += "held: ${h.device.productName?.trim() ?: h.device.deviceName} · interfaces ${h.interfaces.joinToString(", ")}"
         lines += "streaming: ${h.streaming ?: "no"}"
@@ -405,13 +418,16 @@ class UsbDriver(private val context: Context) {
             ) + if (c.lost) " · lost" else ""
         }
         lines += h.volume?.let { "volume: step ${it.step} of ${UsbVolume.STEPS}, ${UsbVolume.db(it.range.value(it.step))}" + if (it.range.muted(it.step)) " (muted)" else "" } ?: "volume: the DAC has none"
-        return lines
+        return lines + lately
     }
 
     companion object {
         private const val TAG = "AudioFoolUsb"
         private const val ACTION_PERMISSION = "com.mpaulrenlund.audiofool.USB_DRIVER_PERMISSION"
         private const val TIMEOUT_MS = 1000
+
+        /** Notes kept for the debug screen and the report. */
+        private const val HISTORY = 8
 
         /** How long a give-back waits for Android to set the DAC up again (0.3.1: about 1.3 s). */
         const val GIVE_BACK_WAIT_MS = 4_000L

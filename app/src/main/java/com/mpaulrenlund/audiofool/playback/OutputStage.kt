@@ -88,6 +88,13 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     private val commands = LinkedBlockingQueue<Command>()
     private val timeline = HearingTimeline()
 
+    /**
+     * Seeks carried out so far (0.4.1): until it has caught up with the seeks asked for, [heard]
+     * is still where the song was before, and the seekbar showed that for a moment.
+     */
+    @Volatile var seeksDone = 0L
+        private set
+
     /** What the speakers are playing, updated as the output plays (any thread may read it). */
     @Volatile var heard: HeardPoint = HeardPoint(null, 0)
         private set
@@ -215,7 +222,11 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
                 next = null
                 nextTried = false
             }
-            is Command.Seek -> seekTo(command.ms)
+            is Command.Seek -> try {
+                seekTo(command.ms)
+            } finally {
+                seeksDone++
+            }
             is Command.Volume -> {
                 volume = command.level
                 output?.setVolume(outputVolume())

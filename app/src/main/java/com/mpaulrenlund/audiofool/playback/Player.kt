@@ -71,6 +71,9 @@ class Player(
     private var decodingIndex = -1
     private var heardIndex = -1
 
+    /** Seeks sent to the output stage, to compare with its [OutputStage.seeksDone]. */
+    private var seeksAsked = 0L
+
     /** True once the queue is in the output stage; false after a restore, until Play. */
     private var engaged = false
 
@@ -190,7 +193,10 @@ class Player(
         val track = state.track ?: return
         val to = ms.coerceIn(0, maxOf(0, track.durationMs))
         state.heldPositionMs = to
-        if (engaged) engine.seek(to)
+        if (engaged) {
+            seeksAsked++
+            engine.seek(to)
+        }
         save()
         onChange()
     }
@@ -246,6 +252,8 @@ class Player(
     fun positionMs(): Long {
         // Paused, the place is held (pause and seek set it), and the screens recompose on it.
         if (!engaged || !engineMade || !state.isPlaying) return state.heldPositionMs
+        // A seek the output hasn't carried out yet: where it is going, not where it was (0.4.1, the S24).
+        if (engine.seeksDone < seeksAsked) return state.heldPositionMs
         val heard = engine.heard
         val track = state.track
         return if (track != null && heard.track === track) heard.positionMs.coerceIn(0, maxOf(0, track.durationMs)) else state.heldPositionMs
