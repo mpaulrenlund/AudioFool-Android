@@ -606,8 +606,9 @@ Released 2026-10-27 as pre-release [`v0.3.0`](https://github.com/mpaulrenlund/Au
   volume −63.5 to 0 dB in 0.5 dB steps; gave back (0 already bound, 1 ok). Android kept listing
   the DAC throughout (see `design/usb-bit-perfect.md`). **Afterwards the song shows as playing
   but nothing is heard** (the user, 2026-10-27): reattaching Android's driver is not enough to
-  give the DAC back (see the write-up). Still to answer: does unplugging and replugging the DAC
-  bring the sound back, and where did a notification sound go while it was held?
+  give the DAC back (see the write-up). **Unplugging and replugging the DAC brings the sound
+  back** (the user, 2026-10-27). Still to answer: where did a notification sound go while it
+  was held?
 - [x] **Send the report**: received 2026-10-27 (SM-S928U, Android 17). Its 361 raw bytes are
   now `UsbAudioDescriptorsTest`'s `ua2Plus`, and parse to exactly what the S24 showed. A small
   flaw in 0.3.0: the report's "Descriptors" part said "not allowed" (left from a tap before

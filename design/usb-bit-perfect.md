@@ -128,6 +128,8 @@ kernel's sound driver back as a new sound card, but Android's audio service is n
 USB device itself never left (the same reason Android kept listing it while it was held), so
 Android keeps writing to the old card, which is gone, and its mixer carries on in silence.
 
+**A real unplug and replug brings the sound back** (the user, 2026-10-27), which fits.
+
 So **giving back has to make Android see the DAC unplugged and plugged in again.** The likely
 way: after releasing the interfaces, **reset the USB device** (`USBDEVFS_RESET`, or libusb's
 `libusb_reset_device`), which makes it re-enumerate as if replugged; Android then rebuilds its
