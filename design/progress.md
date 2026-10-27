@@ -602,7 +602,7 @@ Released 2026-10-27 as pre-release [`v0.3.0`](https://github.com/mpaulrenlund/Au
 - [ ] **DAC** names the DAC and its numbers (e.g. "Shanling UA2 Plus · 3302:XXXX").
 - [ ] **Read the DAC**: Android asks once ("Allow AudioFool to access …?", choose Allow), then
   the row lists the USB Audio Class, the clock, the volume and one line per format. Does it ask
-  again after a replug?
+  again after a replug? **No (the user, 2026-10-27): Android remembers the permission across a replug.**
 - [ ] **Take it and give it back** (pauses the music): the row says which interfaces were
   claimed, whether Android let go of the DAC (and how fast), **the rates the DAC's clock
   offers (is 44.1 kHz there?)**, the volume range, "gave back: … ok", and "Android has the DAC
