@@ -615,7 +615,8 @@ DAC**, with the DAC plugged in and a song paused or playing. Try one row, then p
 - [ ] **Give it back with a USB reset**: is the song heard afterwards without a replug? Did
   Android ask for access again? Is the DAC's volume as before?
 - [ ] **Give it back after a wait** (takes 5 s longer): is the song heard afterwards?
-- [ ] **Send the report** (paste the text): it has both tests' card numbers.
+- [x] **Send the report**: received 2026-10-27 15:08. The reset made Android drop the DAC and set it
+  up again (102 ms, then 1,172 ms), like a replug; the wait didn't. Card 1 before and after both.
 
 ### 0.3.0 (true Bit-Perfect, look only: the USB DAC panel)
 

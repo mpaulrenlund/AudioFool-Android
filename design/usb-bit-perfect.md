@@ -137,3 +137,12 @@ USB audio device from scratch. That needs checking on the S24 before the driver 
 it: whether the sound comes back, whether permission survives (a replug keeps it), what the
 DAC's volume does, and that the app's own `USB_DEVICE_DETACHED`/"becoming noisy" handling
 doesn't take the replug for a real unplug.
+
+### What 0.3.1's two tests showed (the user's report, 2026-10-27 15:08)
+
+- **With a USB reset: Android dropped the DAC 102 ms after the reset and set it up again
+  1,172 ms later**, as at a replug. So a reset is seen as a replug after all (Samsung's kernel
+  re-enumerates rather than just rebinding the driver).
+- **After a 5 s wait** (no reset): Android never dropped the DAC, as in 0.3.0.
+- Android's USB output was `card=1;device=0` before and after both, so the card number did
+  not change. The kernel's list (`/proc/asound/cards`) isn't there for an app to read.
