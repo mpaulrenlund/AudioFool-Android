@@ -26,6 +26,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +42,7 @@ import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.playback.UsbDac
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /** The numbers the debug panel shows that don't come from the library itself. */
@@ -55,12 +57,8 @@ class DebugNumbers(
     val usb: UsbDacNumbers? = null,
 )
 
-/** The USB DAC panel (0.3.0, the look-only build of true Bit-Perfect on the S24). */
-class UsbDacNumbers(
-    val dac: UsbDac,
-    /** Pauses the music before the DAC is taken from Android. */
-    val pause: () -> Unit,
-)
+/** The USB DAC panel (0.3.0; the driver's status since 0.4.0). */
+class UsbDacNumbers(val dac: UsbDac)
 
 /** What the user reports back about playback: BASS, the formats it plays, and how each track's output opened. */
 class PlaybackNumbers(
@@ -153,12 +151,19 @@ fun DebugScreen(state: LibraryState, numbers: DebugNumbers, actions: DebugAction
 }
 
 /**
- * The USB DAC as the app's own driver will see it (0.3.0): its descriptors, then a test of
- * taking it from Android and giving it back, and the report to send.
+ * The USB DAC (0.3.0): its descriptors, what the app's own driver is doing with it (0.4.0,
+ * looked at again each second: its clock and underruns move), and the report to send.
  */
 @Composable
 private fun UsbDacPanel(numbers: UsbDacNumbers) {
     val dac = numbers.dac
+    var second by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(1000)
+            second++
+        }
+    }
     Panel("USB DAC") {
         SettingRow("DAC", dac.summary())
         SettingRow(
@@ -166,19 +171,9 @@ private fun UsbDacPanel(numbers: UsbDacNumbers) {
             if (dac.described.isEmpty()) "asks for the DAC once, then shows what it offers" else dac.described.joinToString("\n"),
             onClick = dac::read,
         )
-        // 0.3.1: 0.3.0's give-back left the DAC silent until a replug; each row tries one way out.
-        SettingRow(
-            "Give it back with a USB reset",
-            dac.probed[UsbDac.GiveBack.Reset]?.joinToString("\n") ?: "pauses, takes the DAC, gives it back and resets it; then play a song",
-            onClick = { dac.takeAndGiveBack(UsbDac.GiveBack.Reset, numbers.pause) },
-        )
-        SettingRow(
-            "Give it back after a wait",
-            dac.probed[UsbDac.GiveBack.AfterWait]?.joinToString("\n") ?: "pauses and waits 5 s before taking the DAC; then play a song",
-            onClick = { dac.takeAndGiveBack(UsbDac.GiveBack.AfterWait, numbers.pause) },
-        )
+        SettingRow("Driver", second.let { dac.driver().joinToString("\n") })
         if (dac.busy) SettingRow("Working…")
-        if (dac.report.isNotEmpty()) SettingRow("Send the report", "saved to Download as AudioFool-USB-DAC.txt", onClick = dac::share)
+        SettingRow("Send the report", "saved to Download as AudioFool-USB-DAC.txt", onClick = dac::share)
     }
 }
 

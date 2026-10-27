@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.media.VolumeProvider
 import android.os.SystemClock
 import com.mpaulrenlund.audiofool.MainActivity
 import com.mpaulrenlund.audiofool.core.model.Track
@@ -39,6 +40,40 @@ class SystemControls(private val context: Context, private val player: Player, p
         })
         setSessionActivity(openAppIntent(context))
         isActive = true
+    }
+
+    /** The volume keys while the driver holds a USB DAC with a volume control (0.4.0), else null. */
+    private var remoteVolume: VolumeProvider? = null
+
+    /**
+     * While the app's own driver holds the USB DAC, Android's volume no longer reaches it:
+     * the volume keys move the DAC's own volume instead, through the session ([UsbDriver]'s
+     * steps). Given back, the keys are Android's media volume again.
+     */
+    fun syncVolume(driver: UsbDriver) {
+        val steps = driver.volumeSteps
+        if (steps == null) {
+            if (remoteVolume != null) {
+                session.setPlaybackToLocal(OutputRoutes.MEDIA)
+                remoteVolume = null
+            }
+            return
+        }
+        val provider = remoteVolume ?: object : VolumeProvider(VOLUME_CONTROL_ABSOLUTE, steps, driver.volumeStep) {
+            override fun onSetVolumeTo(volume: Int) {
+                driver.setVolumeStep(volume)
+                currentVolume = driver.volumeStep
+            }
+
+            override fun onAdjustVolume(direction: Int) {
+                driver.setVolumeStep(driver.volumeStep + direction)
+                currentVolume = driver.volumeStep
+            }
+        }.also {
+            remoteVolume = it
+            session.setPlaybackToRemote(it)
+        }
+        provider.currentVolume = driver.volumeStep
     }
 
     /** The cover for the lock screen and the notification, once read. */

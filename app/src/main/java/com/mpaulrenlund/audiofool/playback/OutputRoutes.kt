@@ -37,6 +37,9 @@ sealed interface OutputPlan {
 
     /** The track's own rate in whole-number samples at full volume, for the system to pass on (the M21). */
     data object SourceRate : OutputPlan
+
+    /** The app's own driver holds the USB DAC and has a setting for the track (0.4.0): [OutputRoutes.openDriver]. */
+    data object Driver : OutputPlan
 }
 
 /**
@@ -45,11 +48,15 @@ sealed interface OutputPlan {
  * mixer entries, and sets the one a track plays through
  * (`setPreferredMixerAttributes`, Android 14+).
  *
- * The output stage calls [prepare], [mayOpenDop], [refuse] and [clearMixer] on
- * its thread; the rest is the main thread's. AudioManager's calls are safe from
- * either.
+ * With Bit-Perfect on a USB DAC, the app's own [driver] comes first (0.4.0: true
+ * Bit-Perfect, where the phone has no bit-perfect mixer); the mixer is what it falls
+ * back to.
+ *
+ * The output stage calls [prepare], [openDriver], [mayOpenDop], [refuse],
+ * [clearMixer] and [letGoOfDac] on its thread; the rest is the main thread's.
+ * AudioManager's calls are safe from either.
  */
-class OutputRoutes(context: Context) {
+class OutputRoutes(context: Context, val driver: UsbDriver? = null) {
     private val audioManager = context.getSystemService(AudioManager::class.java)
     private val main = Handler(Looper.getMainLooper())
 
@@ -85,8 +92,15 @@ class OutputRoutes(context: Context) {
 
     val way: BitPerfectWay get() = BitPerfectRule.way(route, MIXER_API, usbMixers.entries.size)
 
-    /** BP is greyed out and can't be tapped (spec 6.2). */
-    val greyed: Boolean get() = way == BitPerfectWay.None
+    /** BP is greyed out and can't be tapped (spec 6.2). A USB DAC the driver can play to never is. */
+    val greyed: Boolean get() = way == BitPerfectWay.None && !(driverWanted && driver?.available == true)
+
+    /**
+     * Where the driver plays (0.4.0): a USB DAC on Android 14+ whose mixer offers no
+     * bit-perfect entry (the S24). Not the M21 (Android 13, its own way), not a phone whose
+     * bit-perfect mixer already does it, not the emulator's pretend DAC.
+     */
+    private val driverWanted: Boolean get() = route == OutputRoute.Usb && pretend == null && MIXER_API && usbMixers.entries.none { it.bitPerfect }
 
     /** Called on the main thread when a USB or wired device comes or goes (the player's `PlugGuard`). */
     var onPlug: () -> Unit = {}
@@ -109,7 +123,8 @@ class OutputRoutes(context: Context) {
         val before = pluggedIds.toSet()
         pluggedIds.clear()
         pluggedNow(pluggedIds)
-        if (devices.any { it.type in PLUGGED_TYPES } && pluggedIds != before) onPlug()
+        // The driver's own give-back drops the DAC and brings it back: no plug.
+        if (devices.any { it.type in PLUGGED_TYPES } && pluggedIds != before && driver?.handingBack() != true) onPlug()
         devicesChanged()
     }
 
@@ -187,11 +202,19 @@ class OutputRoutes(context: Context) {
      * open the `AudioTrack`. With Bit-Perfect on a USB device this sets the mixer
      * entry [MixerChoice] picks; with nothing to pick, the shared output.
      */
-    fun prepare(asked: PcmFormat): OutputPlan {
+    fun prepare(asked: PcmFormat, mayUseDriver: Boolean = true): OutputPlan {
         if (!bitPerfectOn) {
             clearMixer()
+            letGoOfDac("Bit-Perfect off")
             return OutputPlan.Shared
         }
+        if (mayUseDriver && driverWanted && driver?.settingFor(asked) != null) {
+            clearMixer()
+            lastMixerNote = "driver: ${describe(asked)}"
+            return OutputPlan.Driver
+        }
+        // Android's own path from here: the DAC must be Android's again first.
+        letGoOfDac("no setting for ${describe(asked)}")
         return when (way) {
             BitPerfectWay.None -> {
                 clearMixer()
@@ -237,6 +260,16 @@ class OutputRoutes(context: Context) {
         return OutputPlan.Mixer(attributes.format, entry.bitPerfect)
     }
 
+    /** Starts the driver for a track [prepare] said it plays ([OutputPlan.Driver]): the output and the format it took, or null. */
+    fun openDriver(asked: PcmFormat): Pair<PcmOutput, PcmFormat>? = driver?.open(asked).also {
+        if (it == null) lastMixerNote = "driver wouldn't start: ${driver?.note}"
+    }
+
+    /** Gives the USB DAC back to Android if the driver holds it, and waits for Android to have it again. */
+    fun letGoOfDac(why: String) {
+        driver?.giveBack(why)
+    }
+
     /** The `AudioTrack` wouldn't open in the entry [prepare] set: back to shared, and the debug screen says so. */
     fun mixerTrackFailed() {
         lastMixerNote = "track not accepted (${lastMixerNote}): shared"
@@ -253,6 +286,8 @@ class OutputRoutes(context: Context) {
 
     /** Whether a DSD file at [dopRate] may open as DoP here ([DopRule], from the desktop). */
     fun mayOpenDop(dopRate: Int): Boolean {
+        // The driver: DoP at any rate the DAC itself takes 24-bit PCM at (DSD128 included).
+        if (bitPerfectOn && driverWanted && dopRate !in refusedRates && driver?.mayOpenDop(dopRate) == true) return true
         val exclusive = bitPerfectOn && way == BitPerfectWay.UsbMixer
         return DopRule.mayOpen(
             if (exclusive) OutputMode.Exclusive else OutputMode.Shared,

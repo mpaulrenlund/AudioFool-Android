@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, built, not yet released
 - [x] **0.3.1**: true Bit-Perfect on the S24, a test build: two ways of giving the DAC back (a USB reset; waiting for Android to close its output first) — 2026-10-27, released as a pre-release
 - [x] **0.3.0**: true Bit-Perfect on the S24, step 1: the USB DAC read directly (look only, Debug) — 2026-10-27, released as a pre-release
 - [x] **0.2.6**: the M21 unplugged says "No Output"; the S24's buttons higher again — 2026-10-26, released as a pre-release
@@ -42,6 +43,33 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.0 (2026-10-27), built as versionCode 22, not yet released: **true Bit-Perfect on the S24, the
+driver.** The user said to start it after 0.3.1 proved the give-back. All in
+`design/usb-bit-perfect.md` > "The driver (0.4.0)". In short:
+
+- **Where**: Bit-Perfect on, a USB DAC, Android 14+, no bit-perfect mixer entry (the S24). The
+  M21 and the emulator's pretend DAC keep their old ways. A track the driver can't play goes
+  the mixer's way ("Rate Matched"), the DAC handed back first.
+- **libusb 1.0.30** vendored unchanged in `third_party/libusb` (signature checked), built as its
+  own `libusb-1.0.so` (LGPL, dynamic); credited in README. The CMake project now builds C too.
+- **The output stage writes to a `PcmOutput`**: `AudioTrackOutput` (as before) or `UsbOutput`
+  (the driver). Gapless joins, the 5 ms seek fade, the heard position and underruns work the
+  same through both. A DAC lost mid-song pauses (`onOutputLost`); a seek while handed back is
+  kept for Resume.
+- **Given back** at BP off, the player stopping, a minute paused (`Player.LET_GO_OF_DAC_MS`),
+  or a track it can't play: volume restored, released, reattached, reset, then it waits for
+  Android to set the DAC up again; the drop and return don't pause or count as a plug.
+- **Volume**: the DAC's hardware volume in 60 steps of 1 dB (0 mutes), started from Android's
+  media volume; the volume keys move it through the media session (remote volume).
+- **"Always open AudioFool"**: a `USB_DEVICE_ATTACHED` filter on `UsbAttachActivity`, which shows
+  nothing; it lets the driver use the DAC at every plug without asking.
+- **Debug**: the USB DAC panel's 0.3.x give-back tests are gone (they'd take the DAC from the
+  driver); a **Driver** row shows what it does (each second: the clock's feedback, underruns,
+  errors, volume), and the report carries it.
+- **Not checked anywhere yet**: the emulator has no USB. Checked there: playback, skips, seeks
+  (faded), pause/resume and gapless joins through `AudioTrackOutput`, unchanged; all tests
+  pass (19 new core tests on the driver's rules), screenshots unchanged.
 
 0.3.1 (2026-10-27), released as pre-release [`v0.3.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.1) ("AudioFool 0.3.1", versionCode 21): **a test of giving the DAC back.**
 0.3.0's "Take it and give it back" left the DAC silent until a replug (the user, on the S24).
@@ -606,6 +634,35 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.0 (true Bit-Perfect: the driver)
+
+Built 2026-10-27 (versionCode 22). Installs over 0.3.1 (same key). With the UA2 Plus plugged
+in and **BP on**. The Driver row in logo > Statistics > Debug > USB DAC says what it is doing.
+
+- [ ] **Plugging in**: does Android offer "Open AudioFool when Shanling UA2 Plus is connected?"
+  Tick **Always** and OK. (If instead "Allow AudioFool to access…?" comes when a song starts,
+  Allow.)
+- [ ] **A 16-bit 44.1 kHz FLAC**: the readout says "Shanling UA2 Plus · 44.1 kHz · 16-Bit ·
+  Exclusive"; it sounds right; the Driver row says "playing 44.1 kHz, 16-bit in 2 bytes
+  (setting 1)", its feedback values climb and underruns stay at 0.
+- [ ] **A few minutes of listening**: any clicks, dropouts or drift?
+- [ ] **A 24-bit 96 or 192 kHz album**, and one where the rate changes between tracks: gapless
+  within an album, a short gap at a rate change?
+- [ ] **Seek and skip**: no clicks.
+- [ ] **A DSD file**: the readout says "DSD over PCM"; does pausing it click?
+- [ ] **Volume keys** (screen on and off): do they change the DAC's volume? Did it start no
+  louder than before?
+- [ ] **Paused over a minute**: is the DAC handed back (Driver row: "given back (paused a
+  while)")? Does a notification sound come through the DAC then? Does Play carry on through
+  the driver? Did Android ask anything at the hand-back?
+- [ ] **BP off while playing**: keeps playing (after a second or two), through Android?
+- [ ] **Unplug while playing**: pauses; plug back in and Play.
+- [ ] **A notification while the driver holds the DAC**: heard anywhere?
+- [ ] **Send the report** after playing a while (paste the text).
+
+If AudioFool is closed by Android or swiped away while it holds the DAC, the DAC may stay silent
+until it is unplugged and plugged in again.
+
 ### 0.3.1 (true Bit-Perfect, a test: giving the DAC back)
 
 Released 2026-10-27 as pre-release [`v0.3.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.3.1). Installs over 0.3.0 (same key). Playback is unchanged. From logo > Statistics > Debug > **USB
@@ -902,6 +959,14 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 - [ ] **Token sheet.** Debug > Token sheet: tap through the four pages in both themes; back returns.
 
 ## To test on the M21
+
+### 0.4.0 (nothing new, a check)
+
+The output stage now writes through a new layer (for the S24's driver); the M21 should play
+exactly as 0.2.6 did.
+
+- [ ] **BP on, an album through the headphone out**: gapless, the readout as before, seeks
+  without clicks.
 
 ### 0.2.6 (No Output)
 

@@ -22,6 +22,7 @@ import com.mpaulrenlund.audiofool.playback.PlaybackService
 import com.mpaulrenlund.audiofool.playback.Player
 import com.mpaulrenlund.audiofool.playback.SystemControls
 import com.mpaulrenlund.audiofool.playback.UsbDac
+import com.mpaulrenlund.audiofool.playback.UsbDriver
 import com.mpaulrenlund.audiofool.playback.WaveformReader
 import com.mpaulrenlund.audiofool.ui.ArtSources
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -59,9 +60,14 @@ class AudioFoolApp : Application() {
             scope = scope,
             resumePath = File(noBackupFilesDir, "resume.json").path,
             waveforms = WaveformReader(File(noBackupFilesDir, WAVEFORMS)),
-            routes = OutputRoutes(this),
+            routes = OutputRoutes(this, usbDriver),
             settings = settings,
         ).also { p ->
+            usbDriver.onChange = {
+                p.usbChanged()
+                if (systemControlsLazy.isInitialized()) systemControls.syncVolume(usbDriver)
+            }
+            usbDriver.onAllowed = p::usbAllowed
             p.watchers.add(lastFm)
             p.watchers.add(listening)
             p.onChange = {
@@ -74,8 +80,11 @@ class AudioFoolApp : Application() {
     /** The queue and playback (spec 6.1); the output stage starts on the first play. */
     val player: Player by playerLazy
 
-    /** The USB DAC read directly, for true Bit-Perfect on the S24 (0.3.0: look only, from Statistics > Debug). */
-    val usbDac: UsbDac by lazy { UsbDac(this) }
+    /** True Bit-Perfect on the S24: the app's own driver for the USB DAC (0.4.0), made with the player. */
+    val usbDriver: UsbDriver by lazy { UsbDriver(this) }
+
+    /** The USB DAC as Statistics > Debug shows it (0.3.0), with what the driver is doing. */
+    val usbDac: UsbDac by lazy { UsbDac(this, driverStatus = { if (playerLazy.isInitialized()) usbDriver.status() else listOf("not started yet (starts with the player)") }) }
 
     /** The listening time Statistics shows (spec 4.6), counted from the first run of this version on. */
     val listening: Listening by lazy { Listening(File(noBackupFilesDir, "listening.json").path, scope) }
@@ -84,9 +93,13 @@ class AudioFoolApp : Application() {
     val lastFm: LastFm by lazy { LastFm(this, noBackupFilesDir) }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */
-    val systemControls: SystemControls by lazy {
-        SystemControls(this, player, scope).also { it.onArt = { PlaybackService.running?.update() } }
+    private val systemControlsLazy = lazy {
+        SystemControls(this, player, scope).also {
+            it.onArt = { PlaybackService.running?.update() }
+            it.syncVolume(usbDriver)
+        }
     }
+    val systemControls: SystemControls by systemControlsLazy
 
     /**
      * Cover thumbnails (spec 8), kept in the app's own storage: the lists' size

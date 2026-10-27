@@ -127,6 +127,10 @@ this PC's setup and the whole build, test and release loop.
 
 - **TagLib 2.3.2** (`third_party/taglib`, unchanged): dual-licensed LGPL 2.1 / MPL 1.1.
   AudioFool uses it under the MPL, linked statically into `libaudiofooltags.so`.
+- **libusb 1.0.30** (`third_party/libusb`, unchanged, the release tarball from
+  <https://github.com/libusb/libusb/releases/tag/v1.0.30>, its PGP signature checked against
+  the release manager's key): LGPL 2.1 (`third_party/libusb/COPYING`). Built as its own shared
+  library, `libusb-1.0.so`, which AudioFool's USB DAC driver links to dynamically.
 - **Selawik 1.01** (`app/src/main/res/font`): Microsoft's open-source stand-in for Segoe
   UI, SIL Open Font License 1.1 (`third_party/selawik/LICENSE.txt`).
 - The PlayStation logo (`PlayStation-Logo-1994.png`) is used unchanged, and the launcher

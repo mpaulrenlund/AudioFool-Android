@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 0.4.0: any USB device with an audio interface (class 1), for UsbAttachActivity. -->
+<resources>
+    <usb-device class="1" />
+</resources>

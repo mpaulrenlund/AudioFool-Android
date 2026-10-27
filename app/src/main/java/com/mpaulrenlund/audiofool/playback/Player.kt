@@ -414,6 +414,11 @@ class Player(
         showRoute()
     }.let { }
 
+    override fun onOutputLost() = main.post {
+        android.util.Log.i(TAG, "the USB DAC went away: paused")
+        if (state.isPlaying) pause()
+    }.let { }
+
     override fun onFinished() = main.post {
         // The end of the queue: back to its start, paused, so Play plays it again.
         engaged = false
@@ -522,6 +527,7 @@ class Player(
     private fun setPlaying(playing: Boolean) {
         if (state.isPlaying == playing) return
         state.isPlaying = playing
+        main.removeCallbacks(letGoOfDac)
         if (playing) {
             registerNoisy()
             main.removeCallbacks(periodicSave)
@@ -532,9 +538,21 @@ class Player(
             unregisterNoisy()
             main.removeCallbacks(periodicSave)
             main.removeCallbacks(tick)
+            main.postDelayed(letGoOfDac, LET_GO_OF_DAC_MS)
         }
         onChange()
     }
+
+    /** Paused a while with the driver holding the USB DAC: it goes back to Android (the user's call, 0.4.0). */
+    private val letGoOfDac = Runnable {
+        if (!state.isPlaying && engaged && engineMade && routes.driver?.holding == true) engine.letGo()
+    }
+
+    /** The driver took or gave back the DAC, or it came or went: the readout and BP's state. */
+    fun usbChanged() = showRoute()
+
+    /** Android allowed the app the DAC: playing with Bit-Perfect on, it now goes through the driver. */
+    fun usbAllowed() = routeChanged()
 
     /**
      * While playing, the watchers hear where the speakers are, as the desktop's
@@ -614,7 +632,8 @@ class Player(
     /** Headphones unplugged (or a Bluetooth headset gone): pause, as every player does. */
     private val noisy = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && state.isPlaying) pause()
+            // Not when the driver's own give-back drops the DAC for a moment (0.4.0).
+            if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && state.isPlaying && routes.driver?.handingBack() != true) pause()
         }
     }
 
@@ -694,6 +713,9 @@ class Player(
         const val FIIO_HEADSET_TYPE_CHANGED = "fiio.intent.action.HEADSET_TYPE_CHANGED"
         const val FIIO_SAMPLE_RATE_CHANGED = "fiio.intent.action.SAMPLE_RATE_CHANGED"
         const val SAVE_EVERY_MS = 10_000L
+
+        /** Paused this long, the USB DAC the driver holds goes back to Android (about a minute, the user's call). */
+        const val LET_GO_OF_DAC_MS = 60_000L
         const val TICK_MS = 250L
         const val DUCKED = 0.2f
 

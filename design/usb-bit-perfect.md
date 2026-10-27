@@ -157,3 +157,41 @@ doesn't take the replug for a real unplug.
   test). The access prompt came up right after the reset, by itself: AudioFool asks only when
   a Debug row is tapped, so it was Android reacting to the DAC arriving again (perhaps another
   app's "open with" filter).
+
+## The driver (0.4.0)
+
+Steps 2 to 4 above, in one test build. **Nothing of it has run on a DAC yet**: the emulator has
+no USB, so everything below is for the S24 to show.
+
+- **Where it plays**: Bit-Perfect on, a USB DAC, Android 14+, and a mixer with no bit-perfect
+  entry (the S24). Not the M21 (Android 13 keeps its own way), not a phone whose bit-perfect
+  mixer already does it, not the emulator's pretend DAC. If the driver can't play a track (no
+  permission yet, a rate or channel count the DAC lacks, it won't start), the DAC is given back
+  and the track goes the mixer's way ("Rate Matched"), as before.
+- **Core** (`core/.../usbaudio/UsbStreamRules.kt`, tests against the UA2 Plus's bytes):
+  `UsbFormatChoice` (16-bit in 16, 24 in 24-in-3, lossy in 32, DoP in 24; never the native-DSD
+  setting), `UsbFeedback` and `PacketSizer` (Linux's feedback-format check and packet sizes),
+  `UsbVolume` (60 steps of 1 dB below the DAC's loudest, 0 is mute; starts from Android's media
+  volume, a little quieter than Android had it if anything).
+- **Native** (`app/src/main/cpp/usbaudio_driver.cpp`, on libusb 1.0.30 vendored in
+  `third_party/libusb`): opens from Android's descriptor (`libusb_wrap_sys_device`, no device
+  discovery), claims the interfaces from Android's driver, and streams: 8 isochronous transfers
+  of 2 ms in flight, packet sizes from the DAC's feedback, a half-second ring the output stage
+  writes into, silence while paused (the DAC keeps its clock), a 5 ms raised-cosine fade before
+  a cut, and frames counted as heard once their transfer is done. Gives back with release,
+  reattach and reset.
+- **Kotlin**: `UsbDriver` (take, permission, the clock's rates, the format, the rate, the
+  volume, give back, unplug), `UsbStream` (the native calls), `PcmOutput` (what the output
+  stage writes to: `AudioTrackOutput` or `UsbOutput`), `OutputPlan.Driver` in `OutputRoutes`.
+- **Gives back** when Bit-Perfect goes off, when the player stops, after a minute paused, and
+  when a track can't play through it; waits for Android to set the DAC up again (about 1.3 s)
+  before opening Android's output, and takes the drop and return as its own (no "becoming
+  noisy" pause, no plug). The DAC's volume is put back as it was first.
+- **Volume keys**: while the driver holds a DAC with a volume control, the media session's
+  volume is "remote": the keys move the DAC's own volume.
+- **The manifest's attach filter** (`UsbAttachActivity`, shows nothing): Android offers "Open
+  AudioFool when Shanling UA2 Plus is connected?"; "Always" lets the driver use the DAC at
+  every plug without asking, including after its own reset, which Android takes for a replug.
+- **Known gaps**: paused DoP sends zeros, so the DAC may drop out of DSD with a click; other
+  sounds are probably silent while the app holds the DAC; if the app is killed while holding
+  it, the DAC stays silent until it is replugged. Native DSD (setting 4) is not used.

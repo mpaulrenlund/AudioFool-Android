@@ -2,7 +2,6 @@ package com.mpaulrenlund.audiofool.playback
 
 import android.media.AudioFormat
 import android.media.AudioTrack
-import android.media.VolumeShaper
 import android.os.Process
 import android.os.SystemClock
 import com.mpaulrenlund.audiofool.core.model.Track
@@ -43,7 +42,13 @@ import java.util.concurrent.TimeUnit
  * turned down: [fixedVolume]. A change of route or of the setting reopens the
  * output where the song was heard ([reconfigure]).
  *
- * Everything runs on one thread that owns BASS's streams and the `AudioTrack`;
+ * **True Bit-Perfect** (0.4.0): where [routes] says [OutputPlan.Driver], the output
+ * is the app's own USB driver holding the DAC ([UsbOutput]) instead of an
+ * `AudioTrack`; both are a [PcmOutput], so everything above works the same. A DAC
+ * that goes away mid-song pauses ([Listener.onOutputLost]); [letGo] gives it back
+ * while paused, and Resume opens the output again.
+ *
+ * Everything runs on one thread that owns BASS's streams and the output;
  * the rest of the app talks to it through commands, and hears back through the
  * [Listener], on that thread.
  */
@@ -63,6 +68,9 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
 
         /** The last song has been heard out (or nothing in a play would open). */
         fun onFinished()
+
+        /** The USB DAC the driver played to went away (unplugged): the output stage has paused. */
+        fun onOutputLost()
     }
 
     private sealed interface Command {
@@ -71,6 +79,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         class Seek(val ms: Long) : Command
         class Volume(val level: Float) : Command
         data object Reconfigure : Command
+        data object LetGo : Command
         data object Pause : Command
         data object Resume : Command
         data object Stop : Command
@@ -126,7 +135,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     private var next: Decoder? = null
     private var nextTried = false
     private var upcoming: List<Track> = emptyList()
-    private var output: AudioTrack? = null
+    private var output: PcmOutput? = null
     private var volume = 1f
     private val head = Head()
     private var lastHeardTrack: Track? = null
@@ -172,6 +181,12 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
      */
     fun reconfigure() = commands.put(Command.Reconfigure)
 
+    /**
+     * Paused a while (0.4.0): gives a USB DAC the driver holds back to Android, so other
+     * sounds have somewhere to go. The song stays where it was; Resume opens the output again.
+     */
+    fun letGo() = commands.put(Command.LetGo)
+
     // ---- the thread ----
 
     private fun run() {
@@ -206,16 +221,24 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
                 output?.setVolume(outputVolume())
             }
             Command.Reconfigure -> reopenTheNewWay()
+            Command.LetGo -> if (!isPlaying && output is UsbOutput) {
+                releaseOutput()
+                routes.letGoOfDac("paused a while")
+            }
             Command.Pause -> {
                 output?.pause()
                 isPlaying = false
                 updateHeard()
             }
-            Command.Resume -> if (current != null && output != null) {
-                forgetUnderruns()
-                output?.play()
-                isPlaying = true
-                drainStillSince = 0
+            Command.Resume -> {
+                // Let go of while paused (or lost): opened again where the song was heard.
+                if (current != null && output == null) reopenWhereHeard()
+                if (current != null && output != null) {
+                    forgetUnderruns()
+                    output?.play()
+                    isPlaying = true
+                    drainStillSince = 0
+                }
             }
             Command.Stop -> closeAll()
         }
@@ -279,7 +302,14 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         }
 
         releaseOutput()
-        when (val plan = routes.prepare(format)) {
+        var plan = routes.prepare(format)
+        if (plan == OutputPlan.Driver) {
+            routes.openDriver(format)?.let { (out, opened) -> if (use(out, opened, format, OutputPath.BitPerfect, track)) return true }
+            // The driver wouldn't play it: Android's own way, the DAC handed back first.
+            plan = routes.prepare(format, mayUseDriver = false)
+        }
+        when (plan) {
+            OutputPlan.Driver -> Unit
             is OutputPlan.Mixer -> {
                 val f = plan.format
                 val opened = PcmFormat(f.sampleRate, f.channelCount, f.encoding, format.dop)
@@ -314,7 +344,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     }
 
     /** Takes [made] as the output, if it was made. */
-    private fun use(made: AudioTrack?, opened: PcmFormat, asked: PcmFormat, path: OutputPath, track: Track): Boolean {
+    private fun use(made: PcmOutput?, opened: PcmFormat, asked: PcmFormat, path: OutputPath, track: Track): Boolean {
         made ?: return false
         output = made
         openedFormat = opened
@@ -356,7 +386,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     }
 
     /** Builds an `AudioTrack` for [format]; [exact] is a mixer entry's own format, used as it is. */
-    private fun build(format: PcmFormat, exact: AudioFormat? = null): AudioTrack? {
+    private fun build(format: PcmFormat, exact: AudioFormat? = null): PcmOutput? {
         // A mixer entry may give its channels as an index mask; the buffer size only needs the count.
         val mask = OutputRoutes.maskOf(format.channels)
         if (mask == AudioFormat.CHANNEL_INVALID) return null
@@ -372,7 +402,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
                 .setBufferSizeInBytes(size - size % format.bytesPerFrame)
                 .setTransferMode(AudioTrack.MODE_STREAM)
                 .build()
-            if (track.state == AudioTrack.STATE_INITIALIZED) track else {
+            if (track.state == AudioTrack.STATE_INITIALIZED) AudioTrackOutput(track) else {
                 track.release()
                 null
             }
@@ -383,7 +413,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         }
     }
 
-    private fun countUnderruns(out: AudioTrack) {
+    private fun countUnderruns(out: PcmOutput) {
         val count = out.underrunCount
         if (count > underrunsSeen) underruns += count - underrunsSeen
         underrunsSeen = count
@@ -426,8 +456,10 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
             pendingFramesLogged = 0
         }
 
-        val written = out.write(pending, pending.remaining(), AudioTrack.WRITE_NON_BLOCKING)
+        val written = out.write(pending, pending.remaining())
         when {
+            // A USB DAC the driver held was pulled out: pause, as an unplug does.
+            written < 0 && out is UsbOutput -> outputLost()
             written < 0 -> reopenAfterLoss(decoder)
             written == 0 -> {
                 // The output is full: the slack in which to open the next track.
@@ -540,7 +572,12 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
 
     private fun seekTo(ms: Long) {
         val decoder = current ?: return
-        val out = output ?: return
+        val out = output ?: run {
+            // The DAC handed back while paused: Resume opens the output again from here.
+            decoder.seek(ms)
+            heard = HeardPoint(decoder.track, ms)
+            return
+        }
         draining = false
         cut(out)
         decoder.seek(ms)
@@ -565,6 +602,36 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         current = playing
         heard = HeardPoint(playing.track, at)
         if (isPlaying) output?.play()
+    }
+
+    /** The driver's DAC went away: paused where the song was heard, the output closed until Resume. */
+    private fun outputLost() {
+        updateHeard()
+        releaseOutput()
+        isPlaying = false
+        listener.onOutputLost()
+    }
+
+    /** Opens the output again for the song being played, from where it was heard (after [letGo] or a lost DAC). */
+    private fun reopenWhereHeard() {
+        val decoder = current ?: return
+        val at = ReopenPoint.choose(decoder.track, heard, (decoder.positionSeconds * 1000).toLong())
+        next?.close()
+        next = null
+        nextTried = false
+        draining = false
+        decoder.close()
+        current = null
+        val playing = Decoder.open(decoder.track, at, routes::mayOpenDop)?.let { openFor(it, reuse = false) }
+        if (playing == null) {
+            closeAll()
+            listener.onSkipped(listOf(decoder.track))
+            listener.onFinished()
+            return
+        }
+        playing.fadeInNext()
+        current = playing
+        heard = HeardPoint(playing.track, at)
     }
 
     /**
@@ -606,24 +673,21 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
      * changed any more, so the fade is a `VolumeShaper` on the track, given time
      * to reach the speakers before the pause. Never for DoP.
      */
-    private fun cut(out: AudioTrack) {
-        val shaper = if (stillSounding(out)) fadeOut(out) else null
+    private fun cut(out: PcmOutput) {
+        val fade = if (stillSounding(out)) {
+            fadedCuts++
+            out.fadeOut()
+        } else {
+            null
+        }
         runCatching { out.pause() }
         runCatching { out.flush() }
         // Emptied, so the volume going back up is silent.
-        shaper?.let { runCatching { it.close() } }
+        fade?.let { runCatching { it.close() } }
     }
 
-    private fun stillSounding(out: AudioTrack): Boolean =
-        isPlaying && openedFormat?.dop == false && out.playState == AudioTrack.PLAYSTATE_PLAYING && timeline.totalFrames > head.read(out)
-
-    private fun fadeOut(out: AudioTrack): VolumeShaper? = runCatching {
-        out.createVolumeShaper(FADE_OUT).also {
-            it.apply(VolumeShaper.Operation.PLAY)
-            SystemClock.sleep(FADE_OUT_WAIT_MS)
-            fadedCuts++
-        }
-    }.getOrNull()
+    private fun stillSounding(out: PcmOutput): Boolean =
+        isPlaying && openedFormat?.dop == false && out.isPlaying && timeline.totalFrames > head.read(out)
 
     private fun updateHeard() {
         if (output == null) return
@@ -653,6 +717,7 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
     private fun closeAll() {
         releaseOutput()
         routes.clearMixer()
+        routes.letGoOfDac("the player stopped")
         current?.close()
         current = null
         next?.close()
@@ -663,42 +728,27 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         pending.clear().limit(0)
     }
 
-    private companion object {
-        /** [SeekFade]'s 5 ms, falling as a raised cosine does (the cubic curve is the nearest). */
-        val FADE_OUT: VolumeShaper.Configuration = VolumeShaper.Configuration.Builder()
-            .setDuration((SeekFade.SECONDS * 1000).toLong())
-            .setCurve(floatArrayOf(0f, 1f), floatArrayOf(1f, 0f))
-            .setInterpolatorType(VolumeShaper.Configuration.INTERPOLATOR_TYPE_CUBIC)
-            .build()
-
-        /**
-         * How long the fade is given before the pause: Android applies a shaper at
-         * its next mix and ramps over that mix, so the fade plus a mix or two.
-         */
-        const val FADE_OUT_WAIT_MS = 40L
-    }
-
     /**
-     * The `AudioTrack`'s playback head as a frame count that doesn't wrap (the
+     * The output's playback head as a frame count that doesn't wrap (the
      * platform gives an unsigned 32-bit count) and starts at 0 when [reset].
      */
     private class Head {
         private var last = 0L
         private var total = 0L
 
-        fun reset(track: AudioTrack?) {
-            last = raw(track)
+        fun reset(out: PcmOutput?) {
+            last = raw(out)
             total = 0
         }
 
-        fun read(track: AudioTrack?): Long {
-            val r = raw(track)
+        fun read(out: PcmOutput?): Long {
+            val r = raw(out)
             total += (r - last) and 0xFFFFFFFFL
             last = r
             return total
         }
 
-        private fun raw(track: AudioTrack?): Long =
-            track?.let { runCatching { it.playbackHeadPosition.toLong() and 0xFFFFFFFFL }.getOrNull() } ?: last
+        private fun raw(out: PcmOutput?): Long =
+            out?.let { runCatching { it.headFrames() }.getOrNull() } ?: last
     }
 }
