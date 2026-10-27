@@ -1,116 +1,92 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-26, after 0.2.6. Read this with `README.md` (how the app works) and
-`design/progress.md` (every decision, and the lists of what to test on each device). The
-spec is `design/android-spec.md`.
+Updated 2026-10-27, after 0.2.6 (confirmed on both phones). Read this with `README.md` (how
+the app works) and `design/progress.md` (every decision, and the lists of what to test on each
+device). The spec is `design/android-spec.md`.
 
 ## Starting the next session
 
-- **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the Decisions
-  sections (0.2.2 down to 0.1.1 at the top, then session 5) and the newest session notes.
+- **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
+  for the build" section from the top (0.2.6 down to 0.2.2 is the newest work) and the newest
+  session notes.
 - **Latest: 0.2.6** (versionCode 19), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6>,
-  `dist/AudioFool-0.2.6.apk`. Everything on `main` is in it.
+  `dist/AudioFool-0.2.6.apk`. Everything on `main` is in it; the working tree is clean.
 - **Next release:** **0.2.7, versionCode 20** for fixes; **0.3.0** for a new feature. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
-  release (2026-10-24), then v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2, all pre-releases (2026-10-25), and v0.2.3 to v0.2.6 (2026-10-26).
+  release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
+  (2026-10-26). All but v0.1.0 are pre-releases.
+- **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
+  :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
+  signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
+  emulator (and the M21 if it's plugged in), show the notes, publish only on their yes, then
+  record it in `design/progress.md` and here.
 
-### What 0.2.x changed (the user's UI requests, all 2026-10-25)
+### Where things stand (2026-10-27)
 
-- **0.2.0:** the Artists **letter strip** (spec 4.1; `ui/ArtistIndexStrip.kt`, which letter an
-  artist files under in `core/.../library/ArtistIndex.kt`); Now Playing **swipe to skip**
-  (left Next, right Previous) in place of swipe-down to close (spec 5; `SwipeToSkip` in
-  `ui/NowPlayingScreen.kt`); the **seekbar glides** (split at the exact place, as the desktop's
-  `WaveformView`).
-- **0.2.1:** the strip **always shown**, rows ending short of it; swipe to skip reworked after
-  0.2.0 left the cover stuck off the screen after every skip on the S24 (never reproduced
-  here; now a skip has no animation). **Both confirmed on the S24.**
-- **0.2.2:** covers drawn **with no border** everywhere (placeholders keep theirs); Now Playing's
-  quality on **one line** ("FLAC · 1,901 kbps · 24-Bit · 48 kHz", `QualityLines`); the readout
-  **without "Shared"** and capitalised ("Speaker · 48 kHz (Resampled)", the phone's
-  `OutputReadout.describe(route, …)`; the desktop's port by mode is unchanged); **Repeat and
-  Shuffle side by side over BP**, the group as tall as Play/Pause (on the S24 the transport's
-  gaps shrink to about 10 dp to fit); the M21's **cover 301 dp** (`artHeightReserve` 366, from
-  426); Statistics' Playback and Debug panels on their own **Debug screen** (Statistics' last
-  row), without the FiiO signals and Outputs rows. Checked in ThemeLab and on the emulator,
-  **not yet on a phone**.
-
-### What 0.2.6 changed (2026-10-26)
-
-- **The M21 unplugged says "No Output"** (FiiO `type` 0, saved like the jacks; the M21 has no
-  speaker, the user confirmed). **The S24's buttons** 56 dp above the readout (from 40).
-  Released as pre-release `v0.2.6`. **Not yet seen on a phone:** "No Output" on the M21, the
-  buttons' height on the S24.
-
-### What 0.2.5 changed (2026-10-26)
-
-- **The readout reworded** (0.2.5, the user's list): "Shanling UA2 Plus · 96 kHz · 24-Bit ·
-  Exclusive", "4.4mm · 44.1 kHz · 16-Bit · Exclusive", "Speaker · 48 kHz · Resampled"
-  (`OutputNames`, `OutputReadout.describe(name, …)`).
-- **The M21's jacks**: FiiO's `HEADSET_TYPE_CHANGED` `type` is 1 for 3.5 mm, 8 for 4.4 mm, 0
-  unplugged ("No Output" since 0.2.6: the M21 has no speaker); sent only at a plug, so the last
-  one is saved (`settings` → `fiioJack`).
-- **The S24's buttons** 40 dp above the readout (from 24).
-- Checked on the M21 over adb. Released as pre-release `v0.2.5`. **Not yet seen:** the S24 DAC's
-  real name in the readout, the adapter's, and the buttons' new height (the 0.2.5 S24 items).
-
-### What 0.2.4 changed (2026-10-26)
-
-- **The S24's Now Playing buttons 24 dp higher** (2026-10-26, the user's call): a
-  `controlsLift` gap from the spare height between the controls and the readout, which stays
-  put. M21 pictures unchanged.
-- **The seekbar as one smooth shape** (2026-10-26, the user's call from a reference picture):
-  600 RMS columns drawn as the desktop's `WaveformView` outline (`WaveShape`). Waveforms moved
-  to `no_backup/waveforms-600/`; the old `waveforms/` is deleted at start (the user approved).
-- Released as pre-release `v0.2.4`. **Not yet seen on a phone:** the 0.2.4 items on the S24 list in `design/progress.md` (the buttons, the seekbar), and the seekbar on the M21.
-- **Confirmed on the S24 (0.2.3):** plugging in or out no longer starts the music.
-
-### What 0.2.3 changed (2026-10-26)
-
-- **Now Playing's spacing on the S24** (2026-10-26, the user's call): the height the S24's
-  width-limited cover can't use (the "spare height", 0 on the M21) grows the waveform to 64 dp
-  and evens the two flexible gaps. M21 pictures unchanged.
-- **Plugging in never starts the music** (2026-10-26, the user asked): `PlugGuard` (core)
-  ignores a play from outside the app (keys, lock screen, notification: `SystemControls.onPlay`
-  → `Player.resumeFromSystem`) within 3 s after a USB or wired device came or went, and pauses
-  one that came up to 3 s before. Checked on the emulator with the Pretend route row as the
-  plug; the real adapter's behaviour is on the S24 list. Statistics > Debug > **Plug guard**.
-- Released as pre-release `v0.2.3`. **Not yet seen on a phone:** the 0.2.3 items on the S24 list in `design/progress.md`.
-
-### Where things stand
-
-- **Waiting on the user:** 0.2.6 on the M21 ("No Output" unplugged) and the S24 (the buttons),
-  0.2.5's DAC name on the S24, 0.2.4's smooth
-  seekbar on the S24 (confirmed on the M21),
-  0.2.3's Now Playing spacing, and the 0.2.2 items on both lists in
-  `design/progress.md`, above all whether Previous / Play / Next are still easy to hit on the
-  S24 with the tighter spacing.
-- **Nothing is broken that the user knows of.** Confirmed on the phones: gapless with no
-  glitch at the joins (both); a song tap opens Now Playing (both); the S24 + USB DAC plays
-  24-bit with BP on and off; M21: 24-bit clean, BP on, the readout by FiiO's rate, no click
-  at a restart or a tap, unplug pauses on both jacks; S24: swipe to skip and the letter strip
-  (0.2.1).
+- **Nothing is broken that the user knows of.** The user's last report: "s24u and m21 both look
+  good" on 0.2.6.
+- **Confirmed on the phones** (0.2.x): the letter strip and swipe to skip (S24); plugging a USB
+  DAC or adapter in or out never starts the music (S24); the smooth seekbar (M21); the readout
+  names the M21's jack, "3.5mm" / "4.4mm", and says "No Output" unplugged, also after a restart
+  (M21); the S24's Now Playing buttons at 56 dp above the readout (S24). Earlier: gapless with no
+  glitch, a song tap opens Now Playing, 24-bit clean, BP, unplug pausing, no click at a seek.
+- **Not yet reported** (don't block on them; the unticked items in `design/progress.md`): the
+  S24 DAC's **own name** in the readout (0.2.5: `AudioDeviceInfo.productName`; if it shows
+  "USB" or an odd name, the Debug screen's Route row has what Android calls it), and the
+  USB-C adapter's; the smooth seekbar on the S24; the 0.2.2 items (covers without a frame, the
+  one-line quality, Debug); the seekbar gliding; Last.fm on a real profile; the lock screen and
+  notification; Bluetooth buttons; a call; battery; DSD over DoP; a rate change mid-album with BP
+  on; the SD card pulled while playing; the full library's cold start and Statistics on the M21;
+  the S24 DAC's **Route** row (does the DAC itself list 44.1 kHz?).
 - **Open, the user's call (not started):** true bit-perfect on the S24 would need the app's
   own USB driver (libusb, as USB Audio Player Pro does): a new dependency and a spec change.
   Write up what it takes before building anything. The user also might want BP remembered
   per output; only if they ask.
-- **Still unreported** (don't block on them; the unticked items on both lists in
-  `design/progress.md`): the seekbar gliding (0.2.0), Last.fm on a real profile, the lock
-  screen and notification, Bluetooth buttons, a call, battery, DSD over DoP, a rate change
-  mid-album with BP on, Bluetooth greying BP on the M21, the SD card pulled while playing,
-  the full library's cold start and Statistics on the M21, and the S24 DAC's **Route** row
-  (Statistics > Debug: does the DAC itself list 44.1 kHz?).
+- **Emulator housekeeping:** the SD card's `SD Card Band` FLACs are damaged again (ffmpeg
+  fails at the start of both); rebuild them before relying on them. `/sdcard/Music/Waveform
+  Test/` (a 60 s pink-noise FLAC with swells and a dip at 24–27 s) is the one to check the
+  seekbar's shape with. The AVD sometimes exits on its own (exit code 4); start it again.
+
+### What 0.2.x changed (all the user's requests)
+
+- **0.2.0–0.2.2 (2026-10-25):** the Artists **letter strip**, always shown (`ArtistIndexStrip`,
+  `ArtistIndex`); Now Playing **swipe to skip** (left Next, right Previous; no animation on a
+  skip since 0.2.1's stuck-cover fix); covers **without a frame**; the quality on **one line**
+  (`QualityLines`); **Repeat and Shuffle side by side over BP**; the M21's **cover 301 dp**
+  (`artHeightReserve` 366); a **Debug screen** (Statistics' last row).
+- **0.2.3:** **spare height** on Now Playing: where the width limits the cover (the S24, about
+  120 dp; 0 on the M21), the waveform grows to 64 dp and the two flexible gaps even out.
+  **`PlugGuard`** (core): a play from outside the app (keys, lock screen, notification:
+  `SystemControls.onPlay` → `Player.resumeFromSystem`) within 3 s after a USB or wired device
+  comes or goes is ignored, and one up to 3 s before it is paused again. Debug's **Plug guard** row.
+- **0.2.4:** the **seekbar as one smooth shape**: the desktop's 600 RMS columns
+  (`WaveformLevels.COLUMNS`) drawn as its `WaveformView` outline (`WaveShape`); RMS only, both
+  channels combined, no playhead line (the user's choices). Waveforms live in
+  `no_backup/waveforms-600/`; the old `waveforms/` is deleted at start.
+- **0.2.5–0.2.6:** the **readout reworded**: the output's name, rate, depth and note with a dot
+  between each: "Shanling UA2 Plus · 96 kHz · 24-Bit · Exclusive", "· Rate Matched",
+  "3.5mm · 44.1 kHz · 16-Bit · Exclusive", "Speaker · 48 kHz · Resampled", "No Output"
+  (`OutputNames`, `OutputReadout.describe(name, …)`; the desktop's describe by mode is
+  unchanged). The M21's jack comes from FiiO (below), saved in `settings` → `fiioJack`.
+  Debug's **FiiO jack** row. The S24's controls sit **56 dp above the readout**
+  (`controlsLift`: 0.46 of the spare height, up to 56 dp; 0 on the M21).
 
 ### How the user works
 
 - Sends a few UI requests at a time, often several in one message, and says when to release:
   build them all into one version, then show the release notes and ask before publishing.
 - Answers design questions quickly when they come as short choices, with a recommended option
-  first. For a bug that can't be reproduced here, ask what they saw (when, how often, which
-  phone) before guessing: that is what found 0.2.0's stuck cover.
-- Reports back in a sentence ("Swiping seems much better"); tick the matching items in
+  first (AskUserQuestion works well, also for "plug the M21 in now" or "plug into the 3.5 mm
+  jack" during a test). For a bug that can't be reproduced here, ask what they saw (when, how
+  often, which phone) before guessing: that is what found 0.2.0's stuck cover.
+- Keeps the M21 exactly as it is when asking for an S24 change: S24-only layout goes through the
+  spare height, which is 0 on the M21; check the M21's pictures come out pixel-identical.
+- Reports back in a sentence ("Seems to be fixed"); tick the matching items in
   `design/progress.md` and push.
+- Label any comparison picture (which phone, which theme) and leave a gap between its parts: an
+  unlabelled stack of the S24's seekbar over the M21's read as "two waveforms".
 
 ### What the phones turned out to do (2026-10-25)
 
@@ -123,15 +99,18 @@ spec is `design/android-spec.md`.
     `ACTION_HEADSET_PLUG` is ever sent, and the kernel's jack files can't be read.
   - FiiO's own broadcasts reach an exported receiver: `fiio.intent.action.SAMPLE_RATE_CHANGED`
     (`rate`: the DAC's rate, 0 when stopped; `format`) and `fiio.intent.action.HEADSET_TYPE_CHANGED`
-    (`type` 8 with headphones in, 0 out). The readout goes by that rate
-    (`OutputReadout.hardwareRate`). 0.1.5's FiiO signals row was dropped in 0.2.2.
+    (`type` **1 for the 3.5 mm jack, 8 for the 4.4 mm, 0 unplugged**; read off the M21 over adb
+    in 0.2.5). Neither is sticky, and nothing an app can read says which jack is in, so the
+    last type is saved. The readout's rate goes by `rate` (`OutputReadout.hardwareRate`).
+  - **It has no speaker:** unplugged, nothing is heard (the user), hence "No Output".
   - The DAC runs at the song's rate even with BP off ("Headphones · 96 kHz"); BP adds
     the full-volume, whole-number-sample path. 24-bit songs go as 32-bit with BP on, as
     float with it off: **24-bit packed `AudioTrack`s come out as static there.**
 - **S24 Ultra + the user's USB dongle DAC:** the mixer list is default entries only, at 48,
   88.2, 96, 176.4, 192, 352.8 and 384 kHz (16, 24, 32-bit), **no bit-perfect entry and no
   44.1 kHz**. So BP on is "rate matched" at 48 kHz and up ("USB · 96 kHz / 24-Bit (Rate
-  Matched)"), and a 44.1 kHz song is shared and resampled to 48 kHz either way.
+  Matched)", in today's wording "<DAC name> · 96 kHz · 24-Bit · Rate Matched"), and a 44.1 kHz
+  song is shared and resampled to 48 kHz either way.
 
 ### Reaching the phones
 

@@ -570,7 +570,8 @@ Session 1:
 Released 2026-10-26 as pre-release [`v0.2.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6)
 ("AudioFool 0.2.6", versionCode 19). Installs over 0.2.5 (same key).
 
-- [ ] **Now Playing's six buttons** another 16 dp higher (56 dp above the output row): right now?
+- [x] **Now Playing's six buttons** another 16 dp higher (56 dp above the output row): right now?
+  (The user, 2026-10-27: "s24u and m21 both look good".)
 
 ### 0.2.5 (the readout reworded, the buttons higher)
 
@@ -829,7 +830,7 @@ The S24 has **no SD card slot** and holds a smaller library than the desktop's: 
 
 Released 2026-10-26 as pre-release [`v0.2.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.2.6) (versionCode 19).
 
-- [ ] **Unplug the headphones**: the output row says "No Output"; close and reopen the app with
+- [x] **Unplug the headphones** (the user, 2026-10-27: "Seems to be fixed"): the output row says "No Output"; close and reopen the app with
   nothing plugged in: still "No Output"; plug into either jack: "3.5mm" or "4.4mm" again.
 
 ### 0.2.5 (the jack names)
