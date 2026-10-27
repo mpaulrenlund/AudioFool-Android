@@ -612,9 +612,11 @@ Released 2026-10-27 as pre-release [`v0.3.1`](https://github.com/mpaulrenlund/Au
 DAC**, with the DAC plugged in and a song paused or playing. Try one row, then play a song;
 **if it's silent, unplug the DAC and plug it in again** before trying the other.
 
-- [ ] **Give it back with a USB reset**: is the song heard afterwards without a replug? Did
-  Android ask for access again? Is the DAC's volume as before? **The volume stayed the same;
-  Android asked for access again** (the user, 2026-10-27). Still to answer: was the song heard?
+- [x] **Give it back with a USB reset**: is the song heard afterwards without a replug? Did
+  Android ask for access again? Is the DAC's volume as before? **The song was heard without a
+  replug; the volume stayed the same; an access prompt came up right after the reset** (the
+  user, 2026-10-27). AudioFool asks only from a tap, so that prompt was Android's own at the
+  re-attach; its wording is still to find out.
 - [x] **Give it back after a wait** (takes 5 s longer): **silent**, the song playing but nothing
   heard (the user, 2026-10-27). Waiting doesn't help.
 - [x] **Send the report**: received 2026-10-27 15:08. The reset made Android drop the DAC and set it

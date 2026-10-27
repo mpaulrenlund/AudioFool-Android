@@ -152,3 +152,8 @@ doesn't take the replug for a real unplug.
   the driver needs the manifest's `USB_DEVICE_ATTACHED` filter (the "always open AudioFool"
   choice), which grants access at each attach without asking, before it can hand back with a
   reset.
+- **After the reset the song was heard, with no replug** (the user, 2026-10-27). So **the
+  driver gives the DAC back by releasing, reattaching and resetting it** (decided by the
+  test). The access prompt came up right after the reset, by itself: AudioFool asks only when
+  a Debug row is tapped, so it was Android reacting to the DAC arriving again (perhaps another
+  app's "open with" filter).
