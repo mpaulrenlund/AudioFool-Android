@@ -11,7 +11,8 @@ device). The spec is `design/android-spec.md`.
   session notes.
 - **Latest: 0.4.2** (versionCode 24), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.2>, `dist/AudioFool-0.4.2.apk`: the
   driver with the volume kept across hand-backs, 64 ms in flight, refill timing in the report.
-- **Next release:** **0.4.3 / 25** for fixes, **0.5.0** for new features. Bump both in
+- **Next release: 0.4.3 (versionCode 25) is built**, `dist/AudioFool-0.4.3.apk`, not yet released;
+  then **0.4.4 / 26** for fixes, **0.5.0** for new features. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6

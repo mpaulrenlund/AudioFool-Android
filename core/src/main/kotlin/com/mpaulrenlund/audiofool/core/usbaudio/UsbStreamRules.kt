@@ -120,6 +120,11 @@ class PacketSizer(private val dataInterval: Int, private val maxFrames: Int) {
  * The DAC's hardware volume (its feature unit) in the steps the volume keys move: [STEPS]
  * steps of 1 dB below the DAC's loudest, 0 being mute, each snapped to the DAC's own
  * resolution. The DAC's values are in 1/256 dB (UAC's units).
+ *
+ * Never louder (0.4.3, after Bit-Perfect off came back far too loud on the S24): taking the
+ * DAC, the driver starts at the DAC's own volume less what Android's media volume was taking
+ * off ([startingValue]); giving it back, it leaves the DAC where it is, so Android's volume can
+ * only make it quieter.
  */
 class UsbVolume(val min: Int, val max: Int, val resolution: Int) {
     /** The value for [step] (0 is the quietest the DAC goes, and muted too). */
@@ -136,17 +141,29 @@ class UsbVolume(val min: Int, val max: Int, val resolution: Int) {
     /** The step nearest a value the DAC is at. */
     fun stepNear(value: Int): Int = (STEPS - Math.round((max - value).toDouble() / DB).toInt()).coerceIn(1, STEPS)
 
+    /**
+     * The loudest step no louder than [value] (0.4.3): what the driver starts at, so taking
+     * the DAC is never louder than what was heard before. 0 (muted) if even step 1 is louder.
+     */
+    fun stepAtOrBelow(value: Int): Int {
+        for (s in STEPS downTo 1) if (value(s) <= value) return s
+        return 0
+    }
+
     companion object {
         const val STEPS = 60
         private const val DB = 256
 
         /**
-         * Where to start when the app takes the DAC, from Android's media volume: its share
-         * of the top, as 1 dB a step of 60 below the DAC's loudest. Android's own curve falls
-         * less steeply, so this starts no louder than Android was, usually a little quieter.
+         * Where the DAC's own volume goes when the app takes it: what it is at ([dacValue]),
+         * less what Android's media volume was taking off the sound ([androidDb], from
+         * Android's own curve; 0 or less). What was heard stays as loud, never louder.
+         * Null when Android's volume was at 0 (or said minus infinity): muted.
          */
-        fun stepFor(androidIndex: Int, androidMax: Int): Int =
-            if (androidMax <= 0) STEPS else Math.round(STEPS.toDouble() * androidIndex.coerceIn(0, androidMax) / androidMax).toInt()
+        fun startingValue(dacValue: Int, androidDb: Float): Int? {
+            if (androidDb.isNaN() || androidDb == Float.NEGATIVE_INFINITY) return null
+            return dacValue + Math.round(minOf(androidDb, 0f) * DB)
+        }
 
         /** "−12.5 dB". */
         fun db(value: Int): String = "%.1f dB".format(java.util.Locale.ENGLISH, value / 256.0).replace('-', '−')

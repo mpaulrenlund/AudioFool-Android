@@ -37,12 +37,12 @@ import java.util.Locale
  *   the user say "always"), then its interfaces are claimed from Android's own driver. Android
  *   goes on listing the DAC as an output meanwhile (0.3.0 on the S24), and other sounds have
  *   nowhere to go.
- * - **Volume**: the DAC's own hardware volume ([UsbVolume]), started from Android's media
- *   volume, moved by the volume keys through the media session. The samples are never touched.
+ * - **Volume**: the DAC's own hardware volume ([UsbVolume]), moved by the volume keys through
+ *   the media session. The samples are never touched. Never louder at a change (0.4.3): taken,
+ *   the DAC goes down by what Android's media volume was taking off; given back, it stays put.
  * - **Giving it back** (Bit-Perfect off, the player stopping, a minute paused): released,
  *   reattached to Android's driver and reset, which Android takes as a replug and sets the DAC
- *   up afresh (0.3.1 on the S24: reattaching alone left it silent until a replug). The DAC's
- *   volume is put back as it was first.
+ *   up afresh (0.3.1 on the S24: reattaching alone left it silent until a replug).
  * - **Unplugged**: the stream reports the DAC gone and the output stage pauses.
  *
  * The output stage calls [settingFor], [open] and [giveBack] on its thread; the volume and
@@ -213,22 +213,31 @@ class UsbDriver(private val context: Context) {
     }
 
     /**
-     * Gives the DAC back to Android, if the app holds it: its volume as it was, released,
-     * reattached and reset; then waits (up to [waitMs]) for Android to set it up again, so an
-     * output opened next goes to the DAC and not the speaker.
+     * Gives the DAC back to Android, if the app holds it: released, reattached and reset; then
+     * waits (up to [waitMs]) for Android to set it up again, so an output opened next goes to
+     * the DAC and not the speaker.
+     *
+     * The DAC's own volume stays where the keys left it (only unmuted), so Android's media
+     * volume can only make it quieter: never louder than with Bit-Perfect on (0.4.3; 0.4.2 put
+     * it back to its old 0 dB, and Bit-Perfect off came back far too loud on the S24).
      */
     fun giveBack(why: String, waitMs: Long = GIVE_BACK_WAIT_MS) {
         val h = synchronized(this) { held?.also { held = null } } ?: return
         handingBackUntil = SystemClock.elapsedRealtime() + HANDING_BACK_MS
         summarise(h)
-        h.volume?.let { v -> setVolumeValue(h, v, v.original, mute = false) }
+        h.volume?.let { v -> setVolumeValue(h, v, v.range.value(v.step), mute = false) }
         val results = h.stream.giveBack(h.interfaces, reset = true)
         h.stream.close()
         h.connection.close()
-        note = "given back ($why): " + results.joinToString(", ") { UsbStream.errorName(it) }
+        note = "given back ($why): " + results.joinToString(", ") { UsbStream.errorName(it) } +
+            (h.volume?.let { " · the DAC left at ${UsbVolume.db(it.range.value(it.step))}" } ?: "") + " · ${androidVolume()}"
         Log.i(TAG, note)
         main.post { onChange() }
-        if (waitMs > 0) waitForAndroid(waitMs)
+        if (waitMs > 0) {
+            waitForAndroid(waitMs)
+            // Whether Android changed its own volume when the DAC came back.
+            note = "Android has the DAC again: ${androidVolume()}"
+        }
     }
 
     /** Android drops the DAC at the reset and sets it up again about a second later (0.3.1 on the S24). */
@@ -279,7 +288,7 @@ class UsbDriver(private val context: Context) {
         held = h
         h.volume?.let { v -> setVolumeValue(h, v, v.range.value(v.step), mute = v.range.muted(v.step)) }
         note = "taken: " + (if (d.uacVersion == 2) "rates " + clockRates.values.flatten().distinct().sorted().joinToString(", ") { Display.sampleRate(it) } else "UAC1") +
-            (h.volume?.let { " · volume ${UsbVolume.db(it.range.value(it.step))} (was ${UsbVolume.db(it.original)})" } ?: " · no hardware volume")
+            (h.volume?.let { " · volume ${UsbVolume.db(it.range.value(it.step))} (the DAC was at ${UsbVolume.db(it.original)}; ${androidVolume()})" } ?: " · no hardware volume")
         Log.i(TAG, note)
         main.post { onChange() }
         return h
@@ -363,8 +372,6 @@ class UsbDriver(private val context: Context) {
         val v = h.volume ?: return
         v.step = step.coerceIn(0, UsbVolume.STEPS)
         setVolumeValue(h, v, v.range.value(v.step), v.range.muted(v.step))
-        keyStep = v.step
-        mirrorToAndroid(v.step)
     }
 
     private fun readVolume(c: UsbDeviceConnection, d: UsbAudioDescriptors): Volume? {
@@ -383,30 +390,36 @@ class UsbDriver(private val context: Context) {
         } ?: return null
         val now = get(c, CLASS_IN, if (d.uacVersion == 2) CUR else UAC1_GET_CUR, value, index, 2)?.let { le(it).toShort().toInt() } ?: range.second
         val volume = UsbVolume(range.first, range.second, range.third)
-        // 0.4.2: the step the keys last set, unless Android's volume has been moved since
-        // (0.4.1 started from Android's every time, and after a hand-back came back louder).
-        val android = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
-        val start = keyStep?.takeIf { android == mirroredIndex } ?: UsbVolume.stepFor(android, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC))
-        keyStep = start
-        mirroredIndex = android
+        // 0.4.3: what Android's media volume was taking off goes onto the DAC, from Android's own
+        // curve, so taking the DAC is no louder than what was heard. (0.4.1 and 0.4.2 guessed the
+        // curve and moved Android's volume with the keys; Bit-Perfect off then came back far too loud.)
+        val cut = androidCutDb()
+        val start = UsbVolume.startingValue(now, if (cut.isNaN()) UNKNOWN_CUT_DB else cut)?.let { volume.stepAtOrBelow(it) } ?: 0
         return Volume(unit, channels, volume, now, start)
     }
 
-    /** The step the volume keys left the DAC at, kept across hand-backs; and Android's media volume set to match it. */
-    @Volatile private var keyStep: Int? = null
-    @Volatile private var mirroredIndex: Int? = null
-
     /**
-     * Android's media volume follows the keys while the driver holds the DAC (nothing hears it
-     * then), so once the DAC is Android's again it plays about as loud, and Bit-Perfect off
-     * doesn't jump. Android's curve isn't the driver's 1 dB steps, so "about".
+     * What Android's media volume takes off the sound on the USB output now, in dB (0 or less;
+     * minus infinity at 0), from Android's own volume curve; NaN if Android won't say.
      */
-    private fun mirrorToAndroid(step: Int) {
-        val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        val index = Math.round(step.toDouble() * max / UsbVolume.STEPS).toInt()
-        runCatching { audio.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0) }
-        // What Android took (it may hold back a loud step for hearing safety).
-        mirroredIndex = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+    private fun androidCutDb(): Float {
+        val type = audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            .firstOrNull { it.type == AudioDeviceInfo.TYPE_USB_HEADSET || it.type == AudioDeviceInfo.TYPE_USB_DEVICE }?.type
+            ?: AudioDeviceInfo.TYPE_USB_HEADSET
+        val index = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+        if (index <= 0) return Float.NEGATIVE_INFINITY
+        return runCatching { audio.getStreamVolumeDb(AudioManager.STREAM_MUSIC, index, type) }.getOrDefault(Float.NaN)
+    }
+
+    /** "Android's media volume 7 of 15 (−31.5 dB)", for the notes. */
+    private fun androidVolume(): String {
+        val cut = androidCutDb()
+        val db = when {
+            cut.isNaN() -> "dB not known"
+            cut == Float.NEGATIVE_INFINITY -> "silent"
+            else -> UsbVolume.db(Math.round(cut * 256))
+        }
+        return "Android's media volume ${audio.getStreamVolume(AudioManager.STREAM_MUSIC)} of ${audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)} ($db)"
     }
 
     private fun setVolumeValue(h: Held, v: Volume, value: Int, mute: Boolean) {
@@ -459,6 +472,9 @@ class UsbDriver(private val context: Context) {
         private const val TAG = "AudioFoolUsb"
         private const val ACTION_PERMISSION = "com.mpaulrenlund.audiofool.USB_DRIVER_PERMISSION"
         private const val TIMEOUT_MS = 1000
+
+        /** If Android won't say what its media volume takes off: start this far down, quiet but audible. */
+        private const val UNKNOWN_CUT_DB = -40f
 
         /** Notes kept for the debug screen and the report. */
         private const val HISTORY = 12

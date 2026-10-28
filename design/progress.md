@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, built, not yet released
 - [x] **0.4.2**: the DAC's volume kept across hand-backs (and Android's media volume kept with it); 64 ms in flight to the DAC so the background keeps up; refill timing in the report — 2026-10-27, released as a pre-release
 - [x] **0.4.1**: the seekbar no longer flashes back after a seek; the driver's Debug row keeps its last eight notes — 2026-10-27, released as a pre-release
 - [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, released as a pre-release
@@ -45,6 +46,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.3 (2026-10-27), built as versionCode 25, not yet released: **never louder when the DAC
+changes hands.** In 0.4.2, Bit-Perfect off while playing came back far too loud on the S24: the
+give-back put the DAC's own volume back to 0 dB and relied on Android's media volume (which
+0.4.2 moved with the keys) to bring it down, and it didn't. Why exactly isn't known; the new rule
+doesn't depend on it:
+- **Giving back**: the DAC's volume stays where the keys left it (only unmuted). Android's media
+  volume can only take more off, so Bit-Perfect off is never louder than on; it may be quieter,
+  and then Android's volume goes up.
+- **Taking**: the DAC goes down by what Android's media volume was taking off, from Android's
+  own curve (`AudioManager.getStreamVolumeDb`), to the nearest step not louder
+  (`UsbVolume.startingValue`, `stepAtOrBelow`, tested). 0.4.0 to 0.4.2 used a 1 dB-per-step guess
+  of the curve, which was louder than Android's: the user turned −28 dB down to −55.
+- **Android's media volume is no longer moved by the keys** (0.4.2's mirroring is gone).
+- **The notes give both volumes in dB** at each take and give-back, and once Android has the DAC
+  again, to show whether Android changes its own volume then.
+- The DAC keeps its lowered volume after a give-back, also if it is later plugged in elsewhere.
 
 0.4.2 (2026-10-27), released as pre-release [`v0.4.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.2) ("AudioFool 0.4.2", versionCode 24): **two problems from 0.4.1 on the
 S24.**
@@ -659,18 +677,29 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.3 (never louder at Bit-Perfect off)
+
+Built 2026-10-27 (versionCode 25). Installs over 0.4.2 (same key). BP on, the UA2 Plus in. **Start
+with the volume low and the earphones out for the first BP-off.**
+
+- [ ] **BP off while playing**: no louder than with BP on (it may be quieter; turn Android's
+  volume up then)?
+- [ ] **BP on again**: no louder than it was just before?
+- [ ] **Pause over a minute, then Play**: the same volume?
+- [ ] **Send the report**: the "taken", "given back" and "Android has the DAC again" lines now
+  give the DAC's volume and Android's media volume in dB.
+
 ### 0.4.2 (the volume after a hand-back; playing on in the background)
 
-Released 2026-10-27 as pre-release [`v0.4.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.2) (versionCode 24). Installs over 0.4.1 (same key). BP on, the UA2 Plus in.
+Released 2026-10-27 as pre-release [`v0.4.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.2) (versionCode 24). The user's results, 2026-10-27:
 
-- [ ] **Volume**: set it with the keys (well below where Android had it), pause over a minute,
-  Play: the same volume as before the pause? Then **BP off**: about as loud as with BP on?
-- [ ] **Leaving the app** while playing (home, another app, the app switcher): does the music
-  carry on without a gap now?
-- [ ] **Seek**: still quick enough? (A cut now waits for the 64 ms in flight.)
-- [ ] **Send the report** after leaving and coming back: each "stopped …" line and the Driver
-  row's clock line give the longest gap between refills, how many came too late, and the
-  thread's priority (−19 is what it asks for).
+- [x] **Volume after a pause**: the same as before the pause.
+- [ ] **BP off: far too loud** ("almost blew out my ear drums"). The give-back put the DAC's own
+  volume back to 0 dB and left the rest to Android's media volume, which didn't bring it down
+  enough. Fixed in 0.4.3 by never raising the DAC's volume at a give-back.
+- [x] **Leaving the app**: plays on without a stutter or a gap. The report: 0 underruns, 0 late
+  refills, the longest gap between refills 20 ms of 64, priority −19.
+- [x] **Seek**: quick.
 
 ### 0.4.1 (the seek flash; the driver's last few notes)
 

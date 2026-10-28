@@ -104,9 +104,27 @@ class UsbStreamRulesTest {
         assertEquals(48, volume.stepNear(-12 * 256))
     }
 
-    @Test fun starts_from_androids_media_volume() {
-        assertEquals(60, UsbVolume.stepFor(15, 15))
-        assertEquals(28, UsbVolume.stepFor(7, 15))
-        assertEquals(0, UsbVolume.stepFor(0, 15))
+    // 0.4.3: taking the DAC is never louder than what was heard through Android.
+    @Test fun taking_the_dac_moves_androids_cut_onto_the_dac() {
+        // The DAC at 0 dB, Android's media volume taking 24.5 dB off: the DAC goes to -24.5 dB.
+        assertEquals(-24 * 256 - 128, UsbVolume.startingValue(0, -24.5f))
+        // Already turned down to -55 dB, Android at full: stays at -55 dB.
+        assertEquals(-55 * 256, UsbVolume.startingValue(-55 * 256, 0f))
     }
+
+    @Test fun android_at_zero_starts_muted() {
+        assertNull(UsbVolume.startingValue(0, Float.NEGATIVE_INFINITY))
+        assertNull(UsbVolume.startingValue(0, Float.NaN))
+    }
+
+    @Test fun a_gain_from_android_is_never_added() = assertEquals(-10 * 256, UsbVolume.startingValue(-10 * 256, 3f))
+
+    @Test fun the_starting_step_is_never_louder_than_asked() {
+        assertEquals(35, volume.stepAtOrBelow(-24 * 256 - 128))
+        assertTrue(volume.value(volume.stepAtOrBelow(-24 * 256 - 128)) <= -24 * 256 - 128)
+        assertEquals(60, volume.stepAtOrBelow(0))
+        assertEquals(5, volume.stepAtOrBelow(-55 * 256))
+    }
+
+    @Test fun quieter_than_step_1_is_muted() = assertEquals(0, volume.stepAtOrBelow(-60 * 256))
 }

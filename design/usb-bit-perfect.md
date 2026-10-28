@@ -205,3 +205,10 @@ no USB, so everything below is for the S24 to show.
   held; 64 ms in flight instead of 16; the refill gaps and the event thread's priority in the
   report. If the background still stops it, the next steps are a bigger queue still or asking
   Android for real-time scheduling of the event thread.
+- 0.4.2 on the S24: no gap when leaving the app (0 late refills, the longest gap 20 ms of 64,
+  priority −19). **But Bit-Perfect off came back far too loud**: the give-back restored the
+  DAC's own volume to 0 dB and relied on Android's media volume to bring it down.
+- **0.4.3, never louder when the DAC changes hands**: taking it, the DAC goes down by what
+  Android's media volume was taking off (Android's own curve, `getStreamVolumeDb`); giving it
+  back, the DAC's volume stays where it was, so Android can only make it quieter. Android's
+  media volume is no longer moved by the keys. This replaces "Volume" in "The driver (0.4.0)".
