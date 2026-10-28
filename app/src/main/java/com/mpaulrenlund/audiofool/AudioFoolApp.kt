@@ -1,6 +1,7 @@
 package com.mpaulrenlund.audiofool
 
 import android.app.Application
+import android.os.Build
 import android.os.SystemClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -66,6 +67,8 @@ class AudioFoolApp : Application() {
             usbDriver.onChange = {
                 p.usbChanged()
                 if (systemControlsLazy.isInitialized()) systemControls.syncVolume(usbDriver)
+                // Taken or given back: the service stays in the foreground while the DAC is held (0.4.7).
+                PlaybackService.running?.update()
             }
             usbDriver.onAllowed = p::usbAllowed
             p.watchers.add(lastFm)
@@ -129,6 +132,9 @@ class AudioFoolApp : Application() {
         startLibrary()
         prefillCovers()
         restoreQueue()
+        // A USB DAC the driver held when Android ended the app is silent until given back (0.4.7).
+        // Android 14+ only, where the driver plays: the M21 never makes it.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) scope.launch(Dispatchers.IO) { usbDriver.repairIfLeftHeld() }
 
         Storage.watchVolumes(this, onEjecting = { root -> if (playerLazy.isInitialized()) player.letGoOf(root) }) { arrived ->
             val folders = settings.folders.value.filter { it.included }.map { it.path }

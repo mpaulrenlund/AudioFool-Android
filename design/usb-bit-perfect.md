@@ -240,7 +240,14 @@ no USB, so everything below is for the S24 to show.
   after a minute's pause; the music plays.** With 0.4.0 to 0.4.5's results (44.1 kHz and hi-res,
   gapless, seeks, volume keys, unplug, BP off pausing, plugging in pausing, leaving the app),
   the driver plays clean, and **spec §6.2's S24 row now describes it**.
+- **0.4.7, no silent DAC after Android ends the app** (the user saw it after leaving it paused
+  in the background with BP on): out of the foreground at the pause, the app was stopped or
+  frozen before the minute's give-back and ended later, still holding the DAC. Ending the app
+  releases the interfaces but binds no driver to them, so Android writes to a card that's gone.
+  Now the service stays in the foreground while the DAC is held (paused too), a swipe from
+  recents while paused gives it back at once, and at the next start a DAC whose audio
+  interfaces have no kernel driver is taken, put back to 0 dB, unmuted and reset
+  (`repairIfLeftHeld`).
 - **Still open**: a DSD file (DoP) through the driver; whether notifications are heard while the
-  driver holds the DAC; the DAC staying silent if Android ends the app while it holds the DAC
-  (until a replug); native DSD (setting 4) unused; the M21 regression check (nothing changed
-  for it, but the output stage did).
+  driver holds the DAC; native DSD (setting 4) unused; the M21 regression check (nothing changed
+  for it, but the output stage did); 0.4.7 on the S24.

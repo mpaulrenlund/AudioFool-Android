@@ -380,6 +380,15 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeClaim(JNIEnv* env, jcla
     return 0;
 }
 
+/**
+ * Whether a kernel driver (Android's sound driver) has [interfaceNumber]: 1, 0 for none, or
+ * libusb's error. None at the app's start means a DAC left held when Android ended the app.
+ */
+JNIEXPORT jint JNICALL
+Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeKernelDriverActive(JNIEnv*, jclass, jlong h, jint interfaceNumber) {
+    return libusb_kernel_driver_active(device(h)->handle, interfaceNumber);
+}
+
 /** Sets [interfaceNumber]'s alternate setting (0: no bandwidth). 0, or libusb's error. */
 JNIEXPORT jint JNICALL
 Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeSetAlternate(JNIEnv*, jclass, jlong h, jint interfaceNumber, jint alternate) {

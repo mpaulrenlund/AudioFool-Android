@@ -12,6 +12,10 @@ class UsbStream private constructor(private var handle: Long) {
 
     @Synchronized fun claim(interfaces: IntArray): Int = ifOpen(LIBUSB_ERROR_NO_DEVICE) { nativeClaim(it, interfaces) }
 
+    /** 1 if Android's driver has [interfaceNumber], 0 if no driver has it, else libusb's error (0.4.7). */
+    @Synchronized fun kernelDriverActive(interfaceNumber: Int): Int =
+        ifOpen(LIBUSB_ERROR_NO_DEVICE) { nativeKernelDriverActive(it, interfaceNumber) }
+
     @Synchronized fun setAlternate(interfaceNumber: Int, alternate: Int): Int =
         ifOpen(LIBUSB_ERROR_NO_DEVICE) { nativeSetAlternate(it, interfaceNumber, alternate) }
 
@@ -89,6 +93,7 @@ class UsbStream private constructor(private var handle: Long) {
         @JvmStatic private external fun nativeOpen(fd: Int): Long
         @JvmStatic private external fun nativeHighSpeed(handle: Long): Boolean
         @JvmStatic private external fun nativeClaim(handle: Long, interfaces: IntArray): Int
+        @JvmStatic private external fun nativeKernelDriverActive(handle: Long, interfaceNumber: Int): Int
         @JvmStatic private external fun nativeSetAlternate(handle: Long, interfaceNumber: Int, alternate: Int): Int
         @JvmStatic private external fun nativeStart(
             handle: Long, interfaceNumber: Int, dataEndpoint: Int, maxPacketBytes: Int, dataInterval: Int, highSpeed: Boolean,

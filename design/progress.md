@@ -50,6 +50,30 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.4.7 (2026-10-28, not released yet): **the DAC no longer goes silent when Android ends the app
+while the driver holds it.** The user saw it after leaving AudioFool paused in the background
+with BP on. The cause: at a pause the service dropped out of the foreground straight away, so
+Android stopped or froze the app before the minute's give-back ran, and later ended it while it
+still held the DAC. Ending the app releases the interfaces but leaves them with no driver (Linux
+doesn't bind Android's again), and Android goes on writing to its old sound card: silence until
+a replug. Two changes (the user approved the first):
+- **The service stays in the foreground while the driver holds the DAC**, paused up to the
+  minute before it is given back; the notification can't be swiped away for that minute, and
+  can again once the DAC is Android's. **Swiped from recents while paused**, the DAC is given
+  back at once, then the service ends (`Player.holdingDac`, `letGoOfDacNow`;
+  `PlaybackService.stopWhenDacFree`).
+- **At the app's start, a DAC left held is given back** (`UsbDriver.repairIfLeftHeld`, Android
+  14+ only, so never on the M21): a plugged DAC the app has permission for whose audio interfaces
+  have no kernel driver (`libusb_kernel_driver_active`, new `UsbStream.kernelDriverActive`) is
+  claimed, put back to 0 dB and unmuted with Android's media volume lowered to 1, and reset, as
+  every give-back is. Covers whatever else ends the app holding it (a crash, Android's memory
+  killer, a force stop, installing a build over it). Nothing is stored for it. The Debug
+  driver row says "found left held …" and then "given back (left held when Android ended the
+  app)".
+- Checked on the emulator only (no USB there): all tests and screenshots pass; with no DAC the
+  start check does nothing and pause/notification behave as before (foreground while playing,
+  not when paused).
+
 2026-10-28, after 0.4.6 on the S24: **the driver plays clean** (no pop, sound after a pause,
 volume from the user only, BP off and plugging in pausing). Spec §6.2's "S24 + USB DAC" row now
 describes the driver (the plan said the spec would change once it did). Still open: a DSD file
@@ -727,6 +751,22 @@ Session 1:
 - **The repo is public** (the user's call, 2026-10-24). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
+
+### 0.4.7 (no silent DAC after Android ends the app)
+
+Not released yet. Volume low for the first try.
+
+- [ ] **Pause with BP on, leave the app** (home, or the screen off) for two minutes or more, then
+  play from another app or plug headphones into the DAC's path: sound? The notification can't be
+  swiped away for the first minute after the pause, and can afterwards. Debug's driver row:
+  "given back (paused a while)".
+- [ ] **Pause with BP on, swipe AudioFool from recents**: the DAC plays another app's sound
+  straight after? Debug (open AudioFool again): "given back (paused a while)".
+- [ ] **Force stop while playing with BP on** (Settings > Apps > AudioFool > Force stop): the DAC
+  is silent, as before. Then open AudioFool: within a few seconds, does another app's sound come
+  through the DAC, quiet (Android's volume at 1)? Debug: "found left held …", then "given back
+  (left held when Android ended the app)" and "Android has the DAC again after … ms".
+- [ ] **BP on again after that**: plays through the driver, no pop, at the quietest step.
 
 ### 0.4.6 (no pop when BP takes the DAC)
 

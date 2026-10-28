@@ -45,7 +45,8 @@ import java.util.Locale
  *   which went by Android's volume, came in at full volume twice.)
  * - **Giving it back** (Bit-Perfect off, the player stopping, a minute paused): released,
  *   reattached to Android's driver and reset, which Android takes as a replug and sets the DAC
- *   up afresh (0.3.1 on the S24: reattaching alone left it silent until a replug).
+ *   up afresh (0.3.1 on the S24: reattaching alone left it silent until a replug). One left
+ *   held when Android ended the app is given back at the next start ([repairIfLeftHeld], 0.4.7).
  * - **Unplugged**: the stream reports the DAC gone and the output stage pauses.
  *
  * The output stage calls [settingFor], [open] and [giveBack] on its thread; the volume and
@@ -278,6 +279,63 @@ class UsbDriver(private val context: Context) {
      */
     fun giveBack(why: String, waitMs: Long = GIVE_BACK_WAIT_MS) {
         val h = synchronized(this) { held?.also { held = null } } ?: return
+        handBack(h, why, waitMs)
+    }
+
+    /**
+     * At the app's start (0.4.7), on a background thread: a DAC the driver was holding when
+     * Android ended the app is given back as [giveBack] does, or it stays silent until a
+     * replug. Ending the app lets go of the interfaces but leaves them with no driver at all
+     * (Linux doesn't bind Android's again), and Android goes on writing to the sound card it
+     * had. So a DAC whose audio interfaces have no driver is one left held: it is taken,
+     * turned back to 0 dB and unmuted (it may have been muted or turned down), and reset.
+     * Nothing happens without the permission ("Always open AudioFool" keeps it) or on a DAC
+     * Android's driver has.
+     */
+    fun repairIfLeftHeld() {
+        val h = synchronized(this) { if (held == null) leftHeld()?.also { repairing = true } else null } ?: return
+        try {
+            handBack(h, "left held when Android ended the app")
+        } finally {
+            repairing = false
+        }
+    }
+
+    /** A DAC left held is being given back: not to be taken meanwhile. */
+    @Volatile private var repairing = false
+
+    private fun leftHeld(): Held? {
+        val device = dacDevice() ?: return null
+        if (!usb.hasPermission(device)) return null
+        val connection = usb.openDevice(device) ?: return null
+        val d = connection.rawDescriptors?.let { UsbAudioDescriptors.parse(it) }
+        // A library that won't load is no reason to stop the app's start.
+        val stream = if (d == null || d.playback.isEmpty()) null else try {
+            UsbStream.open(connection.fileDescriptor)
+        } catch (e: LinkageError) {
+            null
+        }
+        if (d == null || stream == null) {
+            connection.close()
+            return null
+        }
+        val interfaces = (listOf(d.controlInterface) + d.playback.map { it.interfaceNumber }).distinct().toIntArray()
+        val free = interfaces.filter { stream.kernelDriverActive(it) == 0 }
+        if (free.isEmpty()) {
+            stream.close()
+            connection.close()
+            return null
+        }
+        // Claimed, so its volume and mute can be set; a reset alone if it won't be.
+        val claimed = stream.claim(interfaces) == 0
+        val volume = if (claimed) readVolume(connection, d) else null
+        note = "found left held (interface ${free.joinToString(", ")} with no driver" + (if (claimed) "" else ", wouldn't be claimed") +
+            "; the DAC at ${volume?.found ?: "not read"})"
+        Log.i(TAG, note)
+        return Held(device, connection, stream, d, interfaces, emptyMap(), volume)
+    }
+
+    private fun handBack(h: Held, why: String, waitMs: Long = GIVE_BACK_WAIT_MS) {
         handingBackUntil = SystemClock.elapsedRealtime() + HANDING_BACK_MS
         summarise(h)
         val lowered = lowerAndroidVolume()
@@ -332,7 +390,7 @@ class UsbDriver(private val context: Context) {
 
     private fun take(): Held? {
         val device = dacDevice() ?: return null
-        if (device.deviceName == refused) return null
+        if (device.deviceName == refused || repairing) return null
         if (!usb.hasPermission(device)) {
             askOnce(device)
             return null

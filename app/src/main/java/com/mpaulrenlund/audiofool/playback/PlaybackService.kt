@@ -21,11 +21,19 @@ import com.mpaulrenlund.audiofool.core.model.Track
  *
  * Foreground while playing; when paused the notification stays (and can be
  * swiped away, which ends the service).
+ *
+ * 0.4.7: also foreground while the Bit-Perfect driver holds the USB DAC, paused up to the
+ * minute before it is given back. Out of the foreground, Android stopped or froze the app
+ * before that minute was up and later ended it still holding the DAC, which then stayed
+ * silent until a replug (the user, on the S24, after leaving it paused in the background).
  */
 class PlaybackService : Service() {
     private val app get() = application as AudioFoolApp
     private val player get() = app.player
     private var foreground = false
+
+    /** Swiped away from recents while paused with the DAC held: ends once the DAC is given back. */
+    private var stopWhenDacFree = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -66,8 +74,15 @@ class PlaybackService : Service() {
         }
 
         val playing = player.state.isPlaying
-        val notification = buildNotification(track, playing)
-        if (playing || mustStartForeground) {
+        val holding = player.holdingDac
+        if (!playing && !holding && stopWhenDacFree) {
+            stopSelf()
+            return
+        }
+        // Foreground while the DAC is held too, so the minute's give-back runs (0.4.7).
+        val keep = playing || holding
+        val notification = buildNotification(track, playing, ongoing = keep)
+        if (keep || mustStartForeground) {
             try {
                 startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
                 foreground = true
@@ -76,7 +91,7 @@ class PlaybackService : Service() {
                 manager.notify(NOTIFICATION_ID, notification)
             }
         }
-        if (!playing) {
+        if (!keep) {
             if (foreground) {
                 stopForeground(STOP_FOREGROUND_DETACH)
                 foreground = false
@@ -85,7 +100,7 @@ class PlaybackService : Service() {
         }
     }
 
-    private fun buildNotification(track: Track, playing: Boolean): Notification {
+    private fun buildNotification(track: Track, playing: Boolean, ongoing: Boolean): Notification {
         fun action(iconRes: Int, title: String, action: String) =
             Notification.Action.Builder(
                 Icon.createWithResource(this, iconRes),
@@ -102,7 +117,7 @@ class PlaybackService : Service() {
             .setLargeIcon(controls.art)
             .setContentIntent(SystemControls.openAppIntent(this))
             .setDeleteIntent(PendingIntent.getService(this, 1, Intent(this, PlaybackService::class.java).setAction(ACTION_DISMISSED), PendingIntent.FLAG_IMMUTABLE))
-            .setOngoing(playing)
+            .setOngoing(ongoing)
             .setShowWhen(false)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_TRANSPORT)
@@ -117,8 +132,14 @@ class PlaybackService : Service() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        // Swiped away from recents while paused: nothing to keep going for.
-        if (!player.state.isPlaying) stopSelf()
+        // Swiped away from recents while paused: nothing to keep going for, once the DAC is Android's again (0.4.7).
+        if (player.state.isPlaying) return
+        if (player.holdingDac) {
+            stopWhenDacFree = true
+            player.letGoOfDacNow()
+        } else {
+            stopSelf()
+        }
     }
 
     override fun onDestroy() {
