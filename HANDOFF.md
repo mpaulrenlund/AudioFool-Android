@@ -39,16 +39,16 @@ device). The spec is `design/android-spec.md`.
   notification; Bluetooth buttons; a call; battery; DSD over DoP; a rate change mid-album with BP
   on; the SD card pulled while playing; the full library's cold start and Statistics on the M21;
   the S24 DAC's **Route** row (does the DAC itself list 44.1 kHz?).
-- **In progress: true bit-perfect on the S24** (2026-10-27). The plan, the user's four choices
-  and every finding are in `design/usb-bit-perfect.md`. 0.3.0 read the DAC (UA2 Plus: UAC2,
-  44.1–768 kHz, −63.5 to 0 dB hardware volume; Samsung lets the app take it); 0.3.1 proved how to
-  give it back (release, reattach, **reset**: Android then sets it up as if replugged; reattach
-  alone leaves it silent). **0.4.0 is the driver** (released as a pre-release; "The driver
-  (0.4.0)" in the write-up): libusb in `third_party/libusb`, `usbaudio_driver.cpp`,
-  `UsbDriver`/`UsbStream`/`PcmOutput`, `OutputPlan.Driver`. **Nothing of it has run on a DAC**:
-  the S24's report decides the next round (clicks or drift mean the feedback; the Driver row's
-  clock line and underruns say). The spec (§6.2) changes only when it plays clean. The user
-  also might want BP remembered per output; only if they ask.
+- **True bit-perfect on the S24 works** (2026-10-28, 0.4.6): the app's own USB Audio driver
+  (libusb) plays to the DAC when BP is on; everything is in `design/usb-bit-perfect.md` and spec
+  §6.2. The lessons that cost the most: **Samsung turns a USB DAC down in its own software and
+  says it takes 0 dB off**, so the driver's volume comes from the user only (quietest first, then
+  where the keys left it); a give-back needs a **USB reset** or the DAC stays silent; Android's
+  media volume goes to 1 and the DAC to 0 dB at a give-back; the DAC is **muted** while BP takes
+  it and at rate changes. Two loud blasts happened on the way (0.4.2, 0.4.3): treat any volume
+  change here as a hearing-safety change. **Open**: a DSD file through the driver; notifications
+  while it holds the DAC; the DAC silent until a replug if Android ends the app while holding it;
+  the M21 check. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.

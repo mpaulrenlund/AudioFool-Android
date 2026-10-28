@@ -236,3 +236,11 @@ no USB, so everything below is for the S24 to show.
   packets, the clock steady); but **a loud pop as BP took the DAC**, which it now finds at 0 dB.
   **0.4.6**: muted from the claim until 150 ms after the new stream starts, and at every rate
   change.
+- **0.4.6 on the S24 (the user, 2026-10-28): no pop taking the DAC, none at a rate change, none
+  after a minute's pause; the music plays.** With 0.4.0 to 0.4.5's results (44.1 kHz and hi-res,
+  gapless, seeks, volume keys, unplug, BP off pausing, plugging in pausing, leaving the app),
+  the driver plays clean, and **spec §6.2's S24 row now describes it**.
+- **Still open**: a DSD file (DoP) through the driver; whether notifications are heard while the
+  driver holds the DAC; the DAC staying silent if Android ends the app while it holds the DAC
+  (until a replug); native DSD (setting 4) unused; the M21 regression check (nothing changed
+  for it, but the output stage did).

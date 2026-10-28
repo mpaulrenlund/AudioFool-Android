@@ -50,6 +50,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-10-28, after 0.4.6 on the S24: **the driver plays clean** (no pop, sound after a pause,
+volume from the user only, BP off and plugging in pausing). Spec §6.2's "S24 + USB DAC" row now
+describes the driver (the plan said the spec would change once it did). Still open: a DSD file
+through it, notifications while it holds the DAC, the M21 check.
+
 0.4.6 (2026-10-28), released as pre-release [`v0.4.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.6) ("AudioFool 0.4.6", versionCode 28): **no pop when BP takes the DAC.**
 0.4.5 gives the DAC back at 0 dB, so each take found it there and set the user's level only a few
 tens of ms later, after reading the clock and the volume ranges; the DAC popped loudly as it
@@ -727,9 +732,9 @@ Session 1:
 
 Released 2026-10-28 as pre-release [`v0.4.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.6) (versionCode 28). Installs over 0.4.5 (same key). Volume low for the first try.
 
-- [ ] **BP on while playing (after BP off)**: no pop before the music?
-- [ ] **A track at another rate** (44.1 → 96 kHz) with BP on: no pop at the change?
-- [ ] **Pause over a minute, then Play**: no pop, sound as before?
+- [x] **BP on while playing (after BP off)**: no pop before the music? **The pop is gone** (the user, 2026-10-28).
+- [x] **A track at another rate** (44.1 → 96 kHz) with BP on: no pop at the change? **No pop.**
+- [x] **Pause over a minute, then Play**: no pop, sound as before? **No pop; the music plays.**
 
 ### 0.4.5 (BP off loud enough again; why the silence)
 
