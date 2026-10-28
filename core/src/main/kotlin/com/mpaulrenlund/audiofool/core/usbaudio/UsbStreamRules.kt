@@ -121,10 +121,11 @@ class PacketSizer(private val dataInterval: Int, private val maxFrames: Int) {
  * steps of 1 dB below the DAC's loudest, 0 being mute, each snapped to the DAC's own
  * resolution. The DAC's values are in 1/256 dB (UAC's units).
  *
- * Never louder (0.4.3, after Bit-Perfect off came back far too loud on the S24): taking the
- * DAC, the driver starts at the DAC's own volume less what Android's media volume was taking
- * off ([startingValue]); giving it back, it leaves the DAC where it is, so Android's volume can
- * only make it quieter.
+ * The level comes from the user only (0.4.4, the user's call after two blasts on the S24): the
+ * first time the driver takes the DAC after the app starts, step [FIRST_STEP], the quietest
+ * that can be heard; after that, the step the keys last set ([startStep]). Nothing read from
+ * Android or the DAC decides it: Samsung turns a USB DAC down inside the DAC, in controls the
+ * driver didn't set, and says its media volume takes 0 dB off (0.4.3's report).
  */
 class UsbVolume(val min: Int, val max: Int, val resolution: Int) {
     /** The value for [step] (0 is the quietest the DAC goes, and muted too). */
@@ -141,29 +142,15 @@ class UsbVolume(val min: Int, val max: Int, val resolution: Int) {
     /** The step nearest a value the DAC is at. */
     fun stepNear(value: Int): Int = (STEPS - Math.round((max - value).toDouble() / DB).toInt()).coerceIn(1, STEPS)
 
-    /**
-     * The loudest step no louder than [value] (0.4.3): what the driver starts at, so taking
-     * the DAC is never louder than what was heard before. 0 (muted) if even step 1 is louder.
-     */
-    fun stepAtOrBelow(value: Int): Int {
-        for (s in STEPS downTo 1) if (value(s) <= value) return s
-        return 0
-    }
-
     companion object {
         const val STEPS = 60
         private const val DB = 256
 
-        /**
-         * Where the DAC's own volume goes when the app takes it: what it is at ([dacValue]),
-         * less what Android's media volume was taking off the sound ([androidDb], from
-         * Android's own curve; 0 or less). What was heard stays as loud, never louder.
-         * Null when Android's volume was at 0 (or said minus infinity): muted.
-         */
-        fun startingValue(dacValue: Int, androidDb: Float): Int? {
-            if (androidDb.isNaN() || androidDb == Float.NEGATIVE_INFINITY) return null
-            return dacValue + Math.round(minOf(androidDb, 0f) * DB)
-        }
+        /** Where the volume starts the first time: the quietest step that is heard (59 dB below the DAC's loudest). */
+        const val FIRST_STEP = 1
+
+        /** The step to start at when the driver takes the DAC: the one the keys last set, else [FIRST_STEP]. */
+        fun startStep(lastStep: Int?): Int = lastStep?.coerceIn(0, STEPS) ?: FIRST_STEP
 
         /** "−12.5 dB". */
         fun db(value: Int): String = "%.1f dB".format(java.util.Locale.ENGLISH, value / 256.0).replace('-', '−')

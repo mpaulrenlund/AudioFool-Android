@@ -49,8 +49,8 @@ android {
         applicationId = "com.mpaulrenlund.audiofool"
         minSdk = 33
         targetSdk = 37
-        versionCode = 25
-        versionName = "0.4.3"
+        versionCode = 26
+        versionName = "0.4.4"
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         externalNativeBuild {

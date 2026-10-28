@@ -94,6 +94,7 @@ class Player(
         state.bitPerfect = routes.bitPerfectOn
         routes.onChange = ::routeChanged
         routes.onPlug = ::plugged
+        routes.onPluggedIn = ::pluggedIn
         routes.start()
         showRoute()
     }
@@ -136,6 +137,17 @@ class Player(
             return
         }
         resume()
+    }
+
+    /**
+     * A USB DAC or headphones were plugged in (main thread): playing music pauses, so nothing
+     * plays through them until the user presses Play (0.4.4, the user's call: music had moved
+     * from the speaker to a just-plugged DAC by itself, loud).
+     */
+    private fun pluggedIn() {
+        if (!state.isPlaying) return
+        android.util.Log.i(TAG, "paused: a USB DAC or headphones were plugged in")
+        pause()
     }
 
     /** A USB or wired device came or went (main thread): a play from outside just before it is undone. */
@@ -275,6 +287,10 @@ class Player(
     fun toggleBitPerfect() {
         if (routes.greyed) return
         val on = !routes.bitPerfectOn
+        // 0.4.4, the user's call after Bit-Perfect off came back far too loud on the S24: with the
+        // driver holding the DAC, BP off pauses; Android then sets the DAC's volume its own way, and
+        // the user plays on when ready.
+        if (!on && state.isPlaying && routes.driver?.holding == true) pause()
         settings.setBitPerfect(on)
         routes.bitPerfectOn = on
         state.bitPerfect = on

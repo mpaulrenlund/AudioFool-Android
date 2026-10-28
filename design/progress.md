@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.4**: the DAC's volume from the user only (quietest first, then where the keys left it; every volume control set); BP off and plugging in pause — 2026-10-28, built, not yet released
 - [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, released as a pre-release
 - [x] **0.4.2**: the DAC's volume kept across hand-backs (and Android's media volume kept with it); 64 ms in flight to the DAC so the background keeps up; refill timing in the report — 2026-10-27, released as a pre-release
 - [x] **0.4.1**: the seekbar no longer flashes back after a seek; the driver's Debug row keeps its last eight notes — 2026-10-27, released as a pre-release
@@ -46,6 +47,24 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.4 (2026-10-28), built as versionCode 26, not yet released: **the volume from the user only,
+and pauses where the volume could jump.** After 0.4.3 came in at full volume twice on the S24.
+The report showed why: Samsung's media volume (9 of 15, 3 of 15) "takes 0 dB off" a USB DAC; it
+turns the DAC down inside the DAC, in controls the driver didn't set. The user's calls
+(2026-10-28), all three the recommended ones:
+- **Where the volume starts**: the first time the driver takes the DAC after the app starts, the
+  quietest step that is heard (step 1, 59 dB below the DAC's loudest); after that, where the keys
+  last left it (kept while the app runs, not saved). Nothing read from Android or the DAC
+  decides it (`UsbVolume.startStep`, tested). The driver sets **every** volume control: the
+  level on the master, the channels' own controls opened to 0 dB, so the master alone says how
+  loud. The "taken" note lists each control as found.
+- **BP off while playing pauses** (with the driver holding the DAC); the user plays on when
+  ready. A give-back now waits up to 8 s for Android to set the DAC up again and says whether
+  it did.
+- **Plugging a USB DAC or headphones in while music plays pauses it** (spec 6.1 updated). The
+  driver's own give-back isn't a plug (its window is now 12 s).
+- 0.4.3's `startingValue`/`stepAtOrBelow` and the Android-curve reading are gone.
 
 0.4.3 (2026-10-27), released as pre-release [`v0.4.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.3) ("AudioFool 0.4.3", versionCode 25): **never louder when the DAC
 changes hands.** In 0.4.2, Bit-Perfect off while playing came back far too loud on the S24: the
@@ -677,17 +696,33 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.4 (the volume from the user only; BP off and plugging in pause)
+
+Built 2026-10-28 (versionCode 26). Installs over 0.4.3 (same key). **Volume low and earphones out
+for the first tries.**
+
+- [ ] **BP on (the first time since the app started)**: very quiet (59 dB below the DAC's
+  loudest)? Turn it up with the keys.
+- [ ] **BP off while playing**: the music pauses? Then Play: through the DAC, not louder than you
+  can stand (Android sets the DAC's volume its own way here)?
+- [ ] **BP on again**: at the level you set before, not louder?
+- [ ] **Pause over a minute, then Play**: the same level?
+- [ ] **Plug the DAC in while music plays on the speaker**: it pauses?
+- [ ] **Send the report**: "taken" now lists each of the DAC's volume controls as found
+  (master, channel 1, channel 2), and "Android has the DAC again after … ms" or "hadn't".
+
 ### 0.4.3 (never louder at Bit-Perfect off)
 
-Released 2026-10-27 as pre-release [`v0.4.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.3) (versionCode 25). Installs over 0.4.2 (same key). BP on, the UA2 Plus in. **Start
-with the volume low and the earphones out for the first BP-off.**
+Released 2026-10-27 as pre-release [`v0.4.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.3) (versionCode 25). The user's results, 2026-10-28, **two more near-misses**:
 
-- [ ] **BP off while playing**: no louder than with BP on (it may be quieter; turn Android's
-  volume up then)?
-- [ ] **BP on again**: no louder than it was just before?
-- [ ] **Pause over a minute, then Play**: the same volume?
-- [ ] **Send the report**: the "taken", "given back" and "Android has the DAC again" lines now
-  give the DAC's volume and Android's media volume in dB.
+- [ ] **BP off while playing**: the music went to the **speaker**, at volume 0 (the report:
+  Android hadn't set the DAC up again 4 s after the reset). Unplugging and plugging the DAC back
+  in then moved the playing song to it, **loud** (a replug resets the DAC's own volume).
+- [ ] **BP on again after a minute: full volume.** The report shows why: Android's media volume
+  at 9 of 15 and 3 of 15, yet Android said it took **0 dB** off. Samsung turns a USB DAC down
+  inside the DAC (controls the driver didn't set), so "the DAC's volume less Android's cut" was
+  0 dB both times. Fixed in 0.4.4: the level comes from the user only.
+- [x] The report: 0 underruns, 0 late refills, the longest gap 12 ms.
 
 ### 0.4.2 (the volume after a hand-back; playing on in the background)
 

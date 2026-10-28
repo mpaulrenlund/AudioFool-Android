@@ -105,6 +105,9 @@ class OutputRoutes(context: Context, val driver: UsbDriver? = null) {
     /** Called on the main thread when a USB or wired device comes or goes (the player's `PlugGuard`). */
     var onPlug: () -> Unit = {}
 
+    /** Called on the main thread when a USB DAC or headphones are plugged in (0.4.4: the player pauses). */
+    var onPluggedIn: () -> Unit = {}
+
     private val callback = object : AudioDeviceCallback() {
         override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) = devicesChanged(added)
         override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) = devicesChanged(removed)
@@ -124,7 +127,11 @@ class OutputRoutes(context: Context, val driver: UsbDriver? = null) {
         pluggedIds.clear()
         pluggedNow(pluggedIds)
         // The driver's own give-back drops the DAC and brings it back: no plug.
-        if (devices.any { it.type in PLUGGED_TYPES } && pluggedIds != before && driver?.handingBack() != true) onPlug()
+        if (devices.any { it.type in PLUGGED_TYPES } && pluggedIds != before && driver?.handingBack() != true) {
+            onPlug()
+            val arrived = devices.any { it.isSink && it.type in PLUGGED_TYPES && it.id !in before && it.id in pluggedIds }
+            if (arrived) onPluggedIn()
+        }
         devicesChanged()
     }
 

@@ -212,3 +212,13 @@ no USB, so everything below is for the S24 to show.
   Android's media volume was taking off (Android's own curve, `getStreamVolumeDb`); giving it
   back, the DAC's volume stays where it was, so Android can only make it quieter. Android's
   media volume is no longer moved by the keys. This replaces "Volume" in "The driver (0.4.0)".
+- **0.4.3 on the S24: full volume twice.** BP off once went to the speaker (Android hadn't set
+  the DAC up again within 4 s of the reset); a replug then moved the song to the DAC, loud.
+  BP on came in at full volume because Samsung said its media volume (9 and 3 of 15) took 0 dB
+  off: **Samsung turns a USB DAC down inside the DAC**, not in the audio, in controls the driver
+  didn't set.
+- **0.4.4** (the user's calls): the level comes from the user only: the quietest heard step at
+  the first take, then where the keys left it; the driver sets every volume control (the master
+  carries the level, the channels' own controls opened to 0 dB). BP off while the driver holds
+  the DAC pauses; plugging in a DAC or headphones while playing pauses. A give-back waits up to
+  8 s and says whether Android set the DAC up again.
