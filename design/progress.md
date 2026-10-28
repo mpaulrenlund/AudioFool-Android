@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.5**: given back, the DAC returns to 0 dB with Android's media volume lowered to 1; the report counts failed packets and reads the volume back — 2026-10-28, built, not yet released
 - [x] **0.4.4**: the DAC's volume from the user only (quietest first, then where the keys left it; every volume control set); BP off and plugging in pause — 2026-10-28, released as a pre-release
 - [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, released as a pre-release
 - [x] **0.4.2**: the DAC's volume kept across hand-backs (and Android's media volume kept with it); 64 ms in flight to the DAC so the background keeps up; refill timing in the report — 2026-10-27, released as a pre-release
@@ -47,6 +48,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.5 (2026-10-28), built as versionCode 27, not yet released: **from 0.4.4's report.** Samsung
+never touches the DAC's own volume controls (master −51 dB, channels 0 dB, with Android at 11 of
+15): it turns a USB DAC down in its own software, which Android's `getStreamVolumeDb` doesn't
+show. So:
+- **Given back, the DAC goes back to 0 dB** (`UsbVolume.atZeroDb`), as Android expects it, and
+  **Android's media volume is first lowered to 1 if it is higher** (and again once Android has
+  the DAC back, in case it restores its own). Through Android the volume can then go all the
+  way up (0.4.4 left the DAC at the BP level: too quiet at full Android volume), and what plays
+  next starts quiet (0.4.2's blast was the DAC at 0 dB with Android at 9 of 15). BP off still
+  pauses. The level in BP is unchanged: the user's, from the keys.
+- **The silence after a minute's pause** isn't explained (0 underruns, 0 transfer errors). The
+  report now counts failed packets inside transfers (the host's per-packet status, which 0.4.x
+  didn't look at), gives the DAC's clock and feedback count in each "stopped" line, and reads
+  the volume and mute back from the DAC right after setting them.
 
 0.4.4 (2026-10-28), released as pre-release [`v0.4.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.4) ("AudioFool 0.4.4", versionCode 26): **the volume from the user only,
 and pauses where the volume could jump.** After 0.4.3 came in at full volume twice on the S24.
@@ -696,6 +712,19 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.5 (BP off loud enough again; why the silence)
+
+Built 2026-10-28 (versionCode 27). Installs over 0.4.4 (same key). **Volume low and earphones out
+for the first tries.**
+
+- [ ] **BP off while playing**: pauses; Android's volume is now at 1 (very quiet). Play, then
+  turn it up: can it get loud enough now?
+- [ ] **BP on again**: at the level you had in BP before, not louder?
+- [ ] **Pause over a minute, then Play**: sound? **If it's silent again, send the report before
+  doing anything else**: the "taken" line now reads the volume back from the DAC, and the
+  Driver row counts failed packets and the DAC's clock.
+- [ ] **Send the report** at the end.
+
 ### 0.4.4 (the volume from the user only; BP off and plugging in pause)
 
 Released 2026-10-28 as pre-release [`v0.4.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.4) (versionCode 26). The user's results, 2026-10-28:
@@ -705,7 +734,9 @@ Released 2026-10-28 as pre-release [`v0.4.4`](https://github.com/mpaulrenlund/Au
   can't get loud enough**: at Android's full volume it was too quiet to listen to. The give-back
   leaves the DAC's master at the BP level, and Samsung turns the DAC down on top of that.
 - [x] **BP on again**: at the level set before.
-- [ ] **Paused over a minute, then Play: playing, but no sound.** To find out from the report.
+- [ ] **Paused over a minute, then Play: playing, but no sound.** The report (12:27:20 to 12:28:20):
+  the stream ran a minute with 0 underruns and 0 errors (transfer errors only; packet errors
+  weren't counted), longest gap 34 ms. Cause not known yet. After a replug the next take played.
 - [x] **Plugging the DAC in while music plays on the speaker**: pauses.
 
 ### 0.4.3 (never louder at Bit-Perfect off)

@@ -222,3 +222,13 @@ no USB, so everything below is for the S24 to show.
   carries the level, the channels' own controls opened to 0 dB). BP off while the driver holds
   the DAC pauses; plugging in a DAC or headphones while playing pauses. A give-back waits up to
   8 s and says whether Android set the DAC up again.
+- **0.4.4's report (2026-10-28) settles how Samsung does volume**: with Android at 11 of 15, the
+  DAC's controls were exactly as the driver left them (master −51 dB, channels 0 dB). Samsung
+  never touches them: **it turns a USB DAC down in its own audio software, which Android's
+  `getStreamVolumeDb` doesn't show** (it said 0 dB). What is heard through Android is the
+  DAC's own volume less Samsung's cut. So a DAC left at −52 dB can't be made loud through
+  Android (0.4.4: too quiet at full volume), and a DAC put back to 0 dB plays at whatever
+  Android's volume is (0.4.2's blast).
+- **0.4.5**: given back, the DAC returns to 0 dB and Android's media volume comes down to 1
+  first; the report counts failed packets and reads the DAC's volume back, for the silence after
+  a minute's pause (0.4.4: a minute of streaming, 0 underruns, 0 transfer errors, no sound).

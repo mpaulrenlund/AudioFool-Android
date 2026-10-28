@@ -111,6 +111,12 @@ class UsbStreamRulesTest {
         assertFalse(volume.muted(UsbVolume.startStep(null)))
     }
 
+    @Test fun given_back_the_dac_goes_to_0_db_or_its_nearest() {
+        assertEquals(0, volume.atZeroDb())
+        assertEquals(-256, UsbVolume(min = -16256, max = -256, resolution = 128).atZeroDb())
+        assertEquals(0, UsbVolume(min = -16256, max = 1536, resolution = 128).atZeroDb())
+    }
+
     @Test fun later_takes_start_where_the_keys_left_it() {
         assertEquals(5, UsbVolume.startStep(5))
         assertEquals(0, UsbVolume.startStep(0))

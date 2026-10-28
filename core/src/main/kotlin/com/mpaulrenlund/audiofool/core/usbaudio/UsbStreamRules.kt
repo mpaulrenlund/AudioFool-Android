@@ -139,6 +139,9 @@ class UsbVolume(val min: Int, val max: Int, val resolution: Int) {
 
     fun muted(step: Int): Boolean = step <= 0
 
+    /** 0 dB, or the nearest the DAC goes (0.4.5: where the DAC goes back to when given back, as Android expects it). */
+    fun atZeroDb(): Int = 0.coerceIn(min, max)
+
     /** The step nearest a value the DAC is at. */
     fun stepNear(value: Int): Int = (STEPS - Math.round((max - value).toDouble() / DB).toInt()).coerceIn(1, STEPS)
 

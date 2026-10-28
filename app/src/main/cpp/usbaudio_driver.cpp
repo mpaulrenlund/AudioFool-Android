@@ -99,6 +99,11 @@ struct Stream {
     std::atomic<int> longestGapMs{0};
     std::atomic<int> lateRefills{0};
 
+    // Packets the host controller reported failed inside transfers that completed (0.4.5: a
+    // stream ran a minute in silence with no transfer errors), and the last one's status.
+    std::atomic<int> packetErrors{0};
+    std::atomic<int> lastPacketStatus{0};
+
     DataSlot data[DATA_TRANSFERS];
     libusb_transfer* feedback[FEEDBACK_TRANSFERS] = {};
 };
@@ -245,6 +250,12 @@ void LIBUSB_CALL onData(libusb_transfer* t) {
     s->lastCallbackMs = now;
     if (t->status == LIBUSB_TRANSFER_COMPLETED) {
         s->errorsInARow = 0;
+        for (int i = 0; i < t->num_iso_packets; i++) {
+            if (t->iso_packet_desc[i].status != LIBUSB_TRANSFER_COMPLETED) {
+                s->packetErrors++;
+                s->lastPacketStatus = t->iso_packet_desc[i].status;
+            }
+        }
         if (slot->generation == s->generation) s->head += slot->audioFrames;
     } else if (t->status == LIBUSB_TRANSFER_NO_DEVICE) {
         s->lost = true;
@@ -509,12 +520,13 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeHead(JNIEnv*, jclass, j
 
 /**
  * [underruns, feedback values taken, transfer errors, rate in Q16.16, nominal, lost,
- * longest gap between refills in ms, late refills, ms in flight, the event thread's nice value].
+ * longest gap between refills in ms, late refills, ms in flight, the event thread's nice value,
+ * failed packets, the last failed packet's status].
  */
 JNIEXPORT jintArray JNICALL
 Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeCounts(JNIEnv* env, jclass, jlong h) {
     Stream* s = device(h)->stream;
-    jint values[10] = {};
+    jint values[12] = {};
     values[9] = device(h)->eventNice.load();
     if (s != nullptr) {
         values[0] = s->underruns.load();
@@ -526,9 +538,11 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeCounts(JNIEnv* env, jcl
         values[6] = s->longestGapMs.load();
         values[7] = s->lateRefills.load();
         values[8] = s->queuedMs;
+        values[10] = s->packetErrors.load();
+        values[11] = s->lastPacketStatus.load();
     }
-    jintArray out = env->NewIntArray(10);
-    env->SetIntArrayRegion(out, 0, 10, values);
+    jintArray out = env->NewIntArray(12);
+    env->SetIntArrayRegion(out, 0, 12, values);
     return out;
 }
 

@@ -37,7 +37,7 @@ class UsbStream private constructor(private var handle: Long) {
     @Synchronized fun head(): Long = ifOpen(0L) { nativeHead(it) }
 
     /** What the stream counts: see [Counts]. */
-    @Synchronized fun counts(): Counts = Counts(ifOpen(IntArray(10)) { nativeCounts(it) })
+    @Synchronized fun counts(): Counts = Counts(ifOpen(IntArray(12)) { nativeCounts(it) })
 
     /** Gives the DAC back to Android ([UsbStream.nativeGiveBack]); the attach results, then the reset's. */
     @Synchronized fun giveBack(interfaces: IntArray, reset: Boolean): IntArray = ifOpen(IntArray(0)) { nativeGiveBack(it, interfaces, reset) }
@@ -69,6 +69,10 @@ class UsbStream private constructor(private var handle: Long) {
 
         /** The libusb event thread's nice value: -19 is what it asks for; 99 not started. */
         val eventNice = values[9]
+
+        /** Packets the host reported failed inside completed transfers, and the last one's libusb status (0.4.5). */
+        val packetErrors = values[10]
+        val lastPacketStatus = values[11]
     }
 
     companion object {

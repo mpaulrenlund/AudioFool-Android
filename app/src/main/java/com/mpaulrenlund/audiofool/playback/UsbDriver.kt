@@ -218,11 +218,44 @@ class UsbDriver(private val context: Context) {
         h.streaming = null
     }
 
+    /** "0 failed packets", or how many and the last one's status (0.4.5). */
+    private fun packetErrors(c: UsbStream.Counts): String =
+        if (c.packetErrors == 0) "0 failed packets" else "${c.packetErrors} failed packets (last: ${transferStatus(c.lastPacketStatus)})"
+
+    /** libusb's transfer statuses (`libusb_transfer_status`). */
+    private fun transferStatus(status: Int): String = when (status) {
+        0 -> "completed"
+        1 -> "error"
+        2 -> "timed out"
+        3 -> "cancelled"
+        4 -> "stall"
+        5 -> "no device"
+        6 -> "overflow"
+        else -> "status $status"
+    }
+
+    /**
+     * What the DAC says its volume controls and mute are, just after they were set (0.4.5: a
+     * stream played a minute in silence; this shows whether the DAC took the volume).
+     */
+    private fun readBack(h: Held): String {
+        val v = h.volume ?: return "no volume"
+        val d = h.descriptors
+        val index = (v.unit.id shl 8) or d.controlInterface
+        val levels = (v.levelOn + v.open.map { it.first }).distinct().sorted().mapNotNull { ch ->
+            currentVolume(h.connection, d, ch, index)?.let { (if (ch == 0) "master " else "channel $ch ") + UsbVolume.db(it) }
+        }
+        val mute = if (v.unit.masterMute) get(h.connection, CLASS_IN, if (d.uacVersion == 2) CUR else UAC1_GET_CUR, FU_MUTE shl 8, index, 1)
+            ?.let { if (it[0].toInt() != 0) "muted" else "not muted" } ?: "mute not read" else "no mute"
+        return (levels + mute).joinToString(", ")
+    }
+
     /** How the stream went, as it stops (0.4.2): what a report needs to tell a gap's cause. */
     private fun summarise(h: Held) {
         val what = h.streaming ?: return
         val c = h.stream.counts()
-        note = "stopped $what: ${c.underruns} underruns · ${c.lateRefills} late refills (longest gap ${c.longestGapMs} ms, ${c.queuedMs} ms in flight, priority ${c.eventNice}) · ${c.errors} errors"
+        note = "stopped $what: ${c.underruns} underruns · ${c.lateRefills} late refills (longest gap ${c.longestGapMs} ms, ${c.queuedMs} ms in flight, priority ${c.eventNice}) · ${c.errors} errors · " +
+            "${packetErrors(c)} · clock %.4f of %.4f frames, %d feedback values".format(java.util.Locale.ENGLISH, c.rate / 65536.0, c.nominal / 65536.0, c.feedbackValues)
     }
 
     /**
@@ -230,27 +263,43 @@ class UsbDriver(private val context: Context) {
      * waits (up to [waitMs]) for Android to set it up again, so an output opened next goes to
      * the DAC and not the speaker.
      *
-     * The DAC's master volume stays where the keys left it (only unmuted). What Android does
-     * with the DAC's controls afterwards is Android's (Samsung sets them itself), so Bit-Perfect
-     * off pauses the music first (the player's), and the user plays it on when ready.
+     * The volume (0.4.5): Samsung never touches the DAC's own controls; it turns a USB DAC down in
+     * its own software, by its media volume (0.4.4's report). So the DAC goes back to 0 dB, as
+     * Android expects it (0.4.4 left it at the BP level, and Android couldn't make it loud
+     * enough), and first Android's media volume comes down to [ANDROID_SAFE_INDEX] if it is
+     * higher, so whatever plays next through Android starts quiet (0.4.2 put the DAC back to
+     * 0 dB with Android at 9 of 15, and it was far too loud). Bit-Perfect off also pauses (the
+     * player's), and the user turns it up and plays on when ready.
      */
     fun giveBack(why: String, waitMs: Long = GIVE_BACK_WAIT_MS) {
         val h = synchronized(this) { held?.also { held = null } } ?: return
         handingBackUntil = SystemClock.elapsedRealtime() + HANDING_BACK_MS
         summarise(h)
-        h.volume?.let { v -> setVolumeValue(h, v, v.range.value(v.step), mute = false) }
+        val lowered = lowerAndroidVolume()
+        h.volume?.let { v -> setVolumeValue(h, v, v.range.atZeroDb(), mute = false) }
         val results = h.stream.giveBack(h.interfaces, reset = true)
         h.stream.close()
         h.connection.close()
         note = "given back ($why): " + results.joinToString(", ") { UsbStream.errorName(it) } +
-            (h.volume?.let { " · the DAC left at ${UsbVolume.db(it.range.value(it.step))}" } ?: "") + " · ${androidVolume()}"
+            (h.volume?.let { " · the DAC back at ${UsbVolume.db(it.range.atZeroDb())}" } ?: "") + " · $lowered"
         Log.i(TAG, note)
         main.post { onChange() }
         if (waitMs > 0) {
             val back = waitForAndroid(waitMs)
-            note = if (back >= 0) "Android has the DAC again after $back ms: ${androidVolume()}"
-            else "Android hadn't set the DAC up again after ${waitMs / 1000} s (unplug it and plug it in again): ${androidVolume()}"
+            // Android may put its volume back for the DAC it sets up again: down again if so.
+            val again = lowerAndroidVolume()
+            note = if (back >= 0) "Android has the DAC again after $back ms: $again"
+            else "Android hadn't set the DAC up again after ${waitMs / 1000} s (unplug it and plug it in again): $again"
         }
+    }
+
+    /** Android's media volume down to [ANDROID_SAFE_INDEX] if it is higher; what it was and is, for the notes. */
+    private fun lowerAndroidVolume(): String {
+        val before = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+        if (before > ANDROID_SAFE_INDEX) runCatching { audio.setStreamVolume(AudioManager.STREAM_MUSIC, ANDROID_SAFE_INDEX, 0) }
+        val after = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        return if (after != before) "Android's media volume lowered from $before to $after of $max" else "Android's media volume $after of $max"
     }
 
     /**
@@ -306,7 +355,7 @@ class UsbDriver(private val context: Context) {
         held = h
         h.volume?.let { v -> setVolumeValue(h, v, v.range.value(v.step), mute = v.range.muted(v.step)) }
         note = "taken: " + (if (d.uacVersion == 2) "rates " + clockRates.values.flatten().distinct().sorted().joinToString(", ") { Display.sampleRate(it) } else "UAC1") +
-            (h.volume?.let { " · volume ${UsbVolume.db(it.range.value(it.step))}, step ${it.step} (the DAC was at ${it.found}; ${androidVolume()})" } ?: " · no hardware volume")
+            (h.volume?.let { " · volume ${UsbVolume.db(it.range.value(it.step))}, step ${it.step} (the DAC was at ${it.found}; ${androidVolume()}; reads back ${readBack(h)})" } ?: " · no hardware volume")
         Log.i(TAG, note)
         main.post { onChange() }
         return h
@@ -483,7 +532,7 @@ class UsbDriver(private val context: Context) {
             lines += "clock: %.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
                 java.util.Locale.ENGLISH, c.rate / 65536.0, if (h.stream.highSpeed) "microframe" else "frame", c.nominal / 65536.0,
                 c.feedbackValues, c.underruns, c.errors,
-            ) + " · refills: longest gap ${c.longestGapMs} ms, ${c.lateRefills} late (${c.queuedMs} ms in flight) · priority ${c.eventNice}" + if (c.lost) " · lost" else ""
+            ) + " · refills: longest gap ${c.longestGapMs} ms, ${c.lateRefills} late (${c.queuedMs} ms in flight) · priority ${c.eventNice} · ${packetErrors(c)}" + if (c.lost) " · lost" else ""
         }
         lines += h.volume?.let { "volume: step ${it.step} of ${UsbVolume.STEPS}, ${UsbVolume.db(it.range.value(it.step))}" + if (it.range.muted(it.step)) " (muted)" else "" } ?: "volume: the DAC has none"
         return lines + lately
@@ -497,6 +546,9 @@ class UsbDriver(private val context: Context) {
 
         /** Notes kept for the debug screen and the report. */
         private const val HISTORY = 12
+
+        /** Android's media volume at most, once the DAC is given back (0.4.5): the quietest step that is heard. */
+        private const val ANDROID_SAFE_INDEX = 1
 
         /** How long a give-back waits for Android to set the DAC up again (0.3.1: about 1.3 s; 0.4.3 once not in 4 s). */
         const val GIVE_BACK_WAIT_MS = 8_000L
