@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.6**: the DAC muted from the moment BP takes it until its new stream has settled: no pop — 2026-10-28, built, not yet released
 - [x] **0.4.5**: given back, the DAC returns to 0 dB with Android's media volume lowered to 1; the report counts failed packets and reads the volume back — 2026-10-28, released as a pre-release
 - [x] **0.4.4**: the DAC's volume from the user only (quietest first, then where the keys left it; every volume control set); BP off and plugging in pause — 2026-10-28, released as a pre-release
 - [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, released as a pre-release
@@ -48,6 +49,16 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.6 (2026-10-28), built as versionCode 28, not yet released: **no pop when BP takes the DAC.**
+0.4.5 gives the DAC back at 0 dB, so each take found it there and set the user's level only a few
+tens of ms later, after reading the clock and the volume ranges; the DAC popped loudly as it
+changed from Android's stream to the driver's. Now the DAC is muted straight after it is claimed
+(before anything is read), stays muted through the rate and setting change, and is unmuted
+150 ms after its stream starts (which starts paused, so the DAC locks to silence first). The
+same at every rate change between tracks. A DAC without a mute control is turned to the bottom
+of its range instead. The give-back is unchanged (no pop reported there; a mute could stay on
+across the reset and leave Android silent).
 
 0.4.5 (2026-10-28), released as pre-release [`v0.4.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.5) ("AudioFool 0.4.5", versionCode 27): **from 0.4.4's report.** Samsung
 never touches the DAC's own volume controls (master −51 dB, channels 0 dB, with Android at 11 of
@@ -712,18 +723,24 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.6 (no pop when BP takes the DAC)
+
+Built 2026-10-28 (versionCode 28). Installs over 0.4.5 (same key). Volume low for the first try.
+
+- [ ] **BP on while playing (after BP off)**: no pop before the music?
+- [ ] **A track at another rate** (44.1 → 96 kHz) with BP on: no pop at the change?
+- [ ] **Pause over a minute, then Play**: no pop, sound as before?
+
 ### 0.4.5 (BP off loud enough again; why the silence)
 
-Released 2026-10-28 as pre-release [`v0.4.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.5) (versionCode 27). Installs over 0.4.4 (same key). **Volume low and earphones out
-for the first tries.**
+Released 2026-10-28 as pre-release [`v0.4.5`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.5) (versionCode 27). The user's results, 2026-10-28:
 
-- [ ] **BP off while playing**: pauses; Android's volume is now at 1 (very quiet). Play, then
-  turn it up: can it get loud enough now?
-- [ ] **BP on again**: at the level you had in BP before, not louder?
-- [ ] **Pause over a minute, then Play**: sound? **If it's silent again, send the report before
-  doing anything else**: the "taken" line now reads the volume back from the DAC, and the
-  Driver row counts failed packets and the DAC's clock.
-- [ ] **Send the report** at the end.
+- [x] **BP off while playing**: pauses; turned up from 1, loud enough.
+- [ ] **BP on again**: at the level from before, **but a loud pop just before the music**. The
+  report: each take found the DAC at 0 dB (where the give-back left it) and set −51 dB a moment
+  later; the DAC popped as it changed over in between. Fixed in 0.4.6 (muted through the change).
+- [x] **Paused over a minute, then Play**: sound this time. The report: 0 failed packets, the
+  DAC's clock 5.5126 of 5.5125 frames a microframe, 62,466 and 120,211 feedback values.
 
 ### 0.4.4 (the volume from the user only; BP off and plugging in pause)
 

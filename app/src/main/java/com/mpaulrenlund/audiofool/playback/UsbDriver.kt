@@ -170,6 +170,8 @@ class UsbDriver(private val context: Context) {
         val rate = asked.sampleRate
         val bytesPerFrame = s.subslotBytes * s.channels
 
+        // Muted while the DAC changes rate and stream, and until it has settled (0.4.6: it popped).
+        hush(h)
         // Linux's order: UAC2 sets the rate with no bandwidth taken and then the setting; UAC1 the other way round.
         h.stream.setAlternate(s.interfaceNumber, 0)
         if (d.uacVersion == 1) h.stream.setAlternate(s.interfaceNumber, s.alternate)
@@ -194,6 +196,9 @@ class UsbDriver(private val context: Context) {
             bufferBytes = bytesPerFrame * rate / 2,
         )
         if (r != 0) return failed("streaming wouldn't start: ${UsbStream.errorName(r)}")
+        // The stream starts paused, so silence goes out while the DAC locks to it; then the level.
+        SystemClock.sleep(SETTLE_MS)
+        unhush(h)
 
         val encoding = when (s.subslotBytes) {
             2 -> AudioFormat.ENCODING_PCM_16BIT
@@ -350,10 +355,13 @@ class UsbDriver(private val context: Context) {
             stream.close()
             return refuse(device, "wouldn't be taken from Android: ${UsbStream.errorName(claimed)}", connection)
         }
+        // First of all: the DAC comes from Android at 0 dB, and popped loudly as it changed over (0.4.5).
+        muteAtOnce(connection, d)
         val clockRates = if (d.uacVersion == 2) d.clockSources.associate { c -> c.id to clockRates(connection, d, c.id) } else emptyMap()
         val h = Held(device, connection, stream, d, interfaces, clockRates, readVolume(connection, d))
         held = h
-        h.volume?.let { v -> setVolumeValue(h, v, v.range.value(v.step), mute = v.range.muted(v.step)) }
+        // The level is set, but stays muted until the stream has settled ([open]).
+        hush(h)
         note = "taken: " + (if (d.uacVersion == 2) "rates " + clockRates.values.flatten().distinct().sorted().joinToString(", ") { Display.sampleRate(it) } else "UAC1") +
             (h.volume?.let { " · volume ${UsbVolume.db(it.range.value(it.step))}, step ${it.step} (the DAC was at ${it.found}; ${androidVolume()}; reads back ${readBack(h)})" } ?: " · no hardware volume")
         Log.i(TAG, note)
@@ -491,6 +499,31 @@ class UsbDriver(private val context: Context) {
     private fun androidVolume(): String =
         "Android's media volume ${audio.getStreamVolume(AudioManager.STREAM_MUSIC)} of ${audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)}"
 
+    /**
+     * Mutes the DAC straight after it is taken, before its controls are even read (0.4.6): its
+     * mute if it has one, else its master volume at the bottom of its range.
+     */
+    private fun muteAtOnce(c: UsbDeviceConnection, d: UsbAudioDescriptors) {
+        val unit = d.playback.firstOrNull()?.let { d.volumeUnitFor(it) } ?: return
+        val index = (unit.id shl 8) or d.controlInterface
+        if (unit.masterMute) {
+            c.controlTransfer(CLASS_OUT, CUR, FU_MUTE shl 8, index, byteArrayOf(1), 1, TIMEOUT_MS)
+        } else if (unit.masterVolume) {
+            volumeRange(c, d, 0, index)?.let { (lo, _, _) -> c.controlTransfer(CLASS_OUT, CUR, FU_VOLUME shl 8, index, le(lo, 2), 2, TIMEOUT_MS) }
+        }
+    }
+
+    /** Silent while the stream is set up (the mute, or the bottom of the range if there is none), at the user's level otherwise. */
+    private fun hush(h: Held) {
+        val v = h.volume ?: return
+        if (v.unit.masterMute) setVolumeValue(h, v, v.range.value(v.step), mute = true) else setVolumeValue(h, v, v.range.min, mute = false)
+    }
+
+    private fun unhush(h: Held) {
+        val v = h.volume ?: return
+        setVolumeValue(h, v, v.range.value(v.step), v.range.muted(v.step))
+    }
+
     private fun setVolumeValue(h: Held, v: Volume, value: Int, mute: Boolean) {
         val index = (v.unit.id shl 8) or h.descriptors.controlInterface
         for ((channel, open) in v.open) h.connection.controlTransfer(CLASS_OUT, CUR, (FU_VOLUME shl 8) or channel, index, le(open, 2), 2, TIMEOUT_MS)
@@ -546,6 +579,9 @@ class UsbDriver(private val context: Context) {
 
         /** Notes kept for the debug screen and the report. */
         private const val HISTORY = 12
+
+        /** How long the DAC stays muted after its stream starts, while it locks to the new rate (0.4.6). */
+        private const val SETTLE_MS = 150L
 
         /** Android's media volume at most, once the DAC is given back (0.4.5): the quietest step that is heard. */
         private const val ANDROID_SAFE_INDEX = 1

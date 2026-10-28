@@ -232,3 +232,7 @@ no USB, so everything below is for the S24 to show.
 - **0.4.5**: given back, the DAC returns to 0 dB and Android's media volume comes down to 1
   first; the report counts failed packets and reads the DAC's volume back, for the silence after
   a minute's pause (0.4.4: a minute of streaming, 0 underruns, 0 transfer errors, no sound).
+- **0.4.5 on the S24**: BP off loud enough again; sound after a minute's pause (0 failed
+  packets, the clock steady); but **a loud pop as BP took the DAC**, which it now finds at 0 dB.
+  **0.4.6**: muted from the claim until 150 ms after the new stream starts, and at every rate
+  change.

@@ -11,7 +11,8 @@ device). The spec is `design/android-spec.md`.
   session notes.
 - **Latest: 0.4.5** (versionCode 27), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.5>, `dist/AudioFool-0.4.5.apk`: the
   driver; given back, the DAC returns to 0 dB with Android's volume at 1; failed packets reported.
-- **Next release:** **0.4.6 / 28** for fixes, **0.5.0** for new features. Bump both in
+- **Next release: 0.4.6 (versionCode 28) is built**, `dist/AudioFool-0.4.6.apk`, not yet released;
+  then **0.4.7 / 29** for fixes, **0.5.0** for new features. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
