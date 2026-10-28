@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.4.6**: the DAC muted from the moment BP takes it until its new stream has settled: no pop — 2026-10-28, built, not yet released
+- [x] **0.4.6**: the DAC muted from the moment BP takes it until its new stream has settled: no pop — 2026-10-28, released as a pre-release
 - [x] **0.4.5**: given back, the DAC returns to 0 dB with Android's media volume lowered to 1; the report counts failed packets and reads the volume back — 2026-10-28, released as a pre-release
 - [x] **0.4.4**: the DAC's volume from the user only (quietest first, then where the keys left it; every volume control set); BP off and plugging in pause — 2026-10-28, released as a pre-release
 - [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, released as a pre-release
@@ -50,7 +50,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.4.6 (2026-10-28), built as versionCode 28, not yet released: **no pop when BP takes the DAC.**
+0.4.6 (2026-10-28), released as pre-release [`v0.4.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.6) ("AudioFool 0.4.6", versionCode 28): **no pop when BP takes the DAC.**
 0.4.5 gives the DAC back at 0 dB, so each take found it there and set the user's level only a few
 tens of ms later, after reading the clock and the volume ranges; the DAC popped loudly as it
 changed from Android's stream to the driver's. Now the DAC is muted straight after it is claimed
@@ -725,7 +725,7 @@ Session 1:
 
 ### 0.4.6 (no pop when BP takes the DAC)
 
-Built 2026-10-28 (versionCode 28). Installs over 0.4.5 (same key). Volume low for the first try.
+Released 2026-10-28 as pre-release [`v0.4.6`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.6) (versionCode 28). Installs over 0.4.5 (same key). Volume low for the first try.
 
 - [ ] **BP on while playing (after BP off)**: no pop before the music?
 - [ ] **A track at another rate** (44.1 → 96 kHz) with BP on: no pop at the change?
