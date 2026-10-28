@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, built, not yet released
+- [x] **0.4.3**: never louder when the DAC changes hands (BP off came back far too loud in 0.4.2) — 2026-10-27, released as a pre-release
 - [x] **0.4.2**: the DAC's volume kept across hand-backs (and Android's media volume kept with it); 64 ms in flight to the DAC so the background keeps up; refill timing in the report — 2026-10-27, released as a pre-release
 - [x] **0.4.1**: the seekbar no longer flashes back after a seek; the driver's Debug row keeps its last eight notes — 2026-10-27, released as a pre-release
 - [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, released as a pre-release
@@ -47,7 +47,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.4.3 (2026-10-27), built as versionCode 25, not yet released: **never louder when the DAC
+0.4.3 (2026-10-27), released as pre-release [`v0.4.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.3) ("AudioFool 0.4.3", versionCode 25): **never louder when the DAC
 changes hands.** In 0.4.2, Bit-Perfect off while playing came back far too loud on the S24: the
 give-back put the DAC's own volume back to 0 dB and relied on Android's media volume (which
 0.4.2 moved with the keys) to bring it down, and it didn't. Why exactly isn't known; the new rule
@@ -679,7 +679,7 @@ Session 1:
 
 ### 0.4.3 (never louder at Bit-Perfect off)
 
-Built 2026-10-27 (versionCode 25). Installs over 0.4.2 (same key). BP on, the UA2 Plus in. **Start
+Released 2026-10-27 as pre-release [`v0.4.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.3) (versionCode 25). Installs over 0.4.2 (same key). BP on, the UA2 Plus in. **Start
 with the volume low and the earphones out for the first BP-off.**
 
 - [ ] **BP off while playing**: no louder than with BP on (it may be quieter; turn Android's

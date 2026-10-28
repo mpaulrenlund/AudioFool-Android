@@ -9,14 +9,13 @@ device). The spec is `design/android-spec.md`.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.4.0 down to 0.3.0 is the newest work) and the newest
   session notes.
-- **Latest: 0.4.2** (versionCode 24), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.2>, `dist/AudioFool-0.4.2.apk`: the
-  driver with the volume kept across hand-backs, 64 ms in flight, refill timing in the report.
-- **Next release: 0.4.3 (versionCode 25) is built**, `dist/AudioFool-0.4.3.apk`, not yet released;
-  then **0.4.4 / 26** for fixes, **0.5.0** for new features. Bump both in
+- **Latest: 0.4.3** (versionCode 25), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.3>, `dist/AudioFool-0.4.3.apk`: the
+  driver, never louder when the DAC changes hands (0.4.2's BP off came back far too loud).
+- **Next release:** **0.4.4 / 26** for fixes, **0.5.0** for new features. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
-  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.2 (2026-10-27). All but v0.1.0 are pre-releases.
+  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27). All but v0.1.0 are pre-releases.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
