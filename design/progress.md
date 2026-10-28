@@ -757,17 +757,20 @@ Session 1:
 
 Released 2026-10-28 as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7) (versionCode 29). Installs over 0.4.6 (same key). Volume low for the first try.
 
-- [ ] **Pause with BP on, leave the app** (home, or the screen off) for two minutes or more, then
+- [x] **Pause with BP on, leave the app** (home, or the screen off) for two minutes or more, then
   play from another app or plug headphones into the DAC's path: sound? The notification can't be
   swiped away for the first minute after the pause, and can afterwards. Debug's driver row:
-  "given back (paused a while)".
+  "given back (paused a while)". **YouTube played through the DAC after 2 minutes** (the user,
+  2026-10-28).
 - [ ] **Pause with BP on, swipe AudioFool from recents**: the DAC plays another app's sound
-  straight after? Debug (open AudioFool again): "given back (paused a while)".
-- [ ] **Force stop while playing with BP on** (Settings > Apps > AudioFool > Force stop): the DAC
+  straight after? Debug (open AudioFool again): "given back (paused a while)". **No: YouTube
+  wasn't heard** (the user, 2026-10-28). Cause not known yet.
+- [x] **Force stop while playing with BP on** (Settings > Apps > AudioFool > Force stop): the DAC
   is silent, as before. Then open AudioFool: within a few seconds, does another app's sound come
   through the DAC, quiet (Android's volume at 1)? Debug: "found left held …", then "given back
-  (left held when Android ended the app)" and "Android has the DAC again after … ms".
-- [ ] **BP on again after that**: plays through the driver, no pop, at the quietest step.
+  (left held when Android ended the app)" and "Android has the DAC again after … ms". **Works
+  well.**
+- [x] **BP on again after that**: plays through the driver, no pop, at the quietest step. **Yes.**
 
 ### 0.4.6 (no pop when BP takes the DAC)
 
