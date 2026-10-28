@@ -698,18 +698,15 @@ Session 1:
 
 ### 0.4.4 (the volume from the user only; BP off and plugging in pause)
 
-Released 2026-10-28 as pre-release [`v0.4.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.4) (versionCode 26). Installs over 0.4.3 (same key). **Volume low and earphones out
-for the first tries.**
+Released 2026-10-28 as pre-release [`v0.4.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.4) (versionCode 26). The user's results, 2026-10-28:
 
-- [ ] **BP on (the first time since the app started)**: very quiet (59 dB below the DAC's
-  loudest)? Turn it up with the keys.
-- [ ] **BP off while playing**: the music pauses? Then Play: through the DAC, not louder than you
-  can stand (Android sets the DAC's volume its own way here)?
-- [ ] **BP on again**: at the level you set before, not louder?
-- [ ] **Pause over a minute, then Play**: the same level?
-- [ ] **Plug the DAC in while music plays on the speaker**: it pauses?
-- [ ] **Send the report**: "taken" now lists each of the DAC's volume controls as found
-  (master, channel 1, channel 2), and "Android has the DAC again after … ms" or "hadn't".
+- [x] **BP on, the first time**: very quiet, turned up with the keys.
+- [x] **BP off while playing**: pauses; Play comes out of the DAC. **But with BP off the volume
+  can't get loud enough**: at Android's full volume it was too quiet to listen to. The give-back
+  leaves the DAC's master at the BP level, and Samsung turns the DAC down on top of that.
+- [x] **BP on again**: at the level set before.
+- [ ] **Paused over a minute, then Play: playing, but no sound.** To find out from the report.
+- [x] **Plugging the DAC in while music plays on the speaker**: pauses.
 
 ### 0.4.3 (never louder at Bit-Perfect off)
 
