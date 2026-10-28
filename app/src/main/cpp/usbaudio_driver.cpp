@@ -30,6 +30,7 @@
 #include <vector>
 
 #include <sys/resource.h>
+#include <time.h>
 #include <unistd.h>
 
 #define TAG "AudioFoolUsb"
@@ -38,6 +39,9 @@
 
 namespace {
 
+// 8 transfers of 8 ms: 64 ms in flight. 0.4.0 had 16 ms, and the music stopped for a moment
+// when the app went to the background (the S24): Android runs it on slower cores then, and
+// the refills came too late.
 constexpr int DATA_TRANSFERS = 8;
 constexpr int FEEDBACK_TRANSFERS = 2;
 // Errors in a row on the data endpoint before the DAC counts as gone.
@@ -88,6 +92,13 @@ struct Stream {
     std::condition_variable done;
     int errorsInARow = 0;
 
+    // How late the refills come (0.4.2): the longest gap between two, and how many came after
+    // the DAC had played all that was in flight (heard as a gap).
+    int queuedMs = 0, transferMs = 0;
+    int64_t lastCallbackMs = 0;
+    std::atomic<int> longestGapMs{0};
+    std::atomic<int> lateRefills{0};
+
     DataSlot data[DATA_TRANSFERS];
     libusb_transfer* feedback[FEEDBACK_TRANSFERS] = {};
 };
@@ -97,6 +108,8 @@ struct Device {
     libusb_device_handle* handle = nullptr;
     std::thread events;
     std::atomic<bool> quit{false};
+    // The nice value the event thread got (0.4.2): -19 asked; anything else says Android refused.
+    std::atomic<int> eventNice{99};
     Stream* stream = nullptr;
 };
 
@@ -213,9 +226,23 @@ void finished(Stream* s) {
     }
 }
 
+int64_t nowMs() {
+    timespec ts{};
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return static_cast<int64_t>(ts.tv_sec) * 1000 + ts.tv_nsec / 1000000;
+}
+
 void LIBUSB_CALL onData(libusb_transfer* t) {
     auto* slot = static_cast<DataSlot*>(t->user_data);
     Stream* s = slot->stream;
+    int64_t now = nowMs();
+    if (s->lastCallbackMs != 0) {
+        int gap = static_cast<int>(now - s->lastCallbackMs);
+        if (gap > s->longestGapMs) s->longestGapMs = gap;
+        // All but this transfer had played out before it came back: the DAC went short.
+        if (gap > s->queuedMs - s->transferMs) s->lateRefills++;
+    }
+    s->lastCallbackMs = now;
     if (t->status == LIBUSB_TRANSFER_COMPLETED) {
         s->errorsInARow = 0;
         if (slot->generation == s->generation) s->head += slot->audioFrames;
@@ -259,7 +286,9 @@ void LIBUSB_CALL onFeedback(libusb_transfer* t) {
 
 void runEvents(Device* d) {
     // The audio thread's priority: the transfers must be refilled every couple of milliseconds.
-    setpriority(PRIO_PROCESS, gettid(), -19);
+    if (setpriority(PRIO_PROCESS, gettid(), -19) != 0) LOGW("event thread priority: errno %d", errno);
+    errno = 0;
+    d->eventNice = getpriority(PRIO_PROCESS, gettid());
     while (!d->quit) {
         timeval tv{0, 100000};
         libusb_handle_events_timeout_completed(d->context, &tv, nullptr);
@@ -364,8 +393,10 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeStart(
     s->slotBytes = slotBytes;
     s->maxFrames = maxPacketBytes / bytesPerFrame;
     s->dataInterval = dataInterval;
-    // About 2 ms a transfer, 16 ms in flight.
-    s->packetsPerTransfer = highSpeed ? std::max(1, 16 >> dataInterval) : 2;
+    // 8 ms a transfer (64 microframes, or 8 frames at full speed).
+    s->packetsPerTransfer = highSpeed ? std::max(1, 64 >> dataInterval) : 8;
+    s->transferMs = highSpeed ? (s->packetsPerTransfer << dataInterval) / 8 : s->packetsPerTransfer;
+    s->queuedMs = s->transferMs * DATA_TRANSFERS;
     s->nominal = nominalRate(sampleRate, highSpeed);
     s->rate = s->nominal;
     s->ring.resize(std::max(bufferBytes - bufferBytes % bytesPerFrame, bytesPerFrame * 1024));
@@ -476,11 +507,15 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeHead(JNIEnv*, jclass, j
     return s == nullptr ? 0 : s->head.load();
 }
 
-/** [underruns, feedback values taken, transfer errors, rate in Q16.16, nominal, lost]. */
+/**
+ * [underruns, feedback values taken, transfer errors, rate in Q16.16, nominal, lost,
+ * longest gap between refills in ms, late refills, ms in flight, the event thread's nice value].
+ */
 JNIEXPORT jintArray JNICALL
 Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeCounts(JNIEnv* env, jclass, jlong h) {
     Stream* s = device(h)->stream;
-    jint values[6] = {0, 0, 0, 0, 0, 0};
+    jint values[10] = {};
+    values[9] = device(h)->eventNice.load();
     if (s != nullptr) {
         values[0] = s->underruns.load();
         values[1] = s->feedbackValues.load();
@@ -488,9 +523,12 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeCounts(JNIEnv* env, jcl
         values[3] = s->rate.load();
         values[4] = s->nominal;
         values[5] = s->lost.load() ? 1 : 0;
+        values[6] = s->longestGapMs.load();
+        values[7] = s->lateRefills.load();
+        values[8] = s->queuedMs;
     }
-    jintArray out = env->NewIntArray(6);
-    env->SetIntArrayRegion(out, 0, 6, values);
+    jintArray out = env->NewIntArray(10);
+    env->SetIntArrayRegion(out, 0, 10, values);
     return out;
 }
 

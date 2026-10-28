@@ -195,3 +195,13 @@ no USB, so everything below is for the S24 to show.
 - **Known gaps**: paused DoP sends zeros, so the DAC may drop out of DSD with a click; other
   sounds are probably silent while the app holds the DAC; if the app is killed while holding
   it, the DAC stays silent until it is replugged. Native DSD (setting 4) is not used.
+
+### After the S24's first rounds (0.4.1, 0.4.2)
+
+- 0.4.0 and 0.4.1 played well on the S24 (44.1 kHz, hi-res, gapless, volume keys, unplug, BP off,
+  the hand-back after a pause). Two problems: the volume came back louder after a hand-back, and
+  leaving the app stopped the music for a few seconds.
+- 0.4.2: the volume keys' step is kept, and Android's media volume follows it while the DAC is
+  held; 64 ms in flight instead of 16; the refill gaps and the event thread's priority in the
+  report. If the background still stops it, the next steps are a bigger queue still or asking
+  Android for real-time scheduling of the event thread.

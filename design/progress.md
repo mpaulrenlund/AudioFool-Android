@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.2**: the DAC's volume kept across hand-backs (and Android's media volume kept with it); 64 ms in flight to the DAC so the background keeps up; refill timing in the report — 2026-10-27, built, not yet released
 - [x] **0.4.1**: the seekbar no longer flashes back after a seek; the driver's Debug row keeps its last eight notes — 2026-10-27, released as a pre-release
 - [x] **0.4.0**: true Bit-Perfect on the S24: the app's own USB Audio driver (libusb), the DAC's hardware volume on the volume keys, given back with a reset — 2026-10-27, released as a pre-release
 - [x] **0.3.1**: true Bit-Perfect on the S24, a test build: two ways of giving the DAC back (a USB reset; waiting for Android to close its output first) — 2026-10-27, released as a pre-release
@@ -44,6 +45,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.2 (2026-10-27), built as versionCode 24, not yet released: **two problems from 0.4.1 on the
+S24.**
+- **Louder after a hand-back**: each take started from Android's media volume, which the volume
+  keys hadn't moved (they move the DAC). Now the keys' step is kept and used again, unless
+  Android's volume was changed since; and Android's media volume follows the keys while the
+  driver holds the DAC (nothing hears it then), so once the DAC is Android's again it plays
+  about as loud. "About": Android's curve isn't the driver's 1 dB steps.
+- **A few seconds' silence on leaving the app**: with an `AudioTrack`, Android's own audio
+  service did the timely part; with the driver the app refills the DAC's transfers itself, and
+  only 16 ms were in flight. Now 8 transfers of 8 ms (64 ms). A cut (seek, skip) waits for what
+  is in flight before its fade is heard, so it now waits about 85 ms instead of 40.
+- **The report says why if it happens again**: the longest gap between refills, how many came
+  after the DAC had played all in flight, and the event thread's actual priority; each stream's
+  summary as it stops. The Driver row keeps 12 notes.
 
 0.4.1 (2026-10-27), released as pre-release [`v0.4.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.1) ("AudioFool 0.4.1", versionCode 23): **two fixes from the S24's 0.4.0
 results.** The driver played well (44.1 kHz, hi-res, gapless, volume keys, unplug, BP off).
@@ -643,16 +659,32 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.2 (the volume after a hand-back; playing on in the background)
+
+Built 2026-10-27 (versionCode 24). Installs over 0.4.1 (same key). BP on, the UA2 Plus in.
+
+- [ ] **Volume**: set it with the keys (well below where Android had it), pause over a minute,
+  Play: the same volume as before the pause? Then **BP off**: about as loud as with BP on?
+- [ ] **Leaving the app** while playing (home, another app, the app switcher): does the music
+  carry on without a gap now?
+- [ ] **Seek**: still quick enough? (A cut now waits for the 64 ms in flight.)
+- [ ] **Send the report** after leaving and coming back: each "stopped …" line and the Driver
+  row's clock line give the longest gap between refills, how many came too late, and the
+  thread's priority (−19 is what it asks for).
+
 ### 0.4.1 (the seek flash; the driver's last few notes)
 
-Released 2026-10-27 as pre-release [`v0.4.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.1) (versionCode 23). Installs over 0.4.0 (same key). BP on, the UA2 Plus in.
+Released 2026-10-27 as pre-release [`v0.4.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.1) (versionCode 23). The user's results, 2026-10-27:
 
-- [ ] **Seek** a few times while playing: the seekbar goes straight to the new place, with no
-  flash back to the old one?
-- [ ] **Pause over a minute**, then look at the Driver row: "given back (paused a while)" among
-  its lines? A notification sound through the DAC then? Play carries on through the driver?
-- [ ] **A DSD file**, if there is one on the phone: "DSD over PCM"; a click at pause?
-- [ ] **Send the report** at the end.
+- [x] **Seek**: "seems to be fixed".
+- [x] **Paused over a minute**: handed back both times ("given back (paused a while)" at 18:43:44
+  and 18:46:47 in the report); Play carried on through the driver ("Exclusive"). **But the
+  volume came back much louder**: the driver started from Android's media volume again
+  (−28 dB) and forgot the volume keys' setting. Fixed in 0.4.2. No notification sound heard.
+- [ ] **A DSD file**: not tried yet.
+- [ ] **New: leaving the app (swiping away or switching apps) stops the music for a few
+  seconds** with Bit-Perfect on. Likely the refills coming too late in the background: 0.4.2
+  queues 64 ms instead of 16 and reports the gaps.
 
 ### 0.4.0 (true Bit-Perfect: the driver)
 

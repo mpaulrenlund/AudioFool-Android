@@ -200,8 +200,16 @@ class UsbDriver(private val context: Context) {
     }
 
     private fun stop(h: Held) {
+        summarise(h)
         h.stream.stop()
         h.streaming = null
+    }
+
+    /** How the stream went, as it stops (0.4.2): what a report needs to tell a gap's cause. */
+    private fun summarise(h: Held) {
+        val what = h.streaming ?: return
+        val c = h.stream.counts()
+        note = "stopped $what: ${c.underruns} underruns · ${c.lateRefills} late refills (longest gap ${c.longestGapMs} ms, ${c.queuedMs} ms in flight, priority ${c.eventNice}) · ${c.errors} errors"
     }
 
     /**
@@ -212,6 +220,7 @@ class UsbDriver(private val context: Context) {
     fun giveBack(why: String, waitMs: Long = GIVE_BACK_WAIT_MS) {
         val h = synchronized(this) { held?.also { held = null } } ?: return
         handingBackUntil = SystemClock.elapsedRealtime() + HANDING_BACK_MS
+        summarise(h)
         h.volume?.let { v -> setVolumeValue(h, v, v.original, mute = false) }
         val results = h.stream.giveBack(h.interfaces, reset = true)
         h.stream.close()
@@ -312,6 +321,7 @@ class UsbDriver(private val context: Context) {
         refused = null
         asked = null
         val h = synchronized(this) { held?.takeIf { it.device.deviceName == device.deviceName }?.also { held = null } } ?: return
+        summarise(h)
         h.stream.close()
         h.connection.close()
         note = "unplugged while held"
@@ -353,6 +363,8 @@ class UsbDriver(private val context: Context) {
         val v = h.volume ?: return
         v.step = step.coerceIn(0, UsbVolume.STEPS)
         setVolumeValue(h, v, v.range.value(v.step), v.range.muted(v.step))
+        keyStep = v.step
+        mirrorToAndroid(v.step)
     }
 
     private fun readVolume(c: UsbDeviceConnection, d: UsbAudioDescriptors): Volume? {
@@ -371,8 +383,30 @@ class UsbDriver(private val context: Context) {
         } ?: return null
         val now = get(c, CLASS_IN, if (d.uacVersion == 2) CUR else UAC1_GET_CUR, value, index, 2)?.let { le(it).toShort().toInt() } ?: range.second
         val volume = UsbVolume(range.first, range.second, range.third)
-        val start = UsbVolume.stepFor(audio.getStreamVolume(AudioManager.STREAM_MUSIC), audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC))
+        // 0.4.2: the step the keys last set, unless Android's volume has been moved since
+        // (0.4.1 started from Android's every time, and after a hand-back came back louder).
+        val android = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val start = keyStep?.takeIf { android == mirroredIndex } ?: UsbVolume.stepFor(android, audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC))
+        keyStep = start
+        mirroredIndex = android
         return Volume(unit, channels, volume, now, start)
+    }
+
+    /** The step the volume keys left the DAC at, kept across hand-backs; and Android's media volume set to match it. */
+    @Volatile private var keyStep: Int? = null
+    @Volatile private var mirroredIndex: Int? = null
+
+    /**
+     * Android's media volume follows the keys while the driver holds the DAC (nothing hears it
+     * then), so once the DAC is Android's again it plays about as loud, and Bit-Perfect off
+     * doesn't jump. Android's curve isn't the driver's 1 dB steps, so "about".
+     */
+    private fun mirrorToAndroid(step: Int) {
+        val max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val index = Math.round(step.toDouble() * max / UsbVolume.STEPS).toInt()
+        runCatching { audio.setStreamVolume(AudioManager.STREAM_MUSIC, index, 0) }
+        // What Android took (it may hold back a loud step for hearing safety).
+        mirroredIndex = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
     }
 
     private fun setVolumeValue(h: Held, v: Volume, value: Int, mute: Boolean) {
@@ -415,7 +449,7 @@ class UsbDriver(private val context: Context) {
             lines += "clock: %.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
                 java.util.Locale.ENGLISH, c.rate / 65536.0, if (h.stream.highSpeed) "microframe" else "frame", c.nominal / 65536.0,
                 c.feedbackValues, c.underruns, c.errors,
-            ) + if (c.lost) " · lost" else ""
+            ) + " · refills: longest gap ${c.longestGapMs} ms, ${c.lateRefills} late (${c.queuedMs} ms in flight) · priority ${c.eventNice}" + if (c.lost) " · lost" else ""
         }
         lines += h.volume?.let { "volume: step ${it.step} of ${UsbVolume.STEPS}, ${UsbVolume.db(it.range.value(it.step))}" + if (it.range.muted(it.step)) " (muted)" else "" } ?: "volume: the DAC has none"
         return lines + lately
@@ -427,7 +461,7 @@ class UsbDriver(private val context: Context) {
         private const val TIMEOUT_MS = 1000
 
         /** Notes kept for the debug screen and the report. */
-        private const val HISTORY = 8
+        private const val HISTORY = 12
 
         /** How long a give-back waits for Android to set the DAC up again (0.3.1: about 1.3 s). */
         const val GIVE_BACK_WAIT_MS = 4_000L

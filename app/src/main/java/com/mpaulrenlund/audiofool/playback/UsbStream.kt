@@ -37,7 +37,7 @@ class UsbStream private constructor(private var handle: Long) {
     @Synchronized fun head(): Long = ifOpen(0L) { nativeHead(it) }
 
     /** What the stream counts: see [Counts]. */
-    @Synchronized fun counts(): Counts = Counts(ifOpen(IntArray(6)) { nativeCounts(it) })
+    @Synchronized fun counts(): Counts = Counts(ifOpen(IntArray(10)) { nativeCounts(it) })
 
     /** Gives the DAC back to Android ([UsbStream.nativeGiveBack]); the attach results, then the reset's. */
     @Synchronized fun giveBack(interfaces: IntArray, reset: Boolean): IntArray = ifOpen(IntArray(0)) { nativeGiveBack(it, interfaces, reset) }
@@ -59,6 +59,16 @@ class UsbStream private constructor(private var handle: Long) {
         val rate = values[3]
         val nominal = values[4]
         val lost = values[5] != 0
+
+        /** The longest the refills were apart, and how often the DAC played all that was in flight first (0.4.2). */
+        val longestGapMs = values[6]
+        val lateRefills = values[7]
+
+        /** How much is in flight to the DAC: what a cut waits for before its fade is heard. */
+        val queuedMs = values[8]
+
+        /** The libusb event thread's nice value: -19 is what it asks for; 99 not started. */
+        val eventNice = values[9]
     }
 
     companion object {
