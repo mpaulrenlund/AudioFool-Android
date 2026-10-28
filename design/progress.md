@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.7**: no silent DAC after Android ends the app while BP holds it (foreground while the DAC is held; a DAC left held repaired at the next start) — 2026-10-28, released as a pre-release
 - [x] **0.4.6**: the DAC muted from the moment BP takes it until its new stream has settled: no pop — 2026-10-28, released as a pre-release
 - [x] **0.4.5**: given back, the DAC returns to 0 dB with Android's media volume lowered to 1; the report counts failed packets and reads the volume back — 2026-10-28, released as a pre-release
 - [x] **0.4.4**: the DAC's volume from the user only (quietest first, then where the keys left it; every volume control set); BP off and plugging in pause — 2026-10-28, released as a pre-release
@@ -50,7 +51,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.4.7 (2026-10-28, not released yet): **the DAC no longer goes silent when Android ends the app
+0.4.7 (2026-10-28), released as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7) ("AudioFool 0.4.7", versionCode 29): **the DAC no longer goes silent when Android ends the app
 while the driver holds it.** The user saw it after leaving AudioFool paused in the background
 with BP on. The cause: at a pause the service dropped out of the foreground straight away, so
 Android stopped or froze the app before the minute's give-back ran, and later ended it while it
@@ -754,7 +755,7 @@ Session 1:
 
 ### 0.4.7 (no silent DAC after Android ends the app)
 
-Not released yet. Volume low for the first try.
+Released 2026-10-28 as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7) (versionCode 29). Installs over 0.4.6 (same key). Volume low for the first try.
 
 - [ ] **Pause with BP on, leave the app** (home, or the screen off) for two minutes or more, then
   play from another app or plug headphones into the DAC's path: sound? The notification can't be
