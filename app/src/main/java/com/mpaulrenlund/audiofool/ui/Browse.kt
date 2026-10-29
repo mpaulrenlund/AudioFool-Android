@@ -71,6 +71,8 @@ class AppActions(
     val next: () -> Unit = {},
     /** A tap on the mini player: Now Playing, which session 3 builds. */
     val openNowPlaying: () -> Unit = {},
+    /** The logo menu's Rescan Library (0.5.0): the same rescan as Settings' Music folders button. */
+    val rescan: () -> Unit = {},
 )
 
 /**

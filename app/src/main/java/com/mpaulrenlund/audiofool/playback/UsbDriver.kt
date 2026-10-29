@@ -623,7 +623,7 @@ class UsbDriver(private val context: Context) {
         if (h.streaming != null) {
             // 0.4.9: the stutter question in one line; the details are in the next.
             lines += "gaps since this stream started: ${c.lateRefills} from USB refills late (${c.queuedMs} ms sent ahead), ${c.underruns} from samples late"
-            // 0.4.10: a 1288 ms gap at priority -19; which of the three it was.
+            // 0.5.0: a 1288 ms gap at priority -19; which of the three it was.
             lines += "longest gap ${c.longestGapMs} ms: the app stopped ${c.longestHeartbeatGapMs} ms, a send to the DAC ${c.longestSubmitMs} ms, waiting for samples ${c.longestLockWaitMs} ms"
             lines += "clock:%.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
                 java.util.Locale.ENGLISH, c.rate / 65536.0, if (h.stream.highSpeed) "microframe" else "frame", c.nominal / 65536.0,

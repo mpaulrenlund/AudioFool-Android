@@ -50,7 +50,7 @@ android {
         minSdk = 33
         targetSdk = 37
         versionCode = 32
-        versionName = "0.4.10"
+        versionName = "0.5.0"
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         externalNativeBuild {

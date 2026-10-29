@@ -257,7 +257,7 @@ no USB, so everything below is for the S24 to show.
   on 0.4.8). 128 ms in flight (16 transfers of 8 ms) and a one-second ring; Debug's first driver
   line now counts the gaps by cause (USB refills late, or samples late).
 - **0.4.9 on the S24**: 5 gaps, all from USB refills late, none from samples; **the longest
-  1288 ms** with the event thread at nice -19. More sent ahead can't cover a second. **0.4.10**
+  1288 ms** with the event thread at nice -19. More sent ahead can't cover a second. **0.5.0**
   (diagnostics only) tells the three possible stalls apart: a heartbeat thread at the same
   priority (if it also stalled, the whole app was stopped), the longest resubmit (usbfs holds
   the device's lock while another request to the DAC runs; control requests here time out at

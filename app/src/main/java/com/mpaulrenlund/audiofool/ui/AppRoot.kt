@@ -48,6 +48,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             previous = player::previous,
             next = player::next,
             openNowPlaying = { nav.open(Route.NowPlaying) },
+            rescan = { app.library.rescan() },
         )
     }
     val nowPlayingActions = remember(nav) {

@@ -34,7 +34,7 @@ const val LOGO_ASSET = "brand/PlayStation-Logo-1994.png"
 
 /**
  * The logo, which is the menu button (spec 4.1): 36 x 28 in a 48 dp touch area.
- * Its menu holds Settings, Theme (switches at once) and Statistics.
+ * Its menu holds Settings, Theme (switches at once), Statistics and Rescan Library (0.5.0).
  */
 @Composable
 fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, actions: AppActions) {
@@ -83,6 +83,10 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions) {
             MenuRow("Statistics") {
                 onClose()
                 actions.open(Route.Statistics)
+            }
+            MenuRow("Rescan Library") {
+                onClose()
+                actions.rescan()
             }
         }
     }

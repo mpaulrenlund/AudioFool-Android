@@ -79,7 +79,7 @@ class UsbStream private constructor(private var handle: Long) {
         val lastPacketStatus = values[11]
 
         /**
-         * Where the longest gap went (0.4.10), in ms: the refills' wait for the ring's lock, their
+         * Where the longest gap went (0.5.0), in ms: the refills' wait for the ring's lock, their
          * longest resubmit to the DAC, and the longest a thread that only sleeps went without
          * running (as long as the gap: the whole app was stopped).
          */

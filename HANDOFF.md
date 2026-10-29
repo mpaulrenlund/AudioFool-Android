@@ -11,7 +11,8 @@ device). The spec is `design/android-spec.md`.
   session notes.
 - **Latest: 0.4.9** (versionCode 31), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.9>, `dist/AudioFool-0.4.9.apk`: less
   stutter at an app switch with BP on (0.4.7–0.4.8: no silent DAC after Android ends the app).
-- **Next release:** **0.4.10 / 32** for fixes (confirm the number with the user), **0.5.0** for new features. Bump both in
+- **Next release:** **0.5.0 / 32** is built (Rescan Library in the logo menu, the stall diagnostics), not yet published.
+  After it: **0.5.1** for fixes, **0.6.0** for new features (confirm the number with the user). Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
@@ -67,13 +68,14 @@ device). The spec is `design/android-spec.md`.
   flight, or the output thread. The user also might want BP remembered per output; only if they ask.
   **On the S24**: still stutters; 5 gaps from USB refills late, 0 from samples late, the longest
   **1288 ms** at priority -19. No pop; gapless works.
-- **0.4.10, built 2026-10-28** (versionCode 32), diagnostics only: Debug's driver row has "longest
+- **0.5.0, built 2026-10-28** (versionCode 32): **Rescan Library** in the logo menu (the user's
+  request; the same rescan as Settings' refresh button), and stall diagnostics: Debug's driver row has "longest
   gap N ms: the app stopped N ms, a send to the DAC N ms, waiting for samples N ms" (a heartbeat
   thread, the longest resubmit, the longest wait for the ring's lock). If "the app stopped"
   matches the gap, Android or Samsung is pausing the whole process at the switch (look at the
   service's foreground state and Samsung's battery settings); if "a send" does, something else
   is sending requests to the DAC and usbfs holds its lock; if "waiting for samples" does, it's
-  the ring's lock. The S24 list is in `design/progress.md` (0.4.10).
+  the ring's lock. The S24 list is in `design/progress.md` (0.5.0).
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.

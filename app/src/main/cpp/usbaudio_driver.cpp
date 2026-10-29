@@ -100,7 +100,7 @@ struct Stream {
     std::atomic<int> longestGapMs{0};
     std::atomic<int> lateRefills{0};
 
-    // Where a long gap went (0.4.10: 1288 ms on the S24 at an app switch, priority -19): the
+    // Where a long gap went (0.5.0: 1288 ms on the S24 at an app switch, priority -19): the
     // longest a refill waited for the ring's lock, and the longest a resubmit took (usbfs holds
     // the device's lock for other requests to it).
     std::atomic<int> longestLockWaitMs{0};
@@ -123,7 +123,7 @@ struct Device {
     // The nice value the event thread got (0.4.2): -19 asked; anything else says Android refused.
     std::atomic<int> eventNice{99};
     Stream* stream = nullptr;
-    // A thread that only wakes every few ms at the event thread's priority (0.4.10): if it
+    // A thread that only wakes every few ms at the event thread's priority (0.5.0): if it
     // went as long without running as the refills did, the whole app was stopped, not the
     // event thread alone. Counted from each stream's start.
     std::thread heartbeat;
