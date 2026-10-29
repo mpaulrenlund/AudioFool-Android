@@ -48,13 +48,16 @@ device). The spec is `design/android-spec.md`.
   it and at rate changes. Two loud blasts happened on the way (0.4.2, 0.4.3): treat any volume
   change here as a hearing-safety change. **Open**: a DSD file through the driver; notifications
   while it holds the DAC; the M21 check.
-- **0.4.7, released 2026-10-28** (versionCode 29), waiting for the S24's report: the DAC no longer stays
+- **0.4.7, released 2026-10-28** (versionCode 29): the DAC no longer stays
   silent after Android ends the app while the driver holds it (seen after leaving it paused in
   the background). The service stays foreground while the DAC is held, a swipe from recents
   while paused gives it back, and the next start repairs a DAC left held
   (`UsbDriver.repairIfLeftHeld`: audio interfaces with no kernel driver → 0 dB, unmuted, reset).
-  Emulator-checked only; the S24 list is in `design/progress.md` (0.4.7): tick it off when the
-  user reports back. The user also might want BP remembered per output; only if they ask.
+  On the S24: paused in the background, force stop and BP again work; **the swipe from recents
+  didn't** (Samsung ends the app at the swipe, before it can give back).
+- **0.4.8, committed, not released** (versionCode still 29): paused and out of sight
+  (`MainActivity.onStop`), the DAC is given back at once (the user's call). Bump to 0.4.8 / 30
+  and release when the user says; the S24 list is in `design/progress.md`. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.

@@ -81,6 +81,10 @@ class MainActivity : ComponentActivity() {
         super.onStop()
         // Out of sight: the place is saved, in case the phone ends the process (spec 6.1, Resume).
         app.player.save()
+        // Paused and out of sight, the Bit-Perfect driver's DAC goes back to Android at once, not after
+        // the minute (0.4.8, the user's call): Samsung ends the app the moment it is swiped from recents,
+        // before it could give the DAC back, and the DAC stayed silent until the app was opened again.
+        if (!isChangingConfigurations && !app.player.state.isPlaying && app.player.holdingDac) app.player.letGoOfDacNow()
     }
 
     companion object {

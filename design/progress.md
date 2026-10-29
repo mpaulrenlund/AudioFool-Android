@@ -51,6 +51,18 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.4.8 (2026-10-28, not released yet): **paused and out of sight, the DAC goes back at once.**
+0.4.7 on the S24: a swipe from recents while paused still left the DAC silent (YouTube silent
+after waiting), and opening AudioFool brought it back: so the app was ended at the swipe, still
+holding the DAC, and the start-up repair fixed it. Samsung ends the app the moment it is swiped,
+before `onTaskRemoved`'s give-back can run. The user's call (of: this; leave it, with the repair
+at the next start; a second watcher process): **when AudioFool leaves the screen (home,
+recents, screen off) while paused with the DAC held, it is given back at once**
+(`MainActivity.onStop` → `Player.letGoOfDacNow`), so a swipe finds it Android's already. Play
+after coming back takes it again (muted, no pop), and Android's media volume goes to 1 as at
+every give-back. Paused from the notification or a headset while in another app keeps the
+minute's wait. Emulator: play, pause, home, back and play again unchanged with no DAC.
+
 0.4.7 (2026-10-28), released as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7) ("AudioFool 0.4.7", versionCode 29): **the DAC no longer goes silent when Android ends the app
 while the driver holds it.** The user saw it after leaving AudioFool paused in the background
 with BP on. The cause: at a pause the service dropped out of the foreground straight away, so
@@ -753,6 +765,18 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.8 (the DAC given back when paused AudioFool leaves the screen)
+
+Not released yet. Volume low for the first try.
+
+- [ ] **Pause with BP on, swipe AudioFool from recents**: does YouTube play through the DAC
+  straight after (quiet: Android's volume at 1)?
+- [ ] **Pause with BP on, go home, come back and press Play**: plays through the driver again,
+  no pop, at the step the keys left it? How long before the music starts?
+- [ ] **Screen off while paused, then on, then Play**: the same?
+- [ ] **Pause from the notification while in another app**: the DAC still held for the minute
+  (Debug: no "given back" until then)?
+
 ### 0.4.7 (no silent DAC after Android ends the app)
 
 Released 2026-10-28 as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7) (versionCode 29). Installs over 0.4.6 (same key). Volume low for the first try.
@@ -764,7 +788,8 @@ Released 2026-10-28 as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/Au
   2026-10-28).
 - [ ] **Pause with BP on, swipe AudioFool from recents**: the DAC plays another app's sound
   straight after? Debug (open AudioFool again): "given back (paused a while)". **No: YouTube
-  wasn't heard** (the user, 2026-10-28). Cause not known yet.
+  wasn't heard, also after waiting; opening AudioFool brought it back** (the user, 2026-10-28):
+  Samsung ends the app at the swipe. 0.4.8 gives the DAC back as the app leaves the screen.
 - [x] **Force stop while playing with BP on** (Settings > Apps > AudioFool > Force stop): the DAC
   is silent, as before. Then open AudioFool: within a few seconds, does another app's sound come
   through the DAC, quiet (Android's volume at 1)? Debug: "found left held …", then "given back

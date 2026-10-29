@@ -575,7 +575,7 @@ class Player(
     /** The driver holds the USB DAC (playing, or paused under a minute): the service stays in the foreground meanwhile (0.4.7). */
     val holdingDac: Boolean get() = routes.driver?.holding == true
 
-    /** Paused and the app swiped away: the DAC goes back to Android now rather than after the minute (0.4.7). */
+    /** Paused and the app swiped away (0.4.7) or out of sight (0.4.8): the DAC goes back to Android now rather than after the minute. */
     fun letGoOfDacNow() = letGoOfDac.run()
 
     /** The driver took or gave back the DAC, or it came or went: the readout and BP's state. */
