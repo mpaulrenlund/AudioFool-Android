@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.5.0**: Rescan Library in the logo menu; Debug says where the 1.3 s stalls at an app switch go (the app stopped, a send to the DAC, or waiting for samples) — 2026-10-28, built
+- [x] **0.5.0**: Rescan Library in the logo menu; Debug says where the 1.3 s stalls at an app switch go (the app stopped, a send to the DAC, or waiting for samples) — 2026-10-28, released as a pre-release
 - [x] **0.4.9**: less stutter at an app switch with BP on (128 ms sent ahead to the DAC, a 1 s ring); Debug counts the gaps by cause — 2026-10-28, released as a pre-release
 - [x] **0.4.8**: paused and out of sight, the DAC goes back to Android at once (Samsung ends the app at a swipe from recents) — 2026-10-28, released as a pre-release
 - [x] **0.4.7**: no silent DAC after Android ends the app while BP holds it (foreground while the DAC is held; a DAC left held repaired at the next start) — 2026-10-28, released as a pre-release
@@ -54,7 +54,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.5.0 (2026-10-28), versionCode 32: **Rescan Library in the logo menu** (the user's request), a
+0.5.0 (2026-10-28), released as pre-release [`v0.5.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.0) ("AudioFool 0.5.0", versionCode 32): **Rescan Library in the logo menu** (the user's request), a
 fourth row under Statistics. It runs the same rescan as the refresh button in Settings' Music
 folders and closes the menu; the scan runs in the background as before. Spec 4.1 updated; the
 menu's four screenshots re-recorded (S24 and M21, Light and Dark: the row fits the menu's
@@ -808,7 +808,7 @@ Session 1:
 
 ### 0.5.0 (Rescan Library in the logo menu; where the stalls at an app switch go)
 
-Built 2026-10-28 (versionCode 32). Installs over 0.4.9 (same key).
+Released 2026-10-28 as pre-release [`v0.5.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.0) (versionCode 32). Installs over 0.4.9 (same key).
 
 - [ ] **Logo menu > Rescan Library**: the menu closes and the scan runs (Statistics' Scan line;
   a song added to the SD card shows up afterwards)?
