@@ -56,9 +56,11 @@ device). The spec is `design/android-spec.md`.
   (`UsbDriver.repairIfLeftHeld`: audio interfaces with no kernel driver → 0 dB, unmuted, reset).
   On the S24: paused in the background, force stop and BP again work; **the swipe from recents
   didn't** (Samsung ends the app at the swipe, before it can give back).
-- **0.4.8, released 2026-10-28** (versionCode 30), waiting for the S24's report: paused and out
-  of sight (`MainActivity.onStop`), the DAC is given back at once (the user's call). The S24
-  list is in `design/progress.md` (0.4.8): tick it off when the user reports back. The user also might want BP remembered per output; only if they ask.
+- **0.4.8, released 2026-10-28** (versionCode 30): paused and out of sight
+  (`MainActivity.onStop`), the DAC is given back at once (the user's call). **Confirmed on the
+  S24**: a swipe from recents leaves the DAC working, Play after home or screen off takes it
+  again in under a second, a pause from the notification keeps the minute. The silent DAC after
+  Android ends the app is fixed. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.

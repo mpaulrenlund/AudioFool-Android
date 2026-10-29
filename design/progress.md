@@ -63,6 +63,10 @@ recents, screen off) while paused with the DAC held, it is given back at once**
 after coming back takes it again (muted, no pop), and Android's media volume goes to 1 as at
 every give-back. Paused from the notification or a headset while in another app keeps the
 minute's wait. Emulator: play, pause, home, back and play again unchanged with no DAC.
+**On the S24 (the user, 2026-10-28): all four checks pass**: after a swipe from recents YouTube
+plays through the DAC; Play after home or screen off takes the DAC again in under a second; a
+pause from the notification keeps the minute. With 0.4.7's results, the silent DAC after
+Android ends the app is fixed.
 
 0.4.7 (2026-10-28), released as pre-release [`v0.4.7`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7) ("AudioFool 0.4.7", versionCode 29): **the DAC no longer goes silent when Android ends the app
 while the driver holds it.** The user saw it after leaving AudioFool paused in the background
@@ -770,13 +774,14 @@ Session 1:
 
 Released 2026-10-28 as pre-release [`v0.4.8`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.8) (versionCode 30). Installs over 0.4.7 (same key). Volume low for the first try.
 
-- [ ] **Pause with BP on, swipe AudioFool from recents**: does YouTube play through the DAC
-  straight after (quiet: Android's volume at 1)?
-- [ ] **Pause with BP on, go home, come back and press Play**: plays through the driver again,
-  no pop, at the step the keys left it? How long before the music starts?
-- [ ] **Screen off while paused, then on, then Play**: the same?
-- [ ] **Pause from the notification while in another app**: the DAC still held for the minute
-  (Debug: no "given back" until then)?
+- [x] **Pause with BP on, swipe AudioFool from recents**: does YouTube play through the DAC
+  straight after (quiet: Android's volume at 1)? **Yes** (the user, 2026-10-28).
+- [x] **Pause with BP on, go home, come back and press Play**: plays through the driver again,
+  no pop, at the step the keys left it? How long before the music starts? **Yes, in less than
+  a second.**
+- [x] **Screen off while paused, then on, then Play**: the same? **Yes, less than a second.**
+- [x] **Pause from the notification while in another app**: the DAC still held for the minute
+  (Debug: no "given back" until then)? **Given back after a minute.**
 
 ### 0.4.7 (no silent DAC after Android ends the app)
 

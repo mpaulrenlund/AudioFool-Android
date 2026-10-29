@@ -248,6 +248,11 @@ no USB, so everything below is for the S24 to show.
   recents while paused gives it back at once, and at the next start a DAC whose audio
   interfaces have no kernel driver is taken, put back to 0 dB, unmuted and reset
   (`repairIfLeftHeld`).
+- **0.4.7 on the S24**: the paused hand-back and the start-up repair work; a swipe from recents
+  didn't, because **Samsung ends the app at the swipe**, before `onTaskRemoved` can give back.
+  **0.4.8**: paused and AudioFool leaving the screen, the DAC is given back at once. **On the
+  S24, all of it works** (the user, 2026-10-28); taking the DAC again at Play takes under a
+  second.
 - **Still open**: a DSD file (DoP) through the driver; whether notifications are heard while the
   driver holds the DAC; native DSD (setting 4) unused; the M21 regression check (nothing changed
-  for it, but the output stage did); 0.4.7 on the S24.
+  for it, but the output stage did).
