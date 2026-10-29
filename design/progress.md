@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.9**: less stutter at an app switch with BP on (128 ms sent ahead to the DAC, a 1 s ring); Debug counts the gaps by cause — 2026-10-28, released as a pre-release
 - [x] **0.4.8**: paused and out of sight, the DAC goes back to Android at once (Samsung ends the app at a swipe from recents) — 2026-10-28, released as a pre-release
 - [x] **0.4.7**: no silent DAC after Android ends the app while BP holds it (foreground while the DAC is held; a DAC left held repaired at the next start) — 2026-10-28, released as a pre-release
 - [x] **0.4.6**: the DAC muted from the moment BP takes it until its new stream has settled: no pop — 2026-10-28, released as a pre-release
@@ -52,7 +53,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.4.9 (2026-10-28, not released yet): **less stutter at an app switch with BP on.** The user,
+0.4.9 (2026-10-28), released as pre-release [`v0.4.9`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.9) ("AudioFool 0.4.9", versionCode 31): **less stutter at an app switch with BP on.** The user,
 on 0.4.8: the music still stutters a little when going home or to any other app, only with BP
 on ("not as bad as before", i.e. than 0.4.1). The Debug numbers weren't read, so both ways the
 driver can run short got more room: **128 ms sent ahead to the DAC** (16 transfers of 8 ms; 64
@@ -783,7 +784,7 @@ Session 1:
 
 ### 0.4.9 (less stutter at an app switch with BP on)
 
-Not released yet.
+Released 2026-10-28 as pre-release [`v0.4.9`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.9) (versionCode 31). Installs over 0.4.8 (same key).
 
 - [ ] **BP on, playing: go home, open other apps, come back**, several times: any stutter? If so,
   Statistics > Debug, the driver row's first line: "gaps since this stream started: … from USB
