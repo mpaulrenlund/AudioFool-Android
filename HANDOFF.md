@@ -64,7 +64,16 @@ device). The spec is `design/android-spec.md`.
   with BP on (the user, BP off is fine). 128 ms sent ahead to the DAC (was 64) and a 1 s ring
   (was 0.5 s); Debug's driver row starts with "gaps since this stream started: N from USB
   refills late, N from samples late". If it still stutters, that line says which side: more in
-  flight, or the output thread. The S24 list is in `design/progress.md` (0.4.9). The user also might want BP remembered per output; only if they ask.
+  flight, or the output thread. The user also might want BP remembered per output; only if they ask.
+  **On the S24**: still stutters; 5 gaps from USB refills late, 0 from samples late, the longest
+  **1288 ms** at priority -19. No pop; gapless works.
+- **0.4.10, built 2026-10-28** (versionCode 32), diagnostics only: Debug's driver row has "longest
+  gap N ms: the app stopped N ms, a send to the DAC N ms, waiting for samples N ms" (a heartbeat
+  thread, the longest resubmit, the longest wait for the ring's lock). If "the app stopped"
+  matches the gap, Android or Samsung is pausing the whole process at the switch (look at the
+  service's foreground state and Samsung's battery settings); if "a send" does, something else
+  is sending requests to the DAC and usbfs holds its lock; if "waiting for samples" does, it's
+  the ring's lock. The S24 list is in `design/progress.md` (0.4.10).
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.

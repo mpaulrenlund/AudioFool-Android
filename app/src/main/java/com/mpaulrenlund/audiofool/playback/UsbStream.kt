@@ -41,7 +41,7 @@ class UsbStream private constructor(private var handle: Long) {
     @Synchronized fun head(): Long = ifOpen(0L) { nativeHead(it) }
 
     /** What the stream counts: see [Counts]. */
-    @Synchronized fun counts(): Counts = Counts(ifOpen(IntArray(12)) { nativeCounts(it) })
+    @Synchronized fun counts(): Counts = Counts(ifOpen(IntArray(15)) { nativeCounts(it) })
 
     /** Gives the DAC back to Android ([UsbStream.nativeGiveBack]); the attach results, then the reset's. */
     @Synchronized fun giveBack(interfaces: IntArray, reset: Boolean): IntArray = ifOpen(IntArray(0)) { nativeGiveBack(it, interfaces, reset) }
@@ -77,6 +77,15 @@ class UsbStream private constructor(private var handle: Long) {
         /** Packets the host reported failed inside completed transfers, and the last one's libusb status (0.4.5). */
         val packetErrors = values[10]
         val lastPacketStatus = values[11]
+
+        /**
+         * Where the longest gap went (0.4.10), in ms: the refills' wait for the ring's lock, their
+         * longest resubmit to the DAC, and the longest a thread that only sleeps went without
+         * running (as long as the gap: the whole app was stopped).
+         */
+        val longestLockWaitMs = values[12]
+        val longestSubmitMs = values[13]
+        val longestHeartbeatGapMs = values[14]
     }
 
     companion object {

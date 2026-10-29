@@ -100,6 +100,12 @@ struct Stream {
     std::atomic<int> longestGapMs{0};
     std::atomic<int> lateRefills{0};
 
+    // Where a long gap went (0.4.10: 1288 ms on the S24 at an app switch, priority -19): the
+    // longest a refill waited for the ring's lock, and the longest a resubmit took (usbfs holds
+    // the device's lock for other requests to it).
+    std::atomic<int> longestLockWaitMs{0};
+    std::atomic<int> longestSubmitMs{0};
+
     // Packets the host controller reported failed inside transfers that completed (0.4.5: a
     // stream ran a minute in silence with no transfer errors), and the last one's status.
     std::atomic<int> packetErrors{0};
@@ -117,6 +123,11 @@ struct Device {
     // The nice value the event thread got (0.4.2): -19 asked; anything else says Android refused.
     std::atomic<int> eventNice{99};
     Stream* stream = nullptr;
+    // A thread that only wakes every few ms at the event thread's priority (0.4.10): if it
+    // went as long without running as the refills did, the whole app was stopped, not the
+    // event thread alone. Counted from each stream's start.
+    std::thread heartbeat;
+    std::atomic<int> longestHeartbeatGapMs{0};
 };
 
 int nominalRate(int sampleRate, bool highSpeed) {
@@ -184,6 +195,16 @@ void fadeSamples(Stream* s, uint8_t* p, int frames) {
     }
 }
 
+int64_t nowMs() {
+    timespec ts{};
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return static_cast<int64_t>(ts.tv_sec) * 1000 + ts.tv_nsec / 1000000;
+}
+
+void keepLongest(std::atomic<int>& longest, int64_t ms) {
+    if (ms > longest.load()) longest = static_cast<int>(ms);
+}
+
 // Fills one transfer's packets: samples from the ring while playing, silence for the rest.
 void fill(DataSlot* slot) {
     Stream* s = slot->stream;
@@ -191,7 +212,9 @@ void fill(DataSlot* slot) {
     uint8_t* out = t->buffer;
     int total = 0, audio = 0;
     bool ranDry = false;
+    int64_t asked = nowMs();
     std::lock_guard<std::mutex> g(s->lock);
+    keepLongest(s->longestLockWaitMs, nowMs() - asked);
     for (int i = 0; i < t->num_iso_packets; i++) {
         int frames = nextPacketFrames(s);
         int bytes = frames * s->bytesPerFrame;
@@ -232,12 +255,6 @@ void finished(Stream* s) {
     }
 }
 
-int64_t nowMs() {
-    timespec ts{};
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return static_cast<int64_t>(ts.tv_sec) * 1000 + ts.tv_nsec / 1000000;
-}
-
 void LIBUSB_CALL onData(libusb_transfer* t) {
     auto* slot = static_cast<DataSlot*>(t->user_data);
     Stream* s = slot->stream;
@@ -269,7 +286,9 @@ void LIBUSB_CALL onData(libusb_transfer* t) {
         return;
     }
     fill(slot);
+    int64_t submitted = nowMs();
     int r = libusb_submit_transfer(t);
+    keepLongest(s->longestSubmitMs, nowMs() - submitted);
     if (r != 0) {
         LOGW("data resubmit: %s", libusb_error_name(r));
         if (r == LIBUSB_ERROR_NO_DEVICE) s->lost = true;
@@ -304,6 +323,18 @@ void runEvents(Device* d) {
     while (!d->quit) {
         timeval tv{0, 100000};
         libusb_handle_events_timeout_completed(d->context, &tv, nullptr);
+    }
+}
+
+void runHeartbeat(Device* d) {
+    setpriority(PRIO_PROCESS, gettid(), -19);
+    int64_t last = nowMs();
+    while (!d->quit) {
+        timespec pause{0, 5000000};
+        nanosleep(&pause, nullptr);
+        int64_t now = nowMs();
+        keepLongest(d->longestHeartbeatGapMs, now - last);
+        last = now;
     }
 }
 
@@ -352,6 +383,7 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeOpen(JNIEnv*, jclass, j
         return 0;
     }
     d->events = std::thread(runEvents, d);
+    d->heartbeat = std::thread(runHeartbeat, d);
     return reinterpret_cast<jlong>(d);
 }
 
@@ -421,6 +453,7 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeStart(
     s->nominal = nominalRate(sampleRate, highSpeed);
     s->rate = s->nominal;
     s->ring.resize(std::max(bufferBytes - bufferBytes % bytesPerFrame, bytesPerFrame * 1024));
+    d->longestHeartbeatGapMs = 0;
     d->stream = s;
 
     for (auto& slot : s->data) {
@@ -531,13 +564,15 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeHead(JNIEnv*, jclass, j
 /**
  * [underruns, feedback values taken, transfer errors, rate in Q16.16, nominal, lost,
  * longest gap between refills in ms, late refills, ms in flight, the event thread's nice value,
- * failed packets, the last failed packet's status].
+ * failed packets, the last failed packet's status, the longest wait for the ring's lock, the
+ * longest resubmit, the longest the heartbeat thread didn't run (all in ms)].
  */
 JNIEXPORT jintArray JNICALL
 Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeCounts(JNIEnv* env, jclass, jlong h) {
     Stream* s = device(h)->stream;
-    jint values[12] = {};
+    jint values[15] = {};
     values[9] = device(h)->eventNice.load();
+    values[14] = device(h)->longestHeartbeatGapMs.load();
     if (s != nullptr) {
         values[0] = s->underruns.load();
         values[1] = s->feedbackValues.load();
@@ -550,9 +585,11 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeCounts(JNIEnv* env, jcl
         values[8] = s->queuedMs;
         values[10] = s->packetErrors.load();
         values[11] = s->lastPacketStatus.load();
+        values[12] = s->longestLockWaitMs.load();
+        values[13] = s->longestSubmitMs.load();
     }
-    jintArray out = env->NewIntArray(12);
-    env->SetIntArrayRegion(out, 0, 12, values);
+    jintArray out = env->NewIntArray(15);
+    env->SetIntArrayRegion(out, 0, 15, values);
     return out;
 }
 
@@ -585,6 +622,7 @@ Java_com_mpaulrenlund_audiofool_playback_UsbStream_nativeClose(JNIEnv*, jclass, 
     d->quit = true;
     libusb_interrupt_event_handler(d->context);
     if (d->events.joinable()) d->events.join();
+    if (d->heartbeat.joinable()) d->heartbeat.join();
     libusb_close(d->handle);
     libusb_exit(d->context);
     delete d;

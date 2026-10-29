@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.10**: Debug says where the 1.3 s stalls at an app switch go (the app stopped, a send to the DAC, or waiting for samples) — 2026-10-28, built
 - [x] **0.4.9**: less stutter at an app switch with BP on (128 ms sent ahead to the DAC, a 1 s ring); Debug counts the gaps by cause — 2026-10-28, released as a pre-release
 - [x] **0.4.8**: paused and out of sight, the DAC goes back to Android at once (Samsung ends the app at a swipe from recents) — 2026-10-28, released as a pre-release
 - [x] **0.4.7**: no silent DAC after Android ends the app while BP holds it (foreground while the DAC is held; a DAC left held repaired at the next start) — 2026-10-28, released as a pre-release
@@ -52,6 +53,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.4.10 (2026-10-28), versionCode 32: **finding where the stalls at an app switch come from.**
+0.4.9 on the S24 (the user): 5 gaps from USB refills late, 0 from samples late; the longest
+gap **1288 ms**, priority -19. No pop at pause, seek or skip; gapless works. So the samples
+were always there and the thread was never demoted: the libusb event thread simply didn't run
+for over a second, and no amount sent ahead covers that without slowing every pause and seek.
+Three things can stop it that long: **the whole app stopped** (a freezer, Samsung's power
+management), **a resubmit held up in the kernel** (usbfs takes the device's lock for a submit,
+and another request to the DAC holds it; Android's control requests here time out at 1000
+ms), or **waiting for the ring's lock**. Diagnostics only, no behaviour change: a heartbeat
+thread at the same priority that only sleeps 5 ms, and the longest resubmit and lock wait.
+Debug's driver row gets a second line, "longest gap N ms: the app stopped N ms, a send to the
+DAC N ms, waiting for samples N ms", and the stop note carries the same. The fix follows from
+which of the three matches the gap. Emulator: starts and plays as before (no DAC there, so the
+new line can't show).
 
 0.4.9 (2026-10-28), released as pre-release [`v0.4.9`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.9) ("AudioFool 0.4.9", versionCode 31): **less stutter at an app switch with BP on.** The user,
 on 0.4.8: the music still stutters a little when going home or to any other app, only with BP
@@ -782,15 +798,24 @@ Session 1:
 
 ## To test on the S24
 
+### 0.4.10 (where the stalls at an app switch go)
+
+Built 2026-10-28 (versionCode 32). Installs over 0.4.9 (same key).
+
+- [ ] **BP on, playing: switch apps a few times until it stutters**, then Statistics > Debug,
+  the driver row's line "longest gap … ms: the app stopped … ms, a send to the DAC … ms,
+  waiting for samples … ms": all four numbers.
+
 ### 0.4.9 (less stutter at an app switch with BP on)
 
 Released 2026-10-28 as pre-release [`v0.4.9`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.9) (versionCode 31). Installs over 0.4.8 (same key).
 
-- [ ] **BP on, playing: go home, open other apps, come back**, several times: any stutter? If so,
+- [x] **BP on, playing: go home, open other apps, come back**, several times: any stutter? If so,
   Statistics > Debug, the driver row's first line: "gaps since this stream started: … from USB
-  refills late, … from samples late".
-- [ ] **Pause, seek and skip with BP on**: still prompt (about 150 ms now), no click?
-- [ ] **Gapless and a rate change between tracks** with BP on: as before?
+  refills late, … from samples late". **Still stutters: 5 from USB refills late, 0 from samples
+  late; longest gap 1288 ms, priority -19** (the user, 2026-10-28). 0.4.10 looks for the cause.
+- [x] **Pause, seek and skip with BP on**: still prompt (about 150 ms now), no click? **No pop.**
+- [x] **Gapless and a rate change between tracks** with BP on: as before? **Gapless works.**
 
 ### 0.4.8 (the DAC given back when paused AudioFool leaves the screen)
 

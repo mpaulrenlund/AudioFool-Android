@@ -261,7 +261,7 @@ class UsbDriver(private val context: Context) {
     private fun summarise(h: Held) {
         val what = h.streaming ?: return
         val c = h.stream.counts()
-        note = "stopped $what: ${c.underruns} underruns · ${c.lateRefills} late refills (longest gap ${c.longestGapMs} ms, ${c.queuedMs} ms in flight, priority ${c.eventNice}) · ${c.errors} errors · " +
+        note = "stopped $what: ${c.underruns} underruns · ${c.lateRefills} late refills (longest gap ${c.longestGapMs} ms, ${c.queuedMs} ms in flight, priority ${c.eventNice}; app stopped ${c.longestHeartbeatGapMs} ms, send ${c.longestSubmitMs} ms, samples ${c.longestLockWaitMs} ms) · ${c.errors} errors · " +
             "${packetErrors(c)} · clock %.4f of %.4f frames, %d feedback values".format(java.util.Locale.ENGLISH, c.rate / 65536.0, c.nominal / 65536.0, c.feedbackValues)
     }
 
@@ -623,6 +623,8 @@ class UsbDriver(private val context: Context) {
         if (h.streaming != null) {
             // 0.4.9: the stutter question in one line; the details are in the next.
             lines += "gaps since this stream started: ${c.lateRefills} from USB refills late (${c.queuedMs} ms sent ahead), ${c.underruns} from samples late"
+            // 0.4.10: a 1288 ms gap at priority -19; which of the three it was.
+            lines += "longest gap ${c.longestGapMs} ms: the app stopped ${c.longestHeartbeatGapMs} ms, a send to the DAC ${c.longestSubmitMs} ms, waiting for samples ${c.longestLockWaitMs} ms"
             lines += "clock:%.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
                 java.util.Locale.ENGLISH, c.rate / 65536.0, if (h.stream.highSpeed) "microframe" else "frame", c.nominal / 65536.0,
                 c.feedbackValues, c.underruns, c.errors,
