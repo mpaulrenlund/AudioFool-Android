@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.4.8**: paused and out of sight, the DAC goes back to Android at once (Samsung ends the app at a swipe from recents) — 2026-10-28, released as a pre-release
 - [x] **0.4.7**: no silent DAC after Android ends the app while BP holds it (foreground while the DAC is held; a DAC left held repaired at the next start) — 2026-10-28, released as a pre-release
 - [x] **0.4.6**: the DAC muted from the moment BP takes it until its new stream has settled: no pop — 2026-10-28, released as a pre-release
 - [x] **0.4.5**: given back, the DAC returns to 0 dB with Android's media volume lowered to 1; the report counts failed packets and reads the volume back — 2026-10-28, released as a pre-release
@@ -51,7 +52,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.4.8 (2026-10-28, not released yet): **paused and out of sight, the DAC goes back at once.**
+0.4.8 (2026-10-28), released as pre-release [`v0.4.8`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.8) ("AudioFool 0.4.8", versionCode 30): **paused and out of sight, the DAC goes back at once.**
 0.4.7 on the S24: a swipe from recents while paused still left the DAC silent (YouTube silent
 after waiting), and opening AudioFool brought it back: so the app was ended at the swipe, still
 holding the DAC, and the start-up repair fixed it. Samsung ends the app the moment it is swiped,
@@ -767,7 +768,7 @@ Session 1:
 
 ### 0.4.8 (the DAC given back when paused AudioFool leaves the screen)
 
-Not released yet. Volume low for the first try.
+Released 2026-10-28 as pre-release [`v0.4.8`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.8) (versionCode 30). Installs over 0.4.7 (same key). Volume low for the first try.
 
 - [ ] **Pause with BP on, swipe AudioFool from recents**: does YouTube play through the DAC
   straight after (quiet: Android's volume at 1)?

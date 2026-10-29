@@ -9,13 +9,14 @@ device). The spec is `design/android-spec.md`.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.4.0 down to 0.3.0 is the newest work) and the newest
   session notes.
-- **Latest: 0.4.7** (versionCode 29), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.7>, `dist/AudioFool-0.4.7.apk`: no
-  silent DAC after Android ends the app while the driver holds it.
-- **Next release:** **0.4.8 / 30** for fixes, **0.5.0** for new features. Bump both in
+- **Latest: 0.4.8** (versionCode 30), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.8>, `dist/AudioFool-0.4.8.apk`: paused
+  and out of sight, the DAC goes back to Android at once (0.4.7: no silent DAC after Android ends
+  the app while the driver holds it).
+- **Next release:** **0.4.9 / 31** for fixes, **0.5.0** for new features. Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
-  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.7 (2026-10-28). All but v0.1.0 are pre-releases.
+  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.8 (2026-10-28). All but v0.1.0 are pre-releases.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
@@ -55,9 +56,9 @@ device). The spec is `design/android-spec.md`.
   (`UsbDriver.repairIfLeftHeld`: audio interfaces with no kernel driver → 0 dB, unmuted, reset).
   On the S24: paused in the background, force stop and BP again work; **the swipe from recents
   didn't** (Samsung ends the app at the swipe, before it can give back).
-- **0.4.8, committed, not released** (versionCode still 29): paused and out of sight
-  (`MainActivity.onStop`), the DAC is given back at once (the user's call). Bump to 0.4.8 / 30
-  and release when the user says; the S24 list is in `design/progress.md`. The user also might want BP remembered per output; only if they ask.
+- **0.4.8, released 2026-10-28** (versionCode 30), waiting for the S24's report: paused and out
+  of sight (`MainActivity.onStop`), the DAC is given back at once (the user's call). The S24
+  list is in `design/progress.md` (0.4.8): tick it off when the user reports back. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.
