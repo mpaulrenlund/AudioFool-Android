@@ -253,6 +253,9 @@ no USB, so everything below is for the S24 to show.
   **0.4.8**: paused and AudioFool leaving the screen, the DAC is given back at once. **On the
   S24, all of it works** (the user, 2026-10-28); taking the DAC again at Play takes under a
   second.
+- **0.4.9**: still a little stutter at each switch to another app or home, BP on only (the user,
+  on 0.4.8). 128 ms in flight (16 transfers of 8 ms) and a one-second ring; Debug's first driver
+  line now counts the gaps by cause (USB refills late, or samples late).
 - **Still open**: a DSD file (DoP) through the driver; whether notifications are heard while the
   driver holds the DAC; native DSD (setting 4) unused; the M21 regression check (nothing changed
   for it, but the output stage did).

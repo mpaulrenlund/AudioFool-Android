@@ -52,6 +52,17 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.4.9 (2026-10-28, not released yet): **less stutter at an app switch with BP on.** The user,
+on 0.4.8: the music still stutters a little when going home or to any other app, only with BP
+on ("not as bad as before", i.e. than 0.4.1). The Debug numbers weren't read, so both ways the
+driver can run short got more room: **128 ms sent ahead to the DAC** (16 transfers of 8 ms; 64
+since 0.4.2), the cause 0.4.2 found; and **a second of samples in the ring** (half a second
+before), in case it's the output thread. A pause or seek waits for what was sent ahead before
+its fade is heard, so it now takes about 150 ms instead of 85. Debug's driver row starts with
+a plain line, "gaps since this stream started: N from USB refills late, N from samples late",
+to say which one if it still stutters. Emulator: the shared output unchanged (the driver can't
+run there).
+
 0.4.8 (2026-10-28), released as pre-release [`v0.4.8`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.4.8) ("AudioFool 0.4.8", versionCode 30): **paused and out of sight, the DAC goes back at once.**
 0.4.7 on the S24: a swipe from recents while paused still left the DAC silent (YouTube silent
 after waiting), and opening AudioFool brought it back: so the app was ended at the swipe, still
@@ -769,6 +780,16 @@ Session 1:
 - **The repo is public** (the user's call, 2026-10-24). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
+
+### 0.4.9 (less stutter at an app switch with BP on)
+
+Not released yet.
+
+- [ ] **BP on, playing: go home, open other apps, come back**, several times: any stutter? If so,
+  Statistics > Debug, the driver row's first line: "gaps since this stream started: … from USB
+  refills late, … from samples late".
+- [ ] **Pause, seek and skip with BP on**: still prompt (about 150 ms now), no click?
+- [ ] **Gapless and a rate change between tracks** with BP on: as before?
 
 ### 0.4.8 (the DAC given back when paused AudioFool leaves the screen)
 

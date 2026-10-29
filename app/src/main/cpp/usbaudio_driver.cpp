@@ -39,10 +39,11 @@
 
 namespace {
 
-// 8 transfers of 8 ms: 64 ms in flight. 0.4.0 had 16 ms, and the music stopped for a moment
+// 16 transfers of 8 ms: 128 ms in flight. 0.4.0 had 16 ms, and the music stopped for a moment
 // when the app went to the background (the S24): Android runs it on slower cores then, and
-// the refills came too late.
-constexpr int DATA_TRANSFERS = 8;
+// the refills came too late. 0.4.2's 64 ms still stuttered a little at each switch to another
+// app or home (the user, 2026-10-28, BP on only).
+constexpr int DATA_TRANSFERS = 16;
 constexpr int FEEDBACK_TRANSFERS = 2;
 // Errors in a row on the data endpoint before the DAC counts as gone.
 constexpr int ERRORS_IN_A_ROW = 50;

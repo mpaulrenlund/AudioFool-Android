@@ -109,7 +109,7 @@ class UsbOutput(private val stream: UsbStream, private val sampleRate: Int, priv
 
     override fun setVolume(level: Float) = Unit
 
-    /** The driver fades the samples as it sends them; what is in flight (64 ms since 0.4.2) goes first. */
+    /** The driver fades the samples as it sends them; what is in flight (128 ms since 0.4.9) goes first. */
     override fun fadeOut(): AutoCloseable? {
         stream.fadeOut(SeekFade.frames(sampleRate))
         SystemClock.sleep(stream.counts().queuedMs + FADE_OUT_MARGIN_MS)

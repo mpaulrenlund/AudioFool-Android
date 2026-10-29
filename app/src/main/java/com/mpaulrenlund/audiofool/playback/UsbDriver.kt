@@ -193,8 +193,9 @@ class UsbDriver(private val context: Context) {
             sampleRate = rate,
             bytesPerFrame = bytesPerFrame,
             slotBytes = s.subslotBytes,
-            // About half a second, as the AudioTrack has: room to open the next track meanwhile.
-            bufferBytes = bytesPerFrame * rate / 2,
+            // A second (0.4.9; half a second before): room to open the next track meanwhile, and for
+            // the output thread to fall behind while Android switches apps. A cut flushes it.
+            bufferBytes = bytesPerFrame * rate,
         )
         if (r != 0) return failed("streaming wouldn't start: ${UsbStream.errorName(r)}")
         // The stream starts paused, so silence goes out while the DAC locks to it; then the level.
@@ -620,7 +621,9 @@ class UsbDriver(private val context: Context) {
         lines += "streaming: ${h.streaming ?: "no"}"
         val c = h.stream.counts()
         if (h.streaming != null) {
-            lines += "clock: %.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
+            // 0.4.9: the stutter question in one line; the details are in the next.
+            lines += "gaps since this stream started: ${c.lateRefills} from USB refills late (${c.queuedMs} ms sent ahead), ${c.underruns} from samples late"
+            lines += "clock:%.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
                 java.util.Locale.ENGLISH, c.rate / 65536.0, if (h.stream.highSpeed) "microframe" else "frame", c.nominal / 65536.0,
                 c.feedbackValues, c.underruns, c.errors,
             ) + " · refills: longest gap ${c.longestGapMs} ms, ${c.lateRefills} late (${c.queuedMs} ms in flight) · priority ${c.eventNice} · ${packetErrors(c)}" + if (c.lost) " · lost" else ""

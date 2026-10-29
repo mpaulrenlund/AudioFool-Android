@@ -60,7 +60,12 @@ device). The spec is `design/android-spec.md`.
   (`MainActivity.onStop`), the DAC is given back at once (the user's call). **Confirmed on the
   S24**: a swipe from recents leaves the DAC working, Play after home or screen off takes it
   again in under a second, a pause from the notification keeps the minute. The silent DAC after
-  Android ends the app is fixed. The user also might want BP remembered per output; only if they ask.
+  Android ends the app is fixed.
+- **0.4.9, committed, not released** (versionCode still 30): a little stutter at each app switch
+  with BP on (the user, BP off is fine). 128 ms sent ahead to the DAC (was 64) and a 1 s ring
+  (was 0.5 s); Debug's driver row starts with "gaps since this stream started: N from USB
+  refills late, N from samples late". If it still stutters, that line says which side: more in
+  flight, or the output thread. Bump to 0.4.9 / 31 and release when the user says. The user also might want BP remembered per output; only if they ask.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.
