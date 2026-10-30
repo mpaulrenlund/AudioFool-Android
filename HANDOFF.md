@@ -62,9 +62,10 @@ you touch a feature from then.
   holds the DAC; the **M21 check** that 0.4.0's new output layer changed nothing there (BP on,
   an album through the headphone out: gapless, readout, seeks without clicks). The user also
   might want BP remembered per output; only if they ask.
-- **Older items not yet reported** are on the two test lists (the lock screen and notification,
-  Bluetooth buttons, Last.fm on a real profile, a call, battery, the SD card pulled while
-  playing, the full library on the M21, and more). Don't block on them.
+- **The test lists were sorted on 2026-10-30**: `design/progress.md` holds only what is still
+  open (17 on the S24, 11 on the M21, grouped by subject), plus a short "probably fine from
+  daily use" group per phone that the user can tick with one "fine". The per-version lists with
+  every result up to 0.5.1 are in `design/progress-archive.md`. Don't block on any of them.
 
 ## How the user works
 
