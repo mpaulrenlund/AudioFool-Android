@@ -63,8 +63,8 @@ you touch a feature from then.
   an album through the headphone out: gapless, readout, seeks without clicks). The user also
   might want BP remembered per output; only if they ask.
 - **The test lists were sorted on 2026-10-30**: `design/progress.md` holds only what is still
-  open (17 on the S24, 11 on the M21, grouped by subject), plus a short "probably fine from
-  daily use" group per phone that the user can tick with one "fine". The per-version lists with
+  open (17 on the S24, 11 on the M21, grouped by subject); the "seen in daily use" items under
+  them the user confirmed with "All fine" the same day. The per-version lists with
   every result up to 0.5.1 are in `design/progress-archive.md`. Don't block on any of them.
 
 ## How the user works

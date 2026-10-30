@@ -386,20 +386,19 @@ its own section at the top, as before. (From …) says which build first asked.
 - [ ] **Statistics against the desktop's** (from 0.1.0): the figures and the Formats line (the
   desktop counts every library, the phone its own folders).
 
-### Probably fine from daily use: say if any isn't
+### Seen in daily use: all fine
 
-Never reported one by one, but you'd have noticed by now if they were wrong. A "fine" ticks them
-all; name any that isn't.
+**All fine on both phones** (the user, 2026-10-30). Never reported one by one before that.
 
-- [ ] The launcher icon (the PlayStation logo on white).
-- [ ] Artists with their newest album's cover; covers filling in as you scroll; smooth scrolling.
-- [ ] Artist → Albums → Album and the back gesture held halfway (the screen underneath shows);
+- [x] The launcher icon (the PlayStation logo on white).
+- [x] Artists with their newest album's cover; covers filling in as you scroll; smooth scrolling.
+- [x] Artist → Albums → Album and the back gesture held halfway (the screen underneath shows);
   the artist still highlighted at the same place.
-- [ ] Theme switching on every screen, the status bar readable in both.
-- [ ] Covers without a frame; the one-line quality ("FLAC · 1,901 kbps · 24-Bit · 48 kHz").
-- [ ] Now Playing's spacing (no big gap over the quality line) and a smooth, gliding seekbar.
-- [ ] Every format you have plays (FLAC, MP3, AAC, ALAC, Opus).
-- [ ] Gapless through the speaker and Bluetooth, not only the DAC.
+- [x] Theme switching on every screen, the status bar readable in both.
+- [x] Covers without a frame; the one-line quality ("FLAC · 1,901 kbps · 24-Bit · 48 kHz").
+- [x] Now Playing's spacing (no big gap over the quality line) and a smooth, gliding seekbar.
+- [x] Every format you have plays (FLAC, MP3, AAC, ALAC, Opus).
+- [x] Gapless through the speaker and Bluetooth, not only the DAC.
 
 ## To test on the M21
 
@@ -436,12 +435,14 @@ Sorted on 2026-10-30, as the S24's list above.
 - [ ] **Last.fm** (from 0.1.0): connected on the M21 too (the same key, a second session for the
   same user), scrobbles arriving.
 
-### Probably fine from daily use: say if any isn't
+### Seen in daily use: all fine
 
-- [ ] Now Playing's bigger cover, with the readout still fitting under the controls (also at a
+**All fine** (the user, 2026-10-30).
+
+- [x] Now Playing's bigger cover, with the readout still fitting under the controls (also at a
   larger font size).
-- [ ] Now Playing's controls: Repeat and Shuffle side by side over BP.
-- [ ] The folders list: the internal and the SD card's `Music` folders, the card's shown as "SD
+- [x] Now Playing's controls: Repeat and Shuffle side by side over BP.
+- [x] The folders list: the internal and the SD card's `Music` folders, the card's shown as "SD
   card · Music".
 
 ## Session notes
