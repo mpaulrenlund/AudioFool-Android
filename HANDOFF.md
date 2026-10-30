@@ -76,11 +76,13 @@ device). The spec is `design/android-spec.md`.
   is sending requests to the DAC and usbfs holds its lock; if "waiting for samples" does, it's
   the ring's lock. **On the S24**: Rescan Library works; still stutters, and **the app stopped
   1005 ms** of a 1006 ms gap (a send 7 ms, samples 1 ms): the whole process is stopped.
-- **0.5.1, released 2026-10-30** (versionCode 33), waiting for the S24's report: `SilentTrack`, a static `AudioTrack` looping zeros,
+- **0.5.1, released 2026-10-30** (versionCode 33): `SilentTrack`, a static `AudioTrack` looping zeros,
   plays while the driver plays, so Android counts the app as playing (with BP off, playing
-  through an `AudioTrack`, it never stuttered). Debug: "silent track: playing". If it still
-  stutters with that line saying playing, try Samsung's battery setting "Unrestricted" for the
-  app next. The S24 list is in `design/progress.md` (0.5.1).
+  through an `AudioTrack`, it never stuttered). Debug: "silent track: playing". **Confirmed on
+  the S24** (the user, 2026-10-30): no stutter at app switches with BP on; paused, the track
+  pauses and other sounds are as before. The stutter at an app switch is fixed. The stall
+  diagnostics (heartbeat, longest send, lock wait) stay on Debug: cheap, and they name the cause
+  if a stall ever comes back.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.

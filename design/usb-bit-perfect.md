@@ -266,7 +266,8 @@ no USB, so everything below is for the S24 to show.
   samples 1 ms): the whole process is stopped at an app switch, foreground service or not.
   With BP off it never stuttered; the difference is that no `AudioTrack` plays with BP on, so
   Android doesn't count the app as playing. **0.5.1**: a silent static `AudioTrack` (zeros,
-  looped) plays while the driver plays (`SilentTrack`).
+  looped) plays while the driver plays (`SilentTrack`). **On the S24, no more stutter** (the
+  user, 2026-10-30).
 - **Still open**: a DSD file (DoP) through the driver; whether notifications are heard while the
   driver holds the DAC; native DSD (setting 4) unused; the M21 regression check (nothing changed
   for it, but the output stage did).

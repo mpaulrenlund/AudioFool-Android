@@ -828,10 +828,11 @@ Session 1:
 
 Released 2026-10-30 as pre-release [`v0.5.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1) (versionCode 33). Installs over 0.5.0 (same key).
 
-- [ ] **BP on, playing: go home and to other apps, several times**: any stutter left? Debug's
-  driver row: "silent track: playing", and "the app stopped … ms" small next to the gaps?
-- [ ] **Pause with BP on**: "silent track: paused"? Notifications and other apps' sounds as
-  before?
+- [x] **BP on, playing: go home and to other apps, several times**: any stutter left? Debug's
+  driver row: "silent track: playing", and "the app stopped … ms" small next to the gaps? **No
+  stutter: fixed** (the user, 2026-10-30).
+- [x] **Pause with BP on**: "silent track: paused"? Notifications and other apps' sounds as
+  before? **Yes.**
 
 ### 0.5.0 (Rescan Library in the logo menu; where the stalls at an app switch go)
 
