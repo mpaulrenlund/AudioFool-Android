@@ -93,6 +93,9 @@ class UsbDriver(private val context: Context) {
 
     @Volatile private var held: Held? = null
 
+    /** Plays while the driver plays, so Android doesn't stop the app at an app switch (0.5.1). */
+    private val silence = SilentTrack()
+
     /** The device nothing more is tried on (not a playable DAC, or it wouldn't be claimed), until it is plugged in again. */
     @Volatile private var refused: String? = null
     @Volatile private var asked: String? = null
@@ -210,7 +213,7 @@ class UsbDriver(private val context: Context) {
         h.streaming = "${Display.sampleRate(rate)}, ${s.bits}-bit in ${s.subslotBytes} bytes (setting ${s.alternate})" + if (asked.dop) ", DoP" else ""
         note = "playing ${h.streaming}"
         Log.i(TAG, note)
-        return UsbOutput(h.stream, rate) { stop(h) } to PcmFormat(rate, s.channels, encoding, asked.dop)
+        return UsbOutput(h.stream, rate, silence) { stop(h) } to PcmFormat(rate, s.channels, encoding, asked.dop)
     }
 
     private fun failed(why: String): Pair<PcmOutput, PcmFormat>? {
@@ -625,6 +628,8 @@ class UsbDriver(private val context: Context) {
             lines += "gaps since this stream started: ${c.lateRefills} from USB refills late (${c.queuedMs} ms sent ahead), ${c.underruns} from samples late"
             // 0.5.0: a 1288 ms gap at priority -19; which of the three it was.
             lines += "longest gap ${c.longestGapMs} ms: the app stopped ${c.longestHeartbeatGapMs} ms, a send to the DAC ${c.longestSubmitMs} ms, waiting for samples ${c.longestLockWaitMs} ms"
+            // 0.5.1: what keeps Android from stopping the app.
+            lines += "silent track: " + (silence.failed ?: if (silence.playing) "playing" else "paused")
             lines += "clock:%.4f frames a %s (nominal %.4f) · %d feedback values · %d underruns · %d errors".format(
                 java.util.Locale.ENGLISH, c.rate / 65536.0, if (h.stream.highSpeed) "microframe" else "frame", c.nominal / 65536.0,
                 c.feedbackValues, c.underruns, c.errors,

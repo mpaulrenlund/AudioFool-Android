@@ -84,9 +84,15 @@ class AudioTrackOutput(val track: AudioTrack) : PcmOutput {
 /**
  * The DAC held by the app's own USB driver as the output (0.4.0): the samples go to the DAC
  * as they are. [onRelease] is the driver's: the stream stops, but the DAC stays the app's
- * until the driver gives it back.
+ * until the driver gives it back. [silence] plays alongside so Android counts the app as
+ * playing (0.5.1).
  */
-class UsbOutput(private val stream: UsbStream, private val sampleRate: Int, private val onRelease: () -> Unit) : PcmOutput {
+class UsbOutput(
+    private val stream: UsbStream,
+    private val sampleRate: Int,
+    private val silence: SilentTrack,
+    private val onRelease: () -> Unit,
+) : PcmOutput {
     @Volatile private var playing = false
 
     override fun write(buffer: ByteBuffer, size: Int): Int = stream.write(buffer, size)
@@ -94,15 +100,20 @@ class UsbOutput(private val stream: UsbStream, private val sampleRate: Int, priv
     override fun play() {
         playing = true
         stream.setPlaying(true)
+        silence.play()
     }
 
     override fun pause() {
         playing = false
         stream.setPlaying(false)
+        silence.pause()
     }
 
     override fun flush() = stream.flush()
-    override fun release() = onRelease()
+    override fun release() {
+        silence.pause()
+        onRelease()
+    }
     override val isPlaying: Boolean get() = playing
     override fun headFrames(): Long = stream.head() and 0xFFFFFFFFL
     override val underrunCount: Int get() = stream.counts().underruns

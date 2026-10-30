@@ -262,6 +262,11 @@ no USB, so everything below is for the S24 to show.
   priority (if it also stalled, the whole app was stopped), the longest resubmit (usbfs holds
   the device's lock while another request to the DAC runs; control requests here time out at
   1000 ms) and the longest wait for the ring's lock.
+- **0.5.0 on the S24**: the longest gap 1006 ms, of which the app stopped 1005 ms (a send 7 ms,
+  samples 1 ms): the whole process is stopped at an app switch, foreground service or not.
+  With BP off it never stuttered; the difference is that no `AudioTrack` plays with BP on, so
+  Android doesn't count the app as playing. **0.5.1**: a silent static `AudioTrack` (zeros,
+  looped) plays while the driver plays (`SilentTrack`).
 - **Still open**: a DSD file (DoP) through the driver; whether notifications are heard while the
   driver holds the DAC; native DSD (setting 4) unused; the M21 regression check (nothing changed
   for it, but the output stage did).

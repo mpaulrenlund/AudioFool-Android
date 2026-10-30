@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.5.1**: a silent `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch — 2026-10-30, built
 - [x] **0.5.0**: Rescan Library in the logo menu; Debug says where the 1.3 s stalls at an app switch go (the app stopped, a send to the DAC, or waiting for samples) — 2026-10-28, released as a pre-release
 - [x] **0.4.9**: less stutter at an app switch with BP on (128 ms sent ahead to the DAC, a 1 s ring); Debug counts the gaps by cause — 2026-10-28, released as a pre-release
 - [x] **0.4.8**: paused and out of sight, the DAC goes back to Android at once (Samsung ends the app at a swipe from recents) — 2026-10-28, released as a pre-release
@@ -53,6 +54,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+0.5.1 (2026-10-30), versionCode 33: **a silent track keeps Android from stopping the app with
+BP on.** 0.5.0's Debug on the S24 (the user): still a stutter at app switches; the longest gap
+1006 ms, of which **the app stopped 1005 ms** (the heartbeat thread, which only sleeps, didn't
+run either), a send to the DAC 7 ms, samples 1 ms. So the whole process is stopped for about a
+second at the switch, though the media service is in the foreground. With BP off it never
+stuttered, though an `AudioTrack` holds only about half a second: the difference is that with
+BP on no `AudioTrack` plays, so to Android (and Samsung's power management, which spares apps
+playing audio) the app isn't playing anything. Now `SilentTrack` plays alongside the driver: a
+static `AudioTrack` looping 0.1 s of zeros (48 kHz, 16-bit stereo, media attributes), started
+and paused with `UsbOutput` and paused when it's released. Only zeros, so nothing can be heard
+wherever Android routes it, and static, so it costs the app no work. Debug's driver row says
+"silent track: playing / paused" (or why it couldn't open). Emulator: a check build that started
+it at launch showed in `dumpsys audio` as an `AudioTrack`, `state:started`, `mutedState:none`;
+the shared path still runs one `AudioTrack` only, and none when idle. The 0.5.0 diagnostics stay
+until the S24 confirms. If it still stutters with the silent track playing, the next look is
+Samsung's battery setting for the app (Unrestricted).
 
 0.5.0 (2026-10-28), released as pre-release [`v0.5.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.0) ("AudioFool 0.5.0", versionCode 32): **Rescan Library in the logo menu** (the user's request), a
 fourth row under Statistics. It runs the same rescan as the refresh button in Settings' Music
@@ -806,16 +824,26 @@ Session 1:
 
 ## To test on the S24
 
+### 0.5.1 (a silent track so Android doesn't stop the app with BP on)
+
+Built 2026-10-30 (versionCode 33). Installs over 0.5.0 (same key).
+
+- [ ] **BP on, playing: go home and to other apps, several times**: any stutter left? Debug's
+  driver row: "silent track: playing", and "the app stopped … ms" small next to the gaps?
+- [ ] **Pause with BP on**: "silent track: paused"? Notifications and other apps' sounds as
+  before?
+
 ### 0.5.0 (Rescan Library in the logo menu; where the stalls at an app switch go)
 
 Released 2026-10-28 as pre-release [`v0.5.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.0) (versionCode 32). Installs over 0.4.9 (same key).
 
-- [ ] **Logo menu > Rescan Library**: the menu closes and the scan runs (Statistics' Scan line;
-  a song added to the SD card shows up afterwards)?
+- [x] **Logo menu > Rescan Library**: the menu closes and the scan runs (Statistics' Scan line;
+  a song added to the SD card shows up afterwards)? **Yes** (the user, 2026-10-30).
 
-- [ ] **BP on, playing: switch apps a few times until it stutters**, then Statistics > Debug,
+- [x] **BP on, playing: switch apps a few times until it stutters**, then Statistics > Debug,
   the driver row's line "longest gap … ms: the app stopped … ms, a send to the DAC … ms,
-  waiting for samples … ms": all four numbers.
+  waiting for samples … ms": all four numbers. **Still stutters: 3 late refills, longest gap
+  1006 ms; the app stopped 1005 ms, a send 7 ms, samples 1 ms** (the user, 2026-10-30). 0.5.1.
 
 ### 0.4.9 (less stutter at an app switch with BP on)
 
