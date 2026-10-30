@@ -1,95 +1,82 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-27, after 0.2.6 (confirmed on both phones). Read this with `README.md` (how
-the app works) and `design/progress.md` (every decision, and the lists of what to test on each
-device). The spec is `design/android-spec.md`.
+Updated 2026-10-30, after 0.5.1 (confirmed on the S24). Read this with `README.md` (how the app
+works) and `design/progress.md` (every decision, and the lists of what to test on each device).
+The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-perfect.md`.
 
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
-  for the build" section from the top (0.4.0 down to 0.3.0 is the newest work) and the newest
-  session notes.
-- **Latest: 0.5.1** (versionCode 33), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1>, `dist/AudioFool-0.5.1.apk`: a silent
-  `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch (0.5.0: Rescan Library).
-- **Next release:** **0.5.2** for fixes, **0.6.0** for new features (confirm the number with the user). Bump both in
-  `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
+  for the build" section from the top (0.5.1 down to 0.4.0 is the newest work: the S24's own
+  USB driver) and *To test on the S24* / *To test on the M21* for what is still unticked.
+- **Latest: 0.5.1** (versionCode 33), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1>,
+  `dist/AudioFool-0.5.1.apk`.
+- **Next release:** **0.5.2** for fixes, **0.6.0** for new features (confirm the number with the
+  user). Bump both in `app/build.gradle.kts` (versionCode 34 next). Confirm the tag and the notes
+  with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
-  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.9 and v0.5.0 (2026-10-28); v0.5.1 (2026-10-30). All but v0.1.0 are pre-releases.
+  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.9 and v0.5.0
+  (2026-10-28); v0.5.1 (2026-10-30). All but v0.1.0 are pre-releases.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
-  emulator (and the M21 if it's plugged in), show the notes, publish only on their yes, then
-  record it in `design/progress.md` and here.
+  emulator (and the M21 if it's plugged in), then the user says **"Show <v> notes"** (show them
+  in chat, written for the user: what changed, then a numbered *To try on the S24 / M21*) and
+  **"Publish"**; publish only then, and record it in `design/progress.md` and here.
+- **Nothing is waiting on the user right now.** No request is open; start nothing new unasked.
 
-### Where things stand (2026-10-27)
+### Where things stand (2026-10-30)
 
-- **Nothing is broken that the user knows of.** The user's last report: "s24u and m21 both look
-  good" on 0.2.6.
-- **Confirmed on the phones** (0.2.x): the letter strip and swipe to skip (S24); plugging a USB
-  DAC or adapter in or out never starts the music (S24); the smooth seekbar (M21); the readout
-  names the M21's jack, "3.5mm" / "4.4mm", and says "No Output" unplugged, also after a restart
-  (M21); the S24's Now Playing buttons at 56 dp above the readout (S24). Earlier: gapless with no
-  glitch, a song tap opens Now Playing, 24-bit clean, BP, unplug pausing, no click at a seek.
-- **Not yet reported** (don't block on them; the unticked items in `design/progress.md`): the
-  S24 DAC's **own name** in the readout (0.2.5: `AudioDeviceInfo.productName`; if it shows
-  "USB" or an odd name, the Debug screen's Route row has what Android calls it), and the
-  USB-C adapter's; the smooth seekbar on the S24; the 0.2.2 items (covers without a frame, the
-  one-line quality, Debug); the seekbar gliding; Last.fm on a real profile; the lock screen and
-  notification; Bluetooth buttons; a call; battery; DSD over DoP; a rate change mid-album with BP
-  on; the SD card pulled while playing; the full library's cold start and Statistics on the M21;
-  the S24 DAC's **Route** row (does the DAC itself list 44.1 kHz?).
-- **True bit-perfect on the S24 works** (2026-10-28, 0.4.6): the app's own USB Audio driver
-  (libusb) plays to the DAC when BP is on; everything is in `design/usb-bit-perfect.md` and spec
-  §6.2. The lessons that cost the most: **Samsung turns a USB DAC down in its own software and
-  says it takes 0 dB off**, so the driver's volume comes from the user only (quietest first, then
-  where the keys left it); a give-back needs a **USB reset** or the DAC stays silent; Android's
-  media volume goes to 1 and the DAC to 0 dB at a give-back; the DAC is **muted** while BP takes
-  it and at rate changes. Two loud blasts happened on the way (0.4.2, 0.4.3): treat any volume
-  change here as a hearing-safety change. **Open**: a DSD file through the driver; notifications
-  while it holds the DAC; the M21 check.
-- **0.4.7, released 2026-10-28** (versionCode 29): the DAC no longer stays
-  silent after Android ends the app while the driver holds it (seen after leaving it paused in
-  the background). The service stays foreground while the DAC is held, a swipe from recents
-  while paused gives it back, and the next start repairs a DAC left held
-  (`UsbDriver.repairIfLeftHeld`: audio interfaces with no kernel driver → 0 dB, unmuted, reset).
-  On the S24: paused in the background, force stop and BP again work; **the swipe from recents
-  didn't** (Samsung ends the app at the swipe, before it can give back).
-- **0.4.8, released 2026-10-28** (versionCode 30): paused and out of sight
-  (`MainActivity.onStop`), the DAC is given back at once (the user's call). **Confirmed on the
-  S24**: a swipe from recents leaves the DAC working, Play after home or screen off takes it
-  again in under a second, a pause from the notification keeps the minute. The silent DAC after
-  Android ends the app is fixed.
-- **0.4.9, released 2026-10-28** (versionCode 31), waiting for the S24's report: a little stutter at each app switch
-  with BP on (the user, BP off is fine). 128 ms sent ahead to the DAC (was 64) and a 1 s ring
-  (was 0.5 s); Debug's driver row starts with "gaps since this stream started: N from USB
-  refills late, N from samples late". If it still stutters, that line says which side: more in
-  flight, or the output thread. The user also might want BP remembered per output; only if they ask.
-  **On the S24**: still stutters; 5 gaps from USB refills late, 0 from samples late, the longest
-  **1288 ms** at priority -19. No pop; gapless works.
-- **0.5.0, released 2026-10-28** (versionCode 32), waiting for the S24's numbers: **Rescan Library** in the logo menu (the user's
-  request; the same rescan as Settings' refresh button), and stall diagnostics: Debug's driver row has "longest
-  gap N ms: the app stopped N ms, a send to the DAC N ms, waiting for samples N ms" (a heartbeat
-  thread, the longest resubmit, the longest wait for the ring's lock). If "the app stopped"
-  matches the gap, Android or Samsung is pausing the whole process at the switch (look at the
-  service's foreground state and Samsung's battery settings); if "a send" does, something else
-  is sending requests to the DAC and usbfs holds its lock; if "waiting for samples" does, it's
-  the ring's lock. **On the S24**: Rescan Library works; still stutters, and **the app stopped
-  1005 ms** of a 1006 ms gap (a send 7 ms, samples 1 ms): the whole process is stopped.
-- **0.5.1, released 2026-10-30** (versionCode 33): `SilentTrack`, a static `AudioTrack` looping zeros,
-  plays while the driver plays, so Android counts the app as playing (with BP off, playing
-  through an `AudioTrack`, it never stuttered). Debug: "silent track: playing". **Confirmed on
-  the S24** (the user, 2026-10-30): no stutter at app switches with BP on; paused, the track
-  pauses and other sounds are as before. The stutter at an app switch is fixed. The stall
-  diagnostics (heartbeat, longest send, lock wait) stay on Debug: cheap, and they name the cause
-  if a stall ever comes back.
+- **Nothing is broken that the user knows of.** The last reports: "s24u and m21 both look good"
+  on 0.2.6; Rescan Library works (0.5.0); "No stutter. Looks like this has been fixed" (0.5.1,
+  S24, BP on through the Shanling UA2 Plus).
+- **True bit-perfect on the S24 works** (since 0.4.6): with BP on and a USB DAC in, the app's
+  own USB Audio driver (libusb, `usbaudio_driver.cpp`) plays to the DAC; Android's audio stack
+  is bypassed. Everything is in `design/usb-bit-perfect.md` and spec §6.2. What it took:
+  - **Volume is a hearing-safety matter.** Samsung turns a USB DAC down in its own software and
+    says it takes 0 dB off, so the driver's volume comes from the user only (quietest first,
+    then where the keys left it). Two loud blasts happened on the way (0.4.2, 0.4.3). Treat any
+    volume change here as a hearing-safety change.
+  - **Giving the DAC back** needs a USB reset, or it stays silent; Android's media volume goes
+    to 1 and the DAC to 0 dB at a give-back. The DAC is muted while BP takes it and at rate
+    changes (no pop since 0.4.6).
+  - **Android ending the app** (0.4.7, 0.4.8): the service stays foreground while the DAC is
+    held; paused and out of sight (`MainActivity.onStop`) the DAC is given back at once (the
+    user's call); the next start repairs a DAC left held (`UsbDriver.repairIfLeftHeld`).
+  - **The stutter at app switches** (0.4.9–0.5.1): with BP on no `AudioTrack` played, so
+    Samsung/Android didn't count the app as playing and **stopped the whole process for about a
+    second** at a switch, foreground service or not. 0.5.0's heartbeat thread proved it (the app
+    stopped 1005 ms of a 1006 ms gap). 0.5.1's `SilentTrack` (a static `AudioTrack` looping
+    zeros, started and paused with `UsbOutput`) fixed it. 128 ms in flight and a 1 s ring
+    (0.4.9) stay.
+  - **Debug's USB driver row** (Statistics > last row > Debug) is how S24 results come back:
+    gaps since the stream started (USB refills late / samples late), "longest gap N ms: the app
+    stopped N ms, a send to the DAC N ms, waiting for samples N ms", the event thread's
+    priority, and "silent track: playing / paused". Keep them: cheap, and they name the cause
+    if a stall comes back.
+- **Still open on the Bit-Perfect list** (unticked in `design/progress.md`; not asked for, don't
+  start unasked): a **DSD file** through the driver; **notification sounds** while the driver
+  holds the DAC; the **M21 check** that 0.4.0's new output layer changed nothing there (BP on,
+  an album through the headphone out: gapless, readout, seeks without clicks). The user also
+  might want BP remembered per output; only if they ask.
+- **Older items not yet reported** (don't block on them): the S24 DAC's own name in the readout
+  and the USB-C adapter's; the smooth seekbar on the S24; the 0.2.2 items (covers without a
+  frame, the one-line quality, Debug); Last.fm on a real profile; the lock screen and
+  notification; Bluetooth buttons; a call; battery; a rate change mid-album with BP on; the SD
+  card pulled while playing; the full library's cold start and Statistics on the M21.
 - **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
   "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
   can't stay on the cable while the DAC is in.
 - **Emulator housekeeping:** the SD card's `SD Card Band` FLACs are damaged again (ffmpeg
   fails at the start of both); rebuild them before relying on them. `/sdcard/Music/Waveform
   Test/` (a 60 s pink-noise FLAC with swells and a dip at 24–27 s) is the one to check the
-  seekbar's shape with. The AVD sometimes exits on its own (exit code 4); start it again.
+  seekbar's shape with. The AVD sometimes exits on its own (exit code 4); start it again. The
+  app's uid there is 10236 (for `dumpsys audio`). With the logo menu open, Statistics is at
+  about (320, 531) and Rescan Library at about (320, 657). Release builds log no
+  `AudioFoolScan` lines, so Statistics' track and format counts are the quick check that a
+  rescan ran.
 
 ### What 0.2.x changed (all the user's requests)
 
@@ -452,6 +439,10 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   that long to close its streams (`Storage.watchVolumes`' `onEjecting` → `Player.letGoOf`).
   Anything new that keeps a file on the card open (a long read, a stream) must let go there
   too. A physical pull goes the same way.
+- **With BP on, a `SilentTrack` must play whenever the USB driver plays.** Without an
+  `AudioTrack` playing, Samsung/Android stops the whole process for about a second at an app
+  switch, foreground service or not. Anything new that plays through `UsbOutput` (or another
+  path around `AudioTrack`) starts and pauses the silent track with it.
 - **`AudioFoolApp.playerLazy` must be declared before `player`** (which delegates to it), or
   the app crashes at start with a null delegate.
 - **`adb shell mkdir` with a space** needs inner quotes (`"'/storage/…/SD Card Band'"`), or it
