@@ -7,6 +7,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 - **`HANDOFF.md`**: current state, the build–install–verify loop, and traps worth not rediscovering. Start here. (Session 1 creates it.)
 - **`design/android-spec.md`**: the source of truth for every screen, size and behaviour. Read it before any UI work.
 - **`design/progress.md`**: every decision and what each session verified. Read the Decisions section before UI work, and add to it when you change something.
+- `design/progress-archive.md`: decisions and notes from 0.2.6 and older, and HANDOFF's history. Not read up front; search it before changing a feature built then (the letter strip, swipe to skip, the seekbar, the readout, Now Playing's layout, the M21's jack, Last.fm, Statistics).
 - `design/session-prompts.md`: the build sessions, in order.
 
 ## Where things are

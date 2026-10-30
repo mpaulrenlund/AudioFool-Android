@@ -1,24 +1,23 @@
 # AudioFool for Android — session handoff
 
 Updated 2026-10-30, after 0.5.1 (confirmed on the S24). Read this with `README.md` (how the app
-works) and `design/progress.md` (every decision, and the lists of what to test on each device).
-The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-perfect.md`.
+works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
+each device). The spec is `design/android-spec.md`; the USB driver's story is
+`design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
+session notes, every decision up to 0.2.6) is in `design/progress-archive.md`: search it when
+you touch a feature from then.
 
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
-  for the build" section from the top (0.5.1 down to 0.4.0 is the newest work: the S24's own
-  USB driver) and *To test on the S24* / *To test on the M21* for what is still unticked.
+  for the build" section from the top (0.5.1 down to 0.3.0: the S24's own USB driver) and the
+  unticked items in *To test on the S24* / *To test on the M21*.
 - **Latest: 0.5.1** (versionCode 33), a pre-release,
   <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1>,
-  `dist/AudioFool-0.5.1.apk`.
+  `dist/AudioFool-0.5.1.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+  are pre-releases, and v0.0.5 was skipped.
 - **Next release:** **0.5.2** for fixes, **0.6.0** for new features (confirm the number with the
-  user). Bump both in `app/build.gradle.kts` (versionCode 34 next). Confirm the tag and the notes
-  with the user before `gh release create`.
-- **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
-  release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
-  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.9 and v0.5.0
-  (2026-10-28); v0.5.1 (2026-10-30). All but v0.1.0 are pre-releases.
+  user). Bump both in `app/build.gradle.kts` (versionCode 34 next).
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
@@ -27,7 +26,7 @@ The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-
   **"Publish"**; publish only then, and record it in `design/progress.md` and here.
 - **Nothing is waiting on the user right now.** No request is open; start nothing new unasked.
 
-### Where things stand (2026-10-30)
+## Where things stand (2026-10-30)
 
 - **Nothing is broken that the user knows of.** The last reports: "s24u and m21 both look good"
   on 0.2.6; Rescan Library works (0.5.0); "No stutter. Looks like this has been fixed" (0.5.1,
@@ -51,58 +50,23 @@ The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-
     stopped 1005 ms of a 1006 ms gap). 0.5.1's `SilentTrack` (a static `AudioTrack` looping
     zeros, started and paused with `UsbOutput`) fixed it. 128 ms in flight and a 1 s ring
     (0.4.9) stay.
-  - **Debug's USB driver row** (Statistics > last row > Debug) is how S24 results come back:
-    gaps since the stream started (USB refills late / samples late), "longest gap N ms: the app
-    stopped N ms, a send to the DAC N ms, waiting for samples N ms", the event thread's
-    priority, and "silent track: playing / paused". Keep them: cheap, and they name the cause
-    if a stall comes back.
+- **Debug is how phone results come back** (logo > Statistics > last row > Debug): logs can't
+  be read off the phones. The Playback panel (route, Bit-Perfect, mixers, what each song opened
+  as), the Debug panel (start times, cache and scan numbers, formats, covers filled, the token
+  sheet), and the USB driver row (gaps since the stream started, "longest gap N ms:
+  the app stopped N ms, a send to the DAC N ms, waiting for samples N ms", the event thread's
+  priority, "silent track: playing / paused"). Keep every number there reachable: cheap, and
+  they name the cause if a stall comes back.
 - **Still open on the Bit-Perfect list** (unticked in `design/progress.md`; not asked for, don't
   start unasked): a **DSD file** through the driver; **notification sounds** while the driver
   holds the DAC; the **M21 check** that 0.4.0's new output layer changed nothing there (BP on,
   an album through the headphone out: gapless, readout, seeks without clicks). The user also
   might want BP remembered per output; only if they ask.
-- **Older items not yet reported** (don't block on them): the S24 DAC's own name in the readout
-  and the USB-C adapter's; the smooth seekbar on the S24; the 0.2.2 items (covers without a
-  frame, the one-line quality, Debug); Last.fm on a real profile; the lock screen and
-  notification; Bluetooth buttons; a call; battery; a rate change mid-album with BP on; the SD
-  card pulled while playing; the full library's cold start and Statistics on the M21.
-- **A Samsung phone was on this PC's USB on 2026-10-27** (adb serial `R5CWC28ETAW`, shown as
-  "unauthorized"): probably the S24. adb on it needs "Allow USB debugging" on the phone; it
-  can't stay on the cable while the DAC is in.
-- **Emulator housekeeping:** the SD card's `SD Card Band` FLACs are damaged again (ffmpeg
-  fails at the start of both); rebuild them before relying on them. `/sdcard/Music/Waveform
-  Test/` (a 60 s pink-noise FLAC with swells and a dip at 24–27 s) is the one to check the
-  seekbar's shape with. The AVD sometimes exits on its own (exit code 4); start it again. The
-  app's uid there is 10236 (for `dumpsys audio`). With the logo menu open, Statistics is at
-  about (320, 531) and Rescan Library at about (320, 657). Release builds log no
-  `AudioFoolScan` lines, so Statistics' track and format counts are the quick check that a
-  rescan ran.
+- **Older items not yet reported** are on the two test lists (the lock screen and notification,
+  Bluetooth buttons, Last.fm on a real profile, a call, battery, the SD card pulled while
+  playing, the full library on the M21, and more). Don't block on them.
 
-### What 0.2.x changed (all the user's requests)
-
-- **0.2.0–0.2.2 (2026-10-25):** the Artists **letter strip**, always shown (`ArtistIndexStrip`,
-  `ArtistIndex`); Now Playing **swipe to skip** (left Next, right Previous; no animation on a
-  skip since 0.2.1's stuck-cover fix); covers **without a frame**; the quality on **one line**
-  (`QualityLines`); **Repeat and Shuffle side by side over BP**; the M21's **cover 301 dp**
-  (`artHeightReserve` 366); a **Debug screen** (Statistics' last row).
-- **0.2.3:** **spare height** on Now Playing: where the width limits the cover (the S24, about
-  120 dp; 0 on the M21), the waveform grows to 64 dp and the two flexible gaps even out.
-  **`PlugGuard`** (core): a play from outside the app (keys, lock screen, notification:
-  `SystemControls.onPlay` → `Player.resumeFromSystem`) within 3 s after a USB or wired device
-  comes or goes is ignored, and one up to 3 s before it is paused again. Debug's **Plug guard** row.
-- **0.2.4:** the **seekbar as one smooth shape**: the desktop's 600 RMS columns
-  (`WaveformLevels.COLUMNS`) drawn as its `WaveformView` outline (`WaveShape`); RMS only, both
-  channels combined, no playhead line (the user's choices). Waveforms live in
-  `no_backup/waveforms-600/`; the old `waveforms/` is deleted at start.
-- **0.2.5–0.2.6:** the **readout reworded**: the output's name, rate, depth and note with a dot
-  between each: "Shanling UA2 Plus · 96 kHz · 24-Bit · Exclusive", "· Rate Matched",
-  "3.5mm · 44.1 kHz · 16-Bit · Exclusive", "Speaker · 48 kHz · Resampled", "No Output"
-  (`OutputNames`, `OutputReadout.describe(name, …)`; the desktop's describe by mode is
-  unchanged). The M21's jack comes from FiiO (below), saved in `settings` → `fiioJack`.
-  Debug's **FiiO jack** row. The S24's controls sit **56 dp above the readout**
-  (`controlsLift`: 0.46 of the spare height, up to 56 dp; 0 on the M21).
-
-### How the user works
+## How the user works
 
 - Sends a few UI requests at a time, often several in one message, and says when to release:
   build them all into one version, then show the release notes and ask before publishing.
@@ -117,7 +81,7 @@ The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-
 - Label any comparison picture (which phone, which theme) and leave a gap between its parts: an
   unlabelled stack of the S24's seekbar over the M21's read as "two waveforms".
 
-### What the phones turned out to do (2026-10-25)
+## What the phones turned out to do
 
 - **FiiO M21** (Android 13; `Build.MANUFACTURER` "QUALCOMM", `BRAND` "qti", `MODEL` "FiiO M21"):
   - Android lists no headphone device: the 3.5 mm and 4.4 mm jacks are the built-in
@@ -130,18 +94,22 @@ The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-
     (`rate`: the DAC's rate, 0 when stopped; `format`) and `fiio.intent.action.HEADSET_TYPE_CHANGED`
     (`type` **1 for the 3.5 mm jack, 8 for the 4.4 mm, 0 unplugged**; read off the M21 over adb
     in 0.2.5). Neither is sticky, and nothing an app can read says which jack is in, so the
-    last type is saved. The readout's rate goes by `rate` (`OutputReadout.hardwareRate`).
+    last type is saved (`settings` → `fiioJack`). The readout's rate goes by `rate`
+    (`OutputReadout.hardwareRate`).
   - **It has no speaker:** unplugged, nothing is heard (the user), hence "No Output".
   - The DAC runs at the song's rate even with BP off ("Headphones · 96 kHz"); BP adds
     the full-volume, whole-number-sample path. 24-bit songs go as 32-bit with BP on, as
     float with it off: **24-bit packed `AudioTrack`s come out as static there.**
-- **S24 Ultra + the user's USB dongle DAC:** the mixer list is default entries only, at 48,
-  88.2, 96, 176.4, 192, 352.8 and 384 kHz (16, 24, 32-bit), **no bit-perfect entry and no
-  44.1 kHz**. So BP on is "rate matched" at 48 kHz and up ("USB · 96 kHz / 24-Bit (Rate
-  Matched)", in today's wording "<DAC name> · 96 kHz · 24-Bit · Rate Matched"), and a 44.1 kHz
-  song is shared and resampled to 48 kHz either way.
+  - It holds the full library: 27,115 files from the SD card. Its first full scan took
+    8 min 49 s (about 51 files a second); later starts read the cache.
+- **S24 Ultra:** **no SD card slot**, and a smaller library (192 artists · 821 albums · 8,127
+  tracks on 2026-10-24; first scan under 30 s). With the user's USB dongle DAC, Android's mixer
+  list is default entries only, at 48, 88.2, 96, 176.4, 192, 352.8 and 384 kHz (16, 24, 32-bit),
+  **no bit-perfect entry and no 44.1 kHz**: that is why the app has its own USB driver. Before
+  the driver, BP on was "Rate Matched" at 48 kHz and up; on Android's path a 44.1 kHz song is
+  resampled to 48 kHz.
 
-### Reaching the phones
+## Reaching the phones
 
 - **The M21 can be plugged into this PC** (the user did, 2026-10-25 and 2026-10-26). If adb
   doesn't list it and Windows shows no FiiO device (VID 2972), ask for: USB debugging on, the
@@ -157,16 +125,19 @@ The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-
   USB reconnected and caught little.
 - **The S24 can't use a cable while testing the DAC** (one USB-C port). Wireless debugging
   was tried and the user couldn't get the pairing step to work, so S24 results come as typed
-  readings from Statistics > Debug (Playback). Never type a pairing code for the user.
-- **The emulator** holds the sample music (`/sdcard/Music`, with `Long/`: 200 artists × 2
-  albums of silent MP3s, `Gapless Live/`: three songs of exactly 12.000 s; and on the SD card,
-  `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`: two 3-minute FLACs
-  for pulling the card mid-song, rebuilt 2026-10-25 as 3-minute tones after the old pair was
-  found damaged, and **damaged again by 2026-10-26**: ffmpeg fails at the start of both; rebuild
-  them before relying on them), and `/sdcard/Music/Waveform Test/`: one 60 s pink-noise FLAC with
-  swells and a near-silent dip at 24–27 s, for checking the waveform's shape and the 0.2.6 release build, with Bit-Perfect saved **on**, Repeat All and
-  Shuffle left **on** (from a tap test), and Last.fm not connected. `dist/` (ignored by git) holds the released APKs and the M21's
-  captured reports (`m21-*.txt`).
+  readings from Statistics > Debug (Playback). Never type a pairing code for the user. A
+  Samsung phone was on this PC's USB once (2026-10-27, adb serial `R5CWC28ETAW`,
+  "unauthorized"): probably the S24; adb on it needs "Allow USB debugging" on the phone.
+- **The emulator** holds the sample music: `/sdcard/Music` (with `Long/`: 200 artists × 2
+  albums of silent MP3s; `Gapless Live/`: three songs of exactly 12.000 s; `Waveform Test/`: a
+  60 s pink-noise FLAC with swells and a near-silent dip at 24–27 s, for the seekbar's shape)
+  and, on the SD card `/storage/0000-0000/Music`, part of the sample set and `SD Card Band/`:
+  two 3-minute FLACs for pulling the card mid-song. **Those two are damaged again** (ffmpeg
+  fails at the start of both, found 2026-10-26): rebuild them before relying on them. When last
+  noted (0.2.6), the app there had Bit-Perfect saved on, Repeat All and Shuffle on, and Last.fm
+  not connected. The AVD sometimes exits on its own (exit code 4): start it again. The app's
+  uid there is 10236 (for `dumpsys audio`).
+- `dist/` (ignored by git) holds the released APKs and the M21's captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
   the key never goes in the repo).
 
@@ -180,6 +151,8 @@ The spec is `design/android-spec.md`; the USB driver's story is `design/usb-bit-
 | The desktop app (read-only) | `C:\MusicPlayer`; its `src/AudioFool.Core` is what gets ported |
 | Ported Core (plain Kotlin, JVM tests) | `core/` — `library/`, `model/`, `theme/`, `art/`, `format/`, `playback/`, `analysis/` |
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
+| The library | `library/LibraryRepository`: the cache first, then a background rescan; the scan reuses tags for files whose size and date haven't changed, and carries over every track of a folder it can't reach |
+| Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
@@ -312,16 +285,10 @@ Then, with `MSYS_NO_PATHCONV=1`:
 
 ### Shipping a test build
 
-1. Confirm the tag and the notes with the user (CLAUDE.md).
-2. `./gradlew :app:assembleRelease`, copy the APK to `AudioFool-<version>.apk`.
-3. `gh release create v<version> AudioFool-<version>.apk --prerelease --title ... --notes ...`
-4. Add what only the phones can show to *To test on the S24* / *To test on the M21* in
-   `design/progress.md`.
-
-Logs can't be read off the phones, so anything the user reports back is on the screen:
-logo > **Statistics** shows the library line; its last row opens **Debug** (since 0.2.2): the
-Playback panel (route, Bit-Perfect, mixers, what each song opened as) and the Debug panel
-(start times, cache and scan numbers, formats, covers filled, the token sheet).
+The routine is under *Starting the next session*. After the user says "Publish":
+`gh release create v<version> dist/AudioFool-<version>.apk --prerelease --title "AudioFool <version>" --notes ...`,
+then add what only the phones can show to *To test on the S24* / *To test on the M21* in
+`design/progress.md`.
 
 ### Checking a screen against the mockups
 
@@ -334,10 +301,12 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ### Driving the emulator
 
-- Tapping by text: dump the screen (`uiautomator dump`), find the node whose `text="…"`
+- Tapping by text: `adb shell uiautomator dump /sdcard/ui.xml`, find the node whose `text="…"`
   starts with what you want, skipping `EditText` (the search field holds the query too),
-  and tap the centre of its `bounds`. Session 3 wrapped that in a small script.
-
+  and tap the centre of its `bounds`.
+- With the logo menu open, Statistics is at about (320, 531) and Rescan Library at about
+  (320, 657). Release builds log no `AudioFoolScan` lines, so Statistics' track and format
+  counts are the quick check that a rescan ran.
 - A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.
   Session 2 used 200 artists × 2 albums.
@@ -352,85 +321,11 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   colour edge with a few lines of node.
 - The back gesture held halfway: `adb shell "input motionevent DOWN 3 1200; input motionevent MOVE 400 1200"`,
   take the screenshot, then `input motionevent UP 400 1200`.
-- Text the screen shows: `adb shell uiautomator dump /sdcard/ui.xml` and grep `text=`.
 - Frame times: `dumpsys gfxinfo com.mpaulrenlund.audiofool` (reset first). The headless
   emulator renders in software (~30 ms a frame for anything), so only the phones can judge
   smoothness.
 
 ---
-
-## Where things stood after session 5
-
-- **Last.fm** is ported and wired: now playing, scrobbles from the heard position, the
-  offline queue, Connect / Disconnect in Settings. Not yet seen on a real profile.
-- **Statistics** shows the totals, formats and listening time (the user approved the
-  screenshots), above the Playback and Debug panels.
-- **Edge cases** checked: long names, a 120-song album, an empty library and font size 1.3
-  in ThemeLab; SD card out while playing and idle, a call, and cold start on the emulator.
-  Fixed: the app was killed when the card was ejected with a song on it open
-  (`Player.letGoOf`), and Now Playing's readout fell off the M21 at font size 1.3.
-- **0.1.0 is released** (2026-10-24, a full release, versionCode 6):
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.1.0>, with
-  `dist/AudioFool-0.1.0.apk`. What to check on each phone is in `design/progress.md`
-  (*To test on the S24* / *M21*).
-
-## Where things stood after session 4
-
-- **Bit-Perfect is wired up**: the BP button and the Settings chip (saved, greyed on the
-  speaker and Bluetooth), USB mixer attributes on Android 14+ (bit-perfect, else rate
-  matched), the M21's source-rate way checked against the system output's rate, DoP for DSD
-  on the bit-perfect mixer, and a reopen at the place heard when the route or the setting
-  changes. The readout names the route.
-- **Checked only on the emulator**, with the pretend route: nothing about a real DAC or the
-  M21's bypass is known yet; that's the v0.0.5 lists in `design/progress.md`.
-- **What the user reports** is on Statistics > Debug > Playback: Route, Bit-Perfect, Opened as,
-  System output, Direct, USB mixers, Mixer set.
-
-## Where things stood after session 3
-
-- **Playback works on the emulator:** every sample format plays at its own rate and depth
-  (FLAC 16/44 and 24/96, MP3, AAC, ALAC 24/48, Opus, Vorbis, WAV, AIFF 24, WavPack, DSF and
-  DFF as 88.2 kHz PCM); `Gapless Live` joins twice with 0 underruns; a format change
-  reopens the output; the media session, the shade's player with the cover, media keys,
-  seeking, swipe-down, and resume after the app is killed (restored paused at the place,
-  and a play key resumes it from the home screen).
-- **Not checked on the emulator** (on the S24 list): the lock screen, a real Bluetooth
-  headset's buttons, unplugging headphones, audio focus against another app, and how it
-  sounds.
-- `NowPlaying` is what every screen reads; `Player` keeps it up to date. Statistics' preview
-  switch is gone.
-- Bit-Perfect is drawn off and does nothing (session 4); the readout is the shared output's.
-
-## Where things stood after session 2
-
-- **Released** (all pre-releases, signed with the release key): `v0.0.1` (session 1,
-  versionCode 1), `v0.0.2` ("Session 2 test build", versionCode 2) and `v0.0.3` ("First-scan
-  progress", versionCode 3), all 2026-10-24. The next is `0.0.4`, versionCode 4.
-- **First scan:** with no cache, `LibraryRepository.showAsFound` publishes a partial
-  library every 1.5 s or so while tags are read, and Artists shows "Reading tags: N of M".
-  The M21's first full scan took 528,563 ms (8 min 49 s, 27,115 files from the SD card,
-  about 51 a second); later starts read the cache.
-- **Screens (session 2):** Artists, Albums, Album, Search, Settings, Statistics, the logo
-  menu and the mini player, all from tokens, checked against `design/screens/` (the
-  differences are listed in `design/progress.md`). Navigation is its own small back stack
-  with predictive back. Statistics holds the debug numbers until session 5 builds the
-  statistics above them (the user's call).
-- **Bit-Perfect and Last.fm rows** in Settings are drawn in their off state and do nothing.
-- **The user's results so far** (S24, 2026-10-24): 192 artists · 821 albums · 8,127 tracks,
-  first scan under 30 seconds, cold start "very fast". The S24 has **no SD card slot** and a
-  smaller library than the desktop's; the full ~26,000-track library and SD card removal
-  are tested on the **M21** (27,115 files found there).
-- **GitHub:** the repo is public (the user's call). This PC pushes and releases as
-  `marcusrenlund`, a collaborator with write access; `gh` is signed in as that account.
-- **Keep the debug numbers reachable** (the user reports them back, and later sessions
-  add to them): `ui/StatisticsScreen.kt`'s `DebugScreen` (Playback and Debug panels).
-- `LibraryRepository` is the library: cache first, then a background rescan; the scan
-  reuses tags for files whose size and date haven't changed, and carries over every
-  track of a folder it can't reach.
-- **Covers:** `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp)
-  keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes
-  the list copies after each scan. Now Playing's big art (session 3) should decode the
-  full cover with `CoverArt.read`, not these.
 
 ## Traps worth not rediscovering
 
