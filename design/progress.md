@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.5.1**: a silent `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch — 2026-10-30, built
+- [x] **0.5.1**: a silent `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch — 2026-10-30, released as a pre-release
 - [x] **0.5.0**: Rescan Library in the logo menu; Debug says where the 1.3 s stalls at an app switch go (the app stopped, a send to the DAC, or waiting for samples) — 2026-10-28, released as a pre-release
 - [x] **0.4.9**: less stutter at an app switch with BP on (128 ms sent ahead to the DAC, a 1 s ring); Debug counts the gaps by cause — 2026-10-28, released as a pre-release
 - [x] **0.4.8**: paused and out of sight, the DAC goes back to Android at once (Samsung ends the app at a swipe from recents) — 2026-10-28, released as a pre-release
@@ -55,7 +55,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-0.5.1 (2026-10-30), versionCode 33: **a silent track keeps Android from stopping the app with
+0.5.1 (2026-10-30), released as pre-release [`v0.5.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1) ("AudioFool 0.5.1", versionCode 33): **a silent track keeps Android from stopping the app with
 BP on.** 0.5.0's Debug on the S24 (the user): still a stutter at app switches; the longest gap
 1006 ms, of which **the app stopped 1005 ms** (the heartbeat thread, which only sleeps, didn't
 run either), a send to the DAC 7 ms, samples 1 ms. So the whole process is stopped for about a
@@ -826,7 +826,7 @@ Session 1:
 
 ### 0.5.1 (a silent track so Android doesn't stop the app with BP on)
 
-Built 2026-10-30 (versionCode 33). Installs over 0.5.0 (same key).
+Released 2026-10-30 as pre-release [`v0.5.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1) (versionCode 33). Installs over 0.5.0 (same key).
 
 - [ ] **BP on, playing: go home and to other apps, several times**: any stutter left? Debug's
   driver row: "silent track: playing", and "the app stopped … ms" small next to the gaps?

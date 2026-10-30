@@ -9,13 +9,13 @@ device). The spec is `design/android-spec.md`.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.4.0 down to 0.3.0 is the newest work) and the newest
   session notes.
-- **Latest: 0.5.0** (versionCode 32), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.0>, `dist/AudioFool-0.5.0.apk`: Rescan Library
-  in the logo menu, and Debug's stall diagnostics for the stutter at an app switch with BP on.
-- **Next release:** **0.5.1** for fixes, **0.6.0** for new features (confirm the number with the user). Bump both in
+- **Latest: 0.5.1** (versionCode 33), a pre-release, <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1>, `dist/AudioFool-0.5.1.apk`: a silent
+  `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch (0.5.0: Rescan Library).
+- **Next release:** **0.5.2** for fixes, **0.6.0** for new features (confirm the number with the user). Bump both in
   `app/build.gradle.kts`. Confirm the tag and the notes with the user before `gh release create`.
 - **Releases so far:** v0.0.1 to v0.0.4 pre-releases, v0.0.5 skipped, v0.1.0 the first full
   release (2026-10-24); v0.1.1 to v0.1.5 and v0.2.0 to v0.2.2 (2026-10-25); v0.2.3 to v0.2.6
-  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.9 and v0.5.0 (2026-10-28). All but v0.1.0 are pre-releases.
+  (2026-10-26); v0.3.0, v0.3.1 and v0.4.0 to v0.4.3 (2026-10-27); v0.4.4 to v0.4.9 and v0.5.0 (2026-10-28); v0.5.1 (2026-10-30). All but v0.1.0 are pre-releases.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
@@ -76,7 +76,7 @@ device). The spec is `design/android-spec.md`.
   is sending requests to the DAC and usbfs holds its lock; if "waiting for samples" does, it's
   the ring's lock. **On the S24**: Rescan Library works; still stutters, and **the app stopped
   1005 ms** of a 1006 ms gap (a send 7 ms, samples 1 ms): the whole process is stopped.
-- **0.5.1, built 2026-10-30** (versionCode 33): `SilentTrack`, a static `AudioTrack` looping zeros,
+- **0.5.1, released 2026-10-30** (versionCode 33), waiting for the S24's report: `SilentTrack`, a static `AudioTrack` looping zeros,
   plays while the driver plays, so Android counts the app as playing (with BP off, playing
   through an `AudioTrack`, it never stuttered). Debug: "silent track: playing". If it still
   stutters with that line saying playing, try Samsung's battery setting "Unrestricted" for the
