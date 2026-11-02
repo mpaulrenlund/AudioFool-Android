@@ -22,6 +22,7 @@ import com.mpaulrenlund.audiofool.playback.OutputRoutes
 import com.mpaulrenlund.audiofool.playback.PlaybackService
 import com.mpaulrenlund.audiofool.playback.Player
 import com.mpaulrenlund.audiofool.playback.SystemControls
+import com.mpaulrenlund.audiofool.playback.TrackAnalyzer
 import com.mpaulrenlund.audiofool.playback.UsbDac
 import com.mpaulrenlund.audiofool.playback.UsbDriver
 import com.mpaulrenlund.audiofool.playback.WaveformReader
@@ -136,7 +137,10 @@ class AudioFoolApp : Application() {
         // Android 14+ only, where the driver plays: the M21 never makes it.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) scope.launch(Dispatchers.IO) { usbDriver.repairIfLeftHeld() }
 
-        Storage.watchVolumes(this, onEjecting = { root -> if (playerLazy.isInitialized()) player.letGoOf(root) }) { arrived ->
+        Storage.watchVolumes(this, onEjecting = { root ->
+            if (playerLazy.isInitialized()) player.letGoOf(root)
+            TrackAnalyzer.letGoOf(root)
+        }) { arrived ->
             val folders = settings.folders.value.filter { it.included }.map { it.path }
             val unavailable = library.state.value.unavailableFolders
             if (DriveChange.worthRefresh(folders, unavailable, arrived) { File(it).isDirectory }) library.rescan()

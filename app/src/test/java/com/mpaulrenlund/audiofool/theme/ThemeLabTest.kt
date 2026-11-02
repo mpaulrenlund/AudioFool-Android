@@ -14,7 +14,11 @@ import com.mpaulrenlund.audiofool.core.library.ScanProgress
 import com.mpaulrenlund.audiofool.library.LibraryState
 import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.settings.MusicFolder
+import com.mpaulrenlund.audiofool.core.analysis.QualityClaim
+import com.mpaulrenlund.audiofool.core.analysis.QualityOpinion
 import com.mpaulrenlund.audiofool.ui.AlbumScreen
+import com.mpaulrenlund.audiofool.ui.AnalysisScreen
+import com.mpaulrenlund.audiofool.ui.AnalysisState
 import com.mpaulrenlund.audiofool.ui.AlbumsScreen
 import com.mpaulrenlund.audiofool.ui.AppActions
 import com.mpaulrenlund.audiofool.ui.ArtistsScreen
@@ -160,6 +164,16 @@ class ThemeLabTest {
                 bitPerfectGreyed = true
             }
             NowPlayingScreen(np, NowPlayingActions())
+        }
+        // Analyze (0.6.0): finished on a 24/96 FLAC made from a lossy file, the file being read, and one that couldn't be.
+        shoot(device, "analysis") {
+            val track = ThemeLabFixtures.nowPlayingTrack
+            val analysis = ThemeLabFixtures.spectrum()
+            AnalysisScreen(track, AnalysisState.Done(analysis, QualityOpinion.form(analysis, QualityClaim.from(track))))
+        }
+        shoot(device, "analysis-reading") { AnalysisScreen(ThemeLabFixtures.nowPlayingTrack, AnalysisState.Reading(0.42)) }
+        shoot(device, "analysis-error") {
+            AnalysisScreen(ThemeLabFixtures.nowPlayingTrack, AnalysisState.Failed("The file isn't there. Is the SD card in?"))
         }
         shoot(device, "settings-bp-on") {
             SettingsScreen(

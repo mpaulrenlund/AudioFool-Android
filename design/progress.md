@@ -55,6 +55,27 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-02, for 0.6.0 (not released yet): **Now Playing's cover menu and Analyze** (the user's
+request). A long press on the cover opens a menu at the finger: the cover's resolution (not
+tappable), then Analyze. Choices (the user's, asked as short options): Analyze is **its own
+screen** (not a sheet over Now Playing), and shows **the spectrogram and the opinion** as the
+desktop does. Ported from `AudioFool.Core/Analysis` with their tests: `Fft`, `SpectrumScale`,
+`SpectrumAccumulator` (+ `SpectrumAnalysis`), `QualityOpinion` (+ `QualityClaim`, `Verdict`,
+`Finding`, `QualityFlag`, `Opinion`), 44 tests in `core/.../analysis/`; the desktop's
+`AnalysisSampling` and its test are left out (the library-wide Quality Check), and so are the
+window's clear buttons. `TrackAnalyzer` (BASS, in the app) follows `WaveformReader` and lets go
+of a file on an ejecting card (`AudioFoolApp`'s `onEjecting`). The resolution reads "1200 × 1200"
+like the desktop's art viewer. My calls, open to change: the menu's look is the logo menu's
+(shared `MenuSurface` / `MenuRow`; the logo menu's pictures are unchanged); the info row's label
+is `text.muted`; the menu closes when the song changes; the time axis's ticks are at least a
+second apart (the desktop's NiceStep gave "0:00 0:00 0:01" on a 1 s file); the picture is 0.36
+of the screen height (300 dp on the S24, 240 on the M21). New tokens: `artMenu.*`, `analysis.*`
+in `mobile-tokens.json`; the desktop files are unchanged. On the emulator: the menu at the finger
+("No cover" on the coverless test FLAC, "600 × 600" on the sample MP3), Analyze on the 60 s
+pink-noise FLAC (done in under half a second, its quiet dip showing, "Consistent with FLAC ·
+24-bit · 44.1 kHz"), the MP3 ("Can't tell": a test tone) and a DFF (axes to 88 kHz, "Read as
+176.4 kHz PCM").
+
 2026-10-30, after 0.5.1: **the docs slimmed** (the user's call). The decisions for 0.2.6 and
 older and the session notes moved unchanged to [`progress-archive.md`](progress-archive.md), with
 HANDOFF's history (the 0.2.x changes, "where things stood after session 2–5"). HANDOFF keeps the
@@ -335,6 +356,14 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The cover menu and Analyze (from 0.6.0)
+
+- [ ] **The long press**: on Now Playing, hold the cover. A tick, and the menu at your finger
+  with the cover's resolution and Analyze. A quick sideways swipe still skips, without the menu.
+- [ ] **Analyze a long hi-res FLAC and a lossy-sourced one, if you know one**: how long the
+  reading takes, that playback carries on without a stutter meanwhile (with BP on through the
+  DAC too), and whether the verdict matches the desktop's for the same file.
+
 ### Bit-Perfect through the driver
 
 - [ ] **A DSD file with BP on** (from 0.4.0). A DSF or DFF: does the DAC show DSD (or DoP), and
@@ -403,6 +432,13 @@ its own section at the top, as before. (From …) says which build first asked.
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The cover menu and Analyze (from 0.6.0)
+
+- [ ] **Analyze on the M21's slower chip**: a 24/96 or 24/192 FLAC from the SD card. How long
+  it takes, and that playback doesn't stutter meanwhile.
+- [ ] **Pull the SD card while Analyze reads a song on it**: the app keeps running, and the
+  screen says the card was removed.
 
 ### Playback
 

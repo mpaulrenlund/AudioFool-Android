@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,22 +60,13 @@ fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, a
 @Composable
 private fun LogoMenu(onClose: () -> Unit, actions: AppActions) {
     val t = LocalAppTheme.current
-    val shadows = t.shadow("shadow.headerArt")
-    // The popup's window has to leave room for the shadow, or it is cut off.
-    val room = Dp(shadows.maxOf { (it.blur + it.spread + max(abs(it.offsetX), abs(it.offsetY))).toFloat() })
+    val room = menuShadowRoom()
     val density = LocalDensity.current
     val offset = with(density) {
         IntOffset((t.dp("menu.offsetX") - room).toPx().roundToInt(), (t.dp("topBar.logoButton") - room).toPx().roundToInt())
     }
-    val shape = RoundedCornerShape(t.radius("radius.surface"))
     Popup(offset = offset, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
-        Column(
-            Modifier
-                .padding(room)
-                .width(t.dp("menu.width"))
-                .tokenSurface(shape, t.color("color.panel.bg"), shadows + t.shadow("shadow.panelHighlight"), t.color("color.panel.border"), t.dp("borderWidth"))
-                .padding(t.dp("menu.listPadding")),
-        ) {
+        MenuSurface(t.dp("menu.width")) {
             MenuRow("Settings") {
                 onClose()
                 actions.open(Route.Settings)
@@ -92,8 +84,39 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions) {
     }
 }
 
+/** The room a menu's popup window leaves round it for `shadow.headerArt`, or the shadow is cut off. */
 @Composable
-private fun MenuRow(label: String, value: String? = null, onClick: () -> Unit) {
+fun menuShadowRoom(): Dp {
+    val shadows = LocalAppTheme.current.shadow("shadow.headerArt")
+    return Dp(shadows.maxOf { (it.blur + it.spread + max(abs(it.offsetX), abs(it.offsetY))).toFloat() })
+}
+
+/**
+ * A menu's panel (the logo menu's, and Now Playing's cover menu): panel colours,
+ * border and corners, `shadow.headerArt` under it so it reads as lifted, inside
+ * [menuShadowRoom] of the popup's window.
+ */
+@Composable
+fun MenuSurface(width: Dp, content: @Composable ColumnScope.() -> Unit) {
+    val t = LocalAppTheme.current
+    val shape = RoundedCornerShape(t.radius("radius.surface"))
+    Column(
+        Modifier
+            .padding(menuShadowRoom())
+            .width(width)
+            .tokenSurface(shape, t.color("color.panel.bg"), t.shadow("shadow.headerArt") + t.shadow("shadow.panelHighlight"), t.color("color.panel.border"), t.dp("borderWidth"))
+            .padding(t.dp("menu.listPadding")),
+        content = content,
+    )
+}
+
+/**
+ * A menu row, settings-sized, with an optional [value] on the right. A row with
+ * no [onClick] is information only (the cover's resolution): its label is
+ * `text.muted` and a press shows nothing.
+ */
+@Composable
+fun MenuRow(label: String, value: String? = null, onClick: (() -> Unit)?) {
     val t = LocalAppTheme.current
     Row(
         Modifier
@@ -103,7 +126,7 @@ private fun MenuRow(label: String, value: String? = null, onClick: () -> Unit) {
             .padding(horizontal = t.dp("menu.rowPaddingX")),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Line(label, t.text("menu.textSize", "color.text.primary"), Modifier.weight(1f))
-        if (value != null) Line(value, t.text("menu.valueSize", "color.text.muted"))
+        Line(label, t.text("menu.textSize", if (onClick == null) "color.text.muted" else "color.text.primary"), Modifier.weight(1f))
+        if (value != null) Line(value, t.text("menu.valueSize", if (onClick == null) "color.text.secondary" else "color.text.muted"))
     }
 }

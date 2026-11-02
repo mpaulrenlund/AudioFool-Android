@@ -138,4 +138,35 @@ object ThemeLabFixtures {
         val detail = 0.8 + 0.1 * kotlin.math.sin(i * 0.37) + 0.06 * kotlin.math.sin(i * 1.13 + 1.0) + 0.04 * kotlin.math.sin(i * 2.71 + 2.0)
         kotlin.math.abs(env * fade * detail).coerceAtMost(1.0).toFloat()
     }
+
+    /**
+     * Analyze's picture (0.6.0): a made-up spectrum shaped like a song made from a
+     * lossy file. The music falls 2 dB a kilohertz, swells and dips over the song
+     * with uneven texture, and stops dead at [cutoffHz] (decoder silence above).
+     * Built directly, not decoded: ThemeLab has no BASS.
+     */
+    fun spectrum(rate: Int = 96000, cutoffHz: Double = 16000.0, seconds: Double = 332.0): com.mpaulrenlund.audiofool.core.analysis.SpectrumAnalysis {
+        val size = com.mpaulrenlund.audiofool.core.analysis.SpectrumAccumulator.fftSizeFor(rate)
+        val bins = size / 2 + 1
+        val nyquist = rate / 2.0
+        fun music(hz: Double) = if (hz < cutoffHz) -40 - 2 * (hz - 1000).coerceAtLeast(0.0) / 1000 else -140.0
+        val average = DoubleArray(bins) { k -> music(k.toDouble() * rate / size) }
+        val columns = 800
+        val rows = 512
+        val random = java.util.Random(7)
+        val picture = FloatArray(columns * rows) { i ->
+            val column = i / rows
+            val hz = (i % rows + 0.5) / rows * nyquist
+            val at = column / columns.toDouble()
+            // Swells, a quiet bridge two thirds in, and a fade at the end.
+            val swell = 6 * kotlin.math.sin(at * 17.0) + 4 * kotlin.math.sin(at * 41.0 + 1.0) - (if (at in 0.62..0.68) 18.0 else 0.0) - (if (at > 0.95) (at - 0.95) * 400 else 0.0)
+            val level = music(hz)
+            if (level <= -140) -140f else (level + swell - 6 + random.nextGaussian() * 3).toFloat()
+        }
+        return com.mpaulrenlund.audiofool.core.analysis.SpectrumAnalysis(
+            sampleRate = rate, channels = 2, durationSeconds = seconds, fftSize = size,
+            average = average, peak = average, columns = columns, rows = rows, picture = picture,
+            peakSampleDb = -0.3, usedBits = 24, extraBitsShare = 0.99,
+        )
+    }
 }

@@ -77,6 +77,11 @@ every decision and what is still to be checked on the phones.
   your API key and shared secret (the desktop's work), opens last.fm in the browser to
   approve the app, and connects by itself once you have. The key, secret and session are
   encrypted with a key held in the Android Keystore.
+- **Analyze.** Hold Now Playing's cover for its menu: the cover's resolution, and Analyze,
+  which decodes the whole song in the background and shows its spectrogram and AudioFool's
+  opinion of whether the audio matches the file's format (a lossy source in a lossless file,
+  a re-encoded MP3, fake hi-res, fake 24-bit), as the desktop's Analyze does (its
+  `SpectrumAccumulator` and `QualityOpinion`, ported with their tests).
 - **Statistics.** Tracks, albums, artists, play time and size on disk; tracks per format
   (the desktop's `LibraryStatistics`); and the time listened, counted by the app from the
   first run of 0.1.0 on (`listening.json`).

@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-10-30, after 0.5.1 (confirmed on the S24). Read this with `README.md` (how the app
+Updated 2026-11-02: the cover menu and Analyze built for 0.6.0 (not released); before that 0.5.1 (confirmed on the S24). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -24,7 +24,10 @@ you touch a feature from then.
   emulator (and the M21 if it's plugged in), then the user says **"Show <v> notes"** (show them
   in chat, written for the user: what changed, then a numbered *To try on the S24 / M21*) and
   **"Publish"**; publish only then, and record it in `design/progress.md` and here.
-- **Nothing is waiting on the user right now.** No request is open; start nothing new unasked.
+- **Built, not released (2026-11-02): Now Playing's cover menu and Analyze**, for **0.6.0**. A long
+  press on the cover: its resolution, then Analyze (the desktop's spectrogram and opinion, ported
+  with their tests). Verified with the tests, ThemeLab (both themes, both sizes) and on the
+  emulator; not on a phone yet. Next: the user says when to release (confirm 0.6.0, versionCode 34).
 
 ## Where things stand (2026-10-30)
 
@@ -157,6 +160,7 @@ you touch a feature from then.
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
+| Analyze (0.6.0) | `core/.../analysis/` (ported: `Fft`, `SpectrumScale`, `SpectrumAccumulator`, `QualityOpinion`); the app's `playback/TrackAnalyzer.kt` (BASS, lets go at an eject) and `ui/AnalysisScreen.kt`; the cover menu is `ArtMenu` in `NowPlayingScreen.kt`, sharing `MenuSurface` / `MenuRow` with the logo menu |
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
@@ -377,6 +381,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - **BASS add-ons load by file name** (`BASS_PluginLoad("libbassflac.so")`): no extracted
   libraries needed. The Java bindings must keep the package `com.un4seen.bass` (JNI names).
 - **A buffer from `Decoder.read` must be empty when it returns false** (`limit(0)`): `clear()` makes it look full of old samples, which `pump` then writes.
+- **Popups need their own position near an edge**: Compose's offset `Popup` doesn't keep itself on screen; the cover menu uses a `PopupPositionProvider` (`AtFinger`) that clamps it, allowing for the shadow room round `MenuSurface`.
 - **Anything that cuts a playing `AudioTrack` goes through `OutputStage.cut`**, which fades it out first; a bare `pause()`/`flush()` clicks on the M21.
 - **On the M21, system broadcasts can come from FiiO's status bar** (an app uid): a `RECEIVER_NOT_EXPORTED` receiver misses them. Check the sender in `dumpsys activity broadcasts history`.
 - **The M21 has no headphone device in Android's eyes**: its jacks are the "speaker" (48 kHz, 16-bit, per Android). Don't look for `TYPE_WIRED_*` there.

@@ -127,6 +127,18 @@ Opens from the mini player, and when a song is tapped (in a list or in Search). 
 
 Repeat: off `control.iconOff`; on `control.repeatOn`; repeat-one adds the desktop's "1" badge (`playbackBar.repeatOneBadge`). Shuffle: off `control.iconOff`, on `control.shuffleOn`. Order and repeat follow the desktop's `PlayOrder`.
 
+**Cover menu** (0.6.0, the user's call; no mockup): a long press on the art (with a haptic tick) opens a menu at the finger, kept `artMenu.edgeMargin` inside the screen, in the logo menu's look (`menu.*`, `artMenu.width`). Its rows: **Resolution**, the cover's own pixel size, "1200 × 1200" as the desktop's art viewer writes it ("No cover" without one); information only, so it isn't tappable and its label is `text.muted`. Then **Analyze** (§5.1). A tap outside or system back closes it; so does the song changing. A sideways drag still skips: it takes the touch before the long press is due.
+
+### 5.1 Analyze
+
+The desktop's Analysis window (`AnalysisWindow`) as a screen, opened from the cover menu; system back returns to Now Playing, and leaving stops the analysis. The whole file is decoded in the background on its own stream (`TrackAnalyzer`, ported), beside playback; DSD is read as 176.4 kHz PCM. Nothing is written or cached. Sizes are in `mobile-tokens.json` → `analysis`; the colour scale, label spacings and cutoff marker are the desktop's `analysis.*` and `color.spectrogram.*` tokens. From the top:
+
+1. The song's title (18/600, `text.heading`) over "Artist · Album · FLAC · 24-bit · 96 kHz · 6:14" (13, `text.muted`, two lines at most), the desktop's subtitle.
+2. Panel **SPECTRUM**: the spectrogram (time left to right, frequency bottom to top, the six `spectrogram.level*` colours from `analysis.floorDb` to `analysis.topDb`), `analysis.picture` of the screen height, in a 1 dp `art.border` frame; frequencies on the left, the colour scale with its dB every `legendStepDb` on the right, times underneath (at least a second apart). The cutoff, when there is one, is a dashed `spectrogram.marker` line labelled at its right end. While reading: "Reading the file… 42%" over a bar in `status.scanTrack` / `status.scanFill`, on the panel's grey. A file that can't be read: the reason (600, `text.heading`) in its place.
+3. AudioFool's opinion (`QualityOpinion`, ported with its wording and tests): the verdict as a headline (18/600, `text.primary`), each finding's reasons (15, `text.secondary`), then the figures "Cutoff 16.2 kHz · Peak −0.3 dB · 24 of 24 bits used" (13, `text.muted`; "Read as 176.4 kHz PCM" for DSD).
+
+The page scrolls when the opinion is long. Not ported: the desktop's Quality Check clear buttons (the phone has no library-wide check). A removed SD card stops a read from it at once (§1).
+
 ## 6. Playback
 
 ### 6.1 Engine

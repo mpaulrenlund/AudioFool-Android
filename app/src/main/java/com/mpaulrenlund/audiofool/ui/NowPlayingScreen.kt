@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.ui
 
+import android.graphics.BitmapFactory
 import androidx.compose.animation.core.animate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -45,14 +46,22 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.QualityLines
@@ -68,6 +77,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /** What Now Playing can ask for. */
 class NowPlayingActions(
@@ -79,6 +89,8 @@ class NowPlayingActions(
     val toggleShuffle: () -> Unit = {},
     /** The BP button (spec 6.4); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
+    /** The cover menu's Analyze (0.6.0): opens the Analysis screen on the song. */
+    val analyze: (Track) -> Unit = {},
 )
 
 /**
@@ -87,10 +99,13 @@ class NowPlayingActions(
  * left for Next, right for Previous. From the top: the art, the title block
  * with the track count, the quality lines, the waveform seekbar with the times,
  * the controls row (Repeat / Shuffle / BP on the left, the transport on the
- * right for a right thumb) and the output readout.
+ * right for a right thumb) and the output readout. A long press on the art opens
+ * its menu (0.6.0).
+ *
+ * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
  */
 @Composable
-fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
+fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions, artMenuForPictures: String? = null) {
     val t = LocalAppTheme.current
     val track = nowPlaying.track
 
@@ -123,7 +138,7 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions) {
             Column(Modifier.fillMaxSize()) {
                 SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
-                        BigArt(track, art)
+                        BigArt(track, art, actions, artMenuForPictures)
                     }
                     TitleBlock(nowPlaying, track)
                 }
@@ -226,21 +241,31 @@ private fun barHeights(): Dp {
  * placeholder keeps its 1 dp `art.border`, or its square would vanish into the page.
  */
 @Composable
-private fun BigArt(track: Track?, side: Dp) {
+private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, menuForPictures: String?) {
     val t = LocalAppTheme.current
-    val px = with(LocalDensity.current) { side.roundToPx() }
-    var image by remember(track?.filePath) { mutableStateOf<ImageBitmap?>(null) }
+    val density = LocalDensity.current
+    val px = with(density) { side.roundToPx() }
+    var cover by remember(track?.filePath) { mutableStateOf<BigCover?>(null) }
     if (track != null && LocalArt.current != null) {
         LaunchedEffect(track.filePath, px) {
-            image = withContext(Dispatchers.IO) {
-                CoverArt.read(track)?.bytes?.let { SystemControls.decode(it, px) }?.asImageBitmap()
-            }
+            cover = withContext(Dispatchers.IO) { BigCover.read(track, px) }
         }
     }
-    val bitmap = image
+    val bitmap = cover?.image
+    // Where the finger pressed, while the menu is open (0.6.0).
+    var menuAt by remember(track?.filePath) { mutableStateOf(menuForPictures?.let { IntOffset(px / 2, px / 2) }) }
+    val haptics = LocalHapticFeedback.current
     Box(
         Modifier
             .size(side)
+            .pointerInput(track?.filePath) {
+                if (track == null) return@pointerInput
+                // A sideways drag (the skip) takes the touch from this before the long press is due.
+                detectTapGestures(onLongPress = { at ->
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    menuAt = IntOffset(at.x.roundToInt(), at.y.roundToInt())
+                })
+            }
             .tokenSurface(
                 RectangleShape,
                 t.color("color.panel.bg"),
@@ -256,6 +281,61 @@ private fun BigArt(track: Track?, side: Dp) {
             // The desktop's album-header placeholder, the biggest art it draws.
             Icon(AppIcons.MUSIC_NOTE, t.desktopNumber("albumHeader.placeholderIconSize").dp, "color.text.muted")
         }
+        val at = menuAt
+        if (at != null && track != null) {
+            ArtMenu(at, menuForPictures ?: cover?.resolution ?: if (cover == null && LocalArt.current != null) "…" else "No cover", onClose = { menuAt = null }) {
+                menuAt = null
+                actions.analyze(track)
+            }
+        }
+    }
+}
+
+/** The cover decoded at the art's size, and the picture's own size, for the menu. */
+private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int) {
+    /** "1200 × 1200", as the desktop's art viewer gives it; "No cover" when there is none. */
+    val resolution: String get() = if (width > 0 && height > 0) "$width × $height" else "No cover"
+
+    companion object {
+        fun read(track: Track, px: Int): BigCover {
+            val bytes = CoverArt.read(track)?.bytes ?: return BigCover(null, 0, 0)
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+            return BigCover(SystemControls.decode(bytes, px)?.asImageBitmap(), bounds.outWidth, bounds.outHeight)
+        }
+    }
+}
+
+/**
+ * The cover menu (0.6.0, the user's call): a long press on the cover opens it at
+ * the finger, kept `artMenu.edgeMargin` inside the screen. The logo menu's look.
+ * The first row is the cover's resolution, information only; then Analyze, which
+ * opens the Analysis screen.
+ */
+@Composable
+private fun ArtMenu(at: IntOffset, resolution: String, onClose: () -> Unit, analyze: () -> Unit) {
+    val t = LocalAppTheme.current
+    val density = LocalDensity.current
+    val room = with(density) { menuShadowRoom().roundToPx() }
+    val margin = with(density) { t.dp("artMenu.edgeMargin").roundToPx() }
+    val position = remember(at, room, margin) { AtFinger(at, room, margin) }
+    Popup(popupPositionProvider = position, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
+        MenuSurface(t.dp("artMenu.width")) {
+            MenuRow("Resolution", value = resolution, onClick = null)
+            MenuRow("Analyze", onClick = analyze)
+        }
+    }
+}
+
+/** The menu's top-left corner at the finger, moved back inside the window (less [margin]) where it would run off it. */
+private class AtFinger(private val at: IntOffset, private val room: Int, private val margin: Int) : PopupPositionProvider {
+    override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection, popupContentSize: IntSize): IntOffset {
+        // The popup's window holds the shadow's room round the menu; the menu itself is what keeps inside.
+        fun place(wanted: Int, size: Int, window: Int) = wanted.coerceAtMost(window - margin - size + room).coerceAtLeast(margin - room)
+        return IntOffset(
+            place(anchorBounds.left + at.x - room, popupContentSize.width, windowSize.width),
+            place(anchorBounds.top + at.y - room, popupContentSize.height, windowSize.height),
+        )
     }
 }
 

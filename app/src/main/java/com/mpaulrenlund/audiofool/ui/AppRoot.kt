@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mpaulrenlund.audiofool.AudioFoolApp
 import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
+import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
 
@@ -60,6 +61,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             cycleRepeat = player::cycleRepeat,
             toggleShuffle = player::toggleShuffle,
             toggleBitPerfect = player::toggleBitPerfect,
+            analyze = { track -> nav.open(Route.Analysis(track.filePath)) },
         )
     }
     val lastFmActions = remember {
@@ -111,6 +113,13 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions)
                 Route.Search -> SearchScreen(browse, actions)
                 Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions)
+                is Route.Analysis -> AnalysisScreen(
+                    remember(library, route.path) {
+                        library.albumHolding(route.path)?.tracks?.firstOrNull { it.filePath.equals(route.path, ignoreCase = true) }
+                            ?: app.nowPlaying.track?.takeIf { it.filePath == route.path }
+                            ?: Track(filePath = route.path)
+                    },
+                )
                 Route.Settings -> SettingsScreen(
                     folders = folders.map { f ->
                         FolderLine(f, Storage.describe(context, f.path), state.unavailableFolders.any { it.equals(f.path, ignoreCase = true) })
