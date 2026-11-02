@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-02, after 0.7.1 (released; not yet tried on a phone). Read this with `README.md` (how the app
+Updated 2026-11-02, after 0.7.2 (released; not yet tried on a phone). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,13 +12,13 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.7.1** (versionCode 36), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.1>,
-  `dist/AudioFool-0.7.1.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+- **Latest: 0.7.2** (versionCode 37), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.2>,
+  `dist/AudioFool-0.7.2.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
   are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.7.2** for fixes, **0.8.0** for new features (confirm the number with the
+- **Next release:** **0.7.3** for fixes, **0.8.0** for new features (confirm the number with the
   user: they called 0.7.1's version row a fix). Bump both in `app/build.gradle.kts`
-  (versionCode 37 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  (versionCode 38 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
@@ -40,9 +40,9 @@ you touch a feature from then.
   foot; Now Playing's output readout 20 dp higher on the S24 (`nowPlaying.readoutLift`, taken
   from the controls' lift so the buttons stay; the M21 unchanged). Verified with ThemeLab and
   the emulator; waiting on the "from 0.7.1" items in both test lists.
-- **Since 0.7.1, unreleased (for 0.7.2):** the round buttons (Now Playing's six, the mini
+- **0.7.2 (2026-11-02):** the round buttons (Now Playing's six, the mini
   player's three) without the desktop's molded lip at the bottom: `RoundButton` drops the bottom
-  inset shadow layer. Verified with ThemeLab; not yet in a build for the phones.
+  inset shadow layer. Verified with ThemeLab and the emulator; waiting on the "from 0.7.2" item.
 
 ## Where things stand (2026-10-30)
 

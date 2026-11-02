@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.7.2**: no molded lip at the bottom of the round buttons (Now Playing, the mini player) — 2026-11-02, released as a pre-release
 - [x] **0.7.1**: the logo menu in alphabetical order with the version at the foot; the S24's Now Playing readout higher — 2026-11-02, released as a pre-release
 - [x] **0.7.0**: Rescan progress: a rescan you start shows "Checking for changes…", then how it ended ("Up to date · 3 new, 1 removed") in the headers — 2026-11-02, released as a pre-release
 - [x] **0.6.0**: Now Playing's cover menu (the cover's resolution, Analyze); Analyze, the desktop's spectrogram and quality opinion; the readout's bit depth before the rate — 2026-11-02, released as a pre-release
@@ -58,7 +59,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-02, for 0.7.2 (not yet released): **no molded lip at the bottom of the round buttons**
+2026-11-02, 0.7.2 (released as pre-release [`v0.7.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.2), "AudioFool 0.7.2", versionCode 37, the same day): **no molded lip at the bottom of the round buttons**
 (the user, with an S24 screenshot: "a small fill at the bottom of these buttons"). It was the
 bottom inset layer of the desktop's `shadow.controlButton` (`inset 0 -3px 0`) and
 `shadow.playButton` (`-4px`). The desktop's token files stay unchanged; `RoundButton` leaves out
