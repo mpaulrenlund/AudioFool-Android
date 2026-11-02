@@ -35,7 +35,9 @@ you touch a feature from then.
   tests, ThemeLab and the emulator; waiting on the "from 0.7.0" items in both test lists, and
   0.6.0's are still open too.
 - **Since 0.7.0, unreleased:** the logo menu in alphabetical order with "Version 0.7.0" at the
-  foot. Verified with ThemeLab and the emulator; not yet in a build for the phones.
+  foot; Now Playing's output readout 20 dp higher on the S24 (`nowPlaying.readoutLift`, taken
+  from the controls' lift so the buttons stay; the M21 unchanged). Verified with ThemeLab and
+  the emulator; not yet in a build for the phones.
 
 ## Where things stand (2026-10-30)
 

@@ -57,6 +57,16 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-02, after 0.7.0 (not yet released): **Now Playing's output readout higher on the S24**
+(the user: "awkwardly close to the bottom of the screen"). `readoutLift` (0.17 of the spare
+height, up to 20 dp, never more than `controlsLift`) is taken out of the gap between the controls
+and the readout and put under the readout, so the readout rises 20 dp on the S24 and the six
+buttons don't move (the user tuned them in 0.2.4–0.2.6). No spare height on the M21, so nothing
+changes there: every M21 picture is pixel-identical; only the S24's Now Playing pictures changed
+(14, both themes). My call, open to change: 20 dp ("a little", as before); the gap over the
+readout is now 36 dp + the controls' 8 dp padding. Emulator: the readout sits well clear of the
+gesture bar.
+
 2026-11-02, after 0.7.0 (not yet released): **the logo menu in alphabetical order, with the
 version at the foot** (the user's request). Rescan Library, Settings, Statistics, Theme; then
 "Version 0.7.0", from `BuildConfig.VERSION_NAME`. My calls, open to change: the version row is
@@ -394,6 +404,11 @@ Decisions for 0.2.6 and older (0.2.x, 0.1.x and sessions 2–5) are in
 Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-version lists with
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
+
+### Now Playing's readout (after 0.7.0)
+
+- [ ] **The output readout** under the controls sits higher, no longer close to the bottom edge;
+  the six buttons are where they were.
 
 ### Rescan progress (from 0.7.0)
 
