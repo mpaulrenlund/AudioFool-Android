@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-02: the cover menu and Analyze built for 0.6.0 (not released); before that 0.5.1 (confirmed on the S24). Read this with `README.md` (how the app
+Updated 2026-11-02, after 0.6.0 (released; not yet tried on a phone). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -10,25 +10,25 @@ you touch a feature from then.
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
-  for the build" section from the top (0.5.1 down to 0.3.0: the S24's own USB driver) and the
+  for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.5.1** (versionCode 33), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.5.1>,
-  `dist/AudioFool-0.5.1.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+- **Latest: 0.6.0** (versionCode 34), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.6.0>,
+  `dist/AudioFool-0.6.0.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
   are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.5.2** for fixes, **0.6.0** for new features (confirm the number with the
-  user). Bump both in `app/build.gradle.kts` (versionCode 34 next).
+- **Next release:** **0.6.1** for fixes, **0.7.0** for new features (confirm the number with the
+  user). Bump both in `app/build.gradle.kts` (versionCode 35 next).
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
   emulator (and the M21 if it's plugged in), then the user says **"Show <v> notes"** (show them
   in chat, written for the user: what changed, then a numbered *To try on the S24 / M21*) and
   **"Publish"**; publish only then, and record it in `design/progress.md` and here.
-- **Built, not released (2026-11-02): Now Playing's cover menu and Analyze**, for **0.6.0**. A long
-  press on the cover: its resolution, then Analyze (the desktop's spectrogram and opinion, ported
-  with their tests); and the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·").
-  Verified with the tests, ThemeLab (both themes, both sizes) and on the
-  emulator; not on a phone yet. Next: the user says when to release (confirm 0.6.0, versionCode 34).
+- **0.6.0 (2026-11-02): Now Playing's cover menu and Analyze.** A long press on the cover: its
+  resolution, then Analyze (the desktop's spectrogram and opinion, ported with their tests); and
+  the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·"). Verified with the
+  tests, ThemeLab (both themes, both sizes) and on the emulator; waiting on the user's report from
+  the phones (the "from 0.6.0" items in both test lists). Nothing else is open.
 
 ## Where things stand (2026-10-30)
 
