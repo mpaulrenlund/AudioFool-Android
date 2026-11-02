@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.7.0**: Rescan progress: a rescan you start shows "Checking for changes…", then how it ended ("Up to date · 3 new, 1 removed") in the headers — 2026-11-02, released as a pre-release
 - [x] **0.6.0**: Now Playing's cover menu (the cover's resolution, Analyze); Analyze, the desktop's spectrogram and quality opinion; the readout's bit depth before the rate — 2026-11-02, released as a pre-release
 - [x] **0.5.1**: a silent `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch — 2026-10-30, released as a pre-release
 - [x] **0.5.0**: Rescan Library in the logo menu; Debug says where the 1.3 s stalls at an app switch go (the app stopped, a send to the DAC, or waiting for samples) — 2026-10-28, released as a pre-release
@@ -56,7 +57,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-02, for 0.7.0 (not yet released): **a rescan you start shows its progress and its end**
+2026-11-02, 0.7.0 (released as pre-release [`v0.7.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.0), "AudioFool 0.7.0", versionCode 35, the same day): **a rescan you start shows its progress and its end**
 (the user's request: "some sort of progress tracker so I know when it's done"). Before, a rescan
 that found nothing showed nothing at all. The user chose header text (asked as short options, over
 a bar under the header or a toast): the ARTISTS header and Settings' MUSIC FOLDERS header (left of
