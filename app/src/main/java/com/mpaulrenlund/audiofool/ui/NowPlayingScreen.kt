@@ -134,7 +134,7 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions, artMenu
             // 0.2.4 (the user's call): the S24's six buttons sat too low to press comfortably; spare height
             // between them and the readout lifts them, the readout staying put.
             val controlsLift = minOf(spare * t.number("nowPlaying.controlsLift.ofSpare").toFloat(), t.dp("nowPlaying.controlsLift.max"))
-            // After 0.7.0 (the user's call): the S24's readout sat awkwardly close to the bottom. Part of that
+            // 0.7.1 (the user's call): the S24's readout sat awkwardly close to the bottom. Part of that
             // gap goes under the readout instead, so it rises and the buttons stay where they were.
             val readoutLift = minOf(spare * t.number("nowPlaying.readoutLift.ofSpare").toFloat(), t.dp("nowPlaying.readoutLift.max"), controlsLift)
 

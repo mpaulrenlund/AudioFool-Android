@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.7.1**: the logo menu in alphabetical order with the version at the foot; the S24's Now Playing readout higher — 2026-11-02, released as a pre-release
 - [x] **0.7.0**: Rescan progress: a rescan you start shows "Checking for changes…", then how it ended ("Up to date · 3 new, 1 removed") in the headers — 2026-11-02, released as a pre-release
 - [x] **0.6.0**: Now Playing's cover menu (the cover's resolution, Analyze); Analyze, the desktop's spectrogram and quality opinion; the readout's bit depth before the rate — 2026-11-02, released as a pre-release
 - [x] **0.5.1**: a silent `AudioTrack` plays while the BP driver plays, so Android doesn't stop the app at an app switch — 2026-10-30, released as a pre-release
@@ -57,7 +58,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-02, after 0.7.0 (not yet released): **Now Playing's output readout higher on the S24**
+2026-11-02, 0.7.1 (released as pre-release [`v0.7.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.1), "AudioFool 0.7.1", versionCode 36, the same day): **Now Playing's output readout higher on the S24**
 (the user: "awkwardly close to the bottom of the screen"). `readoutLift` (0.17 of the spare
 height, up to 20 dp, never more than `controlsLift`) is taken out of the gap between the controls
 and the readout and put under the readout, so the readout rises 20 dp on the S24 and the six
@@ -67,7 +68,7 @@ changes there: every M21 picture is pixel-identical; only the S24's Now Playing 
 readout is now 36 dp + the controls' 8 dp padding. Emulator: the readout sits well clear of the
 gesture bar.
 
-2026-11-02, after 0.7.0 (not yet released): **the logo menu in alphabetical order, with the
+2026-11-02, 0.7.1 (released as pre-release [`v0.7.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.1), "AudioFool 0.7.1", versionCode 36, the same day): **the logo menu in alphabetical order, with the
 version at the foot** (the user's request). Rescan Library, Settings, Statistics, Theme; then
 "Version 0.7.0", from `BuildConfig.VERSION_NAME`. My calls, open to change: the version row is
 information only, styled as the cover menu's resolution (label `text.muted`, value
@@ -405,8 +406,9 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Now Playing's readout (after 0.7.0)
+### The logo menu and Now Playing's readout (from 0.7.1)
 
+- [ ] **The logo menu**: Rescan Library, Settings, Statistics, Theme, then "Version 0.7.1".
 - [ ] **The output readout** under the controls sits higher, no longer close to the bottom edge;
   the six buttons are where they were.
 
@@ -492,6 +494,11 @@ its own section at the top, as before. (From …) says which build first asked.
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The logo menu (from 0.7.1)
+
+- [ ] **The logo menu**: Rescan Library, Settings, Statistics, Theme, then "Version 0.7.1", and
+  the menu fits the screen. Now Playing looks exactly as before.
 
 ### Rescan progress (from 0.7.0)
 

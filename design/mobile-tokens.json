@@ -282,7 +282,7 @@
     "spareEvenAt": 96,
     "$controlsLiftNote": "0.2.4 (the user's call: the S24's buttons sat too close to the bottom to press comfortably): controlsLift.ofSpare of the spare height, up to max, goes between the controls row and the readout, so the six buttons rise and the readout stays where it was. None on the M21. 0.2.5 (the user: \"slightly higher\"): 0.2 / 24 dp became 0.33 / 40 dp; 0.2.6 (\"a little higher\" again): 0.46 / 56 dp.",
     "controlsLift": { "ofSpare": 0.46, "max": 56 },
-    "$readoutLiftNote": "After 0.7.0 (the user's call: the S24's output readout sat awkwardly close to the bottom): readoutLift.ofSpare of the spare height, up to max, is taken out of the controlsLift gap and put under the readout, so the readout rises and the buttons stay put. Kept smaller than controlsLift. None on the M21.",
+    "$readoutLiftNote": "0.7.1 (the user's call: the S24's output readout sat awkwardly close to the bottom): readoutLift.ofSpare of the spare height, up to max, is taken out of the controlsLift gap and put under the readout, so the readout rises and the buttons stay put. Kept smaller than controlsLift. None on the M21.",
     "readoutLift": { "ofSpare": 0.17, "max": 20 },
     "qualityTop": 10,
     "qualitySize": 13,

@@ -56,7 +56,7 @@ fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, a
  * The menu itself. There is no mockup: it is a panel under the logo (panel
  * colours, border and corners) with settings-sized rows, and `shadow.headerArt`
  * under it so it reads as lifted over the list. The rows are in alphabetical order
- * (the user's call, after 0.7.0). Theme keeps the menu open, so the switch can be seen and
+ * (the user's call, 0.7.1). Theme keeps the menu open, so the switch can be seen and
  * undone; the others close it. Last, the version, information only like the cover
  * menu's resolution.
  */

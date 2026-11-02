@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-02, after 0.7.0 (released; not yet tried on a phone). Read this with `README.md` (how the app
+Updated 2026-11-02, after 0.7.1 (released; not yet tried on a phone). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,12 +12,14 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.7.0** (versionCode 35), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.0>,
-  `dist/AudioFool-0.7.0.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+- **Latest: 0.7.1** (versionCode 36), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.1>,
+  `dist/AudioFool-0.7.1.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
   are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.7.1** for fixes, **0.8.0** for new features (confirm the number with the
-  user). Bump both in `app/build.gradle.kts` (versionCode 36 next).
+- **Next release:** **0.7.2** for fixes, **0.8.0** for new features (confirm the number with the
+  user: they called 0.7.1's version row a fix). Bump both in `app/build.gradle.kts`
+  (versionCode 37 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
@@ -34,10 +36,10 @@ you touch a feature from then.
   removed" for 4 s (`RescanOutcome`, `scanHeaderText`, `rescan(asked = true)`). Verified with the
   tests, ThemeLab and the emulator; waiting on the "from 0.7.0" items in both test lists, and
   0.6.0's are still open too.
-- **Since 0.7.0, unreleased:** the logo menu in alphabetical order with "Version 0.7.0" at the
+- **0.7.1 (2026-11-02):** the logo menu in alphabetical order with "Version 0.7.0" at the
   foot; Now Playing's output readout 20 dp higher on the S24 (`nowPlaying.readoutLift`, taken
   from the controls' lift so the buttons stay; the M21 unchanged). Verified with ThemeLab and
-  the emulator; not yet in a build for the phones.
+  the emulator; waiting on the "from 0.7.1" items in both test lists.
 
 ## Where things stand (2026-10-30)
 

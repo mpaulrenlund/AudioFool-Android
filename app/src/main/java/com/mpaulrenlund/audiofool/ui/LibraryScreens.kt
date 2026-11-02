@@ -44,7 +44,7 @@ fun ArtistsScreen(
     initialSelected: String? = null,
     initialMenuOpen: Boolean = false,
     indexPreview: IndexPreview? = null,
-    /** The app's version, at the foot of the logo menu (after 0.7.0); fixed in ThemeLab so a release doesn't change its pictures. */
+    /** The app's version, at the foot of the logo menu (0.7.1); fixed in ThemeLab so a release doesn't change its pictures. */
     version: String = "",
 ) {
     val t = LocalAppTheme.current
