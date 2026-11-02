@@ -55,6 +55,13 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-02, for 0.6.0 (not released yet): **the readout gives the bit depth before the sample
+rate** (the user's call): "Shanling UA2 Plus · 24-Bit · 96 kHz · Exclusive", as the quality line
+over the seekbar has them. It is one line, so Settings' Bit-Perfect row changes with Now
+Playing's. DoP keeps its words after the rate ("· 176.4 kHz · DSD over PCM · Exclusive"): it isn't
+a depth. Only the eight ThemeLab pictures with a depth in the readout changed (BP on, both
+screens).
+
 2026-11-02, for 0.6.0 (not released yet): **Now Playing's cover menu and Analyze** (the user's
 request). A long press on the cover opens a menu at the finger: the cover's resolution (not
 tappable), then Analyze. Choices (the user's, asked as short options): Analyze is **its own
@@ -444,7 +451,7 @@ Sorted on 2026-10-30, as the S24's list above.
 
 - [ ] **Nothing changed since 0.4.0** (from 0.4.0). The output stage writes through a new layer
   for the S24's driver; the M21 should play exactly as 0.2.6 did. BP on, an album through the
-  headphone out: gapless, the readout as before ("3.5mm · 96 kHz · 24-Bit · Exclusive"), seeks
+  headphone out: gapless, the readout as before ("3.5mm · 24-Bit · 96 kHz · Exclusive"), seeks
   without clicks.
 - [ ] **DSD** (from 0.0.5). A DSF or DFF plays, as PCM at 88.2 kHz (no DoP to the M21's DAC).
 - [ ] **Bluetooth** (from 0.0.5). BP greyed; the readout names Bluetooth.

@@ -26,7 +26,8 @@ you touch a feature from then.
   **"Publish"**; publish only then, and record it in `design/progress.md` and here.
 - **Built, not released (2026-11-02): Now Playing's cover menu and Analyze**, for **0.6.0**. A long
   press on the cover: its resolution, then Analyze (the desktop's spectrogram and opinion, ported
-  with their tests). Verified with the tests, ThemeLab (both themes, both sizes) and on the
+  with their tests); and the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·").
+  Verified with the tests, ThemeLab (both themes, both sizes) and on the
   emulator; not on a phone yet. Next: the user says when to release (confirm 0.6.0, versionCode 34).
 
 ## Where things stand (2026-10-30)

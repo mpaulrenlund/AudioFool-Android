@@ -108,16 +108,16 @@ class BitPerfectTest {
     private val dac = "Shanling UA2 Plus"
 
     @Test fun bit_perfect_readout() =
-        assertEquals("Shanling UA2 Plus · 96 kHz · 24-Bit · Exclusive", OutputReadout.describe(dac, OutputPath.BitPerfect, 96000, 24, 96000, false))
+        assertEquals("Shanling UA2 Plus · 24-Bit · 96 kHz · Exclusive", OutputReadout.describe(dac, OutputPath.BitPerfect, 96000, 24, 96000, false))
 
     @Test fun dop_readout() =
         assertEquals("Shanling UA2 Plus · 176.4 kHz · DSD over PCM · Exclusive", OutputReadout.describe(dac, OutputPath.BitPerfect, 176400, 24, 176400, true))
 
     @Test fun rate_matched_never_says_exclusive() =
-        assertEquals("Shanling UA2 Plus · 96 kHz · 24-Bit · Rate Matched", OutputReadout.describe(dac, OutputPath.RateMatched, 96000, 24, 96000, false))
+        assertEquals("Shanling UA2 Plus · 24-Bit · 96 kHz · Rate Matched", OutputReadout.describe(dac, OutputPath.RateMatched, 96000, 24, 96000, false))
 
     @Test fun the_source_rate_way_is_exclusive_only_when_the_system_runs_at_the_tracks_rate() {
-        assertEquals("4.4mm · 96 kHz · 24-Bit · Exclusive", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 96000, 24, 96000, false))
+        assertEquals("4.4mm · 24-Bit · 96 kHz · Exclusive", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 96000, 24, 96000, false))
         assertEquals("4.4mm · 48 kHz · Resampled", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 48000, 24, 96000, false))
     }
 
@@ -130,7 +130,7 @@ class BitPerfectTest {
 
     @Test fun the_m21_at_the_tracks_rate_is_exclusive_by_fiios_report() =
         assertEquals(
-            "3.5mm · 44.1 kHz · 16-Bit · Exclusive",
+            "3.5mm · 16-Bit · 44.1 kHz · Exclusive",
             OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 44100), 16, 44100, false),
         )
 

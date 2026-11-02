@@ -50,7 +50,7 @@ applies, so DSD128 over DoP at 352.8 kHz becomes possible).
 | `OutputRoutes` / `Player` | The DAC held by the app is a route of its own. While held, Android's "device removed" and "becoming noisy" for that DAC must **not** pause the music or reopen the output; a real unplug (`USB_DEVICE_DETACHED`) must. `PlugGuard` likewise |
 | Volume | Android's volume no longer reaches the DAC. Volume keys go to the app through the media session (remote volume), even with the screen off |
 | Manifest | `android.hardware.usb.host`, a `USB_DEVICE_ATTACHED` filter for audio-class devices (so the permission prompt has an "always" box and doesn't come back at every plug) |
-| Readout, Debug | "Shanling UA2 Plus · 44.1 kHz · 16-Bit · Exclusive" for real; a USB panel in Debug (descriptors, rates the DAC's clock offers, feedback, transfers, errors) |
+| Readout, Debug | "Shanling UA2 Plus · 16-Bit · 44.1 kHz · Exclusive" for real; a USB panel in Debug (descriptors, rates the DAC's clock offers, feedback, transfers, errors) |
 | Spec §6.2, §6.3 | The S24 + USB DAC row; "Rate Matched" stays as the fallback when the app can't take the DAC |
 
 ## How it can be tested
