@@ -51,7 +51,8 @@ class FolderLine(val folder: MusicFolder, val name: String, val unavailable: Boo
  * Settings (spec 4.5): Appearance, Playback, Music folders and Last.fm.
  * [readout] is the output readout (spec 6.3); Bit-Perfect's row is the BP
  * button's setting ([bitPerfect]), greyed out in the same cases
- * ([bitPerfectGreyed]). [lastFm] is the connection (spec 7).
+ * ([bitPerfectGreyed]). [lastFm] is the connection (spec 7). [scanText] is what
+ * the Music folders header says of a scan, left of its refresh button (0.7.0).
  */
 @Composable
 fun SettingsScreen(
@@ -62,6 +63,7 @@ fun SettingsScreen(
     bitPerfectGreyed: Boolean = false,
     lastFm: LastFm.Status = LastFm.Status(),
     lastFmActions: LastFmActions = LastFmActions(),
+    scanText: String? = null,
 ) {
     val t = LocalAppTheme.current
     TitledScreen("Settings") {
@@ -85,7 +87,11 @@ fun SettingsScreen(
             }
         }
         Panel("Music folders", list = true, headerAction = {
-            IconButtonSmall(AppIcons.REFRESH, actions.rescan)
+            // The button keeps its room; a long note ellipsizes before it.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (scanText != null) ScanNote(scanText, Modifier.weight(1f, fill = false))
+                IconButtonSmall(AppIcons.REFRESH, actions.rescan)
+            }
         }) {
             for (line in folders) FolderRow(line) { actions.setIncluded(line.folder.path, !line.folder.included) }
             ChipButton(

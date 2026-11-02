@@ -6,6 +6,7 @@ import com.mpaulrenlund.audiofool.core.library.LibraryRelocator
 import com.mpaulrenlund.audiofool.core.library.LibraryScanner
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.library.Paths
+import com.mpaulrenlund.audiofool.core.library.RescanOutcome
 import com.mpaulrenlund.audiofool.core.library.SafeFile
 import com.mpaulrenlund.audiofool.core.library.ScanProgress
 import com.mpaulrenlund.audiofool.core.library.ScanSummary
@@ -35,6 +36,10 @@ data class LibraryState(
     val unavailableFolders: List<String> = emptyList(),
     val scanning: Boolean = false,
     val progress: ScanProgress? = null,
+    /** The running scan is one the user asked for (Rescan Library, Settings' refresh), so the headers show it from the start (0.7.0). */
+    val asked: Boolean = false,
+    /** How the last rescan the user asked for ended, shown in the headers for a few seconds (0.7.0). */
+    val outcome: RescanOutcome? = null,
     val stats: LibraryStats = LibraryStats(),
 ) {
     /** Whether a track sits on a folder that can't be reached right now (a removed SD card). */
@@ -74,6 +79,14 @@ class LibraryRepository(
     /** Every track the library knows, shown or not, for the next scan to reuse. */
     @Volatile private var known: List<Track> = emptyList()
 
+    /**
+     * Rescans the user asked for, and the last one a finished scan answered. A
+     * scan replaced by another (a card mounted meanwhile) leaves its ask to the next.
+     */
+    @Volatile private var asks = 0
+    @Volatile private var answered = 0
+    private var outcomeJob: Job? = null
+
     private fun included() = folders().filter { it.included }.map { it.path }
 
     /** Reads the cache (on the caller's thread, so call it off the main one), then starts a rescan. */
@@ -97,14 +110,22 @@ class LibraryRepository(
         rescan(rereadTags = cache?.needsReread == true)
     }
 
-    /** Scans the included folders again; tags are reused for files whose size and date haven't changed. */
-    fun rescan(rereadTags: Boolean = false) {
+    /**
+     * Scans the included folders again; tags are reused for files whose size and date haven't changed.
+     * One the user [asked] for shows in the headers from the start, and how it ended after (0.7.0).
+     */
+    fun rescan(rereadTags: Boolean = false, asked: Boolean = false) {
+        if (asked) asks++
         scanJob?.cancel()
         scanJob = scope.launch {
             scanLock.withLock {
+                val ask = asks
+                val showing = ask > answered
                 val included = included()
                 val all = folders().map { it.path }
-                _state.update { it.copy(scanning = true, progress = null) }
+                val shownBefore = if (showing) shown(known) else emptyList()
+                if (showing) outcomeJob?.cancel()
+                _state.update { it.copy(scanning = true, progress = null, asked = showing, outcome = if (showing) null else it.outcome) }
                 val began = SystemClock.uptimeMillis()
                 try {
                     // A first scan (no cache) shows the library as it is found; later
@@ -140,10 +161,20 @@ class LibraryRepository(
                     if (result.summary.anyChanges || known.size != before || !File(cachePath).exists()) {
                         LibraryCache.from(all, known, System.currentTimeMillis()).save(cachePath)
                     }
+                    val outcome = if (showing) {
+                        answered = ask
+                        RescanOutcome.of(shownBefore, result.library.allTracks, result.summary.read, result.unavailableFolders.size)
+                    } else {
+                        null
+                    }
                     _state.update {
                         it.copy(
                             library = result.library,
                             unavailableFolders = result.unavailableFolders,
+                            scanning = false,
+                            progress = null,
+                            asked = false,
+                            outcome = outcome ?: it.outcome,
                             stats = it.stats.copy(
                                 lastScanMs = SystemClock.uptimeMillis() - began,
                                 lastScanSummary = result.summary,
@@ -152,8 +183,14 @@ class LibraryRepository(
                             ),
                         )
                     }
+                    if (outcome != null) {
+                        outcomeJob = scope.launch {
+                            delay(OUTCOME_SHOWN_MS)
+                            _state.update { if (it.outcome === outcome) it.copy(outcome = null) else it }
+                        }
+                    }
                 } finally {
-                    _state.update { it.copy(scanning = false, progress = null) }
+                    _state.update { it.copy(scanning = false, progress = null, asked = false) }
                 }
             }
         }
@@ -197,6 +234,9 @@ class LibraryRepository(
 
     private companion object {
         const val AS_FOUND_MS = 1500L
+
+        /** How long the headers show how a rescan the user asked for ended. */
+        const val OUTCOME_SHOWN_MS = 4000L
     }
 
     private fun shown(tracks: List<Track>): List<Track> {

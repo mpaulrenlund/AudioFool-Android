@@ -195,11 +195,13 @@ fun PanelHeader(label: String, dividerAbove: Boolean = false, action: (@Composab
                 .padding(start = t.dp("panel.headerPaddingX"), end = t.dp(if (action != null) "panel.headerActionPaddingEnd" else "panel.headerPaddingX")),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // The label first, at its own width, so a long action (a scan's note, 0.7.0)
+            // ellipsizes in what is left rather than pushing the label out.
             Line(
                 label.uppercase(),
                 t.text("panel.headerTextSize", "color.text.muted", weight = 600, letterSpacingEm = t.number("panel.headerLetterSpacingEm")),
-                Modifier.weight(1f),
             )
+            Spacer(Modifier.weight(1f))
             action?.invoke(this)
         }
         Divider(t)

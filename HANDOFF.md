@@ -28,7 +28,11 @@ you touch a feature from then.
   resolution, then Analyze (the desktop's spectrogram and opinion, ported with their tests); and
   the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·"). Verified with the
   tests, ThemeLab (both themes, both sizes) and on the emulator; waiting on the user's report from
-  the phones (the "from 0.6.0" items in both test lists). Nothing else is open.
+  the phones (the "from 0.6.0" items in both test lists).
+- **Since 0.6.0, unreleased (for 0.7.0): rescan progress.** A rescan the user starts shows in the
+  ARTISTS and MUSIC FOLDERS headers: "Checking for changes…", "Reading tags", then "Up to date ·
+  3 new, 1 removed" for 4 s (`RescanOutcome`, `scanHeaderText`, `rescan(asked = true)`). Verified
+  with the tests, ThemeLab and the emulator; not yet in a build for the phones.
 
 ## Where things stand (2026-10-30)
 

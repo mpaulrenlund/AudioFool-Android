@@ -10,6 +10,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.mpaulrenlund.audiofool.StartTimes
 import com.mpaulrenlund.audiofool.core.library.LibraryScanner
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
+import com.mpaulrenlund.audiofool.core.library.RescanOutcome
 import com.mpaulrenlund.audiofool.core.library.ScanProgress
 import com.mpaulrenlund.audiofool.library.LibraryState
 import com.mpaulrenlund.audiofool.playback.NowPlaying
@@ -32,6 +33,7 @@ import com.mpaulrenlund.audiofool.ui.LocalBarInsets
 import com.mpaulrenlund.audiofool.ui.SearchScreen
 import com.mpaulrenlund.audiofool.ui.SettingsActions
 import com.mpaulrenlund.audiofool.ui.SettingsScreen
+import com.mpaulrenlund.audiofool.ui.scanHeaderText
 import com.mpaulrenlund.audiofool.ui.SheetPage
 import com.mpaulrenlund.audiofool.ui.StatisticsScreen
 import com.mpaulrenlund.audiofool.ui.TokenSheet
@@ -107,10 +109,30 @@ class ThemeLabTest {
         // A first scan (no cache): the artists read so far, and the count in the header.
         shoot(device, "artists-first-scan") {
             val partial = Browse(LibraryScanner.build(ThemeLabFixtures.tracks.take(60)), emptyList(), NowPlaying())
-            ArtistsScreen(partial, actions, scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 12000))
+            ArtistsScreen(partial, actions, scanning = true, scanText = scanHeaderText(LibraryState(scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 12000))))
         }
         shoot(device, "artists-first-scan-starting") {
-            ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 0))
+            ArtistsScreen(
+                Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, scanning = true,
+                scanText = scanHeaderText(LibraryState(scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 0))),
+            )
+        }
+        // A rescan the user asked for (0.7.0, no mockup): checking, then how it ended (a long one, to see it fit).
+        shoot(device, "artists-rescan-checking") {
+            ArtistsScreen(browse(), actions, scanning = true, scanText = scanHeaderText(LibraryState(scanning = true, asked = true)))
+        }
+        shoot(device, "artists-rescan-done") {
+            ArtistsScreen(browse(), actions, scanText = scanHeaderText(LibraryState(outcome = RescanOutcome(1234, 56, 7, 1))))
+        }
+        shoot(device, "settings-rescan-done") {
+            SettingsScreen(
+                folders = listOf(
+                    FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false),
+                    FolderLine(MusicFolder(ThemeLabFixtures.SD_CARD), "SD card · Music", unavailable = false),
+                ),
+                actions = SettingsActions(),
+                scanText = scanHeaderText(LibraryState(outcome = RescanOutcome(3, 0, 1, 0))),
+            )
         }
         // The letter strip (0.2.0, no mockup) with a finger on H; the other Artists pictures show it at rest.
         shoot(device, "artists-index-pressed") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive", indexPreview = IndexPreview("H")) }

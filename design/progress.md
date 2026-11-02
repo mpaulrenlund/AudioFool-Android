@@ -56,6 +56,27 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-02, for 0.7.0 (not yet released): **a rescan you start shows its progress and its end**
+(the user's request: "some sort of progress tracker so I know when it's done"). Before, a rescan
+that found nothing showed nothing at all. The user chose header text (asked as short options, over
+a bar under the header or a toast): the ARTISTS header and Settings' MUSIC FOLDERS header (left of
+the refresh button) say "Checking for changes…", then "Reading tags: N of M" if files changed,
+then for 4 s "Up to date · 3 new, 1 updated, 2 removed" ("no changes" when none, "· 1 folder
+unavailable" when a folder can't be reached). Only rescans the user starts (Rescan Library,
+Settings' refresh) show the checking and the end; the scan at start and a card mounting show
+only "Reading tags" while reading, as before, so the start screen doesn't flash a note. My calls,
+open to change: "new" is a file not shown before, "updated" a re-read one that was, "removed" a
+shown one now gone (tracks of unticked folders count as neither, so unticking isn't "removed");
+a rescan the user asked for that is replaced by another scan (a card mounted meanwhile) passes
+its ask to the next. `RescanOutcome` in core (5 tests); `LibraryRepository.rescan(asked = true)`;
+`scanHeaderText` / `ScanNote` in `LibraryScreens.kt`. `PanelHeader` now measures its label first
+(then a spacer), so a long note ellipsizes instead of pushing the label out; every existing
+ThemeLab picture is pixel-identical. New pictures: `artists-rescan-checking`,
+`artists-rescan-done` (a long worst case), `settings-rescan-done`. Emulator (release build):
+Rescan Library showed "Checking for changes…", then "Up to date · no changes" for about 4 s, then
+nothing; with a FLAC copied in, "Up to date · 1 new"; with two removed, "Up to date · 2 removed".
+Settings' refresh wasn't tapped on the emulator (same code path; ThemeLab shows its header).
+
 2026-11-02, 0.6.0 (released as a pre-release the same day): **the readout gives the bit depth before the sample
 rate** (the user's call): "Shanling UA2 Plus · 24-Bit · 96 kHz · Exclusive", as the quality line
 over the seekbar has them. It is one line, so Settings' Bit-Perfect row changes with Now
@@ -364,6 +385,12 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Rescan progress (from 0.7.0)
+
+- [ ] **Logo > Rescan Library**: the ARTISTS header says "Checking for changes…", then "Up to
+  date · no changes" for a few seconds. Add or delete an album first and it should name them
+  ("Up to date · 12 new"). Also Settings' refresh button: the same note left of it.
+
 ### The cover menu and Analyze (from 0.6.0)
 
 - [ ] **The long press**: on Now Playing, hold the cover. A tick, and the menu at your finger
@@ -440,6 +467,12 @@ its own section at the top, as before. (From …) says which build first asked.
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Rescan progress (from 0.7.0)
+
+- [ ] **Rescan the full library**: Logo > Rescan Library. How long "Checking for changes…"
+  stays up with ~27,000 files before "Up to date" shows. With the SD card out, the end should
+  say "· 1 folder unavailable".
 
 ### The cover menu and Analyze (from 0.6.0)
 

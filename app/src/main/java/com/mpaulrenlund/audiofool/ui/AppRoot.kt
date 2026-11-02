@@ -49,7 +49,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             previous = player::previous,
             next = player::next,
             openNowPlaying = { nav.open(Route.NowPlaying) },
-            rescan = { app.library.rescan() },
+            rescan = { app.library.rescan(asked = true) },
         )
     }
     val nowPlayingActions = remember(nav) {
@@ -108,7 +108,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
     CompositionLocalProvider(LocalArt provides app.art) {
         NavHost(nav) { route ->
             when (route) {
-                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, progress = state.progress)
+                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state))
                 is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
                 is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions)
                 Route.Search -> SearchScreen(browse, actions)
@@ -126,7 +126,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     },
                     actions = SettingsActions(
                         toggleTheme = actions.toggleTheme,
-                        rescan = { app.library.rescan() },
+                        rescan = { app.library.rescan(asked = true) },
                         addFolder = pickFolder,
                         setIncluded = { path, included ->
                             app.settings.setIncluded(path, included)
@@ -139,6 +139,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     bitPerfectGreyed = app.nowPlaying.bitPerfectGreyed,
                     lastFm = app.lastFm.status,
                     lastFmActions = lastFmActions,
+                    scanText = scanHeaderText(state),
                 )
                 Route.Statistics -> StatisticsScreen(
                     state = state,

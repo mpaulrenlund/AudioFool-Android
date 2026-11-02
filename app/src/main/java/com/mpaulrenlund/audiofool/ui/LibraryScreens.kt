@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,10 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.ArtistIndex
-import com.mpaulrenlund.audiofool.core.library.ScanProgress
 import com.mpaulrenlund.audiofool.core.model.Album
 import com.mpaulrenlund.audiofool.core.model.ArtistGroup
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.library.LibraryState
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 
 // The drill-down (spec 4.1 - 4.3): Artists, an artist's Albums, and an Album.
@@ -41,7 +40,7 @@ fun ArtistsScreen(
     browse: Browse,
     actions: AppActions,
     scanning: Boolean = false,
-    progress: ScanProgress? = null,
+    scanText: String? = null,
     initialSelected: String? = null,
     initialMenuOpen: Boolean = false,
     indexPreview: IndexPreview? = null,
@@ -59,7 +58,12 @@ fun ArtistsScreen(
         bottom = { MiniPlayerBar(browse, actions) },
     ) {
         PanelSurface(Modifier.weight(1f)) {
-            PanelHeader("Artists", action = readingTags(scanning, progress))
+            PanelHeader(
+                "Artists",
+                action = scanText?.let { text ->
+                    { ScanNote(text, Modifier.padding(end = t.dp("panel.headerPaddingX") - t.dp("panel.headerActionPaddingEnd"))) }
+                },
+            )
             val artists = browse.library.artists
             if (artists.isEmpty()) {
                 EmptyNote(browse, scanning)
@@ -86,20 +90,31 @@ fun ArtistsScreen(
 }
 
 /**
- * "Reading tags: 12,000 of 27,115" at the right of the ARTISTS header while a scan
- * reads tags (a first scan takes minutes on the M21), in the header's muted
- * colour. Nothing while a scan only checks for changes.
+ * What the ARTISTS and MUSIC FOLDERS headers say of a scan: "Reading tags: 12,000 of
+ * 27,115" while any scan reads tags (a first scan takes minutes on the M21). A rescan
+ * the user asked for also shows "Checking for changes…" before that, and how it
+ * ended for a few seconds after ("Up to date · 3 new, 1 removed", 0.7.0). Nothing
+ * while an automatic scan only checks for changes.
  */
-private fun readingTags(scanning: Boolean, progress: ScanProgress?): (@Composable RowScope.() -> Unit)? {
-    if (!scanning || progress == null || progress.filesFound == 0 || progress.filesRead >= progress.filesFound) return null
-    return {
-        val t = LocalAppTheme.current
-        Line(
-            "Reading tags: ${Display.count(progress.filesRead)} of ${Display.count(progress.filesFound)}",
-            t.text("artists.countSize", "color.text.muted"),
-            Modifier.padding(end = t.dp("panel.headerPaddingX") - t.dp("panel.headerActionPaddingEnd")),
-        )
+fun scanHeaderText(state: LibraryState): String? {
+    val p = state.progress
+    return when {
+        state.scanning && p != null && p.filesFound > 0 && (state.asked || p.filesRead < p.filesFound) ->
+            "Reading tags: ${Display.count(p.filesRead)} of ${Display.count(p.filesFound)}"
+        state.scanning && state.asked -> "Checking for changes…"
+        state.scanning -> null
+        else -> state.outcome?.text
     }
+}
+
+/**
+ * [scanHeaderText] at the right of a panel header, in the header's muted colour,
+ * kept a header's padding clear of the label when it is long enough to ellipsize.
+ */
+@Composable
+fun ScanNote(text: String, modifier: Modifier = Modifier) {
+    val t = LocalAppTheme.current
+    Line(text, t.text("artists.countSize", "color.text.muted"), modifier.padding(start = t.dp("panel.headerPaddingX")))
 }
 
 /** A thumbnail of the artist's newest album, the name and "3 albums". */
