@@ -40,7 +40,7 @@ class ThemeLabMenuTest {
         compose.setContent {
             AudioFoolTheme(AppTheme(dark, tokens)) {
                 CompositionLocalProvider(LocalBarInsets provides WindowInsets(top = 28.dp, bottom = 20.dp)) {
-                    ArtistsScreen(browse, AppActions(), initialMenuOpen = true)
+                    ArtistsScreen(browse, AppActions(), initialMenuOpen = true, version = "0.7.0")
                 }
             }
         }

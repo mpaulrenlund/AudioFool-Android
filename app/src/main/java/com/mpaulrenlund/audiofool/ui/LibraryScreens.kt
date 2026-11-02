@@ -44,6 +44,8 @@ fun ArtistsScreen(
     initialSelected: String? = null,
     initialMenuOpen: Boolean = false,
     indexPreview: IndexPreview? = null,
+    /** The app's version, at the foot of the logo menu (after 0.7.0); fixed in ThemeLab so a release doesn't change its pictures. */
+    version: String = "",
 ) {
     val t = LocalAppTheme.current
     var selected by rememberSaveable { mutableStateOf(initialSelected) }
@@ -51,7 +53,7 @@ fun ArtistsScreen(
     ScreenFrame(
         topBar = {
             TopBar(t.dp("topBar.logoBarPaddingStart"), t.dp("topBar.logoBarPaddingEnd"), t.dp("topBar.logoToSearchGap")) {
-                LogoMenuButton(menuOpen, { menuOpen = true }, { menuOpen = false }, actions)
+                LogoMenuButton(menuOpen, { menuOpen = true }, { menuOpen = false }, actions, version)
                 SearchFieldButton(Modifier.weight(1f)) { actions.open(Route.Search) }
             }
         },

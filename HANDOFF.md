@@ -34,6 +34,8 @@ you touch a feature from then.
   removed" for 4 s (`RescanOutcome`, `scanHeaderText`, `rescan(asked = true)`). Verified with the
   tests, ThemeLab and the emulator; waiting on the "from 0.7.0" items in both test lists, and
   0.6.0's are still open too.
+- **Since 0.7.0, unreleased:** the logo menu in alphabetical order with "Version 0.7.0" at the
+  foot. Verified with ThemeLab and the emulator; not yet in a build for the phones.
 
 ## Where things stand (2026-10-30)
 
@@ -315,8 +317,9 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - Tapping by text: `adb shell uiautomator dump /sdcard/ui.xml`, find the node whose `text="…"`
   starts with what you want, skipping `EditText` (the search field holds the query too),
   and tap the centre of its `bounds`.
-- With the logo menu open, Statistics is at about (320, 531) and Rescan Library at about
-  (320, 657). Release builds log no `AudioFoolScan` lines, so Statistics' track and format
+- With the logo menu open (alphabetical since 0.7.0's follow-up): Rescan Library at about
+  (320, 279), Settings (320, 405), Statistics (320, 531), Theme (320, 657), Version (320, 783),
+  which does nothing. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
   counts are the quick check that a rescan ran.
 - A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.

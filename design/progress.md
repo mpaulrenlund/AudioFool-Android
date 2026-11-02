@@ -57,6 +57,15 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-02, after 0.7.0 (not yet released): **the logo menu in alphabetical order, with the
+version at the foot** (the user's request). Rescan Library, Settings, Statistics, Theme; then
+"Version 0.7.0", from `BuildConfig.VERSION_NAME`. My calls, open to change: the version row is
+information only, styled as the cover menu's resolution (label `text.muted`, value
+`text.secondary`, a tap does nothing), with no divider above it; ThemeLab passes a fixed "0.7.0"
+(`ArtistsScreen(version = …)`) so a version bump doesn't change the pictures. Only the four menu
+pictures changed. Emulator (release build): the rows read in that order with "0.7.0"; Version
+does nothing, and Rescan Library, Settings and Statistics each do what they did.
+
 2026-11-02, 0.7.0 (released as pre-release [`v0.7.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.0), "AudioFool 0.7.0", versionCode 35, the same day): **a rescan you start shows its progress and its end**
 (the user's request: "some sort of progress tracker so I know when it's done"). Before, a rescan
 that found nothing showed nothing at all. The user chose header text (asked as short options, over

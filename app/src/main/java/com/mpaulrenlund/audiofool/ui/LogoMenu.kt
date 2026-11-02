@@ -35,10 +35,11 @@ const val LOGO_ASSET = "brand/PlayStation-Logo-1994.png"
 
 /**
  * The logo, which is the menu button (spec 4.1): 36 x 28 in a 48 dp touch area.
- * Its menu holds Settings, Theme (switches at once), Statistics and Rescan Library (0.5.0).
+ * Its menu holds Rescan Library (0.5.0), Settings, Statistics and Theme (switches at once),
+ * in that order, then the app's [version].
  */
 @Composable
-fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, actions: AppActions) {
+fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, actions: AppActions, version: String) {
     val t = LocalAppTheme.current
     val context = LocalContext.current
     val logo = remember { context.assets.open(LOGO_ASSET).use { BitmapFactory.decodeStream(it).asImageBitmap() } }
@@ -47,18 +48,20 @@ fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, a
         contentAlignment = Alignment.Center,
     ) {
         Image(logo, contentDescription = "Menu", modifier = Modifier.size(t.dp("topBar.logo.width"), t.dp("topBar.logo.height")))
-        if (menuOpen) LogoMenu(onClose, actions)
+        if (menuOpen) LogoMenu(onClose, actions, version)
     }
 }
 
 /**
  * The menu itself. There is no mockup: it is a panel under the logo (panel
  * colours, border and corners) with settings-sized rows, and `shadow.headerArt`
- * under it so it reads as lifted over the list. Theme keeps the menu open, so the
- * switch can be seen and undone; the others close it.
+ * under it so it reads as lifted over the list. The rows are in alphabetical order
+ * (the user's call, after 0.7.0). Theme keeps the menu open, so the switch can be seen and
+ * undone; the others close it. Last, the version, information only like the cover
+ * menu's resolution.
  */
 @Composable
-private fun LogoMenu(onClose: () -> Unit, actions: AppActions) {
+private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) {
     val t = LocalAppTheme.current
     val room = menuShadowRoom()
     val density = LocalDensity.current
@@ -67,19 +70,20 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions) {
     }
     Popup(offset = offset, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
         MenuSurface(t.dp("menu.width")) {
-            MenuRow("Settings") {
-                onClose()
-                actions.open(Route.Settings)
-            }
-            MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
-            MenuRow("Statistics") {
-                onClose()
-                actions.open(Route.Statistics)
-            }
             MenuRow("Rescan Library") {
                 onClose()
                 actions.rescan()
             }
+            MenuRow("Settings") {
+                onClose()
+                actions.open(Route.Settings)
+            }
+            MenuRow("Statistics") {
+                onClose()
+                actions.open(Route.Statistics)
+            }
+            MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
+            MenuRow("Version", value = version, onClick = null)
         }
     }
 }

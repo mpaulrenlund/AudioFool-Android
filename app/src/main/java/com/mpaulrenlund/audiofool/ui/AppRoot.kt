@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mpaulrenlund.audiofool.AudioFoolApp
+import com.mpaulrenlund.audiofool.BuildConfig
 import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
@@ -108,7 +109,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
     CompositionLocalProvider(LocalArt provides app.art) {
         NavHost(nav) { route ->
             when (route) {
-                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state))
+                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME)
                 is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
                 is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions)
                 Route.Search -> SearchScreen(browse, actions)

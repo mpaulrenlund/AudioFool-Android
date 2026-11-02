@@ -129,7 +129,7 @@
     "timeWidth": 40
   },
   "menu": {
-    "$note": "The logo menu (spec 4.1: Settings, Theme, Statistics). No mockup: a panel under the logo with settings-sized rows (session 2).",
+    "$note": "The logo menu (spec 4.1: Rescan Library, Settings, Statistics, Theme, in alphabetical order, then the version, information only). No mockup: a panel under the logo with settings-sized rows (session 2).",
     "width": 208,
     "offsetX": 4,
     "listPadding": 6,
