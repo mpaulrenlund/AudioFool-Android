@@ -325,7 +325,9 @@ fun AlbumArt(
  * A round button (spec 2): a [face] dp circle in `color.control.face` with a 1 dp
  * `faceBorder` and `shadow.controlButton`, centred in a touch area. [play] is
  * Play/Pause: `shadow.playButton`, a 1 dp `control.playRing` ring and
- * `shadow.playGlow` (both invisible in Light).
+ * `shadow.playGlow` (both invisible in Light). The desktop's molded lip, the inset
+ * shadow along the bottom of both, is left out (the user's call, 0.7.2: it read as a
+ * small fill); the top highlight and the drop shadow stay.
  */
 @Composable
 fun RoundButton(
@@ -342,7 +344,7 @@ fun RoundButton(
         t.shadow("shadow.playButton") + ring + t.shadow("shadow.playGlow")
     } else {
         t.shadow("shadow.controlButton")
-    }
+    }.filterNot { it.inset && it.offsetY < 0 }
     Box(
         Modifier
             .size(targetWidth, targetHeight)

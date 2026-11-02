@@ -40,6 +40,9 @@ you touch a feature from then.
   foot; Now Playing's output readout 20 dp higher on the S24 (`nowPlaying.readoutLift`, taken
   from the controls' lift so the buttons stay; the M21 unchanged). Verified with ThemeLab and
   the emulator; waiting on the "from 0.7.1" items in both test lists.
+- **Since 0.7.1, unreleased (for 0.7.2):** the round buttons (Now Playing's six, the mini
+  player's three) without the desktop's molded lip at the bottom: `RoundButton` drops the bottom
+  inset shadow layer. Verified with ThemeLab; not yet in a build for the phones.
 
 ## Where things stand (2026-10-30)
 

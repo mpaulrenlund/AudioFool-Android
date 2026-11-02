@@ -58,6 +58,16 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-02, for 0.7.2 (not yet released): **no molded lip at the bottom of the round buttons**
+(the user, with an S24 screenshot: "a small fill at the bottom of these buttons"). It was the
+bottom inset layer of the desktop's `shadow.controlButton` (`inset 0 -3px 0`) and
+`shadow.playButton` (`-4px`). The desktop's token files stay unchanged; `RoundButton` leaves out
+every inset layer with a negative y offset, keeping the top highlight and the drop shadow. My call,
+open to change: the mini player's three buttons go with it, since they are the same
+`RoundButton` and would otherwise no longer match Now Playing. ThemeLab: 100 pictures changed,
+every one that shows the mini player or Now Playing (both phones, both themes); compared zoomed
+before and after. The token sheet still draws the desktop's tokens whole.
+
 2026-11-02, 0.7.1 (released as pre-release [`v0.7.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.1), "AudioFool 0.7.1", versionCode 36, the same day): **Now Playing's output readout higher on the S24**
 (the user: "awkwardly close to the bottom of the screen"). `readoutLift` (0.17 of the spare
 height, up to 20 dp, never more than `controlsLift`) is taken out of the gap between the controls
@@ -405,6 +415,10 @@ Decisions for 0.2.6 and older (0.2.x, 0.1.x and sessions 2–5) are in
 Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-version lists with
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
+
+### The round buttons (from 0.7.2)
+
+- [ ] **No fill at the bottom** of Now Playing's six buttons or the mini player's three.
 
 ### The logo menu and Now Playing's readout (from 0.7.1)
 
