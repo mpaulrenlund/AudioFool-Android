@@ -60,6 +60,18 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-03, for 0.7.4 (not released yet): **the cover menu ends with the logo menu's rows**
+(the user: "add the Logo menu options to the resolution and Analyze pop-up", alphabetized with
+the resolution at the top and the version at the bottom). Resolution, Analyze, Rescan Library,
+Settings, Statistics, Theme, Version: Analyze already sorts before the logo menu's rows, so the
+two menus share one piece (`AppMenuRows`) and the logo menu itself is unchanged. They behave as
+under the logo: Theme keeps the menu open, the others close it; Settings and Statistics open
+over Now Playing, and back returns to it. A rescan started here shows its progress in the
+ARTISTS header, as before. The menu keeps `artMenu.width` (224 dp). Checked with ThemeLab (both
+themes, both sizes) and on the emulator.
+
+0.7.3: the user reported both fixes working on the phones (2026-11-03).
+
 2026-11-03, 0.7.3 (released as pre-release [`v0.7.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.3), "AudioFool 0.7.3", versionCode 38, the same day): **two bugs reported from the phones**, neither
 reproducible here (no DAC or FiiO on the emulator, the M21 not on adb), and neither caused by a
 code change since 0.5.1 (the driver's mute and the FiiO receiver are as they were). The user
@@ -439,9 +451,15 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The cover menu with the logo menu's rows (from 0.7.4)
+
+- [ ] **Long press on Now Playing's cover**: Resolution, Analyze, Rescan Library, Settings,
+  Statistics, Theme, then the version. Settings and Statistics open, and back returns to Now
+  Playing; Theme switches with the menu still open.
+
 ### The pop at the first Play (from 0.7.3)
 
-- [ ] **BP on, the DAC idle a while** (freshly plugged in, or the app just opened): press Play.
+- [x] **BP on, the DAC idle a while** (freshly plugged in, or the app just opened): press Play.
   No pop? The music starts about a third of a second later than before. If it still pops,
   Statistics > Debug, the USB driver row: its notes with their times.
 
@@ -538,9 +556,14 @@ its own section at the top, as before. (From …) says which build first asked.
 
 Sorted on 2026-10-30, as the S24's list above.
 
+### The cover menu with the logo menu's rows (from 0.7.4)
+
+- [ ] **Long press on Now Playing's cover**: the same seven rows, and the menu fits the M21's
+  screen wherever the cover is pressed (it moves up to stay on it).
+
 ### The output row (from 0.7.3)
 
-- [ ] **Headphones in, Now Playing's output row**: "3.5mm" or "4.4mm", not "No Output"? Pull
+- [x] **Headphones in, Now Playing's output row**: "3.5mm" or "4.4mm", not "No Output"? Pull
   them out and plug them back in with the app open, then Statistics > Debug, the **FiiO jack**
   row: what does "last from FiiO" say (or "nothing from FiiO since the app started")?
 

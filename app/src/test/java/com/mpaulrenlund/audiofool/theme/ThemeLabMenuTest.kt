@@ -53,7 +53,7 @@ class ThemeLabMenuTest {
     @Test @Config(qualifiers = ThemeLabTest.M21) fun menu_m21_dark() = menu("m21", dark = true)
     @Test @Config(qualifiers = ThemeLabTest.M21) fun menu_m21_light() = menu("m21", dark = false)
 
-    /** Now Playing's cover menu (0.6.0), opened in the art's middle on the mockup's song. */
+    /** Now Playing's cover menu (0.6.0; the logo menu's rows from 0.7.4), opened in the art's middle on the mockup's song. */
     private fun artMenu(device: String, dark: Boolean) {
         val nowPlaying = NowPlaying().apply {
             showForPictures(ThemeLabFixtures.nowPlayingTrack, playing = true, index = 2, size = 10, positionMs = ThemeLabFixtures.NOW_PLAYING_POSITION_MS, waveform = ThemeLabFixtures.mockupWaveform,
@@ -62,7 +62,7 @@ class ThemeLabMenuTest {
         compose.setContent {
             AudioFoolTheme(AppTheme(dark, tokens)) {
                 CompositionLocalProvider(LocalBarInsets provides WindowInsets(top = 28.dp, bottom = 20.dp)) {
-                    NowPlayingScreen(nowPlaying, NowPlayingActions(), artMenuForPictures = "1200 × 1200")
+                    NowPlayingScreen(nowPlaying, NowPlayingActions(), AppActions(), version = "0.7.0", artMenuForPictures = "1200 × 1200")
                 }
             }
         }

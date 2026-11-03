@@ -113,7 +113,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
                 is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions)
                 Route.Search -> SearchScreen(browse, actions)
-                Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions)
+                Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
                 is Route.Analysis -> AnalysisScreen(
                     remember(library, route.path) {
                         library.albumHolding(route.path)?.tracks?.firstOrNull { it.filePath.equals(route.path, ignoreCase = true) }

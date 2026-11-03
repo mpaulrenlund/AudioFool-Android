@@ -139,7 +139,7 @@
     "valueSize": 13
   },
   "artMenu": {
-    "$note": "Now Playing's cover menu (0.6.0, the user's call): a long press on the cover opens it at the finger. The logo menu's look and rows (menu.*). The first row, the cover's resolution, is information only; then Analyze. Kept edgeMargin inside the screen.",
+    "$note": "Now Playing's cover menu (0.6.0, the user's call): a long press on the cover opens it at the finger. The logo menu's look and rows (menu.*). The first row, the cover's resolution, is information only; then Analyze; then the logo menu's rows (0.7.4). Kept edgeMargin inside the screen.",
     "width": 224,
     "edgeMargin": 8
   },

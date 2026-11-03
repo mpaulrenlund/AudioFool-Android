@@ -100,12 +100,18 @@ class NowPlayingActions(
  * with the track count, the quality lines, the waveform seekbar with the times,
  * the controls row (Repeat / Shuffle / BP on the left, the transport on the
  * right for a right thumb) and the output readout. A long press on the art opens
- * its menu (0.6.0).
+ * its menu (0.6.0), which ends with the logo menu's rows ([appActions], [version]; 0.7.4).
  *
  * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
  */
 @Composable
-fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions, artMenuForPictures: String? = null) {
+fun NowPlayingScreen(
+    nowPlaying: NowPlaying,
+    actions: NowPlayingActions,
+    appActions: AppActions = AppActions(),
+    version: String = "",
+    artMenuForPictures: String? = null,
+) {
     val t = LocalAppTheme.current
     val track = nowPlaying.track
 
@@ -141,7 +147,7 @@ fun NowPlayingScreen(nowPlaying: NowPlaying, actions: NowPlayingActions, artMenu
             Column(Modifier.fillMaxSize()) {
                 SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
-                        BigArt(track, art, actions, artMenuForPictures)
+                        BigArt(track, art, actions, appActions, version, artMenuForPictures)
                     }
                     TitleBlock(nowPlaying, track)
                 }
@@ -244,7 +250,7 @@ private fun barHeights(): Dp {
  * placeholder keeps its 1 dp `art.border`, or its square would vanish into the page.
  */
 @Composable
-private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, menuForPictures: String?) {
+private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, appActions: AppActions, version: String, menuForPictures: String?) {
     val t = LocalAppTheme.current
     val density = LocalDensity.current
     val px = with(density) { side.roundToPx() }
@@ -286,7 +292,7 @@ private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, menuForP
         }
         val at = menuAt
         if (at != null && track != null) {
-            ArtMenu(at, menuForPictures ?: cover?.resolution ?: if (cover == null && LocalArt.current != null) "…" else "No cover", onClose = { menuAt = null }) {
+            ArtMenu(at, menuForPictures ?: cover?.resolution ?: if (cover == null && LocalArt.current != null) "…" else "No cover", onClose = { menuAt = null }, appActions, version) {
                 menuAt = null
                 actions.analyze(track)
             }
@@ -313,10 +319,11 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int)
  * The cover menu (0.6.0, the user's call): a long press on the cover opens it at
  * the finger, kept `artMenu.edgeMargin` inside the screen. The logo menu's look.
  * The first row is the cover's resolution, information only; then Analyze, which
- * opens the Analysis screen.
+ * opens the Analysis screen; then the logo menu's rows (0.7.4, the user's call), so
+ * all but the resolution are in alphabetical order with the version last.
  */
 @Composable
-private fun ArtMenu(at: IntOffset, resolution: String, onClose: () -> Unit, analyze: () -> Unit) {
+private fun ArtMenu(at: IntOffset, resolution: String, onClose: () -> Unit, appActions: AppActions, version: String, analyze: () -> Unit) {
     val t = LocalAppTheme.current
     val density = LocalDensity.current
     val room = with(density) { menuShadowRoom().roundToPx() }
@@ -326,6 +333,7 @@ private fun ArtMenu(at: IntOffset, resolution: String, onClose: () -> Unit, anal
         MenuSurface(t.dp("artMenu.width")) {
             MenuRow("Resolution", value = resolution, onClick = null)
             MenuRow("Analyze", onClick = analyze)
+            AppMenuRows(onClose, appActions, version)
         }
     }
 }

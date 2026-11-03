@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-03, after releasing 0.7.3. Read this with `README.md` (how the app
+Updated 2026-11-03, with the cover menu's new rows for 0.7.4 committed (not released). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -49,8 +49,11 @@ you touch a feature from then.
   headphones in, even after a replug: only a whole-number FiiO `type` counts
   (`OutputNames.fiioJackOf`), and Debug's FiiO jack row shows what FiiO last sent, or that
   nothing came. If the M21 still says "No Output", that row says which way to go next. Verified
-  with the tests and the emulator (faked FiiO broadcasts); waiting on the "from 0.7.3" items in
-  both test lists.
+  with the tests and the emulator (faked FiiO broadcasts); the user reported both fixed.
+- **For 0.7.4 (2026-11-03, committed, not released):** Now Playing's cover menu ends with the
+  logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
+  Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
+  emulator; the "from 0.7.4" items wait in both test lists.
 
 ## Where things stand (2026-10-30)
 

@@ -70,22 +70,32 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
     }
     Popup(offset = offset, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
         MenuSurface(t.dp("menu.width")) {
-            MenuRow("Rescan Library") {
-                onClose()
-                actions.rescan()
-            }
-            MenuRow("Settings") {
-                onClose()
-                actions.open(Route.Settings)
-            }
-            MenuRow("Statistics") {
-                onClose()
-                actions.open(Route.Statistics)
-            }
-            MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
-            MenuRow("Version", value = version, onClick = null)
+            AppMenuRows(onClose, actions, version)
         }
     }
+}
+
+/**
+ * The logo menu's rows, also the end of Now Playing's cover menu (0.7.4, the user's
+ * call): Rescan Library, Settings, Statistics, Theme, then the version.
+ */
+@Composable
+fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String) {
+    val t = LocalAppTheme.current
+    MenuRow("Rescan Library") {
+        onClose()
+        actions.rescan()
+    }
+    MenuRow("Settings") {
+        onClose()
+        actions.open(Route.Settings)
+    }
+    MenuRow("Statistics") {
+        onClose()
+        actions.open(Route.Statistics)
+    }
+    MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
+    MenuRow("Version", value = version, onClick = null)
 }
 
 /** The room a menu's popup window leaves round it for `shadow.headerArt`, or the shadow is cut off. */
