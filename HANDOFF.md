@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-02, after 0.7.2 (released; not yet tried on a phone). Read this with `README.md` (how the app
+Updated 2026-11-03, with two fixes for 0.7.3 committed (not released). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -43,6 +43,13 @@ you touch a feature from then.
 - **0.7.2 (2026-11-02):** the round buttons (Now Playing's six, the mini
   player's three) without the desktop's molded lip at the bottom: `RoundButton` drops the bottom
   inset shadow layer. Verified with ThemeLab and the emulator; waiting on the "from 0.7.2" item.
+- **For 0.7.3 (2026-11-03, committed, not released):** two bugs from the phones, both best
+  guesses (see `design/progress.md`). The S24's pop at the first Play with BP on: the first
+  stream after a take stays muted 500 ms (`COLD_SETTLE_MS`). The M21's "No Output" with
+  headphones in, even after a replug: only a whole-number FiiO `type` counts
+  (`OutputNames.fiioJackOf`), and Debug's FiiO jack row shows what FiiO last sent, or that
+  nothing came. If the M21 still says "No Output", that row says which way to go next. Tests
+  pass; not yet run on the emulator.
 
 ## Where things stand (2026-10-30)
 

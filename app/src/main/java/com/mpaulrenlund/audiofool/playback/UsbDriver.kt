@@ -76,6 +76,9 @@ class UsbDriver(private val context: Context) {
     ) {
         /** What is streaming now, for the debug screen. */
         var streaming: String? = null
+
+        /** Whether a stream has started since the take: until then the DAC is cold ([COLD_SETTLE_MS]). */
+        var warm = false
     }
 
     /** The DAC's volume control: its unit, the channels it is set on, its range, and how it was when taken. */
@@ -202,8 +205,11 @@ class UsbDriver(private val context: Context) {
         )
         if (r != 0) return failed("streaming wouldn't start: ${UsbStream.errorName(r)}")
         // The stream starts paused, so silence goes out while the DAC locks to it; then the level.
-        SystemClock.sleep(SETTLE_MS)
+        // Longer the first time after a take (0.7.3): the first Play still popped on a DAC that had sat idle.
+        val settle = if (h.warm) SETTLE_MS else COLD_SETTLE_MS
+        SystemClock.sleep(settle)
         unhush(h)
+        h.warm = true
 
         val encoding = when (s.subslotBytes) {
             2 -> AudioFormat.ENCODING_PCM_16BIT
@@ -211,7 +217,7 @@ class UsbDriver(private val context: Context) {
             else -> AudioFormat.ENCODING_PCM_32BIT
         }
         h.streaming = "${Display.sampleRate(rate)}, ${s.bits}-bit in ${s.subslotBytes} bytes (setting ${s.alternate})" + if (asked.dop) ", DoP" else ""
-        note = "playing ${h.streaming}"
+        note = "playing ${h.streaming} (muted $settle ms first)"
         Log.i(TAG, note)
         return UsbOutput(h.stream, rate, silence) { stop(h) } to PcmFormat(rate, s.channels, encoding, asked.dop)
     }
@@ -650,6 +656,12 @@ class UsbDriver(private val context: Context) {
 
         /** How long the DAC stays muted after its stream starts, while it locks to the new rate (0.4.6). */
         private const val SETTLE_MS = 150L
+
+        /**
+         * The same for the first stream after a take (0.7.3): a DAC that had sat idle still popped
+         * at the first Play with BP on, though rate changes and Play after a short pause didn't.
+         */
+        private const val COLD_SETTLE_MS = 500L
 
         /** Android's media volume at most, once the DAC is given back (0.4.5): the quietest step that is heard. */
         private const val ANDROID_SAFE_INDEX = 1

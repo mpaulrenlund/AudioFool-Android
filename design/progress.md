@@ -59,6 +59,24 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-03, for 0.7.3 (not released yet): **two bugs reported from the phones**, neither
+reproducible here (no DAC or FiiO on the emulator, the M21 not on adb), and neither caused by a
+code change since 0.5.1 (the driver's mute and the FiiO receiver are as they were). The user
+had no Debug readings to hand, so each fix is the best guess the code allows, plus the readings
+that will settle it:
+- **S24, a loud pop at the first Play with BP on** (the UA2 Plus, as before; not at a pause or
+  between songs). The 0.4.6 checks that passed all took a DAC that had just been playing; this
+  is a DAC that has sat idle. Now the first stream after a take stays muted **500 ms**
+  (`UsbDriver.COLD_SETTLE_MS`) before the level, not 150 ms; rate changes keep 150 ms. Costs a
+  third of a second at the first Play. The driver's note says how long it was muted ("playing
+  44.1 kHz, … (muted 500 ms first)").
+- **M21, "No Output" with headphones in, always, also after a replug with the app open.** A
+  replug should have fixed a stale saved jack, so either FiiO's `type` no longer reads as a
+  number (anything else read as 0, "No Output") or its broadcast no longer reaches the app (a
+  FiiO update or mode?). Only a whole number now counts (`OutputNames.fiioJackOf`, tested);
+  anything else is ignored. Debug's **FiiO jack** row adds what FiiO last sent, with the time and
+  every extra, or "nothing from FiiO since the app started", which tells the two apart.
+
 2026-11-02, 0.7.2 (released as pre-release [`v0.7.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.2), "AudioFool 0.7.2", versionCode 37, the same day): **no molded lip at the bottom of the round buttons**
 (the user, with an S24 screenshot: "a small fill at the bottom of these buttons"). It was the
 bottom inset layer of the desktop's `shadow.controlButton` (`inset 0 -3px 0`) and
@@ -417,6 +435,12 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The pop at the first Play (from 0.7.3)
+
+- [ ] **BP on, the DAC idle a while** (freshly plugged in, or the app just opened): press Play.
+  No pop? The music starts about a third of a second later than before. If it still pops,
+  Statistics > Debug, the USB driver row: its notes with their times.
+
 ### The round buttons (from 0.7.2)
 
 - [ ] **No fill at the bottom** of Now Playing's six buttons or the mini player's three.
@@ -509,6 +533,12 @@ its own section at the top, as before. (From …) says which build first asked.
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The output row (from 0.7.3)
+
+- [ ] **Headphones in, Now Playing's output row**: "3.5mm" or "4.4mm", not "No Output"? Pull
+  them out and plug them back in with the app open, then Statistics > Debug, the **FiiO jack**
+  row: what does "last from FiiO" say (or "nothing from FiiO since the app started")?
 
 ### The logo menu (from 0.7.1)
 

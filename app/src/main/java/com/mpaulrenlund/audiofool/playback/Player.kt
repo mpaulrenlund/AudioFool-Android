@@ -32,6 +32,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /**
  * The queue and what plays from it (spec 6.1): a tap on a song plays it with the
@@ -348,7 +351,8 @@ class Player(
             "USB mixers" to routes.mixerSummary(),
             "Mixer set" to "${routes.preferredMixer()}${routes.lastMixerNote.takeIf { it.isNotEmpty() }?.let { " · last: $it" } ?: ""}",
             "FiiO jack" to (if (fiioJackType < 0) "nothing yet (FiiO says at a plug or unplug)"
-                else "type $fiioJackType → ${OutputNames.headphones(isFiio = true, fiioJack = fiioJackType)}"),
+                else "type $fiioJackType → ${OutputNames.headphones(isFiio = true, fiioJack = fiioJackType)}") +
+                " · " + (fiioJackHeard?.let { "last from FiiO $it" } ?: "nothing from FiiO since the app started"),
             "Plug guard" to (plugGuard.sincePlug(SystemClock.elapsedRealtime())?.let { "last plug ${Display.time(it)} ago" } ?: "no plug yet") +
                 " · ${plugGuard.ignored} plays ignored · ${plugGuard.undone} undone",
         )
@@ -685,11 +689,17 @@ class Player(
                 state.readout = readoutFor(state.track)
             }
             // The jack in use (0.2.5): 1 is 3.5 mm, 8 is 4.4 mm; 0 is nothing plugged in (0.2.6: "No Output").
-            if (intent.action == FIIO_HEADSET_TYPE_CHANGED && extras?.containsKey("type") == true) {
-                val jack = intExtra(intent, "type")
-                fiioJackType = jack
-                settings.fiioJack = jack
-                state.readout = readoutFor(state.track)
+            // Only a whole number counts (0.7.3): anything else read as 0, and the M21 said "No Output" with headphones in.
+            if (intent.action == FIIO_HEADSET_TYPE_CHANGED) {
+                val raw = extras?.let { anyExtra(it, "type") }
+                fiioJackHeard = "${SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(Date())}: " +
+                    (extras?.keySet()?.joinToString { "$it=${anyExtra(extras, it)}" }?.ifEmpty { null } ?: "no extras")
+                val jack = OutputNames.fiioJackOf(raw)
+                if (jack != null) {
+                    fiioJackType = jack
+                    settings.fiioJack = jack
+                    state.readout = readoutFor(state.track)
+                }
             }
         }
     }
@@ -699,6 +709,9 @@ class Player(
 
     /** FiiO's last `HEADSET_TYPE_CHANGED` `type` (0.2.5: which jack), saved, or -1 until it has sent one. */
     private var fiioJackType = settings.fiioJack
+
+    /** FiiO's last `HEADSET_TYPE_CHANGED` as it came, with the time, for the debug screen (0.7.3); null until one comes. */
+    private var fiioJackHeard: String? = null
 
     /**
      * The rate FiiO last said its DAC runs at for the output open now, or 0 until

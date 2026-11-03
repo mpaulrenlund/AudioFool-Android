@@ -32,6 +32,18 @@ object OutputNames {
         else -> route.label
     }
 
+    /**
+     * FiiO's `type` extra as a jack number, or null when it isn't a whole number (0.7.3):
+     * anything else used to read as 0, "No Output", and the M21 said that with
+     * headphones in. A number may come as an Int, a Long or a numeric string.
+     */
+    fun fiioJackOf(extra: Any?): Int? = when (extra) {
+        is Int -> extra
+        is Long, is Short, is Byte -> (extra as Number).toInt()
+        is String -> extra.trim().toIntOrNull()
+        else -> null
+    }
+
     const val JACK_3_5 = "3.5mm"
     const val JACK_4_4 = "4.4mm"
 

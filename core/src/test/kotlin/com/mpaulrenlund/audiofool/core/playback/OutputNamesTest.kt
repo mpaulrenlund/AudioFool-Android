@@ -2,6 +2,7 @@ package com.mpaulrenlund.audiofool.core.playback
 
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 // What the readout calls the output (0.2.5, the user's call). New: the desktop names its output by mode.
 
@@ -37,6 +38,21 @@ class OutputNamesTest {
     // 0.2.6: the M21 has no speaker, so with nothing plugged in (type 0) nothing is heard.
     @Test fun a_fiio_with_nothing_plugged_in_has_no_output() =
         assertEquals("No Output", OutputNames.headphones(isFiio = true, fiioJack = 0))
+
+    // 0.7.3: the M21 said "No Output" with headphones in; only a whole number names a jack.
+    @Test fun fiios_type_as_a_number() {
+        assertEquals(8, OutputNames.fiioJackOf(8))
+        assertEquals(1, OutputNames.fiioJackOf(1L))
+        assertEquals(0, OutputNames.fiioJackOf(0))
+        assertEquals(1, OutputNames.fiioJackOf(" 1 "))
+    }
+
+    @Test fun anything_else_from_fiio_is_no_jack_at_all() {
+        assertNull(OutputNames.fiioJackOf(null))
+        assertNull(OutputNames.fiioJackOf("4.4mm"))
+        assertNull(OutputNames.fiioJackOf(true))
+        assertNull(OutputNames.fiioJackOf(1.5f))
+    }
 
     @Test fun the_route_decides_which_name() {
         assertEquals("Shanling UA2 Plus", OutputNames.of(OutputRoute.Usb, "Shanling UA2 Plus", "SM-S928B", isFiio = false, fiioJack = -1))
