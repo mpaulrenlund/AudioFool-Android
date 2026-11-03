@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-03, with the cover menu's new rows for 0.7.4 committed (not released). Read this with `README.md` (how the app
+Updated 2026-11-03, after releasing 0.7.4. Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,13 +12,13 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.7.3** (versionCode 38), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.3>,
-  `dist/AudioFool-0.7.3.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+- **Latest: 0.7.4** (versionCode 39), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.4>,
+  `dist/AudioFool-0.7.4.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
   are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.7.4** for fixes, **0.8.0** for new features (confirm the number with the
-  user: they called 0.7.1's version row a fix). Bump both in `app/build.gradle.kts`
-  (versionCode 39 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+- **Next release:** **0.7.5** for fixes, **0.8.0** for new features (confirm the number with the
+  user: they called 0.7.1's version row and 0.7.4's cover menu rows fixes). Bump both in
+  `app/build.gradle.kts` (versionCode 40 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
@@ -50,7 +50,7 @@ you touch a feature from then.
   (`OutputNames.fiioJackOf`), and Debug's FiiO jack row shows what FiiO last sent, or that
   nothing came. If the M21 still says "No Output", that row says which way to go next. Verified
   with the tests and the emulator (faked FiiO broadcasts); the user reported both fixed.
-- **For 0.7.4 (2026-11-03, committed, not released):** Now Playing's cover menu ends with the
+- **0.7.4 (2026-11-03, released):** Now Playing's cover menu ends with the
   logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
   Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
   emulator; the "from 0.7.4" items wait in both test lists.

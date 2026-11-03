@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
 - [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
 - [x] **0.7.2**: no molded lip at the bottom of the round buttons (Now Playing, the mini player) — 2026-11-02, released as a pre-release
 - [x] **0.7.1**: the logo menu in alphabetical order with the version at the foot; the S24's Now Playing readout higher — 2026-11-02, released as a pre-release
@@ -60,7 +61,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-03, for 0.7.4 (not released yet): **the cover menu ends with the logo menu's rows**
+2026-11-03, 0.7.4 (released as pre-release [`v0.7.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.4), "AudioFool 0.7.4", versionCode 39, the same day): **the cover menu ends with the logo menu's rows**
 (the user: "add the Logo menu options to the resolution and Analyze pop-up", alphabetized with
 the resolution at the top and the version at the bottom). Resolution, Analyze, Rescan Library,
 Settings, Statistics, Theme, Version: Analyze already sorts before the logo menu's rows, so the
