@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
 - [x] **0.7.2**: no molded lip at the bottom of the round buttons (Now Playing, the mini player) — 2026-11-02, released as a pre-release
 - [x] **0.7.1**: the logo menu in alphabetical order with the version at the foot; the S24's Now Playing readout higher — 2026-11-02, released as a pre-release
 - [x] **0.7.0**: Rescan progress: a rescan you start shows "Checking for changes…", then how it ended ("Up to date · 3 new, 1 removed") in the headers — 2026-11-02, released as a pre-release
@@ -59,7 +60,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-03, for 0.7.3 (not released yet): **two bugs reported from the phones**, neither
+2026-11-03, 0.7.3 (released as pre-release [`v0.7.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.3), "AudioFool 0.7.3", versionCode 38, the same day): **two bugs reported from the phones**, neither
 reproducible here (no DAC or FiiO on the emulator, the M21 not on adb), and neither caused by a
 code change since 0.5.1 (the driver's mute and the FiiO receiver are as they were). The user
 had no Debug readings to hand, so each fix is the best guess the code allows, plus the readings
@@ -76,6 +77,9 @@ that will settle it:
   FiiO update or mode?). Only a whole number now counts (`OutputNames.fiioJackOf`, tested);
   anything else is ignored. Debug's **FiiO jack** row adds what FiiO last sent, with the time and
   every extra, or "nothing from FiiO since the app started", which tells the two apart.
+- **On the emulator** (release build, installed over 0.7.2): plays; a faked FiiO broadcast with
+  `type=4.4mm` shows in the row and is ignored, `type=8` gives "type 8 → 4.4mm". The row is read
+  when Debug opens, so reopen it after a plug or unplug.
 
 2026-11-02, 0.7.2 (released as pre-release [`v0.7.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.2), "AudioFool 0.7.2", versionCode 37, the same day): **no molded lip at the bottom of the round buttons**
 (the user, with an S24 screenshot: "a small fill at the bottom of these buttons"). It was the

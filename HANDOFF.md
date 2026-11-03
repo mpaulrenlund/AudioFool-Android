@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-03, with two fixes for 0.7.3 committed (not released). Read this with `README.md` (how the app
+Updated 2026-11-03, after releasing 0.7.3. Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,13 +12,13 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.7.2** (versionCode 37), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.2>,
-  `dist/AudioFool-0.7.2.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+- **Latest: 0.7.3** (versionCode 38), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.3>,
+  `dist/AudioFool-0.7.3.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
   are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.7.3** for fixes, **0.8.0** for new features (confirm the number with the
+- **Next release:** **0.7.4** for fixes, **0.8.0** for new features (confirm the number with the
   user: they called 0.7.1's version row a fix). Bump both in `app/build.gradle.kts`
-  (versionCode 38 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  (versionCode 39 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
@@ -43,13 +43,14 @@ you touch a feature from then.
 - **0.7.2 (2026-11-02):** the round buttons (Now Playing's six, the mini
   player's three) without the desktop's molded lip at the bottom: `RoundButton` drops the bottom
   inset shadow layer. Verified with ThemeLab and the emulator; waiting on the "from 0.7.2" item.
-- **For 0.7.3 (2026-11-03, committed, not released):** two bugs from the phones, both best
+- **0.7.3 (2026-11-03, released):** two bugs from the phones, both best
   guesses (see `design/progress.md`). The S24's pop at the first Play with BP on: the first
   stream after a take stays muted 500 ms (`COLD_SETTLE_MS`). The M21's "No Output" with
   headphones in, even after a replug: only a whole-number FiiO `type` counts
   (`OutputNames.fiioJackOf`), and Debug's FiiO jack row shows what FiiO last sent, or that
-  nothing came. If the M21 still says "No Output", that row says which way to go next. Tests
-  pass; not yet run on the emulator.
+  nothing came. If the M21 still says "No Output", that row says which way to go next. Verified
+  with the tests and the emulator (faked FiiO broadcasts); waiting on the "from 0.7.3" items in
+  both test lists.
 
 ## Where things stand (2026-10-30)
 
