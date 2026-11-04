@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-03, after releasing 0.7.4. Read this with `README.md` (how the app
+Updated 2026-11-04, Listening History built (not released yet). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -54,6 +54,16 @@ you touch a feature from then.
   logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
   Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
   emulator; the "from 0.7.4" items wait in both test lists.
+- **Unreleased (2026-11-04): Listening History** (spec §4.7), the desktop's Last.fm page, from
+  the logo menu and the cover menu (`AppMenuRows`' first row). Core: `scrobbling/ListeningHistory.kt`,
+  `ListeningMatch.kt`, `LastFmApi`'s reads (unsigned GETs, `LastFmTransport.get`), the desktop's
+  17 tests ported. App: `lastfm/ListeningHistory.kt` (the model, held by the app as
+  `AudioFoolApp.history`; `open()` from a menu fetches afresh, `showing()` from the screen only
+  if nothing was), `ui/ListeningHistoryScreen.kt`; a song row opens `Route.Album(…, song)` with
+  that song selected. Checked with the tests, ThemeLab and the emulator (not connected there);
+  **never run against the real Last.fm** (no key on this PC): the "next build" Listening History
+  items in both test lists. When releasing, call it **0.8.0** if the user agrees (a new
+  feature), and rename those test-list headings to "(from 0.8.0)".
 
 ## Where things stand (2026-10-30)
 
@@ -169,7 +179,7 @@ you touch a feature from then.
   uid there is 10236 (for `dumpsys audio`).
 - `dist/` (ignored by git) holds the released APKs and the M21's captured reports (`m21-*.txt`).
 - **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
-  the key never goes in the repo).
+  the key never goes in the repo). Listening History there shows only its not-connected screen.
 
 ---
 
@@ -186,6 +196,7 @@ you touch a feature from then.
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
+| Listening History | `core/.../scrobbling/ListeningHistory.kt` (periods, records, `ListeningJson`, `HistoryTime`) and `ListeningMatch.kt` (ported); the app's `lastfm/ListeningHistory.kt` (model, `HistoryRows`, `historyTarget`) and `ui/ListeningHistoryScreen.kt`; ThemeLab's made-up answers in `ThemeLabFixtures.history()` |
 | Analyze (0.6.0) | `core/.../analysis/` (ported: `Fft`, `SpectrumScale`, `SpectrumAccumulator`, `QualityOpinion`); the app's `playback/TrackAnalyzer.kt` (BASS, lets go at an eject) and `ui/AnalysisScreen.kt`; the cover menu is `ArtMenu` in `NowPlayingScreen.kt`, sharing `MenuSurface` / `MenuRow` with the logo menu |
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
@@ -335,9 +346,9 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - Tapping by text: `adb shell uiautomator dump /sdcard/ui.xml`, find the node whose `text="…"`
   starts with what you want, skipping `EditText` (the search field holds the query too),
   and tap the centre of its `bounds`.
-- With the logo menu open (alphabetical since 0.7.0's follow-up): Rescan Library at about
-  (320, 279), Settings (320, 405), Statistics (320, 531), Theme (320, 657), Version (320, 783),
-  which does nothing. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
+- With the logo menu open (alphabetical since 0.7.0's follow-up): Listening History at about
+  (250, 280), then each row 126 px lower: Rescan Library (320, 405), Settings (320, 531),
+  Statistics (320, 657), Theme (320, 783), Version (320, 909), which does nothing. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
   counts are the quick check that a rescan ran.
 - A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.

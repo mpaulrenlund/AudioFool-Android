@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **Listening History** (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, not released yet
 - [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
 - [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
 - [x] **0.7.2**: no molded lip at the bottom of the round buttons (Now Playing, the mini player) — 2026-11-02, released as a pre-release
@@ -60,6 +61,45 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-04, not released yet (0.8.0 if the user agrees: a new feature): **Listening History**
+(the user: "add this feature [the desktop's Last.fm Listening History page] to this Android
+version", in the logo menu and the cover menu). The desktop's session 74, ported:
+- **Core** (`core/.../scrobbling/`): `ListeningHistory.kt` (`ListeningPeriod`, `ListenerProfile`,
+  `TopEntry`, `RecentPlay`, `ListeningJson`, and `HistoryTime`, the desktop's `ListeningTime`
+  renamed because `core.playback.ListeningTime` is the phone's listening total),
+  `ListeningMatch.kt`, and `LastFmApi`'s five unsigned GET reads (sharing the response reader
+  with the signed POSTs; `LastFmTransport.get`). The desktop's 17 tests ported
+  (`ListeningHistoryTest`), plus one for the phone's period words. `Display.count(Long)`.
+- **The user's calls** (asked as short options): the period switch as **short words in one row**
+  (7D · 1M · 3M · 6M · 12M · All, in equal slots; the desktop's words need about 440 dp, the M21
+  has 343, and a scrolling row hid 12M), and a **song row opens its album with the song chosen**
+  (as the desktop, over playing it). Artists open Albums, albums open Album, as asked.
+- **My calls, open to change:** one column in the desktop's reading order (TOTALS, the switch,
+  TOP ARTISTS, TOP ALBUMS, TOP TRACKS, RECENTLY PLAYED); the totals as Statistics' figures, two
+  then three, in a panel "Totals"; the title "Listening History · <user>" as the desktop's window
+  title; the chosen period `text.heading` at `dialog.emphasisWeight` (the desktop's), the slots
+  48 dp high for touch; the rows are Statistics' bar rows with the artist under the bar
+  (`listeningHistory.detailGap`); not connected, a LAST.FM panel row that opens Settings (the
+  desktop links to its Last.fm window); a failed load says why, and a tap tries again (the
+  desktop has no retry: you reopen the window). The song chosen on the Album screen uses the
+  selected row look (`state.selectionBg`; the playing song keeps its own) and the list opens
+  scrolled to it (`Route.Album.song`).
+- **How it fetches:** `ListeningHistory` (app) is held by the app, not the screen, so coming back
+  from a row finds it as it was. Each opening from a menu asks Last.fm afresh (the desktop's
+  window does at each opening); within one, each period once. It reads with the saved API key
+  and user name only (`LastFm.historyReader`), so it needs no session and no secret.
+- **Tokens:** `listeningHistory.*` in `mobile-tokens.json`. The desktop's two token files copied
+  again, unchanged: the desktop had added `listeningHistory.periodGap` and `genius.*` since the
+  last copy (the parity test passes; the phone doesn't use either).
+- **Checked:** 458 core and 40 app tests (8 new: rows, where a row leads, each period fetched
+  once, not connected, a failure); ThemeLab: 32 new pictures (top, scrolled to the end, a period
+  loading, loading, not connected, failed, the 1.3 font size, the album with a song chosen; both
+  phones, both themes), the 8 menu pictures changed (the new row), every other picture
+  pixel-identical. Emulator (release build over 0.7.4): the row in the logo menu and the cover
+  menu, the not-connected screen, its tap to Settings, back to Listening History, back to Artists
+  or Now Playing. **Not checked against the real Last.fm** (no key here): that's on the phones'
+  lists.
 
 2026-11-03, 0.7.4 (released as pre-release [`v0.7.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.4), "AudioFool 0.7.4", versionCode 39, the same day): **the cover menu ends with the logo menu's rows**
 (the user: "add the Logo menu options to the resolution and Analyze pop-up", alphabetized with
@@ -452,6 +492,26 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Listening History (from the next build; not released yet)
+
+Only the phones have the Last.fm key, so this is its first run against the real Last.fm.
+
+- [ ] **Logo > Listening History**: "Listening History · <you>", then TOTALS (Scrobbles,
+  Scrobbling since, Artists, Albums, Tracks) and the top lists on 12M. Do the figures and lists
+  match your last.fm profile and the desktop's window? If a list comes back empty or wrong, say
+  which.
+- [ ] **The period switch**: 7D, 1M, 3M, 6M, 12M, All. The first time on each, "Loading…" for a
+  moment; going back to one is instant.
+- [ ] **Taps**: an artist opens its albums, an album its album, a song its album with the song
+  highlighted and in view. Back returns to Listening History where you left it. Rows you don't
+  have in the library do nothing.
+- [ ] **RECENTLY PLAYED**: the song playing now says "Now playing" at the top; the times
+  ("12 min ago", "Yesterday") look right.
+- [ ] **From Now Playing**: hold the cover; Listening History is after Analyze, and back returns
+  to Now Playing.
+- [ ] **Offline** (airplane mode): "Couldn't load your listening history" with the reason; a tap
+  tries again once you're back online.
+
 ### The cover menu with the logo menu's rows (from 0.7.4)
 
 - [ ] **Long press on Now Playing's cover**: Resolution, Analyze, Rescan Library, Settings,
@@ -556,6 +616,14 @@ its own section at the top, as before. (From …) says which build first asked.
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Listening History (from the next build; not released yet)
+
+- [ ] **Logo > Listening History** on the M21's smaller screen: the five figures, the six
+  period words in one row, and the lists, against your last.fm profile. A tap on a song opens
+  its album with the song highlighted.
+- [ ] **The cover menu**, now nine rows with Listening History: it still fits the screen
+  wherever the cover is pressed.
 
 ### The cover menu with the logo menu's rows (from 0.7.4)
 
