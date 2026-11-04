@@ -46,6 +46,11 @@ import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import com.mpaulrenlund.audiofool.core.playback.ListeningTime
 import com.mpaulrenlund.audiofool.core.scrobbling.ScrobblerState
 import com.mpaulrenlund.audiofool.lastfm.LastFm
+import com.mpaulrenlund.audiofool.lastfm.HistoryState
+import com.mpaulrenlund.audiofool.core.scrobbling.ListeningPeriod
+import com.mpaulrenlund.audiofool.ui.HistoryActions
+import com.mpaulrenlund.audiofool.ui.ListeningHistoryScreen
+import androidx.compose.foundation.rememberScrollState
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RuntimeEnvironment
@@ -229,6 +234,29 @@ class ThemeLabTest {
                 lastFm = LastFm.Status(enteringKeys = true, savedKey = "0123456789abcdef0123456789abcdef", savedSecret = ""),
             )
         }
+        // Listening History (spec 4.7, no mockup): made-up Last.fm answers over the sample
+        // library; the top, then scrolled to the end (TOP TRACKS, RECENTLY PLAYED).
+        shoot(device, "listening-history") { ListeningHistoryScreen(ThemeLabFixtures.history(), HistoryActions()) }
+        shoot(device, "listening-history-end") {
+            ListeningHistoryScreen(ThemeLabFixtures.history(), HistoryActions(), rememberScrollState(Int.MAX_VALUE))
+        }
+        // Another period chosen, being fetched.
+        shoot(device, "listening-history-period-loading") {
+            ListeningHistoryScreen(
+                ThemeLabFixtures.history().copy(period = ListeningPeriod.Week, topArtists = emptyList(), topAlbums = emptyList(), topTracks = emptyList(), topEmptyText = "Loading…"),
+                HistoryActions(),
+            )
+        }
+        shoot(device, "listening-history-loading") { ListeningHistoryScreen(HistoryState(user = "questinnn"), HistoryActions()) }
+        shoot(device, "listening-history-not-connected") { ListeningHistoryScreen(HistoryState.NotConnected, HistoryActions()) }
+        shoot(device, "listening-history-failed") {
+            ListeningHistoryScreen(
+                HistoryState(user = "questinnn", phase = HistoryState.Phase.Failed, error = "Couldn't reach Last.fm: Unable to resolve host \"ws.audioscrobbler.com\"."),
+                HistoryActions(),
+            )
+        }
+        // A Listening History song row opens its album with the song chosen.
+        shoot(device, "album-chosen-song") { AlbumScreen("Aphelion Drive", "Second Sight", browse(), actions, chosenSong = ThemeLabFixtures.secondSightPath("Startup Chime")) }
     }
 
     /**
@@ -291,6 +319,8 @@ class ThemeLabTest {
             StatisticsScreen(LibraryState(library = ThemeLabFixtures.library), DebugNumbers(StartTimes()), actions = DebugActions(),
                 stats = ThemeLabFixtures.fullLibraryStats, listening = ListeningTime(totalMs = 51_720_000, sinceUtc = 1_792_800_000_000))
         }
+        // The period switch's six words, to see them fit.
+        shoot(device, "font130-listening-history") { ListeningHistoryScreen(ThemeLabFixtures.history(), HistoryActions()) }
     }
 
     /** Now Playing's mockup state: third of ten, 2:18 in, its waveform and the readout the shared output gives. */

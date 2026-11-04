@@ -29,17 +29,20 @@ import kotlinx.serialization.json.Json
 
 /**
  * Where the app can be (spec 1, 4): a drill-down from Artists, plus Search,
- * Settings and Statistics. Artists and albums are named, not held, so a rescan
+ * Settings, Statistics and Listening History. Artists and albums are named, not held, so a rescan
  * that rebuilds the library leaves an open screen showing the new one.
  */
 @Serializable
 sealed interface Route {
     @Serializable data object Artists : Route
     @Serializable data class Albums(val artist: String) : Route
-    @Serializable data class Album(val artist: String, val title: String) : Route
+    /** [song], a path, is shown chosen: a Listening History song row opens its album so (spec 4.7). */
+    @Serializable data class Album(val artist: String, val title: String, val song: String? = null) : Route
     @Serializable data object Search : Route
     @Serializable data object Settings : Route
     @Serializable data object Statistics : Route
+    /** Listening History (spec 4.7), from the logo menu and the cover menu. */
+    @Serializable data object ListeningHistory : Route
     @Serializable data object Debug : Route
     @Serializable data object NowPlaying : Route
     /** Analyze (0.6.0), from Now Playing's cover menu: the song named by its path, as albums are by name. */

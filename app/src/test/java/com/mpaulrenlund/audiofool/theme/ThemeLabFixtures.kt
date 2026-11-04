@@ -169,4 +169,72 @@ object ThemeLabFixtures {
             peakSampleDb = -0.3, usedBits = 24, extraBitsShare = 0.99,
         )
     }
+
+    // ---- Listening History (spec 4.7): made-up Last.fm answers over the sample library ----
+
+    /** When the pictures are "taken": the recent plays' times are worded from it. */
+    val historyNow: java.time.Instant = java.time.Instant.parse("2026-11-04T15:00:00Z")
+    val historyZone: java.time.ZoneId = java.time.ZoneOffset.UTC
+
+    private val historyProfile = com.mpaulrenlund.audiofool.core.scrobbling.ListenerProfile(
+        "questinnn", 12_263, java.time.Instant.parse("2025-12-03T10:00:00Z"), 618, 1_219, 3_938,
+    )
+
+    /** Mostly the library's names; one artist, album and song it doesn't hold, which can't be tapped. */
+    private val historyLists = com.mpaulrenlund.audiofool.lastfm.TopLists(
+        artists = listOf(
+            "Aphelion Drive" to 866, "The Polygon Set" to 602, "Hyperblast Choir" to 484, "Scanline" to 424,
+            "Bitcrush Quartet" to 423, "Memory Card Club" to 409, "Northlane" to 325, "Emotion Engine" to 247,
+            "Redbook Audio" to 234, "Vibration Function" to 212,
+        ).map { (name, plays) -> com.mpaulrenlund.audiofool.core.scrobbling.TopEntry(name, null, plays.toLong()) },
+        albums = listOf(
+            Triple("Second Sight", "Aphelion Drive", 656), Triple("Polygon Count", "The Polygon Set", 512),
+            Triple("Interlaced", "Scanline", 240), Triple("Rumble", "Dual Shock Ensemble", 195),
+            Triple("Sixteen Bit", "Bitcrush Quartet", 170), Triple("Save Point", "Memory Card Club", 169),
+            Triple("Two Hundred Ninety-Four Megahertz", "Emotion Engine", 144), Triple("Seventy-Four Minutes", "Redbook Audio", 125),
+            Triple("Pulse", "Vibration Function", 120), Triple("Live At The Wireless", "Northlane", 102),
+        ).map { (name, artist, plays) -> com.mpaulrenlund.audiofool.core.scrobbling.TopEntry(name, artist, plays.toLong()) },
+        tracks = listOf(
+            Triple("Polygon Weather", "Aphelion Drive", 123), Triple("Memory Card", "Aphelion Drive", 113),
+            Triple("Low Poly Sunrise", "Aphelion Drive", 72), Triple("Wireframe Hymn", "Aphelion Drive", 65),
+            Triple("Polygon Count", "The Polygon Set", 63), Triple("Echo Chamber", "Northlane", 63),
+            Triple("Startup Chime", "Aphelion Drive", 60), Triple("Disc Read Error", "Aphelion Drive", 59),
+            Triple("Low Polygon Lullaby", "Grey Chassis", 57), Triple("Grey Plastic", "Aphelion Drive", 55),
+        ).map { (name, artist, plays) -> com.mpaulrenlund.audiofool.core.scrobbling.TopEntry(name, artist, plays.toLong()) },
+    )
+
+    /** The last 20 plays, newest first, the first still playing. */
+    private val historyRecent: List<com.mpaulrenlund.audiofool.core.scrobbling.RecentPlay> = run {
+        val plays = listOf(
+            Triple("Polygon Weather", "Aphelion Drive", "Second Sight"), Triple("Low Poly Sunrise", "Aphelion Drive", "Second Sight"),
+            Triple("Memory Card", "Aphelion Drive", "Second Sight"), Triple("Sunlight Through Static", "Aphelion Drive", "Second Sight"),
+            Triple("Echo Chamber", "Northlane", "Live At The Wireless"), Triple("Plenty", "Northlane", "Live At The Wireless"),
+            Triple("Polygon Count", "The Polygon Set", "Polygon Count"), Triple("Track 2", "The Polygon Set", "Polygon Count"),
+            Triple("Track 3", "The Polygon Set", "Polygon Count"), Triple("Low Polygon Lullaby", "Grey Chassis", "Idle Animation"),
+            Triple("Track 1", "Scanline", "Interlaced"), Triple("Track 2", "Scanline", "Interlaced"),
+            Triple("Track 1", "Redbook Audio", "Seventy-Four Minutes"), Triple("Track 2", "Redbook Audio", "Seventy-Four Minutes"),
+            Triple("Track 1", "Bitcrush Quartet", "Sixteen Bit"), Triple("Track 2", "Bitcrush Quartet", "Sixteen Bit"),
+            Triple("Track 1", "Memory Card Club", "Save Point"), Triple("Track 2", "Memory Card Club", "Save Point"),
+            Triple("Track 1", "Vibration Function", "Pulse"), Triple("Track 2", "Vibration Function", "Pulse"),
+        )
+        // Minutes before historyNow: playing, then minutes, hours, yesterday, days.
+        val minutesAgo = listOf(0L, 4, 9, 14, 52, 125, 130, 136, 141, 410, 430, 455, 900, 920, 1500, 1510, 3000, 3010, 10000, 10010)
+        plays.mapIndexed { i, (track, artist, album) ->
+            com.mpaulrenlund.audiofool.core.scrobbling.RecentPlay(
+                track, artist, album,
+                if (i == 0) null else historyNow.minusSeconds(minutesAgo[i] * 60),
+                nowPlaying = i == 0,
+            )
+        }
+    }
+
+    /** Listening History loaded, on [period] (the lists are the same for each: they're made up). */
+    fun history(period: com.mpaulrenlund.audiofool.core.scrobbling.ListeningPeriod = com.mpaulrenlund.audiofool.lastfm.ListeningHistory.FIRST_PERIOD) =
+        com.mpaulrenlund.audiofool.lastfm.HistoryState.loaded(
+            "questinnn", historyProfile, period, historyLists, historyRecent,
+            com.mpaulrenlund.audiofool.core.scrobbling.ListeningMatch(tracks), historyNow, historyZone,
+        )
+
+    /** A Second Sight song's path, for the Album screen with it chosen. */
+    fun secondSightPath(title: String): String = tracks.first { it.album == "Second Sight" && it.title == title }.filePath
 }

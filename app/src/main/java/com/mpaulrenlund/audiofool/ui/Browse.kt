@@ -73,6 +73,8 @@ class AppActions(
     val openNowPlaying: () -> Unit = {},
     /** The logo menu's Rescan Library (0.5.0): the same rescan as Settings' Music folders button. */
     val rescan: () -> Unit = {},
+    /** The menus' Listening History (spec 4.7): opened afresh, so Last.fm is asked again. */
+    val openListeningHistory: () -> Unit = {},
 )
 
 /**

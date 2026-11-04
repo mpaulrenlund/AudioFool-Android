@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -277,7 +278,7 @@ fun IconButtonSmall(icon: AppIcon, onClick: () -> Unit) {
  * `text.heading`) and panels `settings.sectionGap` apart that scroll.
  */
 @Composable
-fun TitledScreen(title: String, content: @Composable ColumnScope.() -> Unit) {
+fun TitledScreen(title: String, scroll: ScrollState = rememberScrollState(), content: @Composable ColumnScope.() -> Unit) {
     val t = LocalAppTheme.current
     ScreenFrame(
         topBar = {
@@ -287,7 +288,7 @@ fun TitledScreen(title: String, content: @Composable ColumnScope.() -> Unit) {
         },
     ) {
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()),
+            Modifier.weight(1f).verticalScroll(scroll),
             verticalArrangement = Arrangement.spacedBy(t.dp("settings.sectionGap") - t.dp("panel.marginBottom")),
         ) {
             content()

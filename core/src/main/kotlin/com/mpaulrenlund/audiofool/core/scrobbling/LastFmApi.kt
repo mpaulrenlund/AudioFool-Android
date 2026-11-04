@@ -51,15 +51,22 @@ enum class ScrobbleOutcome {
     Deferred,
 }
 
-/** One HTTP POST, swapped out in tests. Throws [IOException] when Last.fm can't be reached. */
+/**
+ * One HTTP POST, and the unsigned GETs Listening History reads with; swapped out in
+ * tests. Throws [IOException] when Last.fm can't be reached.
+ */
 fun interface LastFmTransport {
     fun post(url: String, form: String): HttpAnswer
+
+    /** One GET; [url] carries the query. A transport made for posting alone (a test's) sends none. */
+    fun get(url: String): HttpAnswer = throw IOException("This transport sends no GETs.")
 }
 
 class HttpAnswer(val status: Int, val body: String)
 
 /**
- * The Last.fm 2.0 web API calls a scrobbler needs, signed as the API requires.
+ * The Last.fm 2.0 web API calls a scrobbler needs, signed as the API requires,
+ * and Listening History's unsigned reads (the desktop's session 74).
  * Ported from the desktop's `AudioFool.Core/Scrobbling/LastFmApi.cs`.
  *
  * Authentication is the desktop flow: [getToken], then the user approves the
@@ -117,11 +124,40 @@ class LastFmApi(apiKey: String, secret: String, private val transport: LastFmTra
         return parseScrobbleOutcomes(call("track.scrobble", p, sessionKey), entries.size)
     }
 
+    // ------------------------------------------------- listening history (reads)
+
+    /** The user's totals: scrobbles, when they joined, how many artists, albums and tracks. */
+    suspend fun getProfile(user: String): ListenerProfile =
+        ListeningJson.profile(read("user.getInfo", listOf("user" to user)))
+
+    suspend fun getTopArtists(user: String, period: ListeningPeriod, limit: Int): List<TopEntry> =
+        getTop("user.getTopArtists", "topartists", "artist", user, period, limit)
+
+    suspend fun getTopAlbums(user: String, period: ListeningPeriod, limit: Int): List<TopEntry> =
+        getTop("user.getTopAlbums", "topalbums", "album", user, period, limit)
+
+    suspend fun getTopTracks(user: String, period: ListeningPeriod, limit: Int): List<TopEntry> =
+        getTop("user.getTopTracks", "toptracks", "track", user, period, limit)
+
+    /** The latest plays, newest first; one still playing comes first, with no time. */
+    suspend fun getRecentTracks(user: String, limit: Int): List<RecentPlay> =
+        ListeningJson.recent(read("user.getRecentTracks", listOf("user" to user, "limit" to limit.toString())), limit)
+
+    private suspend fun getTop(
+        method: String,
+        listName: String,
+        itemName: String,
+        user: String,
+        period: ListeningPeriod,
+        limit: Int,
+    ): List<TopEntry> {
+        val root = read(method, listOf("user" to user, "period" to period.apiName, "limit" to limit.toString()))
+        return ListeningJson.top(root, listName, itemName, limit)
+    }
+
     /**
      * One signed POST. Every call is signed, including auth.getToken, which does
-     * not need it but accepts it. Last.fm reports errors as JSON with an `error`
-     * number, usually under a 4xx or 5xx status; anything that is not JSON at all
-     * is treated as a transient fault.
+     * not need it but accepts it.
      */
     private suspend fun call(method: String, parameters: List<Pair<String, String>>, sessionKey: String?): JsonObject {
         val p = parameters.toMutableList()
@@ -132,8 +168,26 @@ class LastFmApi(apiKey: String, secret: String, private val transport: LastFmTra
         p.add("format" to "json")
 
         val form = p.joinToString("&") { (name, value) -> formEncode(name) + "=" + formEncode(value) }
+        return send { transport.post(ENDPOINT, form) }
+    }
+
+    /**
+     * One unsigned GET, as Last.fm's read methods are made: they need only the API
+     * key, never the secret or a session.
+     */
+    private suspend fun read(method: String, parameters: List<Pair<String, String>>): JsonObject {
+        val p = parameters + listOf("method" to method, "api_key" to apiKey, "format" to "json")
+        val query = p.joinToString("&") { (name, value) -> escapeData(name) + "=" + escapeData(value) }
+        return send { transport.get("$ENDPOINT?$query") }
+    }
+
+    /**
+     * Last.fm reports errors as JSON with an `error` number, usually under a 4xx or
+     * 5xx status; anything that is not JSON at all is treated as a transient fault.
+     */
+    private suspend fun send(request: () -> HttpAnswer): JsonObject {
         val answer = try {
-            withContext(Dispatchers.IO) { transport.post(ENDPOINT, form) }
+            withContext(Dispatchers.IO) { request() }
         } catch (e: SocketTimeoutException) {
             throw LastFmException(0, "Last.fm didn't answer in time.")
         } catch (e: IOException) {
@@ -244,6 +298,22 @@ class LastFmApi(apiKey: String, secret: String, private val transport: LastFmTra
                 connection.setRequestProperty("User-Agent", USER_AGENT)
                 connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 connection.outputStream.use { it.write(form.toByteArray(Charsets.UTF_8)) }
+
+                val status = connection.responseCode
+                val stream = if (status >= 400) connection.errorStream else connection.inputStream
+                val body = stream?.use { it.readBytes().toString(Charsets.UTF_8) } ?: ""
+                return HttpAnswer(status, body)
+            } finally {
+                connection.disconnect()
+            }
+        }
+
+        override fun get(url: String): HttpAnswer {
+            val connection = URI(url).toURL().openConnection() as HttpURLConnection
+            try {
+                connection.connectTimeout = 20_000
+                connection.readTimeout = 20_000
+                connection.setRequestProperty("User-Agent", USER_AGENT)
 
                 val status = connection.responseCode
                 val stream = if (status >= 400) connection.errorStream else connection.inputStream

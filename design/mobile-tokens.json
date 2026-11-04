@@ -239,6 +239,13 @@
     "barGap": 6,
     "listPaddingY": 6
   },
+  "listeningHistory": {
+    "$note": "Listening History (spec 4.7). No mockup: the desktop's Listening History window (session 74) built from Statistics' parts (statistics.*), in one column. The period switch is six short words (7D … All) in equal slots, a touch target high; the chosen one in text.heading at the desktop's dialog.emphasisWeight. Under a row's bar, the artist (or artist · album) detailGap below.",
+    "periodHeight": 48,
+    "periodTextSize": 15,
+    "detailGap": 4,
+    "detailSize": 13
+  },
   "miniPlayer": {
     "height": 64,
     "marginX": 8,

@@ -161,6 +161,17 @@ class LastFm(private val context: Context, folder: File) : PlayWatcher {
 
     fun openCreateApiAccount() = openInBrowser(LastFmApi.CREATE_API_ACCOUNT_URL)
 
+    /**
+     * What Listening History reads with (spec 4.7): the saved API key and the connected
+     * user, or null when not connected. Reads need no secret or session, so this works
+     * while Last.fm asks to connect again too, as the desktop's does.
+     */
+    suspend fun historyReader(): HistoryReader? {
+        val saved = withContext(Dispatchers.IO) { store.read() } ?: return null
+        val user = saved.userName?.takeIf { it.isNotBlank() && saved.sessionKey != null } ?: return null
+        return HistoryReader(LastFmApi(saved.apiKey, saved.secret), user)
+    }
+
     fun disconnect() {
         if (!ready) return
         scope.launch(Dispatchers.IO) { store.forgetSession() }

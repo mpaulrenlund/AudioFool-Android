@@ -195,11 +195,17 @@ fun AlbumRow(album: Album, meta: String, browse: Browse, selected: Boolean = fal
     }
 }
 
-/** Album (spec 4.3): the header block, then # · Song · Time. */
+/**
+ * Album (spec 4.3): the header block, then # · Song · Time. A [chosenSong] (a path:
+ * Listening History's song rows, spec 4.7) is drawn selected, and the list opens
+ * scrolled to it, as the desktop selects the song in its album.
+ */
 @Composable
-fun AlbumScreen(artistName: String, title: String, browse: Browse, actions: AppActions) {
+fun AlbumScreen(artistName: String, title: String, browse: Browse, actions: AppActions, chosenSong: String? = null) {
     val t = LocalAppTheme.current
     val album = browse.album(artistName, title)
+    val chosenIndex = album?.tracks?.indexOfFirst { it.filePath.equals(chosenSong, ignoreCase = true) } ?: -1
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = chosenIndex.coerceAtLeast(0))
     ScreenFrame(
         topBar = {
             TopBar(t.dp("topBar.paddingStart"), t.dp("topBar.paddingEnd"), t.dp("topBar.gap")) {
@@ -213,10 +219,11 @@ fun AlbumScreen(artistName: String, title: String, browse: Browse, actions: AppA
             if (album != null) AlbumHeader(album)
             TableHeader()
             LazyColumn(
+                state = listState,
                 contentPadding = PaddingValues(horizontal = t.dp("album.listPaddingX"), vertical = t.dp("album.listPaddingY")),
             ) {
                 items(album?.tracks.orEmpty(), key = { it.filePath }, contentType = { "song" }) { track ->
-                    SongRow(track, browse, actions)
+                    SongRow(track, browse, actions, chosen = chosenIndex >= 0 && track === album?.tracks?.get(chosenIndex))
                 }
             }
         }
@@ -280,7 +287,7 @@ private fun TableHeader() {
  * table does; discs follow each other with no disc column.
  */
 @Composable
-private fun SongRow(track: Track, browse: Browse, actions: AppActions) {
+private fun SongRow(track: Track, browse: Browse, actions: AppActions, chosen: Boolean = false) {
     val t = LocalAppTheme.current
     val playing = browse.isPlaying(track)
     val unavailable = browse.isUnavailable(track)
@@ -289,7 +296,7 @@ private fun SongRow(track: Track, browse: Browse, actions: AppActions) {
     ListRow(
         t.dp("album.rowHeight"),
         t.dp("album.rowPaddingX"),
-        look = if (playing) RowLook.NowPlaying else RowLook.Normal,
+        look = if (playing) RowLook.NowPlaying else if (chosen) RowLook.Selected else RowLook.Normal,
         unavailable = unavailable,
         gap = t.dp("album.columnGap"),
         onClick = if (unavailable) null else ({ actions.play(track) }),

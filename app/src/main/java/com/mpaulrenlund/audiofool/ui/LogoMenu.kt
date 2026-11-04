@@ -35,8 +35,8 @@ const val LOGO_ASSET = "brand/PlayStation-Logo-1994.png"
 
 /**
  * The logo, which is the menu button (spec 4.1): 36 x 28 in a 48 dp touch area.
- * Its menu holds Rescan Library (0.5.0), Settings, Statistics and Theme (switches at once),
- * in that order, then the app's [version].
+ * Its menu holds Listening History, Rescan Library (0.5.0), Settings, Statistics and
+ * Theme (switches at once), in that order, then the app's [version].
  */
 @Composable
 fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, actions: AppActions, version: String) {
@@ -77,11 +77,16 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
 
 /**
  * The logo menu's rows, also the end of Now Playing's cover menu (0.7.4, the user's
- * call): Rescan Library, Settings, Statistics, Theme, then the version.
+ * call): Listening History (spec 4.7), Rescan Library, Settings, Statistics, Theme,
+ * then the version.
  */
 @Composable
 fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String) {
     val t = LocalAppTheme.current
+    MenuRow("Listening History") {
+        onClose()
+        actions.openListeningHistory()
+    }
     MenuRow("Rescan Library") {
         onClose()
         actions.rescan()

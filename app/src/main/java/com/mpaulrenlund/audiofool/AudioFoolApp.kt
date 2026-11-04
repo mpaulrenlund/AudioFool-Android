@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.mpaulrenlund.audiofool.core.library.DriveChange
 import com.mpaulrenlund.audiofool.lastfm.LastFm
+import com.mpaulrenlund.audiofool.lastfm.ListeningHistory
 import com.mpaulrenlund.audiofool.library.LibraryRepository
 import com.mpaulrenlund.audiofool.settings.AppSettings
 import com.mpaulrenlund.audiofool.settings.MusicFolder
@@ -95,6 +96,9 @@ class AudioFoolApp : Application() {
 
     /** Last.fm (spec 7): the connection Settings shows, and the scrobbles, queued in the app's own storage. */
     val lastFm: LastFm by lazy { LastFm(this, noBackupFilesDir) }
+
+    /** Listening History (spec 4.7): Last.fm's view of what was played, kept while its screen is under another. */
+    val history: ListeningHistory by lazy { ListeningHistory(reader = { lastFm.historyReader() }, library = { library.state.value.library }) }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */
     private val systemControlsLazy = lazy {

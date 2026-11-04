@@ -193,10 +193,10 @@ private fun date(utcMs: Long): String = SimpleDateFormat("d MMM yyyy", Locale.EN
 
 /**
  * Rows of figures, the desktop's tiles: each a `type.statValue` number with its
- * label under it, sharing the row's width.
+ * label under it, sharing the row's width. Listening History's totals too.
  */
 @Composable
-private fun Figures(vararg rows: List<Pair<String, String>>) {
+internal fun Figures(vararg rows: List<Pair<String, String>>) {
     val t = LocalAppTheme.current
     val value = t.text("statistics.tileLabelSize", "color.text.heading", weight = t.desktopNumber("type.statValue.weight").toInt())
         .copy(fontSize = t.desktopNumber("type.statValue.size").sp)
@@ -226,7 +226,6 @@ private fun Figures(vararg rows: List<Pair<String, String>>) {
 @Composable
 private fun BarRow(label: String, value: String, fill: Double) {
     val t = LocalAppTheme.current
-    val shape = RoundedCornerShape(t.radius("radius.sliderTrack"))
     Column(
         Modifier.padding(horizontal = t.dp("statistics.rowPaddingX"), vertical = t.dp("statistics.rowPaddingY")),
         verticalArrangement = Arrangement.spacedBy(t.dp("statistics.barGap")),
@@ -235,15 +234,26 @@ private fun BarRow(label: String, value: String, fill: Double) {
             Line(label, t.text("statistics.rowLabelSize", "color.text.primary"), Modifier.weight(1f))
             Line(value, t.text("statistics.rowValueSize", "color.text.muted"))
         }
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .height(t.desktopNumber("playbackBar.trackHeight").dp)
-                .tokenSurface(shape, t.color("color.slider.track"), t.shadow("shadow.sliderTrackInset")),
-        ) {
-            val f = fill.coerceIn(0.0, 1.0).toFloat()
-            if (f > 0f) Box(Modifier.fillMaxWidth(f).fillMaxHeight().clip(shape).background(t.color("color.slider.volumeFill")))
-        }
+        StatBar(fill)
+    }
+}
+
+/**
+ * The bar under a [BarRow] (and a Listening History row): `playbackBar.trackHeight`
+ * high, filled [fill] of the way in `slider.volumeFill` on `slider.track`.
+ */
+@Composable
+internal fun StatBar(fill: Double) {
+    val t = LocalAppTheme.current
+    val shape = RoundedCornerShape(t.radius("radius.sliderTrack"))
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .height(t.desktopNumber("playbackBar.trackHeight").dp)
+            .tokenSurface(shape, t.color("color.slider.track"), t.shadow("shadow.sliderTrackInset")),
+    ) {
+        val f = fill.coerceIn(0.0, 1.0).toFloat()
+        if (f > 0f) Box(Modifier.fillMaxWidth(f).fillMaxHeight().clip(shape).background(t.color("color.slider.volumeFill")))
     }
 }
 

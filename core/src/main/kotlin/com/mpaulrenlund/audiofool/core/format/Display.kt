@@ -45,6 +45,9 @@ object Display {
     /** "8,127": a whole number with thousands separated, as the desktop's N0. */
     fun count(value: Int): String = "%,d".format(Locale.ROOT, value)
 
+    /** [count] for Last.fm's totals, which are longs. */
+    fun count(value: Long): String = "%,d".format(Locale.ROOT, value)
+
     /**
      * "62.4%", "100%", or "<0.1%" for a share too small to round to anything -
      * a lone WMA file in 26,000 tracks should not read as "0%".

@@ -14,6 +14,7 @@ import com.mpaulrenlund.audiofool.BuildConfig
 import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.lastfm.historyTarget
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
 
@@ -51,6 +52,24 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             next = player::next,
             openNowPlaying = { nav.open(Route.NowPlaying) },
             rescan = { app.library.rescan(asked = true) },
+            openListeningHistory = {
+                app.history.open()
+                nav.open(Route.ListeningHistory)
+            },
+        )
+    }
+    // Listening History (spec 4.7): a row goes to its artist's albums, its album, or its
+    // album with the song chosen; back comes back to the history, as it was.
+    val historyActions = remember(nav) {
+        HistoryActions(
+            choose = app.history::choose,
+            go = { row ->
+                historyTarget(row, app.library.state.value.library)?.let { d ->
+                    nav.open(if (d.album == null) Route.Albums(d.artist) else Route.Album(d.artist, d.album, d.song))
+                }
+            },
+            retry = app.history::open,
+            openSettings = { nav.open(Route.Settings) },
         )
     }
     val nowPlayingActions = remember(nav) {
@@ -111,7 +130,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             when (route) {
                 Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME)
                 is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
-                is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions)
+                is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions, chosenSong = route.song)
                 Route.Search -> SearchScreen(browse, actions)
                 Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
                 is Route.Analysis -> AnalysisScreen(
@@ -149,6 +168,10 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     numbers = debugNumbers,
                     actions = debugActions,
                 )
+                Route.ListeningHistory -> {
+                    LaunchedEffect(Unit) { app.history.showing() }
+                    ListeningHistoryScreen(app.history.state, historyActions)
+                }
                 Route.Debug -> DebugScreen(state, debugNumbers, debugActions)
                 is Route.TokenSheet -> TokenSheet(
                     route.page,
