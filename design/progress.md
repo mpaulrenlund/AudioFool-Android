@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **Listening History** (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, not released yet
+- [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
 - [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
 - [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
 - [x] **0.7.2**: no molded lip at the bottom of the round buttons (Now Playing, the mini player) — 2026-11-02, released as a pre-release
@@ -62,7 +62,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-04, not released yet (0.8.0 if the user agrees: a new feature): **Listening History**
+2026-11-04, 0.8.0 (released as pre-release [`v0.8.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.8.0), "AudioFool 0.8.0", versionCode 40, the same day): **Listening History**
 (the user: "add this feature [the desktop's Last.fm Listening History page] to this Android
 version", in the logo menu and the cover menu). The desktop's session 74, ported:
 - **Core** (`core/.../scrobbling/`): `ListeningHistory.kt` (`ListeningPeriod`, `ListenerProfile`,
@@ -492,7 +492,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Listening History (from the next build; not released yet)
+### Listening History (from 0.8.0)
 
 Only the phones have the Last.fm key, so this is its first run against the real Last.fm.
 
@@ -617,7 +617,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Listening History (from the next build; not released yet)
+### Listening History (from 0.8.0)
 
 - [ ] **Logo > Listening History** on the M21's smaller screen: the five figures, the six
   period words in one row, and the lists, against your last.fm profile. A tap on a song opens

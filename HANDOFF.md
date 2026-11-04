@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-04, Listening History built (not released yet). Read this with `README.md` (how the app
+Updated 2026-11-04, after releasing 0.8.0 (Listening History). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,13 +12,13 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.7.4** (versionCode 39), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.7.4>,
-  `dist/AudioFool-0.7.4.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
+- **Latest: 0.8.0** (versionCode 40), a pre-release,
+  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.8.0>,
+  `dist/AudioFool-0.8.0.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
   are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.7.5** for fixes, **0.8.0** for new features (confirm the number with the
+- **Next release:** **0.8.1** for fixes, **0.9.0** for new features (confirm the number with the
   user: they called 0.7.1's version row and 0.7.4's cover menu rows fixes). Bump both in
-  `app/build.gradle.kts` (versionCode 40 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  `app/build.gradle.kts` (versionCode 41 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
@@ -54,16 +54,17 @@ you touch a feature from then.
   logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
   Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
   emulator; the "from 0.7.4" items wait in both test lists.
-- **Unreleased (2026-11-04): Listening History** (spec §4.7), the desktop's Last.fm page, from
+- **0.8.0 (2026-11-04, released): Listening History** (spec §4.7), the desktop's Last.fm page, from
   the logo menu and the cover menu (`AppMenuRows`' first row). Core: `scrobbling/ListeningHistory.kt`,
   `ListeningMatch.kt`, `LastFmApi`'s reads (unsigned GETs, `LastFmTransport.get`), the desktop's
   17 tests ported. App: `lastfm/ListeningHistory.kt` (the model, held by the app as
   `AudioFoolApp.history`; `open()` from a menu fetches afresh, `showing()` from the screen only
   if nothing was), `ui/ListeningHistoryScreen.kt`; a song row opens `Route.Album(…, song)` with
   that song selected. Checked with the tests, ThemeLab and the emulator (not connected there);
-  **never run against the real Last.fm** (no key on this PC): the "next build" Listening History
-  items in both test lists. When releasing, call it **0.8.0** if the user agrees (a new
-  feature), and rename those test-list headings to "(from 0.8.0)".
+  **never run against the real Last.fm** (no key on this PC): the "from 0.8.0" Listening History
+  items in both test lists wait on the user's report. If a list comes back empty or wrong, read
+  `ListeningJson` against the real answer (written from Last.fm's documented shapes, as the
+  desktop's, which the user confirmed works there).
 
 ## Where things stand (2026-10-30)
 
