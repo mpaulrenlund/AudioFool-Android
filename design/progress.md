@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 over USB; not on GitHub (the APK carries the key)
+- [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 and the M21 over USB; not on GitHub (the APK carries the key)
 - [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
 - [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
 - [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
@@ -71,7 +71,7 @@ it themselves. 0.8.0 stays the last GitHub release. The release routine is other
 (bump, the suite, `dist/AudioFool-<v>.apk`, the signer, "Show <v> notes"), with the install on
 each phone in place of "Publish".
 
-2026-11-05, 0.8.1 (versionCode 41; installed on the S24 over USB the same day, **not published on GitHub**, see below): **Last.fm signs in with the username and password** (the user,
+2026-11-05, 0.8.1 (versionCode 41; installed on the S24 and the M21 over USB the same day, **not published on GitHub**, see below): **Last.fm signs in with the username and password** (the user,
 on the S24: Connect asked for the API key and secret, "I believe I already set this up … can
 we make the login process … my last.fm username and password instead?"). They are kept per
 phone, and the S24 had never been connected. Asked first, since it changes the spec and the

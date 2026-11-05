@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-05, after 0.8.1 (Last.fm signs in with a username and password; installed on the S24 over USB). Read this with `README.md` (how the app
+Updated 2026-11-05, after 0.8.1 (Last.fm signs in with a username and password; installed on both phones over USB). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -13,8 +13,8 @@ you touch a feature from then.
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
 - **Latest: 0.8.1** (versionCode 41), `dist/AudioFool-0.8.1.apk` (notes beside it), installed
-  on the S24 over USB on 2026-11-05; **the M21 still has an older build** (install it there when
-  the user plugs it in). **Not on GitHub**: from 0.8.1 every APK carries AudioFool's Last.fm key
+  on the S24 and the M21 over USB on 2026-11-05 (both were on 0.8.0). **Not on GitHub**: from
+  0.8.1 every APK carries AudioFool's Last.fm key
   and secret, so builds go to the phones over USB only (the user's call, 2026-11-05; Claude's
   safety check stopped the upload as a credential leak). **Never upload an APK built with the key
   to a release.** The last GitHub release is 0.8.0 (`gh release list`; all but v0.1.0 are
@@ -60,7 +60,7 @@ you touch a feature from then.
   logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
   Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
   emulator; the "from 0.7.4" items wait in both test lists.
-- **0.8.1 (2026-11-05, installed on the S24 over USB): Last.fm signs in with the username and password** (spec §4.5, §7;
+- **0.8.1 (2026-11-05, installed on both phones over USB): Last.fm signs in with the username and password** (spec §4.5, §7;
   the user: "make the login process … my last.fm username and password instead"). `LastFmApi.getMobileSession`
   (signed POST over HTTPS; 2 tests), `LastFm.connect(userName, password)` with AudioFool's own
   key built in (`BuildConfig.LASTFM_*` from `gradle.properties`), the Settings form (Username,
