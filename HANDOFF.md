@@ -68,7 +68,7 @@ you touch a feature from then.
   approval and the key fields are gone from the app (core keeps `getToken`/`getSession`, ported).
   A session made earlier with another key keeps its key (`LastFmStore` saves them together).
   Verified with the tests, ThemeLab and the emulator (the form, the dots, Cancel; not signed
-  in). The user signs in on the S24 themself: the "from 0.8.1" items in both test lists.
+  in). The user signed in on both phones and reported it working (2026-11-05).
 - **0.8.0 (2026-11-04, released): Listening History** (spec §4.7), the desktop's Last.fm page, from
   the logo menu and the cover menu (`AppMenuRows`' first row). Core: `scrobbling/ListeningHistory.kt`,
   `ListeningMatch.kt`, `LastFmApi`'s reads (unsigned GETs, `LastFmTransport.get`), the desktop's
@@ -77,7 +77,7 @@ you touch a feature from then.
   if nothing was), `ui/ListeningHistoryScreen.kt`; a song row opens `Route.Album(…, song)` with
   that song selected. Checked with the tests, ThemeLab and the emulator (not connected there);
   **never run against the real Last.fm** (no key on this PC): the "from 0.8.0" Listening History
-  items in both test lists wait on the user's report. If a list comes back empty or wrong, read
+  items: the user reported it working on both phones (2026-11-05). If a list ever comes back empty or wrong, read
   `ListeningJson` against the real answer (written from Last.fm's documented shapes, as the
   desktop's, which the user confirmed works there).
 

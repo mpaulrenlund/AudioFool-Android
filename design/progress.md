@@ -63,6 +63,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+0.8.0 and 0.8.1: the user reported "looks it's working on both devices" (2026-11-05): the
+username-and-password sign-in and Listening History against the real Last.fm, on the S24 and
+the M21. Ticked the sign-in and Listening History items; the finer ones (a wrong password, the
+password manager, the period switch, row taps, offline, disconnecting) stay open.
+
 2026-11-05, after 0.8.1: **builds go to the phones over USB, not GitHub** (the user's call,
 "Install over USB only"). From 0.8.1 every APK carries AudioFool's Last.fm key and secret, and
 the repo's releases are public; uploading 0.8.1 was stopped by Claude's safety check as a
@@ -539,7 +544,7 @@ its own section at the top, as before. (From …) says which build first asked.
 
 Only the phones have the Last.fm key, so this is its first run against the real Last.fm.
 
-- [ ] **Logo > Listening History**: "Listening History · <you>", then TOTALS (Scrobbles,
+- [x] **Logo > Listening History**: "Listening History · <you>", then TOTALS (Scrobbles,
   Scrobbling since, Artists, Albums, Tracks) and the top lists on 12M. Do the figures and lists
   match your last.fm profile and the desktop's window? If a list comes back empty or wrong, say
   which.
@@ -626,14 +631,14 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 ### Last.fm sign-in with your username and password (from 0.8.1)
 
-- [ ] **Connect.** Settings > Last.fm > Connect: Username and Password (dots), then Connect.
+- [x] **Connect.** Settings > Last.fm > Connect: Username and Password (dots), then Connect.
   "Signing in…", then "Last.fm: connected as <you>" with a green dot. Does Samsung Pass or
   Google offer to fill or save the password?
 - [ ] **A wrong password**: "Last.fm didn't accept that username and password." over the
   fields; fix it and Connect works.
 - [ ] **Disconnect and connect again**: the form asks for the password again (it was never
   saved).
-- [ ] **Listening History** then shows your history (the 0.8.0 items above).
+- [x] **Listening History** then shows your history (the 0.8.0 items above).
 
 ### Last.fm (from 0.1.0)
 
@@ -670,7 +675,7 @@ Sorted on 2026-10-30, as the S24's list above.
 
 ### Listening History (from 0.8.0)
 
-- [ ] **Logo > Listening History** on the M21's smaller screen: the five figures, the six
+- [x] **Logo > Listening History** on the M21's smaller screen: the five figures, the six
   period words in one row, and the lists, against your last.fm profile. A tap on a song opens
   its album with the song highlighted.
 - [ ] **The cover menu**, now nine rows with Listening History: it still fits the screen
@@ -733,7 +738,7 @@ Sorted on 2026-10-30, as the S24's list above.
 - [ ] **Scrolling, the letter strip and Search** with ~26,000 tracks (from 0.0.2, 0.2.0): flings
   smooth; a slide down the strip keeps up and its letters fit the M21's shorter screen; Search
   keeps up with typing.
-- [ ] **Last.fm** (from 0.1.0): connected on the M21 too (a second session for the same user),
+- [x] **Last.fm** (from 0.1.0): connected on the M21 too (a second session for the same user),
   scrobbles arriving. From 0.8.1: if the M21 was connected before (with the key typed
   in), it stays connected after the update; if not, Connect asks for the username and password.
 
