@@ -58,10 +58,11 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 nav.open(Route.ListeningHistory)
             },
             // Spec 4.1 (0.9.0): every song that can be reached, shuffled, from a random
-            // one. Artists stays; the mini player shows what plays.
+            // one, and Now Playing opens on it, as for a tapped song (the user's call).
             shuffleLibrary = {
                 val now = app.library.state.value
-                now.library?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) }
+                val started = now.library?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) } == true
+                if (started) nav.open(Route.NowPlaying)
             },
         )
     }

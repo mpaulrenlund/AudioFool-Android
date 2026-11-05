@@ -56,7 +56,7 @@ don't block anything.
 - **On `main`, after 0.8.1** (2026-11-05, not built yet): **a shuffle button on Artists**
   (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable songs left
   out), `Player.shuffleAll` (Shuffle on, a random start), `ArtistsHeaderAction` with Settings'
-  `IconButtonSmall`. Artists stays; the mini player shows the song. The queue can now be the
+  `IconButtonSmall`. Now Playing opens on the song (the user's call). The queue can now be the
   whole library (27,115 on the M21), so `Player.save` encodes the resume file (about 3 MB
   there) off the main thread, newest save only, and the restore resolves paths off it too.
   Checked with the tests, ThemeLab and the emulator; the M21's full library is on its list.

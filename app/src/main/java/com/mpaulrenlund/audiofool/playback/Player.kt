@@ -119,12 +119,14 @@ class Player(
      * Artists' shuffle button (0.9.0, the user's request): [tracks] (the whole library,
      * [LibraryShuffle.queue]) played shuffled from a random song. Shuffle stays on, as
      * if turned on in Now Playing; turned off, the library plays on in its own order.
+     * True when the random song is the one now playing (audio focus may say no).
      */
-    fun shuffleAll(tracks: List<Track>) {
+    fun shuffleAll(tracks: List<Track>): Boolean {
         val start = LibraryShuffle.start(tracks.size)
-        if (start < 0) return
+        if (start < 0) return false
         state.shuffle = true
         play(tracks, start)
+        return state.track === tracks[start]
     }
 
     fun play(tracks: List<Track>, index: Int) {

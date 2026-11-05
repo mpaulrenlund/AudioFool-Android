@@ -73,9 +73,10 @@ button, so nothing to port; the shuffling is the desktop's `PlayOrder`, as for a
   core, 7 tests). Shuffle is turned on and play starts from a random song
   (`Player.shuffleAll`): `PlayOrder` pins it to the front and shuffles the rest. Repeat is left
   as it was. Each tap reshuffles.
-- **My calls, open to change:** **Artists stays on screen** (the mini player shows the song);
-  a tap on a song opens Now Playing, but this is a "start some music" button you may press
-  again for another pick. Shuffle stays on, so Now Playing shows it lit, and turning it off
+- **Now Playing opens on the song** (the user's call, "Open Now Playing", asked after a first
+  version that left Artists on screen), as a tap on a song does; back returns to Artists. It
+  opens only when the random song did start (`shuffleAll` says so; audio focus can refuse).
+- **My calls, open to change:** Shuffle stays on, so Now Playing shows it lit, and turning it off
   plays the library on in its own order from that song. The button is Settings' refresh button
   (`IconButtonSmall`: 32 dp, a 16 dp icon in `text.muted`, `AppIcons.SHUFFLE`, the same
   `settings.headerAction*` tokens; no new token), with TalkBack's name "Shuffle library"; a
@@ -95,8 +96,9 @@ button, so nothing to port; the shuffling is the desktop's `PlayOrder`, as for a
   ThemeLab: the 44 Artists pictures that have artists changed (the button; both phones, both
   themes), compared zoomed before and after; 4 new `now-playing-library-shuffle` ("12,345 /
   27,115" by the title, Shuffle on); every other picture pixel-identical. Emulator (release
-  build over 0.8.0): the button plays a random song with Artists still showing; Now Playing
-  "9 / 832" (the whole sample library) with Shuffle lit; Next jumps across artists; Shuffle off
+  build over 0.8.0): the button plays a random song and opens Now Playing on it, "2 / 832" (the
+  whole sample library) with Shuffle lit, and back returns to Artists, still playing; Next
+  jumps across artists; Shuffle off
   goes on in library order; a force-stop and restart reopens the same song, paused, "10 / 832",
   and Next carries on shuffled; with the SD card unmounted the queue was 823 (its 9 songs left
   out). **Not checked:** the M21's 27,000 songs (how long the tap and the restart take, and
@@ -581,8 +583,8 @@ its own section at the top, as before. (From …) says which build first asked.
 
 ### The shuffle button on Artists (from 0.9.0)
 
-- [ ] The shuffle icon at the right of the ARTISTS header: a tap starts a random song, Artists
-  stays, and the mini player shows it.
+- [ ] The shuffle icon at the right of the ARTISTS header: a tap starts a random song and opens
+  Now Playing on it; back returns to Artists.
 - [ ] Now Playing: Shuffle lit, the count "N / 8,127" (the whole library); Next jumps around the
   library.
 - [ ] Shuffle off in Now Playing: the next songs follow the library's order from there.
@@ -726,7 +728,7 @@ Sorted on 2026-10-30, as the S24's list above.
 The M21's 27,000 songs are the first queue that size.
 
 - [ ] A tap on the shuffle icon (right of the ARTISTS header) starts a random song within a
-  moment; Now Playing shows "N / 27,115" with Shuffle lit.
+  moment, and Now Playing opens on it with "N / 27,115" and Shuffle lit.
 - [ ] Song changes, pauses and seeks stay smooth while the whole library is queued (each saves
   the queue, about 3 MB, in the background).
 - [ ] Close AudioFool (swipe it from recents) and reopen it: the same song comes back paused,
