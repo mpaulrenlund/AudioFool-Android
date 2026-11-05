@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **Genius** (the desktop's Genius window as a screen, from the cover menu) — built and checked 2026-11-05, not released yet (0.10.0 proposed)
+- [x] **0.10.0**: Genius (the desktop's Genius window as a screen, from the cover menu) — 2026-11-05, released as pre-release [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0)
 - [x] **0.9.0**: a shuffle button on Artists plays the whole library shuffled — 2026-11-05, released as pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0), the first from the private repo (the APK carries AudioFool's Last.fm key)
 - [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 and the M21 over USB; not on GitHub (the APK carries the key)
 - [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
@@ -65,7 +65,10 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-05, after 0.9.0 (not released yet): **Genius** (the user: "In the desktop version …, we
+2026-11-05, 0.10.0 (versionCode 43; released the same day as pre-release
+[`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0), "AudioFool
+0.10.0", from the private repo, after "Build 0.10.0" and "Publish it"; the downloaded APK's
+SHA-256 matched `dist/`): **Genius** (the user: "In the desktop version …, we
 add a feature for a genius.com integration. … could we add that same feature for the android
 version. This should appear when long pressing the album art on the Now Playing screen.").
 The desktop's session 75, ported. Spec §5 (the cover menu) and the new §5.2.
@@ -647,7 +650,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Genius (from the next build)
+### Genius (from 0.10.0)
 
 The emulator can't reach genius.com from this PC (Zscaler), so this is its first live run.
 
@@ -806,7 +809,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Genius (from the next build)
+### Genius (from 0.10.0)
 
 - [ ] Long press the cover > **Genius**: the page, as on the S24; the header and the entries'
   notes ("Mar 7, 2017 · 297 votes") fit the narrower screen; the credit labels wrap, not clip.
