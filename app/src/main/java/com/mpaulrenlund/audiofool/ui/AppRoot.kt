@@ -1,5 +1,8 @@
 package com.mpaulrenlund.audiofool.ui
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -15,6 +18,9 @@ import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.LibraryShuffle
+import com.mpaulrenlund.audiofool.genius.GeniusNote
+import com.mpaulrenlund.audiofool.genius.GeniusRows
+import com.mpaulrenlund.audiofool.genius.GeniusState
 import com.mpaulrenlund.audiofool.lastfm.historyTarget
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
@@ -90,6 +96,25 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             toggleShuffle = player::toggleShuffle,
             toggleBitPerfect = player::toggleBitPerfect,
             analyze = { track -> nav.open(Route.Analysis(track.filePath)) },
+            // Spec 5.2: looked up each time, as the desktop's Ctrl+G; a song already found shows at once.
+            genius = { track ->
+                app.genius.show(track)
+                nav.open(Route.Genius(track.filePath))
+            },
+        )
+    }
+    val geniusActions = remember {
+        GeniusActions(
+            choose = app.genius::choose,
+            retry = app.genius::retry,
+            showMoreComments = app.genius::showMoreComments,
+            openUrl = { url ->
+                // The browser (or Genius's app); with neither, the tap does nothing, as on the desktop.
+                try {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                } catch (_: ActivityNotFoundException) {
+                }
+            },
         )
     }
     val lastFmActions = remember {
@@ -139,13 +164,15 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions, chosenSong = route.song)
                 Route.Search -> SearchScreen(browse, actions)
                 Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
-                is Route.Analysis -> AnalysisScreen(
-                    remember(library, route.path) {
-                        library.albumHolding(route.path)?.tracks?.firstOrNull { it.filePath.equals(route.path, ignoreCase = true) }
-                            ?: app.nowPlaying.track?.takeIf { it.filePath == route.path }
-                            ?: Track(filePath = route.path)
-                    },
-                )
+                is Route.Analysis -> AnalysisScreen(remember(library, route.path) { trackAt(library, route.path, app) })
+                is Route.Genius -> {
+                    val track = remember(library, route.path) { trackAt(library, route.path, app) }
+                    LaunchedEffect(route.path) { app.genius.showing(track) }
+                    // Until the model is on this song (a frame, after Android restored the screen), the header and "Looking up…".
+                    val shown = app.genius.state.takeIf { it.track?.filePath == route.path }
+                        ?: GeniusState(track = track, note = GeniusNote(GeniusRows.LOOKING_UP))
+                    GeniusScreen(shown, remember(library, route.path) { library.albumHolding(route.path) }, geniusActions)
+                }
                 Route.Settings -> SettingsScreen(
                     folders = folders.map { f ->
                         FolderLine(f, Storage.describe(context, f.path), state.unavailableFolders.any { it.equals(f.path, ignoreCase = true) })
@@ -187,3 +214,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
         }
     }
 }
+
+/** The library's song at [path] (the playing one if the library doesn't hold it), for the screens that name a song by path. */
+private fun trackAt(library: MusicLibrary, path: String, app: AudioFoolApp): Track =
+    library.albumHolding(path)?.tracks?.firstOrNull { it.filePath.equals(path, ignoreCase = true) }
+        ?: app.nowPlaying.track?.takeIf { it.filePath == path }
+        ?: Track(filePath = path)

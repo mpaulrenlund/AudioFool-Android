@@ -246,6 +246,22 @@
     "detailGap": 4,
     "detailSize": 13
   },
+  "genius": {
+    "$note": "The Genius screen (spec 5.2), from the cover menu. No mockup: the desktop's Genius window (session 75) in one column, built from the album header (album.*) and Statistics' panels and rows (statistics.*). Inside a section: sectionPaddingY above and below; entries (a question, an annotation, a comment) entryGap apart, the heading and its right-hand figure (columnGap apart), then the text bodyGap below. Credits and connections: the label in a creditLabelWidth column, columnGap before the names, rows creditGap apart. The header's 'Open on Genius' link is linkGap under the details.",
+    "sectionPaddingY": 10,
+    "entryGap": 14,
+    "headingSize": 15,
+    "figureSize": 13,
+    "columnGap": 12,
+    "bodyGap": 4,
+    "bodySize": 15,
+    "bodyLineHeight": 1.35,
+    "creditLabelWidth": 116,
+    "creditGap": 8,
+    "linkGap": 6,
+    "detailGap": 4,
+    "detailSize": 13
+  },
   "miniPlayer": {
     "height": 64,
     "marginX": 8,

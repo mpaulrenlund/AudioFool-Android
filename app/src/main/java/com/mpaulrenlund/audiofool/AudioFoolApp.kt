@@ -7,7 +7,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.mpaulrenlund.audiofool.core.genius.GeniusClient
+import com.mpaulrenlund.audiofool.core.genius.GeniusLookup
 import com.mpaulrenlund.audiofool.core.library.DriveChange
+import com.mpaulrenlund.audiofool.genius.Genius
 import com.mpaulrenlund.audiofool.lastfm.LastFm
 import com.mpaulrenlund.audiofool.lastfm.ListeningHistory
 import com.mpaulrenlund.audiofool.library.LibraryRepository
@@ -99,6 +102,9 @@ class AudioFoolApp : Application() {
 
     /** Listening History (spec 4.7): Last.fm's view of what was played, kept while its screen is under another. */
     val history: ListeningHistory by lazy { ListeningHistory(reader = { lastFm.historyReader() }, library = { library.state.value.library }) }
+
+    /** The Genius screen (spec 5.2): what genius.com has on a song, each song's lookup kept for the run (nothing saved). */
+    val genius: Genius by lazy { Genius(GeniusLookup(GeniusClient())) }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */
     private val systemControlsLazy = lazy {

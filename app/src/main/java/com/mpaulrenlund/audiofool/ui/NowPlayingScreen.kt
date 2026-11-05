@@ -91,6 +91,8 @@ class NowPlayingActions(
     val toggleBitPerfect: () -> Unit = {},
     /** The cover menu's Analyze (0.6.0): opens the Analysis screen on the song. */
     val analyze: (Track) -> Unit = {},
+    /** The cover menu's Genius (spec 5.2): opens the Genius screen on the song, looked up afresh. */
+    val genius: (Track) -> Unit = {},
 )
 
 /**
@@ -292,10 +294,21 @@ private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, appActio
         }
         val at = menuAt
         if (at != null && track != null) {
-            ArtMenu(at, menuForPictures ?: cover?.resolution ?: if (cover == null && LocalArt.current != null) "…" else "No cover", onClose = { menuAt = null }, appActions, version) {
-                menuAt = null
-                actions.analyze(track)
-            }
+            ArtMenu(
+                at,
+                menuForPictures ?: cover?.resolution ?: if (cover == null && LocalArt.current != null) "…" else "No cover",
+                onClose = { menuAt = null },
+                appActions,
+                version,
+                analyze = {
+                    menuAt = null
+                    actions.analyze(track)
+                },
+                genius = {
+                    menuAt = null
+                    actions.genius(track)
+                },
+            )
         }
     }
 }
@@ -319,11 +332,20 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int)
  * The cover menu (0.6.0, the user's call): a long press on the cover opens it at
  * the finger, kept `artMenu.edgeMargin` inside the screen. The logo menu's look.
  * The first row is the cover's resolution, information only; then Analyze, which
- * opens the Analysis screen; then the logo menu's rows (0.7.4, the user's call), so
- * all but the resolution are in alphabetical order with the version last.
+ * opens the Analysis screen, and Genius, which opens the Genius screen (spec 5.2); then
+ * the logo menu's rows (0.7.4, the user's call), so all but the resolution are in
+ * alphabetical order with the version last.
  */
 @Composable
-private fun ArtMenu(at: IntOffset, resolution: String, onClose: () -> Unit, appActions: AppActions, version: String, analyze: () -> Unit) {
+private fun ArtMenu(
+    at: IntOffset,
+    resolution: String,
+    onClose: () -> Unit,
+    appActions: AppActions,
+    version: String,
+    analyze: () -> Unit,
+    genius: () -> Unit,
+) {
     val t = LocalAppTheme.current
     val density = LocalDensity.current
     val room = with(density) { menuShadowRoom().roundToPx() }
@@ -333,6 +355,7 @@ private fun ArtMenu(at: IntOffset, resolution: String, onClose: () -> Unit, appA
         MenuSurface(t.dp("artMenu.width")) {
             MenuRow("Resolution", value = resolution, onClick = null)
             MenuRow("Analyze", onClick = analyze)
+            MenuRow("Genius", onClick = genius)
             AppMenuRows(onClose, appActions, version)
         }
     }

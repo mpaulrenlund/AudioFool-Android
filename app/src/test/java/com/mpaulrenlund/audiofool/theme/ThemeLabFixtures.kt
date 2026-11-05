@@ -237,4 +237,86 @@ object ThemeLabFixtures {
 
     /** A Second Sight song's path, for the Album screen with it chosen. */
     fun secondSightPath(title: String): String = tracks.first { it.album == "Second Sight" && it.title == title }.filePath
+
+    // ---- the Genius screen (spec 5.2): a made-up page for the song playing, in Genius's shape ----
+
+    private fun geniusHit(id: Long, title: String, artist: String) =
+        com.mpaulrenlund.audiofool.core.genius.GeniusHit(id, title, artist, "https://genius.com/songs/$id")
+
+    private val geniusSong = com.mpaulrenlund.audiofool.core.genius.GeniusSong(
+        id = 4242,
+        title = "Polygon Weather",
+        artist = "Aphelion Drive",
+        url = "https://genius.com/Aphelion-drive-polygon-weather-lyrics",
+        about = "The centrepiece of Second Sight, written in one night on a borrowed four-track while the band were snowed in.\n\n" +
+            "The drummer has said the rain at the end is the studio roof, recorded through an open window. A demo version is at https://example.com/polygon-demo.",
+        album = "Second Sight",
+        releaseDate = "March 3, 1997",
+        credits = listOf(
+            com.mpaulrenlund.audiofool.core.genius.GeniusCredit("Written by", listOf("Mara Lindqvist", "Tom Okafor")),
+            com.mpaulrenlund.audiofool.core.genius.GeniusCredit("Produced by", listOf("Tom Okafor")),
+            com.mpaulrenlund.audiofool.core.genius.GeniusCredit("Released", listOf("March 3, 1997")),
+            com.mpaulrenlund.audiofool.core.genius.GeniusCredit("Recorded at", listOf("Northlight Studio, Gothenburg")),
+            com.mpaulrenlund.audiofool.core.genius.GeniusCredit("Mastered at", listOf("Grey Room Mastering")),
+            com.mpaulrenlund.audiofool.core.genius.GeniusCredit("Background Vocals", listOf("Mara Lindqvist", "Jun Sato", "Elise Marchetti")),
+        ),
+        connections = listOf(
+            com.mpaulrenlund.audiofool.core.genius.GeniusConnection("Samples", listOf(geniusHit(11, "Startup Chime", "Aphelion Drive"))),
+            com.mpaulrenlund.audiofool.core.genius.GeniusConnection(
+                "Covered by",
+                listOf(
+                    geniusHit(21, "Polygon Weather", "Scanline"), geniusHit(22, "Polygon Weather", "Memory Card Club"),
+                    geniusHit(23, "Polygon Weather (Acoustic)", "Grey Chassis"), geniusHit(24, "Polygon Weather", "Redbook Audio"),
+                    geniusHit(25, "Polygon Weather", "Dual Shock Ensemble"), geniusHit(26, "Polygon Weather", "Bitcrush Quartet"),
+                    geniusHit(27, "Polygon Weather", "Emotion Engine"),
+                ),
+            ),
+        ),
+    )
+
+    private val geniusComments = com.mpaulrenlund.audiofool.core.genius.GeniusCommentPage(
+        listOf(
+            com.mpaulrenlund.audiofool.core.genius.GeniusComment("lowpolyfan", java.time.Instant.parse("2017-03-07T12:00:00Z"), 297, "Still the best thing they ever put out. The last minute gets me every time."),
+            com.mpaulrenlund.audiofool.core.genius.GeniusComment("discreaderror", java.time.Instant.parse("2019-11-21T08:30:00Z"), 41, "Anyone else hear the startup chime hidden at 3:12?"),
+            com.mpaulrenlund.audiofool.core.genius.GeniusComment("Anonymous", null, 1, "Saw them play this live in 1998. Louder than the record."),
+        ),
+        total = 57,
+        nextPage = 2,
+    )
+
+    private val geniusPage = com.mpaulrenlund.audiofool.core.genius.GeniusPage(
+        song = geniusSong,
+        answers = listOf(
+            com.mpaulrenlund.audiofool.core.genius.GeniusAnswer("What has the band said about the song?", "In a 1997 interview the band called it \"the weather report for a town that only exists in a video game\"."),
+            com.mpaulrenlund.audiofool.core.genius.GeniusAnswer("Is there a live recording?", "https://example.com/polygon-weather-live"),
+        ),
+        annotations = listOf(
+            com.mpaulrenlund.audiofool.core.genius.GeniusAnnotation("Clouds rendered in grey plastic", "The sky in the band's favourite racing game, drawn with just a few flat shapes.", verified = false),
+            com.mpaulrenlund.audiofool.core.genius.GeniusAnnotation("Forecast: low poly, clearing by dawn", "We wanted a weather forecast you could only hear inside a game. — Mara", verified = true),
+        ),
+        comments = geniusComments,
+    )
+
+    /** The Genius screen with the whole made-up page. */
+    fun genius(missing: List<String> = emptyList()): com.mpaulrenlund.audiofool.genius.GeniusState =
+        com.mpaulrenlund.audiofool.genius.GeniusRows.page(
+            nowPlayingTrack,
+            com.mpaulrenlund.audiofool.core.genius.GeniusPageResult(
+                if (missing.isEmpty()) geniusPage else geniusPage.copy(comments = com.mpaulrenlund.audiofool.core.genius.GeniusCommentPage.Empty),
+                missing,
+            ),
+            historyZone,
+        )
+
+    /** Genius found no page that is the song: the nearest results. */
+    val geniusSuggestions = listOf(
+        geniusHit(31, "Polygon Weather (Live at the Roundhouse)", "Aphelion Drive & Friends"),
+        geniusHit(32, "Polygon Weather Report", "The Low Poly Club"),
+        geniusHit(33, "Weather", "Polygon"),
+        geniusHit(34, "Polygon", "Weather Systems"),
+        geniusHit(35, "Polygon Weather", "Second Sight Tribute Band"),
+    )
+
+    /** The Album screen's album for the song playing, for the Genius screen's header. */
+    val nowPlayingAlbum get() = library.albumHolding(nowPlayingTrack.filePath)
 }

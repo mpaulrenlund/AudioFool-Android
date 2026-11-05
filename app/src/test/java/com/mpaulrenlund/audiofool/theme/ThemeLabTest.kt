@@ -49,6 +49,12 @@ import com.mpaulrenlund.audiofool.lastfm.LastFm
 import com.mpaulrenlund.audiofool.lastfm.HistoryState
 import com.mpaulrenlund.audiofool.core.scrobbling.ListeningPeriod
 import com.mpaulrenlund.audiofool.ui.HistoryActions
+import com.mpaulrenlund.audiofool.ui.GeniusActions
+import com.mpaulrenlund.audiofool.ui.GeniusScreen
+import com.mpaulrenlund.audiofool.genius.GeniusNote
+import com.mpaulrenlund.audiofool.genius.GeniusRows
+import com.mpaulrenlund.audiofool.genius.GeniusState
+import com.mpaulrenlund.audiofool.core.genius.GeniusException
 import com.mpaulrenlund.audiofool.ui.ListeningHistoryScreen
 import androidx.compose.foundation.rememberScrollState
 import org.junit.Test
@@ -281,6 +287,26 @@ class ThemeLabTest {
         }
         // A Listening History song row opens its album with the song chosen.
         shoot(device, "album-chosen-song") { AlbumScreen("Aphelion Drive", "Second Sight", browse(), actions, chosenSong = ThemeLabFixtures.secondSightPath("Startup Chime")) }
+
+        // Genius (spec 5.2, no mockup): a made-up page for the song playing; the top, then
+        // scrolled to the end (CONNECTIONS, COMMENTS, "Show 50 more"), and each state.
+        val song = ThemeLabFixtures.nowPlayingTrack
+        val album = ThemeLabFixtures.nowPlayingAlbum
+        shoot(device, "genius") { GeniusScreen(ThemeLabFixtures.genius(), album, GeniusActions()) }
+        shoot(device, "genius-end") { GeniusScreen(ThemeLabFixtures.genius(), album, GeniusActions(), rememberScrollState(Int.MAX_VALUE)) }
+        shoot(device, "genius-looking-up") { GeniusScreen(GeniusState(song, GeniusNote(GeniusRows.LOOKING_UP)), album, GeniusActions()) }
+        shoot(device, "genius-no-match") {
+            GeniusScreen(GeniusState(song, GeniusNote(GeniusRows.NO_MATCH), suggestions = ThemeLabFixtures.geniusSuggestions), album, GeniusActions())
+        }
+        shoot(device, "genius-failed") {
+            GeniusScreen(
+                GeniusState(song, GeniusRows.failed(GeniusException("Couldn't reach Genius: Unable to resolve host \"genius.com\": No address associated with hostname"))),
+                album,
+                GeniusActions(),
+            )
+        }
+        // A page without the comments Genius didn't send.
+        shoot(device, "genius-missing") { GeniusScreen(ThemeLabFixtures.genius(missing = listOf("comments")), album, GeniusActions()) }
     }
 
     /**
@@ -345,6 +371,8 @@ class ThemeLabTest {
         }
         // The period switch's six words, to see them fit.
         shoot(device, "font130-listening-history") { ListeningHistoryScreen(ThemeLabFixtures.history(), HistoryActions()) }
+        // The header, the entries' right-hand notes and the credit column, to see them fit.
+        shoot(device, "font130-genius") { GeniusScreen(ThemeLabFixtures.genius(), ThemeLabFixtures.nowPlayingAlbum, GeniusActions()) }
     }
 
     /** Now Playing's mockup state: third of ten, 2:18 in, its waveform and the readout the shared output gives. */
