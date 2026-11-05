@@ -14,7 +14,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 | What | Where |
 |---|---|
-| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (public), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
+| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (**private** since 2026-11-05, the user's call), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
 | The desktop app | `C:\MusicPlayer` (C# / WPF). Read-only from here. Its `src/AudioFool.Core` holds the logic to port; its `tests/` hold the tests to port with it |
 | Colour tokens | `design/theme-tokens.json` (PS1 Light) and `design/theme-tokens.dark.json` (PS2 Dark), the desktop's files copied unchanged |
 | Mobile sizes | `design/mobile-tokens.json` |
@@ -37,7 +37,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 The phones are plugged into this PC only when the user does it. Check `adb devices` rather than plan on it.
 
-- **Builds go to the phones over USB** (since 0.8.1, the user's call): `adb install -r` on each phone the user plugs in. **Never attach an APK to a GitHub release**: every build carries AudioFool's Last.fm key and secret, and the repo's releases are public. The user tries it on the S24 or the M21 and reports back. End each session with a short list of what to try on each device.
+- **Builds go out as GitHub pre-releases** with the APK attached (since 0.9.0, the user's call: they prefer it to installing over USB). Every build carries AudioFool's Last.fm key and secret, so **this is only allowed while the repo is private**: check `gh repo view --json visibility` says `PRIVATE` right before every upload, and never upload if it doesn't. 0.8.1 went over USB (`adb install -r`) because the repo was public then; that still works if the user asks for it. The user tries it on the S24 or the M21 and reports back. End each session with a short list of what to try on each device.
 - **One signing key from the start.** Every APK the user gets, test builds included, is signed with the same release keystore, kept outside the repo. A build signed with a different key won't install as an update; the user would have to uninstall, which wipes the library cache and settings.
 - **The emulator covers what it can**: scanning sample music, navigation, playback, gapless, the media session, lock screen and notification, resume. Verify there before handing over a build.
 - **Only the real devices** can check the full ~26,000-track library and its start times, SD card removal, Bluetooth and headset buttons, unplug pausing, and anything through a USB DAC (Bit-Perfect, DoP, the readout). Those go on the device lists in `design/progress.md`: *To test on the S24* and *To test on the M21*.

@@ -12,20 +12,25 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.8.1 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of. The latest build is **0.8.1**
-  (versionCode 41), on both phones since 2026-11-05. The user's last report: "looks its
-  working on both devices" (the Last.fm sign-in and Listening History). **On `main` since,
-  not in a build yet:** the shuffle button in the ARTISTS header (spec §4.1; see *What the
-  recent builds did*). It waits for the user to say to build (0.9.0 proposed).
-- **Builds go to the phones over USB, never to GitHub** (since 0.8.1, the user's call;
-  `CLAUDE.md` says so too). Every APK carries AudioFool's Last.fm key and secret, and the repo's
-  releases are public: Claude's safety check stopped the 0.8.1 upload as a credential leak, and
-  any later attempt would be the same leak. The last GitHub release is 0.8.0 (all but v0.1.0
-  are pre-releases; v0.0.5 was skipped). `dist/` (ignored by git) keeps each build's APK and
-  its notes: `dist/AudioFool-0.8.1.apk`, `dist/notes-0.8.1.md`.
-- **Next build:** **0.8.2** for fixes, **0.9.0** for new features. Confirm the number with the
+- **Where it stands:** nothing is broken that the user knows of. The latest build is **0.9.0**
+  (versionCode 42), the shuffle button in the ARTISTS header, published 2026-11-05 as the
+  pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0)
+  for the user to install from GitHub on each phone; no phone report yet. 0.8.1 is on both
+  phones (installed over USB); the user's last report on it: "looks its working on both
+  devices" (the Last.fm sign-in and Listening History).
+- **Builds go out as GitHub pre-releases again, APK attached, because the repo is private**
+  (since 0.9.0, the user's call: they prefer it to USB installs, and made the repo private on
+  2026-11-05 so the key can ship). Every APK carries AudioFool's Last.fm key and secret, so
+  **check `gh repo view mpaulrenlund/AudioFool-Android --json visibility` says `PRIVATE` right
+  before every upload**; if it ever says `PUBLIC`, don't upload (the APK would leak the key;
+  Claude's safety check stopped 0.8.1's upload while the repo was public). Only the owner,
+  `mpaulrenlund`, can change visibility; this PC (`marcusrenlund`) can't. 0.8.1 is the one
+  build that never went to GitHub. All but v0.1.0 are pre-releases; v0.0.5 was skipped.
+  `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.9.0.apk`,
+  `dist/notes-0.9.0.md`.
+- **Next build:** **0.9.1** for fixes, **0.10.0** for new features. Confirm the number with the
   user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's sign-in fixes).
-  versionCode 42 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  versionCode 43 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The routine the user expects**, when they say to build:
   1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
@@ -37,11 +42,17 @@ you touch a feature from then.
      the APK has the real Last.fm key, not the emulator's dummy: compare the release
      `BuildConfig.java` with `gradle.properties` in the shell, never printing either.
   5. Install it on the emulator and look at what changed.
-  6. The user says **"Show <v> notes"**: show them in chat, written for the user (what changed,
-     then a numbered *To try on the S24* / *To try on the M21*), and save them as
-     `dist/notes-<v>.md`.
-  7. The user plugs each phone in (see *Reaching the phones*): `adb -s <serial> install -r
-     dist/AudioFool-<v>.apk`, which keeps the library and settings. Check `versionName` after.
+  6. The notes (or when the user says **"Show <v> notes"**): show them in chat, written for the
+     user (what changed, then a numbered *To try on the S24* / *To try on the M21*), and save
+     them as `dist/notes-<v>.md`. Commit and push the bump ("<v> (versionCode N)").
+  7. Once the user is happy with the notes: check the repo is `PRIVATE` (above), then
+     `gh release create v<v> dist/AudioFool-<v>.apk -R mpaulrenlund/AudioFool-Android --target
+     <full SHA of the bump commit> --prerelease --title "AudioFool <v>" --notes-file
+     dist/notes-<v>.md` (`--target` takes a branch or a full SHA, not a short one). Download it
+     back (`gh release download`) and compare its SHA-256 with `dist/`. The user installs it
+     from the release page on each phone (signed in to GitHub); it updates in place and keeps
+     the library and settings. Over USB instead, only if the user asks: `adb -s <serial>
+     install -r dist/AudioFool-<v>.apk` (see *Reaching the phones*).
   8. Record it in `design/progress.md` (Sessions, Decisions, the test lists) and here; commit
      and push.
 - **Before the first Gradle run:** read *This PC's quirks* (Android Studio's JDK, the Zscaler
@@ -53,7 +64,7 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
-- **On `main`, after 0.8.1** (2026-11-05, not built yet): **a shuffle button on Artists**
+- **0.9.0** (2026-11-05, the first release from the private repo): **a shuffle button on Artists**
   (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable songs left
   out), `Player.shuffleAll` (Shuffle on, a random start), `ArtistsHeaderAction` with Settings'
   `IconButtonSmall`. Now Playing opens on the song (the user's call). The queue can now be the
@@ -68,7 +79,7 @@ don't block anything.
   was made with, so a phone connected earlier with a typed-in key stays connected. The browser
   approval and the key fields are gone from the app; core keeps `getToken` / `getSession`
   (ported). The emulator shows only the form: only the user signs in, on the phones.
-- **0.8.0** (2026-11-04, the last on GitHub): **Listening History** (spec §4.7), the desktop's
+- **0.8.0** (2026-11-04, the last release from the public repo): **Listening History** (spec §4.7), the desktop's
   ported with its 17 tests (`ListeningJson`, `ListeningMatch`, `HistoryTime`, `LastFmApi`'s
   unsigned GET reads). From the logo menu and the cover menu (`AppMenuRows`' first row).
   `AudioFoolApp.history` holds it so back from a row finds it as it was (`open()` from a menu
@@ -184,7 +195,7 @@ don't block anything.
 ## Reaching the phones
 
 - **Both phones reach adb over USB when the user plugs them in** (one at a time, usually);
-  builds are installed this way since 0.8.1. Check `adb devices -l` first: when the emulator is
+  0.8.1 was installed this way (the user prefers GitHub releases, since 0.9.0). Check `adb devices -l` first: when the emulator is
   up too, name the device (`-s` or `-t`).
 - **The M21** (plugged in 2026-10-25, 2026-10-26 and 2026-11-05). If adb doesn't list it and
   Windows shows no FiiO device (VID 2972), ask for: USB debugging on, the USB notification set
@@ -204,7 +215,8 @@ don't block anything.
   readings from Statistics > Debug (Playback). Never type a pairing code for the user. **Over
   USB the S24 works** (2026-11-05, the user turned debugging on and allowed this PC): adb serial
   `R5CWC28ETAW`, `model:SM_S928U`; 0.8.1 went on with `adb -s R5CWC28ETAW install -r`. Pick it
-  with `-s` when the emulator is up too. Builds reach it this way now (no GitHub releases).
+  with `-s` when the emulator is up too. 0.8.1 reached it this way; since 0.9.0 builds come
+  from the private repo's releases, and USB is for when the user asks.
 - **The emulator** holds the sample music: `/sdcard/Music` (with `Long/`: 200 artists × 2
   albums of silent MP3s; `Gapless Live/`: three songs of exactly 12.000 s; `Waveform Test/`: a
   60 s pink-noise FLAC with swells and a near-silent dip at 24–27 s, for the seekbar's shape)
@@ -216,7 +228,7 @@ don't block anything.
   uid there is 10236 (for `dumpsys audio`).
 - `dist/` (ignored by git) holds every build's APK, its notes (`notes-<v>.md`, since 0.8.1) and
   the M21's captured reports (`m21-*.txt`). An APK there carries AudioFool's Last.fm key: it
-  stays on this PC and the phones.
+  goes only to this PC, the phones and the private repo's releases, never anywhere public.
 - **Last.fm signs in with the user's own username and password** (after 0.8.0), which only
   the user types, on the phones: never sign in for them, on the emulator either. The emulator
   shows the form, the not-connected Listening History screen, and nothing past that. Without
@@ -372,11 +384,12 @@ Then, with `MSYS_NO_PATHCONV=1`:
 
 ### Shipping a test build
 
-The routine is under *Starting the next session*. Since 0.8.1 a build goes to each phone over
-USB (`adb -s <serial> install -r dist/AudioFool-<version>.apk`), **never to a GitHub release**:
-the APK carries AudioFool's Last.fm key. Keep the notes beside it (`dist/notes-<version>.md`),
-then add what only the phones can show to *To test on the S24* / *To test on the M21* in
-`design/progress.md`. Up to 0.8.0 it was `gh release create … --prerelease`.
+The routine is under *Starting the next session*. A build goes out as a GitHub pre-release
+with the APK (`gh release create … --prerelease`), **only after checking the repo is
+`PRIVATE`**: the APK carries AudioFool's Last.fm key. 0.8.1 alone went over USB (`adb -s
+<serial> install -r dist/AudioFool-<version>.apk`), while the repo was public. Keep the notes
+beside it (`dist/notes-<version>.md`), then add what only the phones can show to *To test on the
+S24* / *To test on the M21* in `design/progress.md`.
 
 ### Checking a screen against the mockups
 
@@ -418,9 +431,11 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ## Traps worth not rediscovering
 
-- **An APK built with AudioFool's Last.fm key must not go to GitHub** (or anywhere public).
-  Claude's safety check blocks the upload as credential leakage (it did for 0.8.1); don't look
-  for a way round it. Builds go over USB.
+- **An APK built with AudioFool's Last.fm key must never go anywhere public.** GitHub releases
+  are fine only because the repo is private (since 2026-11-05); check `PRIVATE` before each
+  upload. While the repo was public, Claude's safety check blocked 0.8.1's upload as a
+  credential leak; if the repo is ever public again, don't upload and don't look for a way
+  round it: tell the user.
 - **`MSYS_NO_PATHCONV=1` stops Git Bash converting `/c/...` paths too**: a Windows program
   (ffmpeg) then can't open them. With it set, give files as `C:/...`.
 - **A ThemeLab picture of a screen's end**: `TitledScreen` (Settings, Listening History) takes a

@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.9.0**: a shuffle button on Artists plays the whole library shuffled — 2026-11-05, released as pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0), the first from the private repo (the APK carries AudioFool's Last.fm key)
 - [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 and the M21 over USB; not on GitHub (the APK carries the key)
 - [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
 - [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
@@ -63,8 +64,22 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-05, after 0.8.1 (on `main`, not yet in a build; a new feature, so **0.9.0** is
-proposed): **a shuffle button on Artists** (the user: "At the far right side of the "Artists"
+2026-11-05, 0.9.0: **the repo is private, and builds go out as GitHub pre-releases again**
+(the user's call). After 0.9.0 was built, the user asked for a release ("installing via ADB
+isn't my preferred process"). Told that the APK carries AudioFool's Last.fm key and secret, so
+it can't go on a public release (0.8.1's upload was stopped as a credential leak), the user
+asked to keep the key in the APK and made the repo private instead ("I can make the Github
+project private, if that's the concern"). Offered too and not taken: a public release built
+without the key (signed-in phones keep their own saved key; a new sign-in would fail). The
+owner `mpaulrenlund` switched it; GitHub then said `PRIVATE`, and the repo and the release's
+APK gave 404 to an anonymous visitor. **Before every upload, check the repo is still
+`PRIVATE`**; `CLAUDE.md`, HANDOFF's routine and its traps say so. The user installs from the
+release page on each phone, signed in to GitHub. USB stays for when they ask.
+
+2026-11-05, 0.9.0 (versionCode 42; released the same day as pre-release
+[`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0), "AudioFool
+0.9.0", from the private repo; the user's number, proposed as a new feature and taken with
+"Let's build it"): **a shuffle button on Artists** (the user: "At the far right side of the "Artists"
 row, can we put a small shuffle button? Clicking this should shuffle the music library and
 start playing a random track."). Spec §4.1 and §6.1 (Resume) updated. The desktop has no such
 button, so nothing to port; the shuffling is the desktop's `PlayOrder`, as for an album.
@@ -573,7 +588,7 @@ Decisions for 0.2.6 and older (0.2.x, 0.1.x and sessions 2–5) are in
 - **No USB connection to either device** (the user's call, 2026-10-24). Both the S24 and the M21 are tested through GitHub pre-release APKs that the user installs and reports back on. The emulator covers what it can before each hand-over; what only a real device can show goes on the lists below.
 - **One signing key from the start** (2026-10-24): every APK the user gets, test builds included, is signed with the same release keystore, kept outside the repo, so each build installs over the last without wiping the cache or settings.
 - Ask before big choices only (new dependencies, spec changes, stored data, releases).
-- **The repo is public** (the user's call, 2026-10-24). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
+- **The repo is public** (the user's call, 2026-10-24; **private since 2026-11-05**, see 0.9.0 above). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
 
