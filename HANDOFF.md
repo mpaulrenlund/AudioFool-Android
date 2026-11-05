@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-05, after 0.8.1. Read this with `README.md` (how the app works) and
+Updated 2026-11-05, after 0.9.0. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -10,14 +10,23 @@ you touch a feature from then.
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
-  for the build" section from the top (0.8.1 down to 0.3.0, the S24's own USB driver) and the
+  for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of. The latest build is **0.9.0**
-  (versionCode 42), the shuffle button in the ARTISTS header, published 2026-11-05 as the
-  pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0)
-  for the user to install from GitHub on each phone; no phone report yet. 0.8.1 is on both
-  phones (installed over USB); the user's last report on it: "looks its working on both
-  devices" (the Last.fm sign-in and Listening History).
+- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
+  latest build is **0.9.0** (versionCode 42): the shuffle button in the ARTISTS header,
+  published 2026-11-05 as the pre-release
+  [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0) (APK
+  attached) for the user to install from the release page on each phone. **Not yet reported:**
+  whether it's on the phones, and how it behaves. 0.8.1 was on both phones before it
+  (installed over USB); the user's last report on that: "looks its working on both devices"
+  (the Last.fm sign-in and Listening History).
+- **First thing in the next chat**, unless the user leads with something else: when they report
+  on 0.9.0, tick the matching items under *The shuffle button on Artists (from 0.9.0)* in both
+  test lists and push. The M21 is the real test: a 27,115-song queue is new. If it's slow there:
+  the tap builds the queue (`LibraryShuffle.queue`) and `PlayOrder.candidates` (the whole
+  remaining order, mapped to tracks) on the main thread, at every song start too; a restart
+  decodes the ~3 MB `resume.json` on IO and resolves it on Default. Ask what was slow (the tap,
+  song changes, the restart) and measure with Debug's numbers before changing anything.
 - **Builds go out as GitHub pre-releases again, APK attached, because the repo is private**
   (since 0.9.0, the user's call: they prefer it to USB installs, and made the repo private on
   2026-11-05 so the key can ship). Every APK carries AudioFool's Last.fm key and secret, so
@@ -64,13 +73,14 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
-- **0.9.0** (2026-11-05, the first release from the private repo): **a shuffle button on Artists**
-  (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable songs left
-  out), `Player.shuffleAll` (Shuffle on, a random start), `ArtistsHeaderAction` with Settings'
-  `IconButtonSmall`. Now Playing opens on the song (the user's call). The queue can now be the
-  whole library (27,115 on the M21), so `Player.save` encodes the resume file (about 3 MB
-  there) off the main thread, newest save only, and the restore resolves paths off it too.
-  Checked with the tests, ThemeLab and the emulator; the M21's full library is on its list.
+- **0.9.0** (2026-11-05, the first release from the private repo): **a shuffle button on
+  Artists** (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable
+  songs left out), `Player.shuffleAll` (Shuffle on, a random start; says whether it started),
+  `ArtistsHeaderAction` with Settings' `IconButtonSmall`. Now Playing opens on the song (the
+  user's call). The queue can now be the whole library (27,115 on the M21), so `Player.save`
+  encodes the resume file (about 3 MB there) off the main thread, newest save only, and the
+  restore resolves paths off it too. Now Playing's count has thousands separators. Checked
+  with the tests, ThemeLab and the emulator; the M21's full library is on its list.
 - **0.8.1** (2026-11-05, over USB): **Last.fm signs in with the username and password**
   (spec §4.5, §7). `LastFmApi.getMobileSession` (a signed POST over HTTPS), `LastFm.connect`,
   with AudioFool's own key built in (`BuildConfig.LASTFM_*`, from `gradle.properties`;
@@ -79,9 +89,10 @@ don't block anything.
   was made with, so a phone connected earlier with a typed-in key stays connected. The browser
   approval and the key fields are gone from the app; core keeps `getToken` / `getSession`
   (ported). The emulator shows only the form: only the user signs in, on the phones.
-- **0.8.0** (2026-11-04, the last release from the public repo): **Listening History** (spec §4.7), the desktop's
-  ported with its 17 tests (`ListeningJson`, `ListeningMatch`, `HistoryTime`, `LastFmApi`'s
-  unsigned GET reads). From the logo menu and the cover menu (`AppMenuRows`' first row).
+- **0.8.0** (2026-11-04, the last release from the public repo): **Listening History** (spec
+  §4.7), the desktop's ported with its 17 tests (`ListeningJson`, `ListeningMatch`,
+  `HistoryTime`, `LastFmApi`'s unsigned GET reads). From the logo menu and the cover menu
+  (`AppMenuRows`' first row).
   `AudioFoolApp.history` holds it so back from a row finds it as it was (`open()` from a menu
   fetches afresh, `showing()` only if nothing was). The period switch is 7D · 1M · 3M · 6M · 12M
   · All; a song row opens `Route.Album(…, song)` with the song selected. The desktop's token
@@ -143,6 +154,16 @@ don't block anything.
 
 - Sends a few UI requests at a time, often several in one message, and says when to release:
   build them all into one version, then show the release notes and ask before publishing.
+  For 0.9.0: one request, built and pushed, then "Let's build it" (taking the proposed
+  number), then "can we create a release for this".
+- **Installs from GitHub releases, not over USB** ("installing via ADB isn't my preferred
+  process", 0.9.0). To make that safe with the key in the APK, they made the repo private
+  themselves (only the owner account can). Don't ask them to plug a phone in to install a build;
+  USB is for debugging or when they ask.
+- **Likes a new way to start music to behave like the existing one**: 0.9.0's shuffle button
+  first left Artists on screen (my call); asked as a yes/no after it was built, they chose
+  "Open Now Playing", as a tap on a song does. Build with the obvious call, list it as "my
+  call, open to change", and offer the one real alternative in the wrap-up question.
 - Answers design questions quickly when they come as short choices, with a recommended option
   first (AskUserQuestion works well, also for "plug the M21 in now" or "plug into the 3.5 mm
   jack" during a test). For a bug that can't be reproduced here, ask what they saw (when, how
@@ -159,8 +180,8 @@ don't block anything.
   the `<` `>` around the value. Write placeholders that can't be pasted wrongly (say "after the
   `=`, nothing else"), and check a pasted config line by its shape (masked, or a regex count),
   never by printing it. Asked first, then stripped the brackets with `sed` in place.
-- Plugs a phone in when asked, with debugging on. Its first connection needs "Allow USB
-  debugging" on the phone (both done by 2026-11-05).
+- Plugs a phone in when asked (for debugging; installs come from releases now), with debugging
+  on. Its first connection needs "Allow USB debugging" on the phone (both done by 2026-11-05).
 - Label any comparison picture (which phone, which theme) and leave a gap between its parts: an
   unlabelled stack of the S24's seekbar over the M21's read as "two waveforms".
 
@@ -195,8 +216,8 @@ don't block anything.
 ## Reaching the phones
 
 - **Both phones reach adb over USB when the user plugs them in** (one at a time, usually);
-  0.8.1 was installed this way (the user prefers GitHub releases, since 0.9.0). Check `adb devices -l` first: when the emulator is
-  up too, name the device (`-s` or `-t`).
+  0.8.1 was installed this way (the user prefers GitHub releases, since 0.9.0). Check
+  `adb devices -l` first: when the emulator is up too, name the device (`-s` or `-t`).
 - **The M21** (plugged in 2026-10-25, 2026-10-26 and 2026-11-05). If adb doesn't list it and
   Windows shows no FiiO device (VID 2972), ask for: USB debugging on, the USB notification set
   to "File transfer", "Allow" on the prompt, a data cable (on 2026-11-05 it showed up once
@@ -249,7 +270,7 @@ don't block anything.
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | The library | `library/LibraryRepository`: the cache first, then a background rescan; the scan reuses tags for files whose size and date haven't changed, and carries over every track of a folder it can't reach |
 | Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
-| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
+| Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`; `LibraryShuffle`, the whole library as one queue for Artists' shuffle button, 0.9.0) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`; the phone's own `getMobileSession`); the app's `lastfm/LastFm.kt` (the username-and-password sign-in, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
 | **AudioFool's Last.fm key** | `~/.gradle/gradle.properties`: `audiofool.lastfm.apiKey=` and `audiofool.lastfm.secret=` (32 hex characters each, the user's own API account at last.fm/api/accounts). **Outside the repo**, put there by the user. `app/build.gradle.kts` makes them `BuildConfig.LASTFM_API_KEY` / `LASTFM_SECRET`; `preReleaseBuild` stops a release without them. Check they're set with `grep -c '^audiofool.lastfm.apiKey=..*'`, never by printing them |
