@@ -1,8 +1,8 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-05, after 0.8.1 (Last.fm signs in with a username and password; installed on both phones over USB). Read this with `README.md` (how the app
-works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
-each device). The spec is `design/android-spec.md`; the USB driver's story is
+Updated 2026-11-05, after 0.8.1. Read this with `README.md` (how the app works) and
+`design/progress.md` (every decision, newest first, and the lists of what to test on each
+device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
 session notes, every decision up to 0.2.6) is in `design/progress-archive.md`: search it when
 you touch a feature from then.
@@ -10,82 +10,78 @@ you touch a feature from then.
 ## Starting the next session
 
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
-  for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
+  for the build" section from the top (0.8.1 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.8.1** (versionCode 41), `dist/AudioFool-0.8.1.apk` (notes beside it), installed
-  on the S24 and the M21 over USB on 2026-11-05 (both were on 0.8.0). **Not on GitHub**: from
-  0.8.1 every APK carries AudioFool's Last.fm key
-  and secret, so builds go to the phones over USB only (the user's call, 2026-11-05; Claude's
-  safety check stopped the upload as a credential leak). **Never upload an APK built with the key
-  to a release.** The last GitHub release is 0.8.0 (`gh release list`; all but v0.1.0 are
-  pre-releases, and v0.0.5 was skipped).
-- **Next build:** **0.8.2** for fixes, **0.9.0** for new features (confirm the number with the
-  user: they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's sign-in fixes).
-  Bump both in `app/build.gradle.kts` (versionCode 42 next). The logo menu shows the version
-  (`BuildConfig`); ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
-- **The routine the user expects:** bump, `:core:test :app:testDebugUnitTest
-  :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
-  signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
-  emulator, then the user says **"Show <v> notes"** (show them in chat, written for the user:
-  what changed, then a numbered *To try on the S24 / M21*), and the build goes to each phone that
-  is plugged in with `adb -s <serial> install -r dist/AudioFool-<v>.apk` (data kept); record it
-  in `design/progress.md` and here. `assembleRelease` stops unless AudioFool's Last.fm key is in
-  `gradle.properties` (see *Where everything lives*); check the APK has the real key, not the
-  emulator's dummy (compare `BuildConfig.java` with `gradle.properties`, never print either).
-- **0.6.0 (2026-11-02): Now Playing's cover menu and Analyze.** A long press on the cover: its
-  resolution, then Analyze (the desktop's spectrogram and opinion, ported with their tests); and
-  the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·"). Verified with the
-  tests, ThemeLab (both themes, both sizes) and on the emulator; waiting on the user's report from
-  the phones (the "from 0.6.0" items in both test lists).
-- **0.7.0 (2026-11-02): rescan progress.** A rescan the user starts shows in the ARTISTS and
-  MUSIC FOLDERS headers: "Checking for changes…", "Reading tags", then "Up to date · 3 new, 1
-  removed" for 4 s (`RescanOutcome`, `scanHeaderText`, `rescan(asked = true)`). Verified with the
-  tests, ThemeLab and the emulator; waiting on the "from 0.7.0" items in both test lists, and
-  0.6.0's are still open too.
-- **0.7.1 (2026-11-02):** the logo menu in alphabetical order with "Version 0.7.0" at the
-  foot; Now Playing's output readout 20 dp higher on the S24 (`nowPlaying.readoutLift`, taken
-  from the controls' lift so the buttons stay; the M21 unchanged). Verified with ThemeLab and
-  the emulator; waiting on the "from 0.7.1" items in both test lists.
-- **0.7.2 (2026-11-02):** the round buttons (Now Playing's six, the mini
-  player's three) without the desktop's molded lip at the bottom: `RoundButton` drops the bottom
-  inset shadow layer. Verified with ThemeLab and the emulator; waiting on the "from 0.7.2" item.
-- **0.7.3 (2026-11-03, released):** two bugs from the phones, both best
-  guesses (see `design/progress.md`). The S24's pop at the first Play with BP on: the first
-  stream after a take stays muted 500 ms (`COLD_SETTLE_MS`). The M21's "No Output" with
-  headphones in, even after a replug: only a whole-number FiiO `type` counts
-  (`OutputNames.fiioJackOf`), and Debug's FiiO jack row shows what FiiO last sent, or that
-  nothing came. If the M21 still says "No Output", that row says which way to go next. Verified
-  with the tests and the emulator (faked FiiO broadcasts); the user reported both fixed.
-- **0.7.4 (2026-11-03, released):** Now Playing's cover menu ends with the
-  logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
-  Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
-  emulator; the "from 0.7.4" items wait in both test lists.
-- **0.8.1 (2026-11-05, installed on both phones over USB): Last.fm signs in with the username and password** (spec §4.5, §7;
-  the user: "make the login process … my last.fm username and password instead"). `LastFmApi.getMobileSession`
-  (signed POST over HTTPS; 2 tests), `LastFm.connect(userName, password)` with AudioFool's own
-  key built in (`BuildConfig.LASTFM_*` from `gradle.properties`), the Settings form (Username,
-  Password as dots, password-manager autofill, the password never in saved state). The browser
-  approval and the key fields are gone from the app (core keeps `getToken`/`getSession`, ported).
-  A session made earlier with another key keeps its key (`LastFmStore` saves them together).
-  Verified with the tests, ThemeLab and the emulator (the form, the dots, Cancel; not signed
-  in). The user signed in on both phones and reported it working (2026-11-05).
-- **0.8.0 (2026-11-04, released): Listening History** (spec §4.7), the desktop's Last.fm page, from
-  the logo menu and the cover menu (`AppMenuRows`' first row). Core: `scrobbling/ListeningHistory.kt`,
-  `ListeningMatch.kt`, `LastFmApi`'s reads (unsigned GETs, `LastFmTransport.get`), the desktop's
-  17 tests ported. App: `lastfm/ListeningHistory.kt` (the model, held by the app as
-  `AudioFoolApp.history`; `open()` from a menu fetches afresh, `showing()` from the screen only
-  if nothing was), `ui/ListeningHistoryScreen.kt`; a song row opens `Route.Album(…, song)` with
-  that song selected. Checked with the tests, ThemeLab and the emulator (not connected there);
-  **never run against the real Last.fm** (no key on this PC): the "from 0.8.0" Listening History
-  items: the user reported it working on both phones (2026-11-05). If a list ever comes back empty or wrong, read
-  `ListeningJson` against the real answer (written from Last.fm's documented shapes, as the
-  desktop's, which the user confirmed works there).
+- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
+  latest build is **0.8.1** (versionCode 41), on both phones since 2026-11-05. The user's last
+  report: "looks its working on both devices" (the Last.fm sign-in and Listening History).
+- **Builds go to the phones over USB, never to GitHub** (since 0.8.1, the user's call;
+  `CLAUDE.md` says so too). Every APK carries AudioFool's Last.fm key and secret, and the repo's
+  releases are public: Claude's safety check stopped the 0.8.1 upload as a credential leak, and
+  any later attempt would be the same leak. The last GitHub release is 0.8.0 (all but v0.1.0
+  are pre-releases; v0.0.5 was skipped). `dist/` (ignored by git) keeps each build's APK and
+  its notes: `dist/AudioFool-0.8.1.apk`, `dist/notes-0.8.1.md`.
+- **Next build:** **0.8.2** for fixes, **0.9.0** for new features. Confirm the number with the
+  user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's sign-in fixes).
+  versionCode 42 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  pictures use a fixed "0.7.0", so a bump changes no picture.
+- **The routine the user expects**, when they say to build:
+  1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
+  2. `./gradlew :core:test :app:testDebugUnitTest :app:verifyRoborazziDebug :app:assembleRelease`
+     (with the environment under *This PC's quirks*). `assembleRelease` stops unless AudioFool's
+     Last.fm key is in `gradle.properties`.
+  3. Copy `app/build/outputs/apk/release/app-release.apk` to `dist/AudioFool-<v>.apk`.
+  4. Check the signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), and that
+     the APK has the real Last.fm key, not the emulator's dummy: compare the release
+     `BuildConfig.java` with `gradle.properties` in the shell, never printing either.
+  5. Install it on the emulator and look at what changed.
+  6. The user says **"Show <v> notes"**: show them in chat, written for the user (what changed,
+     then a numbered *To try on the S24* / *To try on the M21*), and save them as
+     `dist/notes-<v>.md`.
+  7. The user plugs each phone in (see *Reaching the phones*): `adb -s <serial> install -r
+     dist/AudioFool-<v>.apk`, which keeps the library and settings. Check `versionName` after.
+  8. Record it in `design/progress.md` (Sessions, Decisions, the test lists) and here; commit
+     and push.
+- **Before the first Gradle run:** read *This PC's quirks* (Android Studio's JDK, the Zscaler
+  trust store, the loopback directory, Gradle with the sandbox off).
 
-## Where things stand (2026-10-30)
+## What the recent builds did
 
-- **Nothing is broken that the user knows of.** The last reports: "s24u and m21 both look good"
-  on 0.2.6; Rescan Library works (0.5.0); "No stutter. Looks like this has been fixed" (0.5.1,
-  S24, BP on through the Shanling UA2 Plus).
+In short; the user's calls, the reasoning and what was checked are in
+`design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
+don't block anything.
+
+- **0.8.1** (2026-11-05, over USB): **Last.fm signs in with the username and password**
+  (spec §4.5, §7). `LastFmApi.getMobileSession` (a signed POST over HTTPS), `LastFm.connect`,
+  with AudioFool's own key built in (`BuildConfig.LASTFM_*`, from `gradle.properties`;
+  `preReleaseBuild` stops without it). The password is never stored, nor in saved state
+  (`remember`); the form offers it to the password manager. A session is saved with the key it
+  was made with, so a phone connected earlier with a typed-in key stays connected. The browser
+  approval and the key fields are gone from the app; core keeps `getToken` / `getSession`
+  (ported). The emulator shows only the form: only the user signs in, on the phones.
+- **0.8.0** (2026-11-04, the last on GitHub): **Listening History** (spec §4.7), the desktop's
+  ported with its 17 tests (`ListeningJson`, `ListeningMatch`, `HistoryTime`, `LastFmApi`'s
+  unsigned GET reads). From the logo menu and the cover menu (`AppMenuRows`' first row).
+  `AudioFoolApp.history` holds it so back from a row finds it as it was (`open()` from a menu
+  fetches afresh, `showing()` only if nothing was). The period switch is 7D · 1M · 3M · 6M · 12M
+  · All; a song row opens `Route.Album(…, song)` with the song selected. The desktop's token
+  files were copied again (they had gained `listeningHistory.periodGap` and `genius.*`). If a
+  list ever comes back empty or wrong, read `ListeningJson` against Last.fm's real answer.
+- **0.7.4** (2026-11-03): the cover menu ends with the logo menu's rows (`AppMenuRows`).
+- **0.7.3** (2026-11-03): the S24's pop at the first Play with BP on (the first stream after a
+  take muted 500 ms, `COLD_SETTLE_MS`); the M21's "No Output" (only a whole-number FiiO `type`
+  counts, `OutputNames.fiioJackOf`; Debug's FiiO jack row shows what FiiO last sent). The user
+  reported both fixed.
+- **0.7.2** (2026-11-02): the round buttons without the desktop's molded lip (`RoundButton`).
+- **0.7.1** (2026-11-02): the logo menu in alphabetical order with the version at its foot;
+  Now Playing's readout 20 dp higher on the S24 (`nowPlaying.readoutLift`).
+- **0.7.0** (2026-11-02): rescan progress in the ARTISTS and MUSIC FOLDERS headers
+  (`RescanOutcome`, `scanHeaderText`, `rescan(asked = true)`).
+- **0.6.0** (2026-11-02): Now Playing's cover menu and Analyze (the desktop's spectrogram and
+  opinion, ported); the readout gives the bit depth before the rate.
+
+## Background worth knowing (2026-10-30, still true)
+
 - **True bit-perfect on the S24 works** (since 0.4.6): with BP on and a USB DAC in, the app's
   own USB Audio driver (libusb, `usbaudio_driver.cpp`) plays to the DAC; Android's audio stack
   is bypassed. Everything is in `design/usb-bit-perfect.md` and spec §6.2. What it took:
@@ -117,10 +113,11 @@ you touch a feature from then.
   holds the DAC; the **M21 check** that 0.4.0's new output layer changed nothing there (BP on,
   an album through the headphone out: gapless, readout, seeks without clicks). The user also
   might want BP remembered per output; only if they ask.
-- **The test lists were sorted on 2026-10-30**: `design/progress.md` holds only what is still
-  open (17 on the S24, 11 on the M21, grouped by subject); the "seen in daily use" items under
-  them the user confirmed with "All fine" the same day. The per-version lists with
-  every result up to 0.5.1 are in `design/progress-archive.md`. Don't block on any of them.
+- **The test lists** in `design/progress.md` hold only what is still open, newest build first,
+  then by subject (sorted on 2026-10-30; the "seen in daily use" items under them the user
+  confirmed with "All fine" that day). Each build adds its own section at the top. The
+  per-version lists with every result up to 0.5.1 are in `design/progress-archive.md`. Don't
+  block on any of them.
 
 ## How the user works
 
@@ -132,8 +129,18 @@ you touch a feature from then.
   often, which phone) before guessing: that is what found 0.2.0's stuck cover.
 - Keeps the M21 exactly as it is when asking for an S24 change: S24-only layout goes through the
   spare height, which is 0 on the M21; check the M21's pictures come out pixel-identical.
-- Reports back in a sentence ("Seems to be fixed"); tick the matching items in
-  `design/progress.md` and push.
+- Reports back in a sentence ("Seems to be fixed", "looks its working on both devices"); tick
+  the matching items in `design/progress.md` and push, leaving open what the sentence doesn't
+  cover.
+- **Asks before a change to the spec or to stored data is fine; they expect it** (CLAUDE.md).
+  The username-and-password sign-in was asked as a trade-off first (the key inside every APK),
+  then built on "Yes, build it".
+- **Copies example lines literally:** given `audiofool.lastfm.apiKey=<your API key>`, they kept
+  the `<` `>` around the value. Write placeholders that can't be pasted wrongly (say "after the
+  `=`, nothing else"), and check a pasted config line by its shape (masked, or a regex count),
+  never by printing it. Asked first, then stripped the brackets with `sed` in place.
+- Plugs a phone in when asked, with debugging on. Its first connection needs "Allow USB
+  debugging" on the phone (both done by 2026-11-05).
 - Label any comparison picture (which phone, which theme) and leave a gap between its parts: an
   unlabelled stack of the S24's seekbar over the M21's read as "two waveforms".
 
@@ -167,9 +174,13 @@ you touch a feature from then.
 
 ## Reaching the phones
 
-- **The M21 can be plugged into this PC** (the user did, 2026-10-25 and 2026-10-26). If adb
-  doesn't list it and Windows shows no FiiO device (VID 2972), ask for: USB debugging on, the
-  USB notification set to "File transfer", "Allow" on the prompt, a data cable. Its screen:
+- **Both phones reach adb over USB when the user plugs them in** (one at a time, usually);
+  builds are installed this way since 0.8.1. Check `adb devices -l` first: when the emulator is
+  up too, name the device (`-s` or `-t`).
+- **The M21** (plugged in 2026-10-25, 2026-10-26 and 2026-11-05). If adb doesn't list it and
+  Windows shows no FiiO device (VID 2972), ask for: USB debugging on, the USB notification set
+  to "File transfer", "Allow" on the prompt, a data cable (on 2026-11-05 it showed up once
+  "Allow" was tapped). Its screen:
   the logo (menu) is at (56, 104) in its 750 × 1334 px. adb shows it as
   `model:FiiO_M21` with the serial "?", so pick it with `adb -t <transport_id>` from
   `adb devices -l` (the emulator is the other device). adb isn't on the PATH: it is
@@ -194,7 +205,9 @@ you touch a feature from then.
   noted (0.2.6), the app there had Bit-Perfect saved on, Repeat All and Shuffle on, and Last.fm
   not connected. The AVD sometimes exits on its own (exit code 4): start it again. The app's
   uid there is 10236 (for `dumpsys audio`).
-- `dist/` (ignored by git) holds the released APKs and the M21's captured reports (`m21-*.txt`).
+- `dist/` (ignored by git) holds every build's APK, its notes (`notes-<v>.md`, since 0.8.1) and
+  the M21's captured reports (`m21-*.txt`). An APK there carries AudioFool's Last.fm key: it
+  stays on this PC and the phones.
 - **Last.fm signs in with the user's own username and password** (after 0.8.0), which only
   the user types, on the phones: never sign in for them, on the emulator either. The emulator
   shows the form, the not-connected Listening History screen, and nothing past that. Without
@@ -224,11 +237,11 @@ you touch a feature from then.
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
-| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `ArtistIndexStrip.kt` (Artists' letter strip), `NowPlayingScreen.kt` (with `SwipeToSkip`), `StatisticsScreen.kt` (Statistics and Debug), `MiniPlayer.kt`, `LogoMenu.kt`, `Parts.kt` (the shared parts, `AlbumArt`) |
+| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `ArtistIndexStrip.kt` (Artists' letter strip), `NowPlayingScreen.kt` (with `SwipeToSkip`), `StatisticsScreen.kt` (Statistics and Debug; `Figures` and `StatBar` shared with Listening History), `ListeningHistoryScreen.kt`, `AnalysisScreen.kt`, `MiniPlayer.kt`, `LogoMenu.kt` (`AppMenuRows`, shared with the cover menu), `Parts.kt` (the shared parts, `AlbumArt`) |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
 | TagLib 2.3.2 (C++, vendored unchanged) | `third_party/taglib/`; the JNI bridge is `app/src/main/cpp/tagreader_jni.cpp` |
 | Selawik font | `app/src/main/res/font/` (Regular, Semibold, Bold), licence in `third_party/selawik/` |
-| Token files | `design/theme-tokens.json`, `theme-tokens.dark.json` (the desktop's, unchanged), `design/mobile-tokens.json`. The build copies all three, and `PlayStation-Logo-1994.png`, into the app's assets (`copyAppAssets`); never copy them by hand |
+| Token files | `design/theme-tokens.json`, `theme-tokens.dark.json` (the desktop's, unchanged: `C:\MusicPlayer\design\theme-tokens.json` and `design\ps2-dark\theme-tokens.dark.json`, last copied 2026-11-04; copy both again when the desktop's change), `design/mobile-tokens.json`. The build copies all three, and `PlayStation-Logo-1994.png`, into the app's assets (`copyAppAssets`); never copy them by hand |
 | ThemeLab pictures | `app/screenshots/` (recorded by Roborazzi; compare with `design/screens/`) |
 | **Release keystore** | `C:\Users\MarcusRenlund\AndroidKeys\audiofool-release.jks`, passwords in `audiofool-release.properties` beside it. **Outside the repo.** Back up both files together |
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
@@ -396,6 +409,13 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 
 ## Traps worth not rediscovering
 
+- **An APK built with AudioFool's Last.fm key must not go to GitHub** (or anywhere public).
+  Claude's safety check blocks the upload as credential leakage (it did for 0.8.1); don't look
+  for a way round it. Builds go over USB.
+- **`MSYS_NO_PATHCONV=1` stops Git Bash converting `/c/...` paths too**: a Windows program
+  (ffmpeg) then can't open them. With it set, give files as `C:/...`.
+- **A ThemeLab picture of a screen's end**: `TitledScreen` (Settings, Listening History) takes a
+  `ScrollState`; pass `rememberScrollState(Int.MAX_VALUE)`, which settles at the bottom.
 - **Ejecting a volume kills any process with a file open on it.** vold sends SIGINT to every
   process holding a file on the card about 250 ms after `ACTION_MEDIA_EJECT`; the app has
   that long to close its streams (`Storage.watchVolumes`' `onEjecting` → `Player.letGoOf`).
