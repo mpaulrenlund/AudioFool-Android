@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Genius** (the desktop's Genius window as a screen, from the cover menu) — built and checked 2026-11-05, not released yet (0.10.0 proposed)
 - [x] **0.9.0**: a shuffle button on Artists plays the whole library shuffled — 2026-11-05, released as pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0), the first from the private repo (the APK carries AudioFool's Last.fm key)
 - [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 and the M21 over USB; not on GitHub (the APK carries the key)
 - [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
@@ -63,6 +64,56 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-05, after 0.9.0 (not released yet): **Genius** (the user: "In the desktop version …, we
+add a feature for a genius.com integration. … could we add that same feature for the android
+version. This should appear when long pressing the album art on the Now Playing screen.").
+The desktop's session 75, ported. Spec §5 (the cover menu) and the new §5.2.
+- **Core** (`core/.../genius/`): `GeniusModels`, `GeniusJson` (kotlinx's JSON tree for the
+  desktop's `System.Text.Json`), `GeniusMatch`, `GeniusClient` (a `GeniusTransport` like Last.fm's,
+  `HttpURLConnection`, every request and its parsing on IO) and `GeniusLookup` (coroutines for
+  its tasks), with the desktop's 64 test cases in 32 tests (`GeniusTest`; each `[Theory]` a loop).
+  One difference: kotlinx reads a bare word like `<html>blocked</html>` as a JSON literal where
+  .NET fails, so anything that isn't a JSON object counts as "without a page AudioFool can read".
+- **The app** (`genius/Genius.kt`, `genius/LinkedText.kt`, `ui/GeniusScreen.kt`): `Genius` (the
+  desktop's `GeniusViewModel`, its wording unchanged, in `GeniusRows`) is held by the app
+  (`AudioFoolApp.genius`), so its lookup keeps every song found for the run, as the desktop's
+  does. `Route.Genius(path)` names the song, so the screen stays on it when the next one plays.
+  The cover menu's **Genius** row (between Analyze and Listening History: alphabetical) calls
+  `show` each time, as the desktop's Ctrl+G does. "Open on Genius" and links in the text open
+  the browser (`ACTION_VIEW`; with nothing to open it, the tap does nothing, as on the desktop).
+- **The user's call:** in the cover menu (the long press on Now Playing's art).
+- **My calls, open to change:** the screen is titled "Genius" (the desktop's window title is
+  "Song · Genius"; the song is right under it here). The song's header is the Album screen's
+  header in a panel (its album's cover, title, blue artist, "Album · Year", then "Open on
+  Genius"). The desktop's message line (looking up, no match, failed) is a GENIUS panel's row,
+  as Listening History's states are, and a failure, or a part Genius didn't send, is tappable
+  with "Tap to try again." (the desktop says to open the song again). "Show 50 more" says
+  "Loading…" while the next page comes (the desktop shows nothing). Body text is 15 (the
+  desktop's 13 is small on a phone); the credit label column is 116 dp (`genius.creditLabelWidth`;
+  the desktop's 150 leaves too little on the M21). Links are the desktop's `theme.link`:
+  `text.primary` at `dialog.emphasisWeight`, underlined.
+- **Tokens:** `genius.*` in `mobile-tokens.json`; the desktop's `genius.*` (in both of its files,
+  copied unchanged earlier) are its window's and aren't used.
+- **Checked:** 499 core tests (32 new) and 59 app tests (12 new: the wording, `LinkedText`, the
+  model against a made-up genius.com: a match, show more, no match and a chosen result, a
+  failure and its retry, the same song again asking nothing). ThemeLab: 28 new pictures (the
+  page's top and end, looking up, no match, failed, a missing part, 1.3 font; both phones,
+  both themes, made-up text), the 4 cover-menu pictures changed (the new row), every other
+  picture pixel-identical. Emulator (release build over 0.9.0): the row in the cover menu, the
+  screen with the song's header and cover, the failure row and its retry, back to Now Playing.
+- **Not checked against the real genius.com, and why:** this PC's Zscaler re-signs genius.com's
+  certificate, which Android doesn't trust, so the emulator gets "Trust anchor for
+  certification path not found" (correctly shown as a failure). A JVM probe through the ported
+  client (with the Zscaler trust store) matched Radiohead's and the Beatles' songs and read
+  their pages, but Cloudflare answered about 1 request in 4 with a challenge (HTTP 403,
+  `cf-mitigated: challenge`), parallel or not; curl from this PC got 0 of 20. Cloudflare scores
+  the desktop JDK's own requests; the phones send theirs through Android's stack, which none
+  of this measures. **On the phones, watch for "Couldn't load the Genius page. Genius answered
+  HTTP 403 …" or a "didn't send" row**: if they come often, it's Genius's bot check refusing the
+  phone. Don't try to get round it (imitating a browser's requests was ruled out); the honest
+  options are the documented `api.genius.com` with a token (no comments, no Q&A) or living
+  with a retry tap, which is the user's call.
 
 2026-11-05, 0.9.0: **the repo is private, and builds go out as GitHub pre-releases again**
 (the user's call). After 0.9.0 was built, the user asked for a release ("installing via ADB
@@ -596,6 +647,23 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Genius (from the next build)
+
+The emulator can't reach genius.com from this PC (Zscaler), so this is its first live run.
+
+- [ ] Long press the cover in Now Playing > **Genius**: the song's header, "Looking up on
+  Genius…", then the page (ABOUT, QUESTIONS & ANSWERS, ANNOTATIONS, CREDITS, CONNECTIONS,
+  COMMENTS: whichever the song has). Try a well-known song and a "(Remastered)" one.
+- [ ] How often a GENIUS row says "Couldn't load the Genius page. Genius answered HTTP 403…" or
+  "Genius didn't send the … this time" (Genius's bot check refusing the phone). Tap it to try
+  again.
+- [ ] A song Genius doesn't have (an instrumental, a game soundtrack): "Genius has no page that
+  matches this song." and CLOSEST ON GENIUS; a tap on one loads it under the same header.
+- [ ] **Show 50 more** under the comments (a popular song); **Open on Genius** and a link in the
+  text open the browser (or Genius's app).
+- [ ] Next song while Genius is open: the screen stays on its song; back returns to Now Playing.
+- [ ] Wi-Fi and mobile data off: the failure row with the reason; back on, a tap loads it.
+
 ### The shuffle button on Artists (from 0.9.0)
 
 - [ ] The shuffle icon at the right of the ARTISTS header: a tap starts a random song and opens
@@ -737,6 +805,14 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Genius (from the next build)
+
+- [ ] Long press the cover > **Genius**: the page, as on the S24; the header and the entries'
+  notes ("Mar 7, 2017 · 297 votes") fit the narrower screen; the credit labels wrap, not clip.
+- [ ] A song from the SD card, then from internal storage; and with the card out, the
+  unavailable song still opens Genius (it needs only the tags).
+- [ ] How often a 403 or a "didn't send" row comes, as on the S24.
 
 ### The shuffle button on Artists (from 0.9.0)
 

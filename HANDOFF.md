@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-05, after 0.9.0. Read this with `README.md` (how the app works) and
+Updated 2026-11-05, after 0.9.0 and the Genius screen (not released yet). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,8 +12,12 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
-  latest build is **0.9.0** (versionCode 42): the shuffle button in the ARTISTS header,
+- **Where it stands:** **the Genius screen is built, committed and pushed, but not released**
+  (spec §5.2; the desktop's session 75, ported; from the cover menu's new **Genius** row). It
+  goes into the next build, **0.10.0** (a new feature; confirm with the user), when they say to
+  build. It has **never seen the real genius.com on Android**: the emulator can't get past this
+  PC's Zscaler (below), so the phones are its first live run; the checks are in both test lists.
+  Nothing else is open. The latest released build is **0.9.0** (versionCode 42): the shuffle button in the ARTISTS header,
   published 2026-11-05 as the pre-release
   [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0) (APK
   attached) for the user to install from the release page on each phone. **Not yet reported:**
@@ -73,6 +77,14 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
+- **Genius** (2026-11-05, after 0.9.0; not released): the cover menu's **Genius** row opens
+  `Route.Genius(path)`, what genius.com has on the song (spec §5.2). Core `genius/` (ported with
+  the desktop's tests), the app's `genius/Genius.kt` (held as `AudioFoolApp.genius`, so a song
+  found is kept for the run) and `ui/GeniusScreen.kt`. It uses genius.com's undocumented web API
+  (no key). **Cloudflare stands in front of it**: from this PC, desktop Java's requests were
+  challenged (HTTP 403, `cf-mitigated: challenge`) about 1 in 4, curl's never. What the phones
+  get is unknown until the user tries it; if 403s are common there, ask the user before
+  changing anything, and never imitate a browser to get past the check.
 - **0.9.0** (2026-11-05, the first release from the private repo): **a shuffle button on
   Artists** (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable
   songs left out), `Player.shuffleAll` (Shuffle on, a random start; says whether it started),
@@ -275,6 +287,7 @@ don't block anything.
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`; the phone's own `getMobileSession`); the app's `lastfm/LastFm.kt` (the username-and-password sign-in, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
 | **AudioFool's Last.fm key** | `~/.gradle/gradle.properties`: `audiofool.lastfm.apiKey=` and `audiofool.lastfm.secret=` (32 hex characters each, the user's own API account at last.fm/api/accounts). **Outside the repo**, put there by the user. `app/build.gradle.kts` makes them `BuildConfig.LASTFM_API_KEY` / `LASTFM_SECRET`; `preReleaseBuild` stops a release without them. Check they're set with `grep -c '^audiofool.lastfm.apiKey=..*'`, never by printing them |
 | Listening History | `core/.../scrobbling/ListeningHistory.kt` (periods, records, `ListeningJson`, `HistoryTime`) and `ListeningMatch.kt` (ported); the app's `lastfm/ListeningHistory.kt` (model, `HistoryRows`, `historyTarget`) and `ui/ListeningHistoryScreen.kt`; ThemeLab's made-up answers in `ThemeLabFixtures.history()` |
+| Genius (after 0.9.0) | `core/.../genius/` (ported: `GeniusClient`, `GeniusJson`, `GeniusMatch`, `GeniusLookup`, `GeniusModels`; tests in `GeniusTest`); the app's `genius/Genius.kt` (the model and `GeniusRows`, the desktop's wording), `genius/LinkedText.kt` and `ui/GeniusScreen.kt`; ThemeLab's made-up page in `ThemeLabFixtures.genius()` |
 | Analyze (0.6.0) | `core/.../analysis/` (ported: `Fft`, `SpectrumScale`, `SpectrumAccumulator`, `QualityOpinion`); the app's `playback/TrackAnalyzer.kt` (BASS, lets go at an eject) and `ui/AnalysisScreen.kt`; the cover menu is `ArtMenu` in `NowPlayingScreen.kt`, sharing `MenuSurface` / `MenuRow` with the logo menu |
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
@@ -482,6 +495,11 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   M21. Anything per queue entry on the main thread (the resume save, the restore's lookups,
   a list built at each song change) costs that many; keep such work off the main thread or
   proportional to what's near the song playing.
+- **The emulator can't reach genius.com from this PC**: Zscaler re-signs its certificate, and
+  Android doesn't trust Zscaler's root, so the Genius screen says "Couldn't reach Genius:
+  …Trust anchor for certification path not found." That's Zscaler, not the app. A JVM test can
+  reach it (the Gradle trust store has Zscaler's root), but Cloudflare challenges desktop
+  Java's requests about 1 in 4, so a JVM probe's 403s say nothing about the phones.
 - **The listening time and scrobbles count the heard position**, not the clock: anything
   that changes how `positionMs()` behaves changes both.
 

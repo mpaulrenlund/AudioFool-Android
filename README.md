@@ -93,6 +93,11 @@ every decision and what is still to be checked on the phones.
   top ten artists, albums and tracks for 7D, 1M, 3M, 6M, 12M or All, and the last 20 plays.
   A row the library holds opens its artist, its album, or its album with the song
   highlighted. It reads with the API key and your user name only; nothing is saved.
+- **Genius.** From the cover menu: what genius.com has on the song (the desktop's Genius
+  window, ported with its tests): the write-up, questions and answers, explanations of the
+  lyrics, credits, connections (samples, covers) and listeners' comments, 50 at a time. With
+  no matching page, Genius's five nearest results to choose from. It reads genius.com's own
+  web API (no key; no lyrics); each song found is kept until the app closes, nothing saved.
 - **The theme.** The desktop's token files are the app's theme, read by JSON path
   (`color.panel.bg`, `shadow.controlButton`); sizes come from `design/mobile-tokens.json`.
   Dark when nothing is saved; a switch applies at once.
