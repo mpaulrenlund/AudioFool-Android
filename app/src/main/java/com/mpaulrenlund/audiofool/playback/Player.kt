@@ -16,6 +16,7 @@ import com.mpaulrenlund.audiofool.core.library.LibraryRelocator
 import com.mpaulrenlund.audiofool.core.library.SafeFile
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
+import com.mpaulrenlund.audiofool.core.playback.LibraryShuffle
 import com.mpaulrenlund.audiofool.core.playback.OutputNames
 import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
@@ -35,6 +36,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * The queue and what plays from it (spec 6.1): a tap on a song plays it with the
@@ -111,6 +113,18 @@ class Player(
         val index = albumTracks.indexOfFirst { it === track }.takeIf { it >= 0 }
             ?: albumTracks.indexOfFirst { it.filePath == track.filePath }
         if (index < 0) play(listOf(track), 0) else play(albumTracks, index)
+    }
+
+    /**
+     * Artists' shuffle button (0.9.0, the user's request): [tracks] (the whole library,
+     * [LibraryShuffle.queue]) played shuffled from a random song. Shuffle stays on, as
+     * if turned on in Now Playing; turned off, the library plays on in its own order.
+     */
+    fun shuffleAll(tracks: List<Track>) {
+        val start = LibraryShuffle.start(tracks.size)
+        if (start < 0) return
+        state.shuffle = true
+        play(tracks, start)
     }
 
     fun play(tracks: List<Track>, index: Int) {
@@ -365,9 +379,8 @@ class Player(
      * library is there to find its songs in. Only once, and only when nothing has
      * been played since the app started.
      */
-    fun restore(point: ResumePoint, lookup: (String) -> Track?) {
+    fun restore(restored: ResumePoint.Restored) {
         if (queue.isNotEmpty()) return
-        val restored = point.resolve(lookup) ?: return
         queue = restored.queue
         state.shuffle = restored.shuffle
         state.repeat = restored.repeat
@@ -384,26 +397,35 @@ class Player(
     fun readResumePoint(): ResumePoint? =
         SafeFile.read(resumePath, System.currentTimeMillis()) { bytes -> ResumePoint.decode(bytes) }.first
 
-    /** Saves what to reopen to. Cheap: a few hundred bytes. */
+    /** Writes the resume point: one save at a time, in the order they were asked. */
+    private val saving = Dispatchers.IO.limitedParallelism(1)
+
+    /** The newest save asked for; one still waiting behind a newer one is skipped. */
+    private val savesAsked = AtomicLong()
+
+    /**
+     * Saves what to reopen to. A few hundred bytes for an album, but a few MB for the
+     * whole library shuffled (Artists' shuffle button, 0.9.0: 27,000 paths on the M21),
+     * so the paths are gathered and encoded off the main thread, and of several saves
+     * asked in a row only the newest is written.
+     */
     fun save() {
         val index = heardIndex
         if (index !in queue.indices) return
-        val point = ResumePoint(
-            paths = queue.map { it.filePath },
-            index = index,
-            positionMs = positionMs(),
-            shuffle = state.shuffle,
-            repeat = state.repeat,
-            order = if (state.shuffle) order.order else emptyList(),
-        )
-        val bytes = point.encode()
-        scope.launch(Dispatchers.IO) {
-            synchronized(this@Player) {
-                try {
-                    SafeFile.write(resumePath) { it.write(bytes) }
-                } catch (e: IOException) {
-                    // Next save tries again.
-                }
+        // The queue is replaced, never changed in place, so it can be read on the way.
+        val tracks = queue
+        val positionMs = positionMs()
+        val shuffle = state.shuffle
+        val repeat = state.repeat
+        val playOrder = if (shuffle) order.order else emptyList()
+        val asked = savesAsked.incrementAndGet()
+        scope.launch(saving) {
+            if (asked != savesAsked.get()) return@launch
+            val point = ResumePoint(tracks.map { it.filePath }, index, positionMs, shuffle, repeat, playOrder)
+            try {
+                SafeFile.write(resumePath) { it.write(point.encode()) }
+            } catch (e: IOException) {
+                // Next save tries again.
             }
         }
     }

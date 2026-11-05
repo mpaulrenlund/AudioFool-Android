@@ -178,6 +178,18 @@ class ThemeLabTest {
             }
             NowPlayingScreen(np, NowPlayingActions())
         }
+        // Artists' shuffle button (0.9.0): the whole library shuffled, to see the widest count fit by the title.
+        shoot(device, "now-playing-library-shuffle") {
+            val np = NowPlaying().apply {
+                showForPictures(
+                    ThemeLabFixtures.nowPlayingTrack, index = 12_344, size = 27_115, positionMs = ThemeLabFixtures.NOW_PLAYING_POSITION_MS,
+                    waveform = ThemeLabFixtures.mockupWaveform,
+                    readout = OutputReadout.describe(OutputRoute.Speaker.label, OutputPath.Shared, 48000, 0, 96000, false),
+                )
+                shuffle = true
+            }
+            NowPlayingScreen(np, NowPlayingActions())
+        }
         // BP's other two states (spec 6.4; off is the mockup's): on through a USB DAC's
         // bit-perfect mixer, and greyed out on the phone speaker.
         shoot(device, "now-playing-bp-on") {

@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -282,12 +283,18 @@ private fun FolderRow(line: FolderLine, onToggle: () -> Unit) {
     }
 }
 
-/** The panel header's small button (Music folders' refresh): 32 dp, a 16 dp icon in `text.muted`. */
+/**
+ * The panel header's small button (Music folders' refresh, Artists' shuffle): 32 dp, a
+ * 16 dp icon in `text.muted`. [label] is what TalkBack (and a test) calls it.
+ */
 @Composable
-fun IconButtonSmall(icon: AppIcon, onClick: () -> Unit) {
+fun IconButtonSmall(icon: AppIcon, onClick: () -> Unit, label: String? = null) {
     val t = LocalAppTheme.current
     androidx.compose.foundation.layout.Box(
-        Modifier.size(t.dp("settings.headerActionButton")).tappable(CircleShape, onClick),
+        Modifier
+            .size(t.dp("settings.headerActionButton"))
+            .tappable(CircleShape, onClick)
+            .then(if (label != null) Modifier.semantics { contentDescription = label } else Modifier),
         contentAlignment = Alignment.Center,
     ) { Icon(icon, t.dp("settings.headerActionIcon"), "color.text.muted") }
 }

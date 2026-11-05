@@ -179,8 +179,9 @@ class AudioFoolApp : Application() {
         scope.launch {
             val point = withContext(Dispatchers.IO) { player.readResumePoint() } ?: return@launch
             val lib = library.state.filter { it.library?.allTracks?.isNotEmpty() == true }.map { it.library!! }.first()
-            val lookup = ResumePoint.lookupIn(lib.allTracks)
-            withContext(Dispatchers.Main) { player.restore(point, lookup) }
+            // Found off the main thread: a shuffled library is 27,000 paths (0.9.0).
+            val restored = point.resolve(ResumePoint.lookupIn(lib.allTracks)) ?: return@launch
+            withContext(Dispatchers.Main) { player.restore(restored) }
         }
     }
 

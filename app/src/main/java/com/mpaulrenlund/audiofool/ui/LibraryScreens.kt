@@ -60,13 +60,12 @@ fun ArtistsScreen(
         bottom = { MiniPlayerBar(browse, actions) },
     ) {
         PanelSurface(Modifier.weight(1f)) {
+            val artists = browse.library.artists
+            val canShuffle = artists.isNotEmpty()
             PanelHeader(
                 "Artists",
-                action = scanText?.let { text ->
-                    { ScanNote(text, Modifier.padding(end = t.dp("panel.headerPaddingX") - t.dp("panel.headerActionPaddingEnd"))) }
-                },
+                action = if (canShuffle || scanText != null) ({ ArtistsHeaderAction(scanText, canShuffle, actions.shuffleLibrary) }) else null,
             )
-            val artists = browse.library.artists
             if (artists.isEmpty()) {
                 EmptyNote(browse, scanning)
             } else {
@@ -106,6 +105,26 @@ fun scanHeaderText(state: LibraryState): String? {
         state.scanning && state.asked -> "Checking for changes…"
         state.scanning -> null
         else -> state.outcome?.text
+    }
+}
+
+/**
+ * The right of the ARTISTS header: the shuffle button at the far right (0.9.0, the
+ * user's request), with a scan's note left of it, as Music folders' refresh button
+ * has in Settings. No button while there is nothing to shuffle; then the note alone,
+ * a header's padding from the edge, as before.
+ */
+@Composable
+private fun ArtistsHeaderAction(scanText: String?, canShuffle: Boolean, onShuffle: () -> Unit) {
+    val t = LocalAppTheme.current
+    if (!canShuffle) {
+        if (scanText != null) ScanNote(scanText, Modifier.padding(end = t.dp("panel.headerPaddingX") - t.dp("panel.headerActionPaddingEnd")))
+        return
+    }
+    // The button keeps its room; a long note ellipsizes before it.
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        if (scanText != null) ScanNote(scanText, Modifier.weight(1f, fill = false))
+        IconButtonSmall(AppIcons.SHUFFLE, onShuffle, label = "Shuffle library")
     }
 }
 

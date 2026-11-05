@@ -63,6 +63,45 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-05, after 0.8.1 (on `main`, not yet in a build; a new feature, so **0.9.0** is
+proposed): **a shuffle button on Artists** (the user: "At the far right side of the "Artists"
+row, can we put a small shuffle button? Clicking this should shuffle the music library and
+start playing a random track."). Spec §4.1 and §6.1 (Resume) updated. The desktop has no such
+button, so nothing to port; the shuffling is the desktop's `PlayOrder`, as for an album.
+- **What a tap does:** the queue is every song that can be reached (a removed SD card's left
+  out), in library order: artists, their albums, the albums' songs (`LibraryShuffle.queue` in
+  core, 7 tests). Shuffle is turned on and play starts from a random song
+  (`Player.shuffleAll`): `PlayOrder` pins it to the front and shuffles the rest. Repeat is left
+  as it was. Each tap reshuffles.
+- **My calls, open to change:** **Artists stays on screen** (the mini player shows the song);
+  a tap on a song opens Now Playing, but this is a "start some music" button you may press
+  again for another pick. Shuffle stays on, so Now Playing shows it lit, and turning it off
+  plays the library on in its own order from that song. The button is Settings' refresh button
+  (`IconButtonSmall`: 32 dp, a 16 dp icon in `text.muted`, `AppIcons.SHUFFLE`, the same
+  `settings.headerAction*` tokens; no new token), with TalkBack's name "Shuffle library"; a
+  rescan's note sits left of it and ellipsizes before it, as in Music folders. No button when
+  the library is empty (the empty pictures are unchanged). Now Playing's "3 / 10" takes
+  thousands separators (`Display.count`), since the count can be 27,115 now.
+- **A 27,000-song queue** (the M21's library) was new: queues were one album until now. The
+  resume file holds the queue's paths, so it grows from a few hundred bytes to about 3 MB
+  there (same format, nothing migrates). `Player.save` used to encode it on the main thread at
+  every song change, pause and seek; now it gathers and encodes on a one-at-a-time IO
+  dispatcher and skips a save a newer one has overtaken. The restore's path lookup moved off
+  the main thread too (`AudioFoolApp.restoreQueue` resolves; `Player.restore(Restored)`).
+  `PlayOrder.candidates` still lists the whole remaining order at each start (a list of up to
+  27,000, a millisecond or so).
+- **Checked:** 467 core tests (7 new) and 47 app tests (4 new, `ArtistsShuffleTest`: the tap,
+  the button at the far right level with the label, a long note keeping it, none when empty).
+  ThemeLab: the 44 Artists pictures that have artists changed (the button; both phones, both
+  themes), compared zoomed before and after; 4 new `now-playing-library-shuffle` ("12,345 /
+  27,115" by the title, Shuffle on); every other picture pixel-identical. Emulator (release
+  build over 0.8.0): the button plays a random song with Artists still showing; Now Playing
+  "9 / 832" (the whole sample library) with Shuffle lit; Next jumps across artists; Shuffle off
+  goes on in library order; a force-stop and restart reopens the same song, paused, "10 / 832",
+  and Next carries on shuffled; with the SD card unmounted the queue was 823 (its 9 songs left
+  out). **Not checked:** the M21's 27,000 songs (how long the tap and the restart take, and
+  that song changes stay smooth): on its list.
+
 0.8.0 and 0.8.1: the user reported "looks it's working on both devices" (2026-11-05): the
 username-and-password sign-in and Listening History against the real Last.fm, on the S24 and
 the M21. Ticked the sign-in and Listening History items; the finer ones (a wrong password, the
@@ -540,6 +579,15 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The shuffle button on Artists (from 0.9.0)
+
+- [ ] The shuffle icon at the right of the ARTISTS header: a tap starts a random song, Artists
+  stays, and the mini player shows it.
+- [ ] Now Playing: Shuffle lit, the count "N / 8,127" (the whole library); Next jumps around the
+  library.
+- [ ] Shuffle off in Now Playing: the next songs follow the library's order from there.
+- [ ] Close AudioFool and reopen it: the same song, paused; Next carries on shuffled.
+
 ### Listening History (from 0.8.0)
 
 Only the phones have the Last.fm key, so this is its first run against the real Last.fm.
@@ -672,6 +720,18 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The shuffle button on Artists (from 0.9.0)
+
+The M21's 27,000 songs are the first queue that size.
+
+- [ ] A tap on the shuffle icon (right of the ARTISTS header) starts a random song within a
+  moment; Now Playing shows "N / 27,115" with Shuffle lit.
+- [ ] Song changes, pauses and seeks stay smooth while the whole library is queued (each saves
+  the queue, about 3 MB, in the background).
+- [ ] Close AudioFool (swipe it from recents) and reopen it: the same song comes back paused,
+  and Next carries on shuffled. How long until the mini player shows it?
+- [ ] With the SD card out, the shuffle plays only what is on the internal storage.
 
 ### Listening History (from 0.8.0)
 

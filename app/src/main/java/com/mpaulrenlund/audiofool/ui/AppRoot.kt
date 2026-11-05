@@ -14,6 +14,7 @@ import com.mpaulrenlund.audiofool.BuildConfig
 import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.core.playback.LibraryShuffle
 import com.mpaulrenlund.audiofool.lastfm.historyTarget
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
@@ -55,6 +56,12 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             openListeningHistory = {
                 app.history.open()
                 nav.open(Route.ListeningHistory)
+            },
+            // Spec 4.1 (0.9.0): every song that can be reached, shuffled, from a random
+            // one. Artists stays; the mini player shows what plays.
+            shuffleLibrary = {
+                val now = app.library.state.value
+                now.library?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) }
             },
         )
     }

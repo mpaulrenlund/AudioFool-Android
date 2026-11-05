@@ -369,7 +369,8 @@ private fun TitleBlock(nowPlaying: NowPlaying, track: Track?) {
         }
         if (nowPlaying.queueSize > 0) {
             Line(
-                "${nowPlaying.queueIndex + 1} / ${nowPlaying.queueSize}",
+                // With thousands separators: the whole library shuffled is 27,115 on the M21 (0.9.0).
+                "${Display.count(nowPlaying.queueIndex + 1)} / ${Display.count(nowPlaying.queueSize)}",
                 t.text("nowPlaying.trackCountSize", "color.text.muted"),
                 Modifier.padding(top = t.dp("nowPlaying.trackCountTop")),
             )

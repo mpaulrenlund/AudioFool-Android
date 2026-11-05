@@ -75,6 +75,8 @@ class AppActions(
     val rescan: () -> Unit = {},
     /** The menus' Listening History (spec 4.7): opened afresh, so Last.fm is asked again. */
     val openListeningHistory: () -> Unit = {},
+    /** Artists' shuffle button (spec 4.1, 0.9.0): the whole library, shuffled, from a random song. */
+    val shuffleLibrary: () -> Unit = {},
 )
 
 /**

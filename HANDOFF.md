@@ -12,9 +12,11 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.8.1 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
-  latest build is **0.8.1** (versionCode 41), on both phones since 2026-11-05. The user's last
-  report: "looks its working on both devices" (the Last.fm sign-in and Listening History).
+- **Where it stands:** nothing is broken that the user knows of. The latest build is **0.8.1**
+  (versionCode 41), on both phones since 2026-11-05. The user's last report: "looks its
+  working on both devices" (the Last.fm sign-in and Listening History). **On `main` since,
+  not in a build yet:** the shuffle button in the ARTISTS header (spec §4.1; see *What the
+  recent builds did*). It waits for the user to say to build (0.9.0 proposed).
 - **Builds go to the phones over USB, never to GitHub** (since 0.8.1, the user's call;
   `CLAUDE.md` says so too). Every APK carries AudioFool's Last.fm key and secret, and the repo's
   releases are public: Claude's safety check stopped the 0.8.1 upload as a credential leak, and
@@ -51,6 +53,13 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
+- **On `main`, after 0.8.1** (2026-11-05, not built yet): **a shuffle button on Artists**
+  (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable songs left
+  out), `Player.shuffleAll` (Shuffle on, a random start), `ArtistsHeaderAction` with Settings'
+  `IconButtonSmall`. Artists stays; the mini player shows the song. The queue can now be the
+  whole library (27,115 on the M21), so `Player.save` encodes the resume file (about 3 MB
+  there) off the main thread, newest save only, and the restore resolves paths off it too.
+  Checked with the tests, ThemeLab and the emulator; the M21's full library is on its list.
 - **0.8.1** (2026-11-05, over USB): **Last.fm signs in with the username and password**
   (spec §4.5, §7). `LastFmApi.getMobileSession` (a signed POST over HTTPS), `LastFm.connect`,
   with AudioFool's own key built in (`BuildConfig.LASTFM_*`, from `gradle.properties`;
@@ -433,6 +442,10 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   directly, so a plug can't start the music (`PlugGuard`). The app's own buttons call `resume()`.
 - **On the emulator, the Debug screen's rows move** as its Opened log fills: find a row's
   place again (uiautomator) right before tapping it, not from an earlier dump.
+- **A queue can be the whole library** (Artists' shuffle button, 0.9.0): 27,115 songs on the
+  M21. Anything per queue entry on the main thread (the resume save, the restore's lookups,
+  a list built at each song change) costs that many; keep such work off the main thread or
+  proportional to what's near the song playing.
 - **The listening time and scrobbles count the heard position**, not the clock: anything
   that changes how `positionMs()` behaves changes both.
 
