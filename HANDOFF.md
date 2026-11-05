@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-05: Last.fm signs in with a username and password (not released yet). Read this with `README.md` (how the app
+Updated 2026-11-05, after 0.8.1 (Last.fm signs in with a username and password; installed on the S24 over USB). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,22 +12,26 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.6.0 down to 0.3.0: the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Latest: 0.8.0** (versionCode 40), a pre-release,
-  <https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.8.0>,
-  `dist/AudioFool-0.8.0.apk`. Every release is on GitHub (`gh release list`); all but v0.1.0
-  are pre-releases, and v0.0.5 was skipped.
-- **Next release:** **0.8.1** for fixes, **0.9.0** for new features (confirm the number with the
-  user: they called 0.7.1's version row and 0.7.4's cover menu rows fixes). Bump both in
-  `app/build.gradle.kts` (versionCode 41 next). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
-  pictures use a fixed "0.7.0", so a bump changes no picture.
-- **The release routine the user expects:** bump, `:core:test :app:testDebugUnitTest
+- **Latest: 0.8.1** (versionCode 41), `dist/AudioFool-0.8.1.apk` (notes beside it), installed
+  on the S24 over USB on 2026-11-05; **the M21 still has an older build** (install it there when
+  the user plugs it in). **Not on GitHub**: from 0.8.1 every APK carries AudioFool's Last.fm key
+  and secret, so builds go to the phones over USB only (the user's call, 2026-11-05; Claude's
+  safety check stopped the upload as a credential leak). **Never upload an APK built with the key
+  to a release.** The last GitHub release is 0.8.0 (`gh release list`; all but v0.1.0 are
+  pre-releases, and v0.0.5 was skipped).
+- **Next build:** **0.8.2** for fixes, **0.9.0** for new features (confirm the number with the
+  user: they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's sign-in fixes).
+  Bump both in `app/build.gradle.kts` (versionCode 42 next). The logo menu shows the version
+  (`BuildConfig`); ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **The routine the user expects:** bump, `:core:test :app:testDebugUnitTest
   :app:verifyRoborazziDebug :app:assembleRelease`, copy to `dist/AudioFool-<v>.apk`, check the
   signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), install it on the
-  emulator (and the M21 if it's plugged in), then the user says **"Show <v> notes"** (show them
-  in chat, written for the user: what changed, then a numbered *To try on the S24 / M21*) and
-  **"Publish"**; publish only then, and record it in `design/progress.md` and here.
-  `assembleRelease` stops unless AudioFool's Last.fm key is in `gradle.properties` (see
-  *Where everything lives*).
+  emulator, then the user says **"Show <v> notes"** (show them in chat, written for the user:
+  what changed, then a numbered *To try on the S24 / M21*), and the build goes to each phone that
+  is plugged in with `adb -s <serial> install -r dist/AudioFool-<v>.apk` (data kept); record it
+  in `design/progress.md` and here. `assembleRelease` stops unless AudioFool's Last.fm key is in
+  `gradle.properties` (see *Where everything lives*); check the APK has the real key, not the
+  emulator's dummy (compare `BuildConfig.java` with `gradle.properties`, never print either).
 - **0.6.0 (2026-11-02): Now Playing's cover menu and Analyze.** A long press on the cover: its
   resolution, then Analyze (the desktop's spectrogram and opinion, ported with their tests); and
   the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·"). Verified with the
@@ -56,7 +60,7 @@ you touch a feature from then.
   logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
   Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
   emulator; the "from 0.7.4" items wait in both test lists.
-- **Unreleased (2026-11-05): Last.fm signs in with the username and password** (spec §4.5, §7;
+- **0.8.1 (2026-11-05, installed on the S24 over USB): Last.fm signs in with the username and password** (spec §4.5, §7;
   the user: "make the login process … my last.fm username and password instead"). `LastFmApi.getMobileSession`
   (signed POST over HTTPS; 2 tests), `LastFm.connect(userName, password)` with AudioFool's own
   key built in (`BuildConfig.LASTFM_*` from `gradle.properties`), the Settings form (Username,
@@ -64,8 +68,7 @@ you touch a feature from then.
   approval and the key fields are gone from the app (core keeps `getToken`/`getSession`, ported).
   A session made earlier with another key keeps its key (`LastFmStore` saves them together).
   Verified with the tests, ThemeLab and the emulator (the form, the dots, Cancel; not signed
-  in). **Before releasing:** the user adds the two `audiofool.lastfm.*` lines; the version
-  (0.8.1 or 0.9.0) is the user's call.
+  in). The user signs in on the S24 themself: the "from 0.8.1" items in both test lists.
 - **0.8.0 (2026-11-04, released): Listening History** (spec §4.7), the desktop's Last.fm page, from
   the logo menu and the cover menu (`AppMenuRows`' first row). Core: `scrobbling/ListeningHistory.kt`,
   `ListeningMatch.kt`, `LastFmApi`'s reads (unsigned GETs, `LastFmTransport.get`), the desktop's
@@ -178,9 +181,10 @@ you touch a feature from then.
   USB reconnected and caught little.
 - **The S24 can't use a cable while testing the DAC** (one USB-C port). Wireless debugging
   was tried and the user couldn't get the pairing step to work, so S24 results come as typed
-  readings from Statistics > Debug (Playback). Never type a pairing code for the user. A
-  Samsung phone was on this PC's USB once (2026-10-27, adb serial `R5CWC28ETAW`,
-  "unauthorized"): probably the S24; adb on it needs "Allow USB debugging" on the phone.
+  readings from Statistics > Debug (Playback). Never type a pairing code for the user. **Over
+  USB the S24 works** (2026-11-05, the user turned debugging on and allowed this PC): adb serial
+  `R5CWC28ETAW`, `model:SM_S928U`; 0.8.1 went on with `adb -s R5CWC28ETAW install -r`. Pick it
+  with `-s` when the emulator is up too. Builds reach it this way now (no GitHub releases).
 - **The emulator** holds the sample music: `/sdcard/Music` (with `Long/`: 200 artists × 2
   albums of silent MP3s; `Gapless Live/`: three songs of exactly 12.000 s; `Waveform Test/`: a
   60 s pink-noise FLAC with swells and a near-silent dip at 24–27 s, for the seekbar's shape)
@@ -346,10 +350,11 @@ Then, with `MSYS_NO_PATHCONV=1`:
 
 ### Shipping a test build
 
-The routine is under *Starting the next session*. After the user says "Publish":
-`gh release create v<version> dist/AudioFool-<version>.apk --prerelease --title "AudioFool <version>" --notes ...`,
+The routine is under *Starting the next session*. Since 0.8.1 a build goes to each phone over
+USB (`adb -s <serial> install -r dist/AudioFool-<version>.apk`), **never to a GitHub release**:
+the APK carries AudioFool's Last.fm key. Keep the notes beside it (`dist/notes-<version>.md`),
 then add what only the phones can show to *To test on the S24* / *To test on the M21* in
-`design/progress.md`.
+`design/progress.md`. Up to 0.8.0 it was `gh release create … --prerelease`.
 
 ### Checking a screen against the mockups
 

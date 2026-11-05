@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [x] **Last.fm sign-in with the username and password** (AudioFool's own key built in) — 2026-11-05, not released yet
+- [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 over USB; not on GitHub (the APK carries the key)
 - [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
 - [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
 - [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
@@ -63,7 +63,15 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-05, not released yet: **Last.fm signs in with the username and password** (the user,
+2026-11-05, after 0.8.1: **builds go to the phones over USB, not GitHub** (the user's call,
+"Install over USB only"). From 0.8.1 every APK carries AudioFool's Last.fm key and secret, and
+the repo's releases are public; uploading 0.8.1 was stopped by Claude's safety check as a
+credential leak, and the user chose USB installs (`adb install -r`, data kept) over publishing
+it themselves. 0.8.0 stays the last GitHub release. The release routine is otherwise the same
+(bump, the suite, `dist/AudioFool-<v>.apk`, the signer, "Show <v> notes"), with the install on
+each phone in place of "Publish".
+
+2026-11-05, 0.8.1 (versionCode 41; installed on the S24 over USB the same day, **not published on GitHub**, see below): **Last.fm signs in with the username and password** (the user,
 on the S24: Connect asked for the API key and secret, "I believe I already set this up … can
 we make the login process … my last.fm username and password instead?"). They are kept per
 phone, and the S24 had never been connected. Asked first, since it changes the spec and the
@@ -616,7 +624,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 - [ ] **Font size** one or two steps up in Android's Display settings (from 0.1.0): Artists, an
   album, Now Playing and Settings still fit.
 
-### Last.fm sign-in with your username and password (from the next build; not released yet)
+### Last.fm sign-in with your username and password (from 0.8.1)
 
 - [ ] **Connect.** Settings > Last.fm > Connect: Username and Password (dots), then Connect.
   "Signing in…", then "Last.fm: connected as <you>" with a green dot. Does Samsung Pass or
@@ -726,7 +734,7 @@ Sorted on 2026-10-30, as the S24's list above.
   smooth; a slide down the strip keeps up and its letters fit the M21's shorter screen; Search
   keeps up with typing.
 - [ ] **Last.fm** (from 0.1.0): connected on the M21 too (a second session for the same user),
-  scrobbles arriving. From the next build: if the M21 was connected before (with the key typed
+  scrobbles arriving. From 0.8.1: if the M21 was connected before (with the key typed
   in), it stays connected after the update; if not, Connect asks for the username and password.
 
 ### Seen in daily use: all fine

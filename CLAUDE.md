@@ -35,9 +35,9 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 ## Devices
 
-Neither device is connected to this PC. Don't plan on `adb` reaching a phone.
+The phones are plugged into this PC only when the user does it. Check `adb devices` rather than plan on it.
 
-- **Builds go to the user as APKs.** Attach each test build to a GitHub pre-release. The user installs it on the S24 or the M21 and reports back. End each session with a short list of what to try on each device.
+- **Builds go to the phones over USB** (since 0.8.1, the user's call): `adb install -r` on each phone the user plugs in. **Never attach an APK to a GitHub release**: every build carries AudioFool's Last.fm key and secret, and the repo's releases are public. The user tries it on the S24 or the M21 and reports back. End each session with a short list of what to try on each device.
 - **One signing key from the start.** Every APK the user gets, test builds included, is signed with the same release keystore, kept outside the repo. A build signed with a different key won't install as an update; the user would have to uninstall, which wipes the library cache and settings.
 - **The emulator covers what it can**: scanning sample music, navigation, playback, gapless, the media session, lock screen and notification, resume. Verify there before handing over a build.
 - **Only the real devices** can check the full ~26,000-track library and its start times, SD card removal, Bluetooth and headset buttons, unplug pausing, and anything through a USB DAC (Bit-Perfect, DoP, the readout). Those go on the device lists in `design/progress.md`: *To test on the S24* and *To test on the M21*.
@@ -49,4 +49,4 @@ Neither device is connected to this PC. Don't plan on `adb` reaching a phone.
 - Verify by running it (unit tests, screenshot tests, the S24), not by reasoning about the code.
 - When done: list what changed and anything that differs from the spec, update the spec if the user changed what it says, add the decisions to `design/progress.md`, and update `HANDOFF.md`.
 - Work on `main`. Commit with clear messages and push.
-- Releases: confirm the version number and the notes with the user before `gh release create`. Middle number for new features, last for fixes. The signing keystore lives outside the repo.
+- Releases: confirm the version number and the notes with the user before installing a build on a phone. Middle number for new features, last for fixes. The signing keystore and AudioFool's Last.fm key live outside the repo.
