@@ -95,7 +95,7 @@ class AudioFoolApp : Application() {
     val listening: Listening by lazy { Listening(File(noBackupFilesDir, "listening.json").path, scope) }
 
     /** Last.fm (spec 7): the connection Settings shows, and the scrobbles, queued in the app's own storage. */
-    val lastFm: LastFm by lazy { LastFm(this, noBackupFilesDir) }
+    val lastFm: LastFm by lazy { LastFm(this, noBackupFilesDir, BuildConfig.LASTFM_API_KEY, BuildConfig.LASTFM_SECRET) }
 
     /** Listening History (spec 4.7): Last.fm's view of what was played, kept while its screen is under another. */
     val history: ListeningHistory by lazy { ListeningHistory(reader = { lastFm.historyReader() }, library = { library.state.value.library }) }

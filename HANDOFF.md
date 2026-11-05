@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-04, after releasing 0.8.0 (Listening History). Read this with `README.md` (how the app
+Updated 2026-11-05: Last.fm signs in with a username and password (not released yet). Read this with `README.md` (how the app
 works) and `design/progress.md` (every decision, newest first, and the lists of what to test on
 each device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -26,6 +26,8 @@ you touch a feature from then.
   emulator (and the M21 if it's plugged in), then the user says **"Show <v> notes"** (show them
   in chat, written for the user: what changed, then a numbered *To try on the S24 / M21*) and
   **"Publish"**; publish only then, and record it in `design/progress.md` and here.
+  `assembleRelease` stops unless AudioFool's Last.fm key is in `gradle.properties` (see
+  *Where everything lives*).
 - **0.6.0 (2026-11-02): Now Playing's cover menu and Analyze.** A long press on the cover: its
   resolution, then Analyze (the desktop's spectrogram and opinion, ported with their tests); and
   the readout gives the bit depth before the rate ("· 24-Bit · 96 kHz ·"). Verified with the
@@ -54,6 +56,16 @@ you touch a feature from then.
   logo menu's rows (`AppMenuRows`, shared): Resolution, Analyze, Rescan Library, Settings,
   Statistics, Theme, Version. Verified with ThemeLab (both themes, both sizes) and the
   emulator; the "from 0.7.4" items wait in both test lists.
+- **Unreleased (2026-11-05): Last.fm signs in with the username and password** (spec §4.5, §7;
+  the user: "make the login process … my last.fm username and password instead"). `LastFmApi.getMobileSession`
+  (signed POST over HTTPS; 2 tests), `LastFm.connect(userName, password)` with AudioFool's own
+  key built in (`BuildConfig.LASTFM_*` from `gradle.properties`), the Settings form (Username,
+  Password as dots, password-manager autofill, the password never in saved state). The browser
+  approval and the key fields are gone from the app (core keeps `getToken`/`getSession`, ported).
+  A session made earlier with another key keeps its key (`LastFmStore` saves them together).
+  Verified with the tests, ThemeLab and the emulator (the form, the dots, Cancel; not signed
+  in). **Before releasing:** the user adds the two `audiofool.lastfm.*` lines; the version
+  (0.8.1 or 0.9.0) is the user's call.
 - **0.8.0 (2026-11-04, released): Listening History** (spec §4.7), the desktop's Last.fm page, from
   the logo menu and the cover menu (`AppMenuRows`' first row). Core: `scrobbling/ListeningHistory.kt`,
   `ListeningMatch.kt`, `LastFmApi`'s reads (unsigned GETs, `LastFmTransport.get`), the desktop's
@@ -179,8 +191,13 @@ you touch a feature from then.
   not connected. The AVD sometimes exits on its own (exit code 4): start it again. The app's
   uid there is 10236 (for `dumpsys audio`).
 - `dist/` (ignored by git) holds the released APKs and the M21's captured reports (`m21-*.txt`).
-- **Last.fm needs the user's key** to check for real: the emulator can't (no key here, and
-  the key never goes in the repo). Listening History there shows only its not-connected screen.
+- **Last.fm signs in with the user's own username and password** (after 0.8.0), which only
+  the user types, on the phones: never sign in for them, on the emulator either. The emulator
+  shows the form, the not-connected Listening History screen, and nothing past that. Without
+  AudioFool's key in `gradle.properties` (below), a throwaway release for the emulator can take
+  a dummy one on the command line:
+  `-Paudiofool.lastfm.apiKey=<32 zeros> -Paudiofool.lastfm.secret=<32 zeros>`; never copy
+  that build to `dist/` or give it to the user.
 
 ---
 
@@ -196,7 +213,8 @@ you touch a feature from then.
 | Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
-| Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`); the app's `lastfm/LastFm.kt` (the connect flow, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
+| Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`; the phone's own `getMobileSession`); the app's `lastfm/LastFm.kt` (the username-and-password sign-in, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
+| **AudioFool's Last.fm key** | `~/.gradle/gradle.properties`: `audiofool.lastfm.apiKey=` and `audiofool.lastfm.secret=` (32 hex characters each, the user's own API account at last.fm/api/accounts). **Outside the repo**, put there by the user. `app/build.gradle.kts` makes them `BuildConfig.LASTFM_API_KEY` / `LASTFM_SECRET`; `preReleaseBuild` stops a release without them. Check they're set with `grep -c '^audiofool.lastfm.apiKey=..*'`, never by printing them |
 | Listening History | `core/.../scrobbling/ListeningHistory.kt` (periods, records, `ListeningJson`, `HistoryTime`) and `ListeningMatch.kt` (ported); the app's `lastfm/ListeningHistory.kt` (model, `HistoryRows`, `historyTarget`) and `ui/ListeningHistoryScreen.kt`; ThemeLab's made-up answers in `ThemeLabFixtures.history()` |
 | Analyze (0.6.0) | `core/.../analysis/` (ported: `Fft`, `SpectrumScale`, `SpectrumAccumulator`, `QualityOpinion`); the app's `playback/TrackAnalyzer.kt` (BASS, lets go at an eject) and `ui/AnalysisScreen.kt`; the cover menu is `ArtMenu` in `NowPlayingScreen.kt`, sharing `MenuSurface` / `MenuRow` with the logo menu |
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |

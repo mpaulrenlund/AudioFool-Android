@@ -74,9 +74,11 @@ every decision and what is still to be checked on the phones.
   starts, a scrobble once it has played for half its length or four minutes (counted from
   what was heard, so seeking ahead doesn't count), and a queue on disk (`scrobbles.json`)
   that waits out a lost network, sent in batches. Settings > Last.fm > Connect asks for
-  your API key and shared secret (the desktop's work), opens last.fm in the browser to
-  approve the app, and connects by itself once you have. The key, secret and session are
-  encrypted with a key held in the Android Keystore.
+  your Last.fm username and password, sends them once to Last.fm's sign-in for phone apps
+  and keeps only the session it gives back, encrypted with a key held in the Android
+  Keystore; the password is never saved. That sign-in needs AudioFool's own Last.fm API key
+  and secret, built into the app from `~/.gradle/gradle.properties` on the build PC
+  (`audiofool.lastfm.apiKey`, `audiofool.lastfm.secret`); a release build stops without them.
 - **Analyze.** Hold Now Playing's cover for its menu: the cover's resolution, and Analyze,
   which decodes the whole song in the background and shows its spectrogram and AudioFool's
   opinion of whether the audio matches the file's format (a lossy source in a lossless file,

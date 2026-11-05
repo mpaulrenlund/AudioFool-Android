@@ -219,7 +219,7 @@ class ThemeLabTest {
                 bitPerfectGreyed = true,
             )
         }
-        // Last.fm (spec 7): connected, and Connect tapped with the desktop's key filled in.
+        // Last.fm (spec 7): connected, and Connect tapped: the username and password form.
         shoot(device, "settings-lastfm-connected") {
             SettingsScreen(
                 folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
@@ -231,7 +231,19 @@ class ThemeLabTest {
             SettingsScreen(
                 folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
                 actions = SettingsActions(),
-                lastFm = LastFm.Status(enteringKeys = true, savedKey = "0123456789abcdef0123456789abcdef", savedSecret = ""),
+                lastFm = LastFm.Status(signingIn = true),
+            )
+        }
+        // The sign-in turned down, connecting again: the name filled in, the reason over the fields.
+        shoot(device, "settings-lastfm-signin-failed") {
+            SettingsScreen(
+                folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                actions = SettingsActions(),
+                lastFm = LastFm.Status(
+                    state = ScrobblerState.NeedsReconnect, userName = "questinnn", signingIn = true,
+                    error = LastFm.signInError(com.mpaulrenlund.audiofool.core.scrobbling.LastFmException(4, "Authentication Failed")),
+                ),
+                scroll = rememberScrollState(Int.MAX_VALUE),
             )
         }
         // Listening History (spec 4.7, no mockup): made-up Last.fm answers over the sample

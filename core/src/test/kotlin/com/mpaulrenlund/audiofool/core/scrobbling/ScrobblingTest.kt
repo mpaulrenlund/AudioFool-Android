@@ -577,4 +577,37 @@ class ScrobblingTest {
         val api = LastFmApi("k", "s") { _, _ -> HttpAnswer(200, """{"session":{"name":"marcus","key":"sk9","subscriber":0}}""") }
         assertEquals(LastFmSession("marcus", "sk9"), kotlinx.coroutines.runBlocking { api.getSession("tok") })
     }
+
+    // ------------------------------------------------------------ the phone's sign-in
+
+    @Test fun a_mobile_session_is_one_signed_post_with_the_name_and_password() {
+        var sentTo = ""
+        var fields = emptyMap<String, String>()
+        val api = LastFmApi("key1", "secret1") { url, form ->
+            sentTo = url
+            fields = form.split('&').associate {
+                val (name, value) = it.split('=', limit = 2)
+                URLDecoder.decode(name, Charsets.UTF_8) to URLDecoder.decode(value, Charsets.UTF_8)
+            }
+            HttpAnswer(200, """{"session":{"name":"Marcus","key":"sk9","subscriber":0}}""")
+        }
+
+        val session = kotlinx.coroutines.runBlocking { api.getMobileSession("marcus", "p&ss wörd") }
+
+        assertEquals(LastFmSession("Marcus", "sk9"), session, "the name as Last.fm spells it")
+        assertTrue(sentTo.startsWith("https://"), "Last.fm takes a password over HTTPS only")
+        assertEquals("auth.getMobileSession", fields["method"])
+        assertEquals("marcus", fields["username"])
+        assertEquals("p&ss wörd", fields["password"])
+        assertEquals("key1", fields["api_key"])
+        assertNull(fields["sk"])
+        val signed = fields.filterKeys { it != "api_sig" && it != "format" }.toList()
+        assertEquals(LastFmApi.sign(signed, "secret1"), fields["api_sig"], "signed over every field, the password too")
+    }
+
+    @Test fun a_wrong_name_or_password_is_error_4() {
+        val api = LastFmApi("k", "s") { _, _ -> HttpAnswer(403, """{"error":4,"message":"Authentication Failed - You do not have permissions to access the service"}""") }
+        val e = assertFailsWith<LastFmException> { kotlinx.coroutines.runBlocking { api.getMobileSession("marcus", "wrong") } }
+        assertEquals(4, e.code)
+    }
 }

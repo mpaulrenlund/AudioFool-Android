@@ -1,9 +1,6 @@
 package com.mpaulrenlund.audiofool.lastfm
 
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,32 +13,33 @@ import com.mpaulrenlund.audiofool.core.scrobbling.LastFmSession
 import com.mpaulrenlund.audiofool.core.scrobbling.ScrobbleQueue
 import com.mpaulrenlund.audiofool.core.scrobbling.ScrobblerState
 import com.mpaulrenlund.audiofool.playback.PlayWatcher
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import java.io.File
 
 /**
  * Last.fm (spec 7) as Settings shows it, and the scrobbler fed from playback.
- * Ported from the desktop's `LastFmViewModel.cs` (the connect flow, the queue
- * line) around the Core's [LastFmScrobbler].
+ * Ported from the desktop's `LastFmViewModel.cs` (the queue line, the states)
+ * around the Core's [LastFmScrobbler].
  *
- * Connecting is Last.fm's desktop flow: the user types the API key and secret
- * once (the desktop's), a token is fetched, last.fm opens in the browser to
- * approve it, and this polls auth.getSession until the approval lands, so there
- * is no "I've approved it" button to forget, and the password is only ever typed
- * into last.fm itself.
+ * Connecting is the phone's own (the user's call, after 0.8.0): the user types
+ * their Last.fm username and password once, and Last.fm's sign-in for phone apps
+ * (auth.getMobileSession) trades them for a session key, signed with AudioFool's
+ * own API key and secret, [appKey] and [appSecret], built in from outside the repo.
+ * The password is sent that once and kept nowhere; the session is stored encrypted
+ * ([LastFmStore]). The desktop connects through the browser instead.
+ *
+ * A session made earlier with another key (the desktop's, typed in before) keeps
+ * that key: [LastFmStore] holds each session with the key it was made with.
  *
  * Main thread only.
  */
 @Stable
-class LastFm(private val context: Context, folder: File) : PlayWatcher {
+class LastFm(context: Context, folder: File, private val appKey: String, private val appSecret: String) : PlayWatcher {
     private val scope: CoroutineScope = MainScope()
     private val store = LastFmStore(context)
     private lateinit var scrobbler: LastFmScrobbler
@@ -53,20 +51,16 @@ class LastFm(private val context: Context, folder: File) : PlayWatcher {
     class Status(
         val state: ScrobblerState = ScrobblerState.Disconnected,
         val userName: String? = null,
-        /** Connect was tapped: the key and secret fields are showing. */
-        val enteringKeys: Boolean = false,
-        /** The browser is open on last.fm's approval page. */
-        val waitingForApproval: Boolean = false,
+        /** Connect was tapped: the username and password fields are showing. */
+        val signingIn: Boolean = false,
+        /** The name and password are on their way to Last.fm. */
+        val sending: Boolean = false,
         val error: String? = null,
         /** The queue and the last send, in a line ("2 scrobbles waiting to send."). */
         val queue: String = "",
-        /** The saved key and secret, to fill the fields when connecting again. */
-        val savedKey: String = "",
-        val savedSecret: String = "",
     )
 
     private var connectJob: Job? = null
-    private var authorizeUrl: String? = null
 
     init {
         scope.launch {
@@ -85,81 +79,45 @@ class LastFm(private val context: Context, folder: File) : PlayWatcher {
 
     // ---- Settings ----
 
-    /** Connect: show the key and secret fields, filled with the saved ones. */
+    /** Connect: show the username and password fields. */
     fun startConnecting() {
-        scope.launch {
-            val saved = withContext(Dispatchers.IO) { store.read() }
-            status = copy(enteringKeys = true, error = null, savedKey = saved?.apiKey ?: "", savedSecret = saved?.secret ?: "")
-        }
+        status = copy(signingIn = true, error = null)
     }
 
     fun cancel() {
         connectJob?.cancel()
         connectJob = null
-        authorizeUrl = null
-        status = copy(enteringKeys = false, waitingForApproval = false, error = null)
+        status = copy(signingIn = false, sending = false, error = null)
     }
 
-    fun connect(apiKey: String, secret: String) {
-        val key = apiKey.trim()
-        val sharedSecret = secret.trim()
-        if (key.isEmpty() || sharedSecret.isEmpty() || !ready) return
-        val api = LastFmApi(key, sharedSecret)
+    /** Signs in with the user's Last.fm [userName] (or email) and [password]. */
+    fun connect(userName: String, password: String) {
+        val name = userName.trim()
+        if (name.isEmpty() || password.isEmpty() || !ready) return
+        if (appKey.isBlank() || appSecret.isBlank()) {
+            status = copy(error = "This build of AudioFool has no Last.fm key, so it can't sign in.")
+            return
+        }
+        val api = LastFmApi(appKey, appSecret)
 
         connectJob?.cancel()
-        status = copy(waitingForApproval = true, error = null)
+        status = copy(sending = true, error = null)
         connectJob = scope.launch {
             try {
-                withTimeout(POLL_LIMIT_MS) {
-                    val token = api.getToken()
-
-                    // The key and secret evidently work, so keep them even if the
-                    // approval is never given.
-                    withContext(Dispatchers.IO) { store.saveKeys(key, sharedSecret) }
-
-                    authorizeUrl = LastFmApi.authorizeUrl(key, token)
-                    openApprovalPage()
-
-                    while (true) {
-                        delay(POLL_INTERVAL_MS)
-                        try {
-                            val session = api.getSession(token)
-                            withContext(Dispatchers.IO) { store.saveSession(session.userName, session.key) }
-                            scrobbler.connect(key, sharedSecret, session)
-                            status = copy(enteringKeys = false, error = null)
-                            break
-                        } catch (e: LastFmException) {
-                            // Still waiting for the user, or a blip: ask again.
-                            if (!e.isTokenNotYetAuthorised && !e.isTransient) throw e
-                        }
-                    }
+                val session = api.getMobileSession(name, password)
+                withContext(Dispatchers.IO) {
+                    store.saveKeys(appKey, appSecret)
+                    store.saveSession(session.userName, session.key)
                 }
-            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-                status = copy(error = "Last.fm wasn't approved within five minutes. Tap Connect to try again.")
+                scrobbler.connect(appKey, appSecret, session)
+                status = copy(signingIn = false, error = null)
             } catch (e: LastFmException) {
-                status = copy(
-                    error = when (e.code) {
-                        10 -> "Last.fm doesn't recognise that API key."
-                        13 -> "The shared secret doesn't match that API key."
-                        15 -> "The approval expired. Tap Connect to try again."
-                        else -> e.message
-                    },
-                )
-            } catch (e: CancellationException) {
-                throw e
+                status = copy(error = signInError(e))
             } finally {
-                authorizeUrl = null
-                status = copy(waitingForApproval = false)
+                status = copy(sending = false)
             }
         }
     }
-
-    /** The approval page again, if the browser was closed before approving. */
-    fun openApprovalPage() {
-        authorizeUrl?.let(::openInBrowser)
-    }
-
-    fun openCreateApiAccount() = openInBrowser(LastFmApi.CREATE_API_ACCOUNT_URL)
 
     /**
      * What Listening History reads with (spec 4.7): the saved API key and the connected
@@ -214,24 +172,19 @@ class LastFm(private val context: Context, folder: File) : PlayWatcher {
     private fun copy(
         state: ScrobblerState = status.state,
         userName: String? = status.userName,
-        enteringKeys: Boolean = status.enteringKeys,
-        waitingForApproval: Boolean = status.waitingForApproval,
+        signingIn: Boolean = status.signingIn,
+        sending: Boolean = status.sending,
         error: String? = status.error,
         queue: String = status.queue,
-        savedKey: String = status.savedKey,
-        savedSecret: String = status.savedSecret,
-    ) = Status(state, userName, enteringKeys, waitingForApproval, error, queue, savedKey, savedSecret)
+    ) = Status(state, userName, signingIn, sending, error, queue)
 
-    private fun openInBrowser(url: String) {
-        try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        } catch (e: ActivityNotFoundException) {
-            // No browser; "Open again" stays there.
+    companion object {
+        /** What the form says when Last.fm turns the sign-in down. */
+        fun signInError(e: LastFmException): String = when (e.code) {
+            4 -> "Last.fm didn't accept that username and password."
+            10, 26 -> "Last.fm didn't accept AudioFool's own key (${e.message?.trimEnd('.')}). A new build with a new key is needed."
+            0 -> e.message ?: "Couldn't reach Last.fm."
+            else -> e.message ?: "Last.fm error ${e.code}."
         }
-    }
-
-    private companion object {
-        const val POLL_INTERVAL_MS = 3_000L
-        const val POLL_LIMIT_MS = 5 * 60_000L
     }
 }

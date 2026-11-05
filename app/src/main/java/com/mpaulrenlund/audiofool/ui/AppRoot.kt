@@ -90,8 +90,6 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             startConnecting = lastFm::startConnecting,
             connect = lastFm::connect,
             cancel = lastFm::cancel,
-            openApprovalPage = lastFm::openApprovalPage,
-            openCreateApiAccount = lastFm::openCreateApiAccount,
             disconnect = lastFm::disconnect,
         )
     }

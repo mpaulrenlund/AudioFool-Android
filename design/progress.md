@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **Last.fm sign-in with the username and password** (AudioFool's own key built in) — 2026-11-05, not released yet
 - [x] **0.8.0**: Listening History (the desktop's, from Last.fm) in the logo menu and the cover menu — 2026-11-04, released as a pre-release
 - [x] **0.7.4**: Now Playing's cover menu ends with the logo menu's rows (Rescan Library, Settings, Statistics, Theme, the version) — 2026-11-03, released as a pre-release
 - [x] **0.7.3**: a longer mute at the first Play through a cold USB DAC (S24, BP); FiiO's jack type read strictly, and Debug shows what FiiO last sent (M21) — 2026-11-03, released as a pre-release
@@ -61,6 +62,40 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-05, not released yet: **Last.fm signs in with the username and password** (the user,
+on the S24: Connect asked for the API key and secret, "I believe I already set this up … can
+we make the login process … my last.fm username and password instead?"). They are kept per
+phone, and the S24 had never been connected. Asked first, since it changes the spec and the
+stored sign-in; the user chose it ("Yes, build it") after being told the trade-off:
+- **Last.fm's sign-in for phone apps** (`auth.getMobileSession`: the name or email and the
+  password in one signed POST over HTTPS) still needs an app's API key and secret, so
+  **AudioFool's own are built in** from `~/.gradle/gradle.properties` on the build PC
+  (`audiofool.lastfm.apiKey`, `audiofool.lastfm.secret`; outside the repo, put there by the
+  user; a release build stops without them). The repo and its releases are public, so anyone
+  with the APK can read them: that gives no way into an account (the password is needed), but
+  misuse could get the key suspended (then a new build with a new key). Suggested to the user:
+  build in the separate AudioFool-Android key, not the desktop's.
+- **The password** is sent that once and kept nowhere: not stored, not in saved instance
+  state (`remember`, not `rememberSaveable`), drawn as dots, offered to the phone's password
+  manager (`ContentType.Password` / `Username`). The session is stored as before, with the
+  key it was made with, so a phone connected earlier with a typed-in key stays connected.
+- **Gone from the app:** the key and secret fields, "Get a key…", the browser approval and its
+  polling. Core keeps `getToken` / `getSession` / `authorizeUrl` (ported from the desktop,
+  tested). The desktop is unchanged.
+- **My calls, open to change:** the form's line ("Sign in with your Last.fm username and
+  password. AudioFool keeps the session Last.fm gives back, never the password."); the name
+  filled in when connecting again; "Signing in…" left of the buttons while it's sent; the
+  refusal wording (4: "Last.fm didn't accept that username and password."; 10 or 26: the app's
+  key turned down, a new build needed); the username keyboard is the email one (Last.fm takes
+  either).
+- **Checked:** 460 core tests (2 new: the signed POST with name and password over HTTPS, error
+  4) and 43 app tests (3 new: the refusal wording); ThemeLab: the four `settings-lastfm-connect`
+  pictures changed (the new form), four new `settings-lastfm-signin-failed` (scrolled to the
+  form's end), every other picture pixel-identical. `assembleRelease` without the key stops
+  with the message. Emulator (a throwaway release with a dummy key from the command line, not
+  kept): Connect shows the form, a typed name, the password as dots, Cancel closes it. **Not
+  signed in** (that needs the user's own password, on the phones).
 
 2026-11-04, 0.8.0 (released as pre-release [`v0.8.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.8.0), "AudioFool 0.8.0", versionCode 40, the same day): **Listening History**
 (the user: "add this feature [the desktop's Last.fm Listening History page] to this Android
@@ -581,15 +616,23 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 - [ ] **Font size** one or two steps up in Android's Display settings (from 0.1.0): Artists, an
   album, Now Playing and Settings still fit.
 
+### Last.fm sign-in with your username and password (from the next build; not released yet)
+
+- [ ] **Connect.** Settings > Last.fm > Connect: Username and Password (dots), then Connect.
+  "Signing in…", then "Last.fm: connected as <you>" with a green dot. Does Samsung Pass or
+  Google offer to fill or save the password?
+- [ ] **A wrong password**: "Last.fm didn't accept that username and password." over the
+  fields; fix it and Connect works.
+- [ ] **Disconnect and connect again**: the form asks for the password again (it was never
+  saved).
+- [ ] **Listening History** then shows your history (the 0.8.0 items above).
+
 ### Last.fm (from 0.1.0)
 
-- [ ] **Connect.** Settings > Last.fm > Connect with the desktop's API key and shared secret,
-  approve on last.fm, come back: "Last.fm: connected as <you>" with a green dot.
 - [ ] **Scrobbles reach your profile.** "Scrobbling now" when a song starts; the scrobble at
   its start time once past half (or four minutes). Seeking ahead doesn't count.
 - [ ] **The offline queue.** Airplane mode, two songs past the threshold, airplane mode off,
   play anything: both scrobbles appear with their own times.
-- [ ] **Disconnect and connect again**: the key and secret are filled in already.
 
 ### The library
 
@@ -682,8 +725,9 @@ Sorted on 2026-10-30, as the S24's list above.
 - [ ] **Scrolling, the letter strip and Search** with ~26,000 tracks (from 0.0.2, 0.2.0): flings
   smooth; a slide down the strip keeps up and its letters fit the M21's shorter screen; Search
   keeps up with typing.
-- [ ] **Last.fm** (from 0.1.0): connected on the M21 too (the same key, a second session for the
-  same user), scrobbles arriving.
+- [ ] **Last.fm** (from 0.1.0): connected on the M21 too (a second session for the same user),
+  scrobbles arriving. From the next build: if the M21 was connected before (with the key typed
+  in), it stays connected after the update; if not, Connect asks for the username and password.
 
 ### Seen in daily use: all fine
 

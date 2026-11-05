@@ -93,6 +93,22 @@ class LastFmApi(apiKey: String, secret: String, private val transport: LastFmTra
         throw LastFmException(0, "Last.fm returned no session.")
     }
 
+    /**
+     * Last.fm's sign-in for phone apps (spec 7, the user's call for the phone): the
+     * user's name (or email) and password for a session key, in one signed POST over
+     * HTTPS, as Last.fm requires. The password is sent this once and kept nowhere.
+     * New for the phone: the desktop connects through the browser ([getToken]).
+     * A wrong name or password is Last.fm's error 4.
+     */
+    suspend fun getMobileSession(userName: String, password: String): LastFmSession {
+        val root = call("auth.getMobileSession", listOf("username" to userName, "password" to password), sessionKey = null)
+        val session = root["session"] as? JsonObject
+        val key = session?.string("key")
+        if (session != null && !key.isNullOrEmpty())
+            return LastFmSession(session.string("name") ?: userName, key)
+        throw LastFmException(0, "Last.fm returned no session.")
+    }
+
     suspend fun updateNowPlaying(sessionKey: String, entry: ScrobbleEntry) {
         val p = mutableListOf("artist" to entry.artist, "track" to entry.track)
         addOptional(p, "album", entry.album)
