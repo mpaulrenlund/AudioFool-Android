@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **The Album page's track numbers** (left-aligned at the row's start, ▶ in the playing song's number place) — built and checked 2026-11-06, not released yet (0.10.1 proposed)
+- [x] **0.10.1**: the Album page's track numbers (left-aligned at the row's start, ▶ in the playing song's number place) — 2026-11-06, released as pre-release [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1)
 - [x] **0.10.0**: Genius (the desktop's Genius window as a screen, from the cover menu) — 2026-11-05, released as pre-release [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0)
 - [x] **0.9.0**: a shuffle button on Artists plays the whole library shuffled — 2026-11-05, released as pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0), the first from the private repo (the APK carries AudioFool's Last.fm key)
 - [x] **0.8.1**: Last.fm sign-in with the username and password (AudioFool's own key built in) — 2026-11-05, installed on the S24 and the M21 over USB; not on GitHub (the APK carries the key)
@@ -66,8 +66,10 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-06, after 0.10.0 (not released yet): **the Album page's track numbers move left** (the
-user, with a photo of the S24: "On this page the track numbers are too far to the right. Can we
+2026-11-06, 0.10.1 (versionCode 44; released the same day as pre-release
+[`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1), "AudioFool
+0.10.1", after "Build 0.10.1" and "Publish it"; the downloaded APK's SHA-256 matched `dist/`):
+**the Album page's track numbers move left** (the user, with a photo of the S24: "On this page the track numbers are too far to the right. Can we
 correct the layout of this page."). Spec §4.3.
 - **Why they sat there:** the mockup and the desktop keep a triangle slot (8 dp, a 4 dp gap) left
   of the number, which was right-aligned in a 32 dp column, so "1" began about 26 dp in from the
@@ -89,7 +91,9 @@ correct the layout of this page."). Spec §4.3.
 - **Checked:** the core and app tests (`ThemeTokensTest`'s spot value is now 18); ThemeLab
   re-recorded: the 20 Album pictures changed (album, chosen song, long titles, 120 tracks,
   1.3 font; both phones, both themes), looked at in both themes on both phones; every other
-  picture pixel-identical. Not on the emulator or the phones yet.
+  picture pixel-identical. Emulator (the release build over 0.10.0, library and resume kept):
+  numbers at the cover's left edge, ▶ in the current song's place, and it moved to the next
+  song played.
 
 2026-11-05, 0.10.0 (versionCode 43; released the same day as pre-release
 [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0), "AudioFool
@@ -676,7 +680,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### The Album page's track numbers (next build)
+### The Album page's track numbers (from 0.10.1)
 
 - [ ] An album: the numbers start at the cover's left edge, left-aligned, and the titles sit
   closer to them; the playing song shows ▶ instead of its number. An album of 100+ tracks: the
@@ -841,7 +845,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### The Album page's track numbers (next build)
+### The Album page's track numbers (from 0.10.1)
 
 - [ ] As on the S24, on the narrower screen; the full library's longest albums (100+ tracks, if
   any) fit their numbers.
