@@ -86,7 +86,7 @@ On every library screen, under the panel. Shows the cover, title (600, `text.pri
 
 - Top bar: the artist's name (15, `text.muted`) and a search button.
 - Panel header block: 72 dp art with `shadow.headerArt`, the title (21/600, `text.heading`, two lines), the artist (14/600, `accent.blue`) and "1997 · 10 tracks · 42:58" (13, `text.secondary`).
-- Table header "# · SONG · TIME", then rows of `album.rowHeight`. The # column has an 8 × 10 triangle slot left of the number: a solid triangle in `accent.playback` while that song plays. Discs follow each other in order; there's no disc column.
+- Table header "# · SONG · TIME", then rows of `album.rowHeight`. The # column starts at the row's start, with the numbers (and "#") left-aligned; it is `album.columns.number.width` wide, or the album's longest number if wider. The song playing shows an 8 × 10 solid triangle in `accent.playback` in its number's place (2026-11-06; the mockups in `design/screens/` still show the earlier triangle slot left of a right-aligned number). Discs follow each other in order; there's no disc column.
 
 ### 4.4 Search
 

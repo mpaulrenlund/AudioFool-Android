@@ -91,6 +91,7 @@
     "lineGap": 3
   },
   "album": {
+    "$note": "The # column starts at the row's start, numbers left-aligned; it is columns.number.width (two digits) or the album's longest number if wider (100+ tracks, a large font). The playing song shows the triangle in its number's place (2026-11-06, the user's call; the mockup had a triangle slot left of a right-aligned number).",
     "headerPadding": 14,
     "art": 72,
     "artGap": 14,
@@ -106,7 +107,7 @@
     "tablePaddingX": 16,
     "columnGap": 10,
     "columns": [
-      { "id": "number", "width": 32, "align": "right" },
+      { "id": "number", "width": 18, "align": "left" },
       { "id": "song", "flex": 1, "align": "left" },
       { "id": "time", "width": 40, "align": "right" }
     ],
@@ -116,8 +117,7 @@
     "rowPaddingX": 8,
     "songSize": 16,
     "cellSize": 14,
-    "numberMinWidth": 18,
-    "triangle": { "width": 8, "height": 10, "gap": 4, "strokeOnGrid": 1.2 }
+    "triangle": { "width": 8, "height": 10, "strokeOnGrid": 1.2 }
   },
   "search": {
     "artistRowHeight": 56,

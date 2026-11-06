@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,7 +21,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.ArtistIndex
 import com.mpaulrenlund.audiofool.core.model.Album
@@ -236,17 +238,36 @@ fun AlbumScreen(artistName: String, title: String, browse: Browse, actions: AppA
     ) {
         PanelSurface(Modifier.weight(1f)) {
             if (album != null) AlbumHeader(album)
-            TableHeader()
+            val numberWidth = numberColumnWidth(album)
+            TableHeader(numberWidth)
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(horizontal = t.dp("album.listPaddingX"), vertical = t.dp("album.listPaddingY")),
             ) {
                 items(album?.tracks.orEmpty(), key = { it.filePath }, contentType = { "song" }) { track ->
-                    SongRow(track, browse, actions, chosen = chosenIndex >= 0 && track === album?.tracks?.get(chosenIndex))
+                    SongRow(track, browse, actions, numberWidth, chosen = chosenIndex >= 0 && track === album?.tracks?.get(chosenIndex))
                 }
             }
         }
     }
+}
+
+/**
+ * The # column's width: `album.columns.number.width` (two digits), or the album's
+ * longest number if that is wider (100+ tracks, a large font size). Numbers use
+ * tabular figures, so the longest is the widest. The header and every row share it.
+ */
+@Composable
+private fun numberColumnWidth(album: Album?): Dp {
+    val t = LocalAppTheme.current
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val style = t.text("album.cellSize", "color.text.muted")
+    val longest = album?.tracks.orEmpty().map { Display.number(it.trackNumber) }.maxByOrNull { it.length }.orEmpty()
+    val measured = remember(longest, style, density) {
+        if (longest.isEmpty()) 0 else measurer.measure(longest, style, maxLines = 1).size.width
+    }
+    return maxOf(t.dp("album.columns.number.width"), with(density) { measured.toDp() })
 }
 
 /** 72 dp art with `shadow.headerArt`, the title (two lines), the artist and "1997 · 10 tracks · 42:58". */
@@ -277,9 +298,9 @@ private fun AlbumHeader(album: Album) {
     }
 }
 
-/** "# · SONG · TIME" (spec 4.3), lined up with the rows' columns. */
+/** "# · SONG · TIME" (spec 4.3), lined up with the rows' columns; "#" left-aligned as the numbers are. */
 @Composable
-private fun TableHeader() {
+private fun TableHeader(numberWidth: Dp) {
     val t = LocalAppTheme.current
     val style = t.text("album.tableHeaderSize", "color.text.muted", weight = 600, letterSpacingEm = t.number("album.tableHeaderLetterSpacingEm"))
     Column {
@@ -291,7 +312,7 @@ private fun TableHeader() {
             horizontalArrangement = Arrangement.spacedBy(t.dp("album.columnGap")),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Line("#", style.copy(textAlign = TextAlign.End), Modifier.width(t.dp("album.columns.number.width")))
+            Line("#", style, Modifier.width(numberWidth))
             Line("SONG", style, Modifier.weight(1f))
             Line("TIME", style.copy(textAlign = TextAlign.End), Modifier.width(t.dp("album.columns.time.width")))
         }
@@ -300,13 +321,15 @@ private fun TableHeader() {
 }
 
 /**
- * A song in the Album table: the track number with the triangle slot left of it
- * (a solid `accent.playback` triangle while it plays), the title and the time.
- * The # shows the tag's track number, blank when untagged, as the desktop's
- * table does; discs follow each other with no disc column.
+ * A song in the Album table: the track number, left-aligned at the row's start
+ * (the playing song shows a solid `accent.playback` triangle in its place), the
+ * title and the time. The # shows the tag's track number, blank when untagged,
+ * as the desktop's table does; discs follow each other with no disc column.
+ * The desktop keeps a triangle slot left of the number; the phone gives that
+ * width to the titles (the user's call, 2026-11-06).
  */
 @Composable
-private fun SongRow(track: Track, browse: Browse, actions: AppActions, chosen: Boolean = false) {
+private fun SongRow(track: Track, browse: Browse, actions: AppActions, numberWidth: Dp, chosen: Boolean = false) {
     val t = LocalAppTheme.current
     val playing = browse.isPlaying(track)
     val unavailable = browse.isUnavailable(track)
@@ -320,19 +343,12 @@ private fun SongRow(track: Track, browse: Browse, actions: AppActions, chosen: B
         gap = t.dp("album.columnGap"),
         onClick = if (unavailable) null else ({ actions.play(track) }),
     ) {
-        Row(
-            Modifier.width(t.dp("album.columns.number.width")),
-            horizontalArrangement = Arrangement.spacedBy(t.dp("album.triangle.gap"), Alignment.End),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Box(Modifier.width(numberWidth), contentAlignment = Alignment.CenterStart) {
             if (playing) {
                 Icon(AppIcons.TRIANGLE, t.dp("album.triangle.width"), t.dp("album.triangle.height"), "color.accent.playback", "album.triangle.strokeOnGrid")
+            } else {
+                Line(Display.number(track.trackNumber), t.text("album.cellSize", "color.text.muted", weight))
             }
-            Line(
-                Display.number(track.trackNumber),
-                t.text("album.cellSize", if (playing) "color.accent.playbackText" else "color.text.muted", weight).copy(textAlign = TextAlign.End),
-                Modifier.widthIn(min = t.dp("album.numberMinWidth")),
-            )
         }
         Line(track.displayTitle, t.text("album.songSize", if (playing) "color.accent.playbackText" else "color.text.primary", weight), Modifier.weight(1f))
         Line(

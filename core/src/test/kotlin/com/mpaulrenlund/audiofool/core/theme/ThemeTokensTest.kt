@@ -189,7 +189,7 @@ class ThemeTokensTest {
         assertEquals(ThemeColor.parse("#B3261E"), mobile.colors["color.bpLabel.off.light"])
         assertEquals(ThemeColor.parse("#3DDC84"), mobile.colors["color.bpLabel.on.dark"])
         assertEquals(64.0, mobile.numbers["artists.rowHeight"])
-        assertEquals(32.0, mobile.numbers["album.columns.number.width"])
+        assertEquals(18.0, mobile.numbers["album.columns.number.width"])
         assertEquals(0.117, mobile.numbers["nowPlaying.playButton.ofScreenHeight"])
         assertEquals("Selawik", mobile.texts["font.family"])
     }
