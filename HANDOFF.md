@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-05, after 0.10.0 (the Genius screen). Read this with `README.md` (how the app works) and
+Updated 2026-11-06, after 0.10.0 (the Genius screen) and one change since (the Album page's track numbers, not released). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -22,6 +22,13 @@ you touch a feature from then.
   shuffle button before it. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
+- **On `main` since 0.10.0, not released yet** (2026-11-06): **the Album page's track numbers
+  moved left** (spec §4.3; the user sent a photo of the S24: "the track numbers are too far to
+  the right"). The playing song shows ▶ in its number's place, and the numbers are left-aligned
+  at the row's start in a column that fits the album's longest number (`numberColumnWidth` in
+  `LibraryScreens.kt`; the user chose this from three layouts). ThemeLab re-recorded; not on the
+  emulator or the phones yet. It goes into the next build (0.10.1 proposed, a fix); the user
+  hasn't asked for one.
 - **First thing in the next chat**, unless the user leads with something else: when they report
   on Genius, tick the matching items under *Genius (from 0.10.0)* in both test lists and push.
   Ask how often a "Couldn't load … HTTP 403" or "didn't send" row came: that is Genius's
