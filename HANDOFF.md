@@ -42,6 +42,22 @@ you touch a feature from then.
   colour for this album" or "turn it off"; the knobs are in core `CoverColor` (which hue wins,
   what counts as grey) and `nowPlaying.coverAccent.lightnessRange`. Checked with the tests,
   ThemeLab (16 new pictures, all others identical) and the emulator, which now has 0.12.0.
+- **Ideas for Now Playing were shown, none chosen yet** (2026-11-09; the user: "recommendations
+  or mockups on how to improve this Now Playing screen"). Nothing in the app changed. The
+  pictures are real ThemeLab renders of throwaway code, as labelled sheets in `dist/`
+  (`ideas-1-colour.png`, `ideas-2-state.png`, `ideas-3-light-touch.png`); the throwaway code is
+  `dist/now-playing-ideas.patch` (a `Proto` switch object; a reference for building properly,
+  not to apply as it is). Numbered as on the sheets: **1** the top glow in the cover's colour;
+  **2** Repeat and Shuffle "on" in it; **3** the artist's name too (optional; breaks "artist
+  names use `accent.blue`"); **4** paused shows the ring only, the glow means playing; **5** a
+  time bubble while scrubbing (the index strip's bubble); **6** a "Next · song" line, S24 only
+  (on the M21 it pushed the readout off the screen); **7** Light gets a ring in the cover's
+  colour; **8** 48 dp touch areas for Repeat, Shuffle and BP (34 dp now), nothing moving. Not
+  pictured: the cover blinks to the placeholder at every song change (keep the old one until
+  the new is read, as the colour already does); the round buttons show no press
+  (`control.faceHover` is unused); the artist and album lines could open their screens; no
+  TalkBack labels on the buttons. Wait for the user to pick by number; each is a spec change
+  to confirm, built into one version.
 - **First thing in the next chat**, unless the user leads with something else: when they say
   how the cover colours look, tick the matching items under *Now Playing's cover colour (from
   0.12.0)* in both test lists and push; if a cover gave a colour they wouldn't have picked, ask
