@@ -2,6 +2,7 @@ package com.mpaulrenlund.audiofool.theme
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.ui.graphics.luminance
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mpaulrenlund.audiofool.settings.AppSettings
@@ -50,6 +51,21 @@ class ThemeSettingTest {
         assertEquals(tokens.mobile.color("color.bpLabel.off.dark").toCompose(), dark.mobileColor("color.bpLabel.off"))
         assertEquals("PS2 Dark", dark.name)
         assertEquals("PS1 Light", light.name)
+    }
+
+    /** Spec 5: a cover's colour as the playback colour is worked out for the theme, lighter on Dark than on Light. */
+    @Test
+    fun a_covers_colour_is_fitted_to_each_theme() {
+        val tokens = AppTokens.get(context.assets)
+        val dark = AppTheme(true, tokens)
+        val light = dark.withDark(false)
+        for (cover in listOf(0xFF101830.toInt(), 0xFFC0392B.toInt(), 0xFFFFE9A8.toInt())) {
+            val onDark = dark.coverAccent(cover)
+            val onLight = light.coverAccent(cover)
+            assertEquals(255, onDark.a)
+            assertEquals(255, onLight.a)
+            assertTrue(onDark.toCompose().luminance() > onLight.toCompose().luminance(), "$onDark on Dark, $onLight on Light")
+        }
     }
 
     @Test

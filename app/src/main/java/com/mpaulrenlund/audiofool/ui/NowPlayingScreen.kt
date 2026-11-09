@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.ui
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.animation.core.animate
 import androidx.compose.foundation.Canvas
@@ -62,15 +63,19 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import com.mpaulrenlund.audiofool.core.art.CoverColor
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.QualityLines
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
+import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 import com.mpaulrenlund.audiofool.library.CoverArt
 import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.playback.SystemControls
+import com.mpaulrenlund.audiofool.theme.AppTheme
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import com.mpaulrenlund.audiofool.theme.WindowBackground
+import com.mpaulrenlund.audiofool.theme.toCompose
 import com.mpaulrenlund.audiofool.theme.tokenSurface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -104,7 +109,13 @@ class NowPlayingActions(
  * right for a right thumb) and the output readout. A long press on the art opens
  * its menu (0.6.0), which ends with the logo menu's rows ([appActions], [version]; 0.7.4).
  *
+ * The playback colour here is the cover's (the user's call, 2026-11-09): the seekbar's
+ * played part, Play/Pause's icon and the ring and glow round it take the cover's main
+ * colour, fitted to the theme ([AppTheme.coverAccent]). A cover with no colour of its
+ * own, or no cover, leaves them the theme's `accent.playback`.
+ *
  * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
+ * So is [coverForPictures]: a made-up cover, shown as if it had been read from the song.
  */
 @Composable
 fun NowPlayingScreen(
@@ -113,6 +124,7 @@ fun NowPlayingScreen(
     appActions: AppActions = AppActions(),
     version: String = "",
     artMenuForPictures: String? = null,
+    coverForPictures: Bitmap? = null,
 ) {
     val t = LocalAppTheme.current
     val track = nowPlaying.track
@@ -145,21 +157,24 @@ fun NowPlayingScreen(
             // 0.7.1 (the user's call): the S24's readout sat awkwardly close to the bottom. Part of that
             // gap goes under the readout instead, so it rises and the buttons stay where they were.
             val readoutLift = minOf(spare * t.number("nowPlaying.readoutLift.ofSpare").toFloat(), t.dp("nowPlaying.readoutLift.max"), controlsLift)
+            val shown = shownCover(track, art, coverForPictures)
+            // Fitted to the theme as it is now, not kept from the last one: a theme switch gives the other theme's.
+            val accent = remember(t, shown.color) { shown.color?.let { t.coverAccent(it) } }
 
             Column(Modifier.fillMaxSize()) {
                 SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
-                        BigArt(track, art, actions, appActions, version, artMenuForPictures)
+                        BigArt(track, art, shown.cover, actions, appActions, version, artMenuForPictures)
                     }
                     TitleBlock(nowPlaying, track)
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
                     track?.let { Quality(it) }
-                    Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth)
+                    Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent)
                 }
                 Spacer(Modifier.weight(belowWeight + (aboveWeight - belowWeight) * evenness))
-                Controls(nowPlaying, actions, screenHeight)
+                Controls(nowPlaying, actions, screenHeight, accent)
                 Spacer(Modifier.height(controlsLift - readoutLift))
                 Line(
                     nowPlaying.readout,
@@ -246,22 +261,41 @@ private fun barHeights(): Dp {
     return with(density) { (insets.getTop(this) + insets.getBottom(this)).toDp() }
 }
 
+/** The song's cover as far as it has been read, and the colour the playback controls take from a cover (null: the theme's). */
+private class ShownCover(val cover: BigCover?, val color: Int?)
+
+/**
+ * Reads [track]'s cover at the art's size, off the main thread; null until it is
+ * in. The colour is kept from one cover until the next has been read: an album's
+ * songs share a cover, and the theme's colour would flash between them otherwise.
+ * [forPictures] is ThemeLab's cover, which can't read one.
+ */
+@Composable
+private fun shownCover(track: Track?, side: Dp, forPictures: Bitmap?): ShownCover {
+    val px = with(LocalDensity.current) { side.roundToPx() }
+    val pictured = remember(forPictures) { forPictures?.let { BigCover.of(it) } }
+    var cover by remember(track?.filePath) { mutableStateOf(pictured) }
+    var color by remember { mutableStateOf(pictured?.color) }
+    if (track != null && LocalArt.current != null) {
+        LaunchedEffect(track.filePath, px) {
+            val read = withContext(Dispatchers.IO) { BigCover.read(track, px) }
+            cover = read
+            color = read.color
+        }
+    }
+    return ShownCover(cover, color.takeIf { track != null })
+}
+
 /**
  * The cover, square, with `shadow.headerArt`; the full picture decoded at its size.
  * No border round a cover (the user's call, 0.2.2: it read as a light frame); the
  * placeholder keeps its 1 dp `art.border`, or its square would vanish into the page.
  */
 @Composable
-private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, appActions: AppActions, version: String, menuForPictures: String?) {
+private fun BigArt(track: Track?, side: Dp, cover: BigCover?, actions: NowPlayingActions, appActions: AppActions, version: String, menuForPictures: String?) {
     val t = LocalAppTheme.current
     val density = LocalDensity.current
     val px = with(density) { side.roundToPx() }
-    var cover by remember(track?.filePath) { mutableStateOf<BigCover?>(null) }
-    if (track != null && LocalArt.current != null) {
-        LaunchedEffect(track.filePath, px) {
-            cover = withContext(Dispatchers.IO) { BigCover.read(track, px) }
-        }
-    }
     val bitmap = cover?.image
     // Where the finger pressed, while the menu is open (0.6.0).
     var menuAt by remember(track?.filePath) { mutableStateOf(menuForPictures?.let { IntOffset(px / 2, px / 2) }) }
@@ -313,17 +347,47 @@ private fun BigArt(track: Track?, side: Dp, actions: NowPlayingActions, appActio
     }
 }
 
-/** The cover decoded at the art's size, and the picture's own size, for the menu. */
-private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int) {
+/**
+ * The cover decoded at the art's size; the picture's own size, for the menu; and
+ * its main colour (core `CoverColor`; null when it has none), for the playback
+ * controls.
+ */
+private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int, val color: Int?) {
     /** "1200 × 1200", as the desktop's art viewer gives it; "No cover" when there is none. */
     val resolution: String get() = if (width > 0 && height > 0) "$width × $height" else "No cover"
 
     companion object {
         fun read(track: Track, px: Int): BigCover {
-            val bytes = CoverArt.read(track)?.bytes ?: return BigCover(null, 0, 0)
+            val bytes = CoverArt.read(track)?.bytes ?: return BigCover(null, 0, 0, null)
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-            return BigCover(SystemControls.decode(bytes, px)?.asImageBitmap(), bounds.outWidth, bounds.outHeight)
+            val bitmap = SystemControls.decode(bytes, px)
+            return BigCover(bitmap?.asImageBitmap(), bounds.outWidth, bounds.outHeight, bitmap?.let { mainColor(it) })
+        }
+
+        /** ThemeLab's made-up cover, as [read] would give it. */
+        fun of(bitmap: Bitmap) = BigCover(bitmap.asImageBitmap(), bitmap.width, bitmap.height, mainColor(bitmap))
+
+        /**
+         * The main colour of what the screen shows of the cover: its middle square (the
+         * art is cropped to one), scaled down to `CoverColor.SAMPLE_SIDE` pixels a side.
+         */
+        private fun mainColor(bitmap: Bitmap): Int? {
+            val n = CoverColor.SAMPLE_SIDE
+            val side = minOf(bitmap.width, bitmap.height)
+            val left = (bitmap.width - side) / 2
+            val top = (bitmap.height - side) / 2
+            val small = Bitmap.createBitmap(n, n, Bitmap.Config.ARGB_8888)
+            android.graphics.Canvas(small).drawBitmap(
+                bitmap,
+                android.graphics.Rect(left, top, left + side, top + side),
+                android.graphics.Rect(0, 0, n, n),
+                android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG),
+            )
+            val pixels = IntArray(n * n)
+            small.getPixels(pixels, 0, n, 0, 0, n, n)
+            small.recycle()
+            return CoverColor.main(pixels)
         }
     }
 }
@@ -416,13 +480,14 @@ private fun Quality(track: Track) {
  * The waveform seekbar (spec 5): full width, [height] tall (`waveformHeight`, more
  * with spare height), the track's waveform as one filled shape mirrored about the
  * middle line (0.2.4, the user's call; 96 hard-edged bars before), the played part
- * `slider.seekFill`, the rest `slider.track`, split at the exact place so it
+ * in the cover's colour ([accent]; `slider.seekFill` without one), the rest
+ * `slider.track`, split at the exact place so it
  * glides while playing. Until the waveform is ready, a flat bar `waveformFloor` high. Drag or tap to seek; the bar follows
  * the finger and the seek happens on letting go. The elapsed and total times
  * sit under it.
  */
 @Composable
-private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp) {
+private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp, accent: ThemeColor?) {
     val t = LocalAppTheme.current
     val duration = nowPlaying.durationMs
     // Read every frame while playing, and only then; the rest of the screen doesn't
@@ -436,7 +501,7 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp) {
     val position = if (ticking) ticked else nowPlaying.positionMs()
     val fraction = dragging ?: if (duration > 0) (position.toFloat() / duration).coerceIn(0f, 1f) else 0f
     val floor = t.dp("nowPlaying.waveformFloor")
-    val played = t.color("color.slider.seekFill")
+    val played = accent?.toCompose() ?: t.color("color.slider.seekFill")
     val rest = t.color("color.slider.track")
     val levels = nowPlaying.waveform
     val shape = remember(levels) { WaveShape(levels) }
@@ -519,9 +584,10 @@ private class WaveShape(private val levels: FloatArray?) {
  * fraction of the screen height between a min and a max. At least
  * `modeToTransportGap` lies between the two groups: where the screen is too
  * narrow for the transport's own gaps (the S24), they shrink to fit.
+ * [accent] is the cover's colour, for Play/Pause.
  */
 @Composable
-private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp) {
+private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp, accent: ThemeColor?) {
     val t = LocalAppTheme.current
     fun scaled(path: String): Dp =
         (screenHeight.value * t.number("$path.ofScreenHeight")).coerceIn(t.number("$path.min"), t.number("$path.max")).dp
@@ -565,20 +631,28 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
                     BitPerfectButton(nowPlaying.bitPerfect, if (greyed) null else actions.toggleBitPerfect, greyed)
                 }
             }
-            TransportButtons(nowPlaying, actions, skip, play, gap)
+            TransportButtons(nowPlaying, actions, skip, play, gap, accent)
         }
     }
 }
 
-/** Previous, Play/Pause and Next, [gap] apart, centred on Play/Pause. */
+/**
+ * Previous, Play/Pause and Next, [gap] apart, centred on Play/Pause. Play/Pause's
+ * icon, ring and glow are in the cover's colour ([accent]; `accent.playback` and
+ * the theme's ring and glow without one).
+ */
 @Composable
-private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions, skip: Dp, play: Dp, gap: Dp) {
+private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions, skip: Dp, play: Dp, gap: Dp, accent: ThemeColor?) {
     val t = LocalAppTheme.current
     Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
         val skipIcon = skip * t.number("nowPlaying.skipIconOfButton").toFloat()
         RoundButton(skip, skip, skip, actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, "color.control.iconNeutral") }
-        RoundButton(play, play, play, actions.playPause, play = true) {
-            Icon(if (nowPlaying.isPlaying) AppIcons.PAUSE else AppIcons.PLAY, play * t.number("nowPlaying.playIconOfButton").toFloat(), "color.accent.playback")
+        RoundButton(play, play, play, actions.playPause, play = true, playTint = accent) {
+            Icon(
+                if (nowPlaying.isPlaying) AppIcons.PAUSE else AppIcons.PLAY,
+                play * t.number("nowPlaying.playIconOfButton").toFloat(),
+                accent?.toCompose() ?: t.color("color.accent.playback"),
+            )
         }
         RoundButton(skip, skip, skip, actions.next) { Icon(AppIcons.NEXT, skipIcon, "color.control.iconNeutral") }
     }

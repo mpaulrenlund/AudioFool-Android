@@ -210,6 +210,17 @@ class ThemeLabTest {
             }
             NowPlayingScreen(np, NowPlayingActions())
         }
+        // The cover's colour as the playback colour (2026-11-09, no mockup), on made-up covers: a deep red
+        // (made lighter on Dark), a bright yellow (made darker on Light; paused, for the Play triangle),
+        // several colours (the sky wins), and black and white (no colour to take: the theme's own).
+        val deepRed = ThemeLabFixtures.coverDeepRed()
+        shoot(device, "now-playing-cover-red") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = deepRed) }
+        val yellow = ThemeLabFixtures.coverYellow()
+        shoot(device, "now-playing-cover-yellow") { NowPlayingScreen(nowPlaying(playing = false), NowPlayingActions(), coverForPictures = yellow) }
+        val landscape = ThemeLabFixtures.coverLandscape()
+        shoot(device, "now-playing-cover-landscape") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = landscape) }
+        val blackAndWhite = ThemeLabFixtures.coverBlackAndWhite()
+        shoot(device, "now-playing-cover-grey") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = blackAndWhite) }
         // Analyze (0.6.0): finished on a 24/96 FLAC made from a lossy file, the file being read, and one that couldn't be.
         shoot(device, "analysis") {
             val track = ThemeLabFixtures.nowPlayingTrack

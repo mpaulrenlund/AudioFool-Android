@@ -337,4 +337,43 @@ object ThemeLabFixtures {
 
     /** The Album screen's album for the song playing, for the Genius screen's header. */
     val nowPlayingAlbum get() = library.albumHolding(nowPlayingTrack.filePath)
+
+    // ---- Now Playing's cover colour (2026-11-09): made-up covers, since ThemeLab can't read one ----
+
+    private const val COVER_SIDE = 600f
+
+    /** A square cover: [ground] all over, then whatever [draw] puts on it. Made afresh for each picture. */
+    private fun cover(ground: Int, draw: android.graphics.Canvas.(android.graphics.Paint) -> Unit): android.graphics.Bitmap {
+        val bitmap = android.graphics.Bitmap.createBitmap(COVER_SIDE.toInt(), COVER_SIDE.toInt(), android.graphics.Bitmap.Config.ARGB_8888)
+        val canvas = android.graphics.Canvas(bitmap)
+        canvas.drawColor(ground)
+        canvas.draw(android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG))
+        return bitmap
+    }
+
+    private fun android.graphics.Paint.of(rgb: Int) = apply { color = 0xFF000000.toInt() or rgb }
+
+    /** A deep red cover, darker than either theme's playback colour: a band of near-black and an off-white disc on burgundy. */
+    fun coverDeepRed() = cover(0xFF5A0E12.toInt()) { paint ->
+        drawRect(0f, COVER_SIDE * 0.7f, COVER_SIDE, COVER_SIDE, paint.of(0x1C0506))
+        drawCircle(COVER_SIDE * 0.5f, COVER_SIDE * 0.4f, COVER_SIDE * 0.16f, paint.of(0xF0E0D0))
+    }
+
+    /** A bright yellow cover, lighter than either theme's playback colour: black bars and a white disc on yellow. */
+    fun coverYellow() = cover(0xFFF2C500.toInt()) { paint ->
+        for (i in 0..2) drawRect(COVER_SIDE * 0.12f, COVER_SIDE * (0.58f + i * 0.1f), COVER_SIDE * 0.88f, COVER_SIDE * (0.62f + i * 0.1f), paint.of(0x000000))
+        drawCircle(COVER_SIDE * 0.5f, COVER_SIDE * 0.3f, COVER_SIDE * 0.14f, paint.of(0xFFFFFF))
+    }
+
+    /** Several colours: a blue sky over green grass, with an orange sun. The sky is most of it. */
+    fun coverLandscape() = cover(0xFF4A90D9.toInt()) { paint ->
+        drawRect(0f, COVER_SIDE * 0.68f, COVER_SIDE, COVER_SIDE, paint.of(0x5B8C3A))
+        drawCircle(COVER_SIDE * 0.72f, COVER_SIDE * 0.26f, COVER_SIDE * 0.11f, paint.of(0xF39C12))
+    }
+
+    /** Black and white: no colour to take, so the controls keep the theme's. */
+    fun coverBlackAndWhite() = cover(0xFF161616.toInt()) { paint ->
+        drawCircle(COVER_SIDE * 0.5f, COVER_SIDE * 0.5f, COVER_SIDE * 0.34f, paint.of(0x8A8A8A))
+        drawCircle(COVER_SIDE * 0.5f, COVER_SIDE * 0.5f, COVER_SIDE * 0.2f, paint.of(0xF2F2F2))
+    }
 }

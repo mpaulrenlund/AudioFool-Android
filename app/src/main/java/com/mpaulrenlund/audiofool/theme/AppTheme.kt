@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.mpaulrenlund.audiofool.R
+import com.mpaulrenlund.audiofool.core.art.CoverColor
 import com.mpaulrenlund.audiofool.core.theme.ShadowLayer
 import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 
@@ -44,6 +45,18 @@ class AppTheme(val isDark: Boolean, val tokens: AppTokens) {
     fun themeColor(path: String): ThemeColor = palette.color(path)
 
     fun mobileColor(path: String): Color = tokens.mobile.color("$path.${if (isDark) "dark" else "light"}").toCompose()
+
+    /**
+     * A cover's main colour (core `CoverColor.main`) as Now Playing's playback
+     * colour in this theme (spec 5): its hue, at a lightness within
+     * `nowPlaying.coverAccent.lightnessRange` of `accent.playback`, so it reads
+     * as well as the theme's own. Worked out from the theme each time, as any
+     * colour is: a theme switch gives the other theme's.
+     */
+    fun coverAccent(main: Int): ThemeColor {
+        val argb = CoverColor.accent(main, themeColor("color.accent.playback").argb, isDark, number("nowPlaying.coverAccent.lightnessRange"))
+        return ThemeColor(a = 0xFF, r = (argb shr 16) and 0xFF, g = (argb shr 8) and 0xFF, b = argb and 0xFF)
+    }
 
     fun shadow(path: String): List<ShadowLayer> = palette.shadow(path)
 

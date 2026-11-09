@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import com.mpaulrenlund.audiofool.art.Thumbnails
 import com.mpaulrenlund.audiofool.core.model.Album
 import com.mpaulrenlund.audiofool.core.theme.ShadowLayer
+import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 import com.mpaulrenlund.audiofool.theme.AppTheme
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import com.mpaulrenlund.audiofool.theme.WindowBackground
@@ -328,6 +329,10 @@ fun AlbumArt(
  * `shadow.playGlow` (both invisible in Light). The desktop's molded lip, the inset
  * shadow along the bottom of both, is left out (the user's call, 0.7.2: it read as a
  * small fill); the top highlight and the drop shadow stay.
+ *
+ * [playTint] puts Play/Pause's ring and glow in another colour, each at its own
+ * token's opacity (so both stay invisible in Light): Now Playing's cover colour
+ * (spec 5).
  */
 @Composable
 fun RoundButton(
@@ -336,12 +341,14 @@ fun RoundButton(
     targetHeight: Dp,
     onClick: () -> Unit,
     play: Boolean = false,
+    playTint: ThemeColor? = null,
     content: @Composable () -> Unit,
 ) {
     val t = LocalAppTheme.current
     val shadows = if (play) {
-        val ring = ShadowLayer(inset = false, offsetX = 0.0, offsetY = 0.0, blur = 0.0, spread = t.number("borderWidth"), color = t.themeColor("color.control.playRing"))
-        t.shadow("shadow.playButton") + ring + t.shadow("shadow.playGlow")
+        fun tinted(color: ThemeColor) = playTint?.copy(a = color.a) ?: color
+        val ring = ShadowLayer(inset = false, offsetX = 0.0, offsetY = 0.0, blur = 0.0, spread = t.number("borderWidth"), color = tinted(t.themeColor("color.control.playRing")))
+        t.shadow("shadow.playButton") + ring + t.shadow("shadow.playGlow").map { it.copy(color = tinted(it.color)) }
     } else {
         t.shadow("shadow.controlButton")
     }.filterNot { it.inset && it.offsetY < 0 }
@@ -456,11 +463,16 @@ fun StatusDot(colorPath: String) {
 
 /** An icon from [AppIcons], tinted with a colour token. */
 @Composable
-fun Icon(icon: AppIcon, size: Dp, colorPath: String, strokePath: String = "icon.strokeOn24Grid") {
+fun Icon(icon: AppIcon, size: Dp, colorPath: String, strokePath: String = "icon.strokeOn24Grid") =
+    Icon(icon, size, LocalAppTheme.current.color(colorPath), strokePath)
+
+/** An icon in a colour worked out from the theme rather than read from it: Now Playing's Play/Pause in the cover's colour (spec 5). */
+@Composable
+fun Icon(icon: AppIcon, size: Dp, color: Color, strokePath: String = "icon.strokeOn24Grid") {
     val t = LocalAppTheme.current
     val stroke = t.number(strokePath)
     val vector = remember(icon, stroke) { icon.vector(stroke) }
-    Image(vector, contentDescription = null, modifier = Modifier.size(size), colorFilter = ColorFilter.tint(t.color(colorPath)))
+    Image(vector, contentDescription = null, modifier = Modifier.size(size), colorFilter = ColorFilter.tint(color))
 }
 
 /** An icon sized by its own grid (the Album table's 8 x 10 triangle). */
