@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **Now Playing's cover colour** (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — built and checked 2026-11-09, not released yet (0.12.0 proposed)
+- [ ] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — built 2026-11-09 (versionCode 46), not published yet
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
 - [x] **0.10.1**: the Album page's track numbers (left-aligned at the row's start, ▶ in the playing song's number place) — 2026-11-06, released as pre-release [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1)
 - [x] **0.10.0**: Genius (the desktop's Genius window as a screen, from the cover menu) — 2026-11-05, released as pre-release [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0)
@@ -68,7 +68,9 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-09, after 0.11.0 (not released yet): **Now Playing's playback colour comes from the
+2026-11-09, 0.12.0 (versionCode 46; built the same day after "Build 0.12.0", the number the
+wrap-up proposed; **not published yet**: the notes were shown and wait for the user's word):
+**Now Playing's playback colour comes from the
 cover** (the user: "I'd like try taking the main color theme of the album art that is currently
 playing and use that color as the accent color for the seekbar, the color around the play
 button, and the Play button itself"). Spec §5, *Cover colour*; a change to the rule that the
@@ -113,6 +115,11 @@ playback colour is `accent.playback`, asked for by the user as something to try.
   placeholder (screen recording, the icon's pixel in each frame); Theme from the cover menu
   re-fitted it at once (darker green on Light, no ring or glow there). Only made-up and sample
   covers so far: real covers are for the phones.
+- **The build:** `dist/AudioFool-0.12.0.apk` (SHA-256 `1cea098a…36eb71e7`), signer
+  `1fdefe0a…be2c21`, AudioFool's own Last.fm key in it (compared with `gradle.properties`,
+  neither printed), 587 tests and ThemeLab passing. Installed over the emulator's build in
+  place: the song, the theme and the library kept, the cover menu says "Version 0.12.0", the
+  cover's colour as before. Notes in `dist/notes-0.12.0.md`.
 
 2026-11-09, 0.11.0 (versionCode 45; released the same day as pre-release
 [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0), "AudioFool
@@ -767,7 +774,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Now Playing's cover colour (next build)
+### Now Playing's cover colour (from 0.12.0)
 
 - [ ] **A few albums with very different covers**: the seekbar's played part, the Play/Pause
   icon and the glow round it are in the cover's colour. Does the colour picked look like the
@@ -951,7 +958,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Now Playing's cover colour (next build)
+### Now Playing's cover colour (from 0.12.0)
 
 - [ ] As on the S24, across the full library: a spread of covers, and whether opening Now
   Playing or skipping feels any slower (the colour is worked out when the cover is read).
