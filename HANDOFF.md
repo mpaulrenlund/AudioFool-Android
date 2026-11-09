@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-06, after 0.10.1 (the Album page's track numbers). Read this with `README.md` (how the app works) and
+Updated 2026-11-09, after 0.10.1 (the Album page's track numbers) and one change since (Albums' year strip, not released). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -26,6 +26,14 @@ you touch a feature from then.
   0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
+- **On `main` since 0.10.1, not released yet** (2026-11-09): **a year strip on Albums** (spec
+  §4.2; the user asked for "the same Alpha scroll bar from the Artists screen when there are enough
+  albums to warrant scrolling"). Albums is in release order, so the user chose **years** over
+  letters: "’97" on the strip, "1997" in the bubble, "?" for undated albums. Shown only when the
+  albums don't fit; when years would sit closer than 14 dp (`artists.index.minSlot`) it writes every few. Same
+  strip code as Artists (`IndexStrip.kt`). Checked with the tests, ThemeLab (8 new pictures, all
+  others identical) and the emulator. It goes into the next build (**0.11.0** proposed, a new
+  feature); the user hasn't asked for one.
 - **First thing in the next chat**, unless the user leads with something else: when they report
   on the Album page's numbers, tick *The Album page's track numbers (from 0.10.1)* in both test
   lists and push. When they report on Genius, tick the matching items under *Genius (from 0.10.0)* in both test lists and push.
@@ -305,7 +313,7 @@ don't block anything.
 | Statistics | `core/.../library/LibraryStatistics.kt` (ported), `core/.../playback/ListeningTime.kt`; the app's `playback/Listening.kt` (a `PlayWatcher`) and `ui/StatisticsScreen.kt` (Statistics, and `DebugScreen` with the Playback and Debug panels) |
 | What is heard, for both | `playback/PlayWatcher.kt`: `Player` tells its `watchers` the heard track and place every 250 ms while playing |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
-| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `ArtistIndexStrip.kt` (Artists' letter strip), `NowPlayingScreen.kt` (with `SwipeToSkip`), `StatisticsScreen.kt` (Statistics and Debug; `Figures` and `StatBar` shared with Listening History), `ListeningHistoryScreen.kt`, `AnalysisScreen.kt`, `MiniPlayer.kt`, `LogoMenu.kt` (`AppMenuRows`, shared with the cover menu), `Parts.kt` (the shared parts, `AlbumArt`) |
+| Screens | `ui/AppRoot.kt` wires them; `Navigation.kt` (back stack, predictive back), `LibraryScreens.kt` (Artists, Albums, Album), `SearchScreen.kt`, `SettingsScreen.kt`, `IndexStrip.kt` (Artists' letter strip and Albums' year strip; the labels come from core `ScrollIndex`, `ArtistIndex` / `AlbumYearIndex`), `NowPlayingScreen.kt` (with `SwipeToSkip`), `StatisticsScreen.kt` (Statistics and Debug; `Figures` and `StatBar` shared with Listening History), `ListeningHistoryScreen.kt`, `AnalysisScreen.kt`, `MiniPlayer.kt`, `LogoMenu.kt` (`AppMenuRows`, shared with the cover menu), `Parts.kt` (the shared parts, `AlbumArt`) |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
 | TagLib 2.3.2 (C++, vendored unchanged) | `third_party/taglib/`; the JNI bridge is `app/src/main/cpp/tagreader_jni.cpp` |
 | Selawik font | `app/src/main/res/font/` (Regular, Semibold, Bold), licence in `third_party/selawik/` |

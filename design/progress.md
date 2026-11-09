@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Albums' year strip** (Artists' letter strip on Albums, holding release years, when the albums don't fit) — built and checked 2026-11-09, not released yet (0.11.0 proposed)
 - [x] **0.10.1**: the Album page's track numbers (left-aligned at the row's start, ▶ in the playing song's number place) — 2026-11-06, released as pre-release [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1)
 - [x] **0.10.0**: Genius (the desktop's Genius window as a screen, from the cover menu) — 2026-11-05, released as pre-release [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0)
 - [x] **0.9.0**: a shuffle button on Artists plays the whole library shuffled — 2026-11-05, released as pre-release [`v0.9.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.9.0), the first from the private repo (the APK carries AudioFool's Last.fm key)
@@ -65,6 +66,41 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-09, after 0.10.1 (not released yet): **a year strip on Albums** (the user: "Can we add
+the same Alpha scroll bar from the Artists screen when there are enough albums to warrant
+scrolling on the Albums screen?"). Spec §4.2.
+- **Years, not letters (the user's call**, one of three, asked as a choice): Albums is in the
+  desktop's release-date order, so A–Z letters would come out jumbled. The strip holds the years
+  the albums came out in, "’97" on the strip (two digits fit the 24 dp pill at 12 sp), "1997" in
+  the bubble. Not chosen: letters with the list re-sorted A–Z (a spec change), or letters in
+  first-album order with the dates kept.
+- **Only when the albums don't fit** (as asked): rows are a fixed `albums.rowHeight`, so
+  `rows × height + 2 × listPadding > the list's height` decides it before drawing, with no
+  flash. Otherwise the rows keep the full width, so every existing Albums picture is unchanged.
+  Like Artists, no strip for a single year.
+- **My calls, open to change:** albums with no year (at the foot of the list, as the desktop
+  sorts them) are under "?"; 1928 and 2028 are two sections though both read "’28".
+- **Thinning** (new, Albums only in practice): an artist with many years would squeeze the labels
+  together on the M21 (sixty years leave about 7 dp each). Below `artists.index.minSlot` (14 dp)
+  only every few labels is written, each centred over its run, the current one in its run's
+  place; the touch still picks each year and the bubble names it. Artists' 28 letters get 17.5 dp
+  on the M21 (more with nothing playing), so Artists never thins.
+- **Shared code:** core `ScrollIndex` (sections, `sectionAt`; a label and a bubble per section)
+  now backs both `ArtistIndex` (now an object; same rules, same tests) and the new
+  `AlbumYearIndex` (5 tests). `ArtistIndexStrip.kt` became `IndexStrip.kt` (`IndexStrip`,
+  `labelGroups` with 3 tests). The bubble is `height = bubble`, at least `bubble` wide, with
+  `bubblePaddingX` (12 dp) either side, so a letter's bubble is the same 72 dp square.
+- **Tokens:** `artists.index.minSlot` and `artists.index.bubblePaddingX` added; the strip's
+  `$note` says Albums uses the same sizes. The group keeps its `artists.` name.
+- **Checked:** core (504) and app (62) tests; ThemeLab re-recorded: 8 new pictures
+  (`edge-albums-years`, 26 albums with ’99 pressed and a song playing; `edge-albums-years-full`,
+  sixty years, thinned to every other year on both phones), looked at in both themes on both
+  phones; every other picture pixel-identical, Artists' strip and bubble included. Emulator (the
+  release build over 0.10.1; a test artist of 25 albums, 1971–2024 and one untagged, pushed to
+  `/sdcard/Music/Year Strip Band`): 23 years and "?" shown, a tap on ’99 put 1999's album at the
+  top, a slide to the foot reached the untagged album, the bubble showed "1985" while held, and
+  a two-album artist had no strip.
 
 2026-11-06, 0.10.1 (versionCode 44; released the same day as pre-release
 [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1), "AudioFool
@@ -680,6 +716,13 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Albums' year strip (next build)
+
+- [ ] An artist with more albums than fit: the year strip at the right, "’97" style, "?" at the
+  foot if some albums have no year; a tap or a slide jumps to that year's first album, with a
+  tick at each year and the full year in the bubble. An artist whose albums all fit: no strip,
+  the rows full width.
+
 ### The Album page's track numbers (from 0.10.1)
 
 - [ ] An album: the numbers start at the cover's left edge, left-aligned, and the titles sit
@@ -844,6 +887,12 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Albums' year strip (next build)
+
+- [ ] As on the S24, on the shorter screen: the artist with the most albums in the full
+  library; if its years are too many to write them all, every few is written and a slide still
+  stops on each year (the bubble names it).
 
 ### The Album page's track numbers (from 0.10.1)
 
