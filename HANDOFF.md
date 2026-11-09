@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-09: 0.12.0 (Now Playing's cover colour) is built and waits for the user's word to publish; 0.11.0 (Albums' year strip) is the latest release. Read this with `README.md` (how the app works) and
+Updated 2026-11-09, after 0.12.0 (Now Playing's cover colour). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,42 +12,40 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of; 0.12.0 is built and waits to be
-  published (next item). The latest published build is **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
+- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
+  latest build is **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
+  cover** (spec §5, *Cover colour*; next item). Published 2026-11-09 as the pre-release
+  [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0) (APK
+  attached). Before it, **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
   asked for "the same Alpha scroll bar from the Artists screen when there are enough albums to
-  warrant scrolling", and chose years over letters). Published 2026-11-09 as the pre-release
-  [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0) (APK
-  attached). Before it, **0.10.1** (versionCode 44): **the Album page's track numbers moved
+  warrant scrolling", and chose years over letters), published 2026-11-09 as
+  [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0);
+  **0.10.1** (versionCode 44): **the Album page's track numbers moved
   left** (spec §4.3), published 2026-11-06 as
   [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1); and
   **0.10.0** (versionCode 43): **the Genius screen** (spec §5.2; the desktop's session 75,
   ported; from the cover menu's new **Genius** row), published 2026-11-05 as
   [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0). Genius
   has **never seen the real genius.com on Android**: the emulator can't get past this PC's
-  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.11.0, 0.10.1
+  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.12.0, 0.11.0, 0.10.1
   and 0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
-- **0.12.0 (versionCode 46) is built, not published** (2026-11-09, "Build 0.12.0"): the bump is
-  commit `15bd18f94d6d5a1703183f595a1afd0ca66f8a4b`, the APK `dist/AudioFool-0.12.0.apk`
-  (SHA-256 `1cea098a…36eb71e7`; signer and Last.fm key checked), the notes
-  `dist/notes-0.12.0.md`, shown to the user. **Publishing waits for their word** ("Publish
-  it"): then step 7 of the routine with `--target` that commit, and step 8. If they ask for a
-  change first, make it, build again as 0.12.0 with versionCode 47 and replace both files.
-  What it is: **Now Playing's playback colour
+- **0.12.0 is a try** (2026-11-09; "Build 0.12.0", then "Publish it"): **Now Playing's playback colour
   comes from the cover** (spec §5, *Cover colour*; the user: "I'd like try taking the main color
   theme of the album art … as the accent color for the seekbar, the color around the play
   button, and the Play button itself"). The seekbar's played part, Play/Pause's icon and the
   ring and glow round it take the cover's main colour, fitted to the theme (no darker than
   `accent.playback` on Dark, no lighter on Light); a cover with no colour, or no cover, keeps
-  `accent.playback`. The mini player and the lists are unchanged. **It is a try**: the user has
+  `accent.playback`. The mini player and the lists are unchanged. Before the release the user had
   seen only ThemeLab's made-up covers (a labelled sheet, `dist/cover-colour-s24.png`), so expect "more/less vivid", "wrong
   colour for this album" or "turn it off"; the knobs are in core `CoverColor` (which hue wins,
   what counts as grey) and `nowPlaying.coverAccent.lightnessRange`. Checked with the tests,
   ThemeLab (16 new pictures, all others identical) and the emulator, which now has 0.12.0.
-- **First thing in the next chat**, unless the user leads with something else: 0.12.0 waits for
-  "Publish it" (above); once it is out and they say how the cover colours look, tick the
-  matching items under *Now Playing's cover colour (from 0.12.0)* in both test lists and push.
+- **First thing in the next chat**, unless the user leads with something else: when they say
+  how the cover colours look, tick the matching items under *Now Playing's cover colour (from
+  0.12.0)* in both test lists and push; if a cover gave a colour they wouldn't have picked, ask
+  which album and what colour they expected before changing the rule.
   When they report
   on the year strip, tick *Albums' year strip (from 0.11.0)* in both test lists and push; on
   the M21, ask whether a crowded artist's thinned years (every second or third written) read
@@ -109,7 +107,7 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
-- **0.12.0** (2026-11-09, "Build 0.12.0"; not published yet): **Now Playing's playback colour
+- **0.12.0** (2026-11-09, "Build 0.12.0", then "Publish it"): **Now Playing's playback colour
   from the cover** (spec §5, *Cover colour*). The seekbar's played part, Play/Pause's icon and
   its ring and glow take the cover's main colour (core `CoverColor.main`: the hue with the most
   colour in it), fitted to the theme (`CoverColor.accent`, `AppTheme.coverAccent`); black and
