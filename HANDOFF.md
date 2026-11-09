@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-09, after 0.11.0 (Albums' year strip). Read this with `README.md` (how the app works) and
+Updated 2026-11-09, after 0.11.0 (Albums' year strip) and one change since (Now Playing's cover colour, not released). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -28,7 +28,22 @@ you touch a feature from then.
   and 0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
-- **First thing in the next chat**, unless the user leads with something else: when they report
+- **On `main` since 0.11.0, not released yet** (2026-11-09): **Now Playing's playback colour
+  comes from the cover** (spec §5, *Cover colour*; the user: "I'd like try taking the main color
+  theme of the album art … as the accent color for the seekbar, the color around the play
+  button, and the Play button itself"). The seekbar's played part, Play/Pause's icon and the
+  ring and glow round it take the cover's main colour, fitted to the theme (no darker than
+  `accent.playback` on Dark, no lighter on Light); a cover with no colour, or no cover, keeps
+  `accent.playback`. The mini player and the lists are unchanged. **It is a try**: the user has
+  seen only ThemeLab's made-up covers (a labelled sheet, `dist/cover-colour-s24.png`), so expect "more/less vivid", "wrong
+  colour for this album" or "turn it off"; the knobs are in core `CoverColor` (which hue wins,
+  what counts as grey) and `nowPlaying.coverAccent.lightnessRange`. Checked with the tests,
+  ThemeLab (16 new pictures, all others identical) and the emulator, which now has this build
+  over 0.11.0 (still labelled 0.11.0). It goes into the next build (**0.12.0** proposed, a new
+  feature); the user hasn't asked for one.
+- **First thing in the next chat**, unless the user leads with something else: the cover colour
+  is waiting on the user's word (keep it, change it, or drop it) and on a build to try it in;
+  don't build or bump the version until they say. When they report
   on the year strip, tick *Albums' year strip (from 0.11.0)* in both test lists and push; on
   the M21, ask whether a crowded artist's thinned years (every second or third written) read
   well. When they report
@@ -309,6 +324,7 @@ don't block anything.
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | The library | `library/LibraryRepository`: the cache first, then a background rescan; the scan reuses tags for files whose size and date haven't changed, and carries over every track of a folder it can't reach |
 | Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
+| Now Playing's cover colour (after 0.11.0) | `core/.../art/CoverColor.kt` (`main`: the cover's main colour from 64 × 64 pixels; `accent`: that colour at a lightness the theme can show; OKLab; tests in `CoverColorTest`); the app's `AppTheme.coverAccent` (reads `accent.playback` and `nowPlaying.coverAccent.lightnessRange`), and in `ui/NowPlayingScreen.kt` `shownCover` / `BigCover.color` (read with the cover, kept until the next cover is in) feeding `Seekbar` and `TransportButtons`; `RoundButton(playTint)` in `Parts.kt`. ThemeLab's made-up covers: `ThemeLabFixtures.coverDeepRed()` and three more, through `NowPlayingScreen(coverForPictures)` |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`; `LibraryShuffle`, the whole library as one queue for Artists' shuffle button, 0.9.0) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`; the phone's own `getMobileSession`); the app's `lastfm/LastFm.kt` (the username-and-password sign-in, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
@@ -595,7 +611,9 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   logo menu's pictures use a compose rule and `captureScreenRoboImage` (`ThemeLabMenuTest`),
   one picture per test because a test can set its content only once.
 - **ThemeLab can't reach TagLib**, so anything that reads covers or tags (Statistics' cover
-  check) is shown without a library there, and `LocalArt` is null (placeholders).
+  check) is shown without a library there, and `LocalArt` is null (placeholders). Now Playing
+  takes a made-up cover instead (`coverForPictures`, a `Bitmap` drawn in `ThemeLabFixtures`),
+  which also gives it the cover's colour; without one its pictures show the theme's colours.
 - **CSS min-height** in the mockups is the content's, inside the padding: put
   `heightIn(min = ...)` after `padding(...)`.
 - **Token arrays are keyed by `id`**: `album.columns.number.width`, not `columns.0`.

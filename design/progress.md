@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Now Playing's cover colour** (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — built and checked 2026-11-09, not released yet (0.12.0 proposed)
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
 - [x] **0.10.1**: the Album page's track numbers (left-aligned at the row's start, ▶ in the playing song's number place) — 2026-11-06, released as pre-release [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1)
 - [x] **0.10.0**: Genius (the desktop's Genius window as a screen, from the cover menu) — 2026-11-05, released as pre-release [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0)
@@ -66,6 +67,52 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-09, after 0.11.0 (not released yet): **Now Playing's playback colour comes from the
+cover** (the user: "I'd like try taking the main color theme of the album art that is currently
+playing and use that color as the accent color for the seekbar, the color around the play
+button, and the Play button itself"). Spec §5, *Cover colour*; a change to the rule that the
+playback colour is `accent.playback`, asked for by the user as something to try.
+- **What takes it** (as asked): the seekbar's played part, Play/Pause's icon, and the ring and
+  glow round Play/Pause. Nothing else: the mini player, the now-playing rows and the Album
+  page's triangle keep `accent.playback`.
+- **No new dependency:** the colour is worked out by the phone's own `core/.../art/CoverColor`
+  (plain Kotlin, 20 tests), not androidx.palette. The desktop has no such rule to port.
+- **My calls, open to change:**
+  - *Which colour is the cover's.* The hue with the most colour in it: pixels counted by hue
+    (OKLab, 10° slices with their neighbours), each by its chroma, greys left out. So area
+    counts and so does vividness: a red logo on a black cover is red, a blue sky with a small
+    sun is blue, a large dull blue beats a small vivid red. Not chosen: the most vivid colour
+    whatever its size (Android Palette's "vibrant"), or the plain commonest colour (often
+    black or white).
+  - *A cover with no colour keeps the theme's.* Black and white, or under 2% coloured, or no
+    cover: `accent.playback`, as before. Not chosen: a grey accent.
+  - *The colour is fitted to the theme, not used as it is.* Same hue, at a lightness within
+    `nowPlaying.coverAccent.lightnessRange` (0.15, the one new token) of the theme's own
+    `accent.playback`: that or lighter on Dark, that or darker on Light. A navy cover would
+    otherwise vanish on Dark's buttons, a yellow one on Light's. The cost: on Light a yellow
+    cover gives a dark gold, and on Dark a burgundy one a bright red. Made lighter it keeps
+    its saturation, made darker its chroma.
+  - *Light has no ring or glow* (`control.playRing` and `shadow.playGlow` are clear there), and
+    still has none: the cover's colour takes each token's own opacity. In Light the seekbar
+    and the icon change.
+  - *No animation, no setting.* The colour changes when the new cover appears; until then the
+    last cover's stays, so an album's songs don't flash the theme's blue between them. There
+    is no switch to turn it off.
+- **Code:** `NowPlayingScreen.kt` reads the cover once for the art and the colour
+  (`shownCover`, `BigCover.color`); `AppTheme.coverAccent` fits it to the theme at each
+  composition (a theme switch re-fits it); `RoundButton(playTint)` and an `Icon` taking a
+  colour in `Parts.kt`. ThemeLab gets made-up covers through `coverForPictures`
+  (`ThemeLabFixtures.coverDeepRed` and three more).
+- **Checked:** core and app tests (587, none failing); ThemeLab: 16 new pictures
+  (`now-playing-cover-red`, `-yellow`, `-landscape`, `-grey`), looked at in both themes at both
+  sizes; every existing picture pixel-identical (no cover in ThemeLab is still the theme's
+  colour). Emulator (this build over 0.11.0, still labelled 0.11.0): a pale green cover and a
+  vivid green one each gave their green; the fractal on pink of *Moon Safari*'s sample gave
+  pink; Next within an album kept the colour through the frame where the art was the
+  placeholder (screen recording, the icon's pixel in each frame); Theme from the cover menu
+  re-fitted it at once (darker green on Light, no ring or glow there). Only made-up and sample
+  covers so far: real covers are for the phones.
 
 2026-11-09, 0.11.0 (versionCode 45; released the same day as pre-release
 [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0), "AudioFool
@@ -720,6 +767,18 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Now Playing's cover colour (next build)
+
+- [ ] **A few albums with very different covers**: the seekbar's played part, the Play/Pause
+  icon and the glow round it are in the cover's colour. Does the colour picked look like the
+  cover's, and is it the one you'd have picked?
+- [ ] **Hard covers**: a black-and-white one (should stay the usual blue), a very dark one, a
+  very pale one, one with many colours. Anything hard to see against the button or the bar?
+- [ ] **Skipping within an album and to another album**: no flash of blue between songs; the
+  colour changes with the cover.
+- [ ] **Light theme** (logo > Theme): the same covers; the colours come out darker, and
+  Play/Pause has no ring or glow there, as before.
+
 ### Albums' year strip (from 0.11.0)
 
 - [ ] An artist with more albums than fit: the year strip at the right, "’97" style, "?" at the
@@ -891,6 +950,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Now Playing's cover colour (next build)
+
+- [ ] As on the S24, across the full library: a spread of covers, and whether opening Now
+  Playing or skipping feels any slower (the colour is worked out when the cover is read).
 
 ### Albums' year strip (from 0.11.0)
 
