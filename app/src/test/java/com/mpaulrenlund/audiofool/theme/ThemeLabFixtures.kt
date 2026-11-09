@@ -123,6 +123,24 @@ object ThemeLabFixtures {
         names.forEachIndexed { i, name -> addAll(filler(INTERNAL, name, "Album $i", 2000 + i % 20, 2)) }
     })
 
+    // ---- Albums' year strip (0.11.0) ----
+
+    const val YEARS_ARTIST = "Discography Unit"
+    const val CAREER_ARTIST = "Sixty Year Septet"
+
+    /**
+     * [YEARS_ARTIST]: 26 albums over 1985 to 2024, some years twice, and one with no
+     * year, too many to fit. [CAREER_ARTIST]: one album a year for sixty years, more
+     * years than the strip can write on either phone.
+     */
+    val yearsLibrary: MusicLibrary = LibraryScanner.build(buildList {
+        val years = listOf(1985, 1987, 1988, 1990, 1991, 1991, 1993, 1995, 1996, 1997, 1999, 1999, 2001, 2003,
+            2004, 2006, 2008, 2009, 2011, 2013, 2015, 2016, 2018, 2020, 2022, 2024)
+        years.forEachIndexed { i, year -> addAll(filler(INTERNAL, YEARS_ARTIST, "Release ${i + 1}", year, 8)) }
+        addAll(filler(INTERNAL, YEARS_ARTIST, "Untitled Tape", 2000, 4).map { it.copy(year = null) })
+        (1965..2024).forEach { year -> addAll(filler(INTERNAL, CAREER_ARTIST, "Live in $year", year, 3)) }
+    })
+
     /** The long-named song, playing. */
     val longPlaying: Track = edgeTracks.first()
 

@@ -2,6 +2,7 @@ package com.mpaulrenlund.audiofool.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.mpaulrenlund.audiofool.core.format.Display
+import com.mpaulrenlund.audiofool.core.library.AlbumYearIndex
 import com.mpaulrenlund.audiofool.core.library.ArtistIndex
 import com.mpaulrenlund.audiofool.core.model.Album
 import com.mpaulrenlund.audiofool.core.model.ArtistGroup
@@ -85,7 +87,7 @@ fun ArtistsScreen(
                             }
                         }
                     }
-                    ArtistIndexStrip(index, list, indexPreview)
+                    IndexStrip(index, list, indexPreview)
                 }
             }
         }
@@ -160,9 +162,18 @@ private fun ArtistRow(artist: ArtistGroup, browse: Browse, selected: Boolean, on
     }
 }
 
-/** Albums (spec 4.2): one artist's albums, in the desktop's release-date order. */
+/**
+ * Albums (spec 4.2): one artist's albums, in the desktop's release-date order, with
+ * a year strip at the right when they don't all fit (0.11.0, the user's call).
+ */
 @Composable
-fun AlbumsScreen(artistName: String, browse: Browse, actions: AppActions, initialSelected: String? = null) {
+fun AlbumsScreen(
+    artistName: String,
+    browse: Browse,
+    actions: AppActions,
+    initialSelected: String? = null,
+    indexPreview: IndexPreview? = null,
+) {
     val t = LocalAppTheme.current
     val artist = browse.artist(artistName)
     var selected by rememberSaveable { mutableStateOf(initialSelected) }
@@ -180,13 +191,24 @@ fun AlbumsScreen(artistName: String, browse: Browse, actions: AppActions, initia
     ) {
         PanelSurface(Modifier.weight(1f)) {
             PanelHeader("Albums")
-            LazyColumn(contentPadding = PaddingValues(t.dp("panel.listPadding"))) {
-                items(artist?.albums.orEmpty(), key = { it.title }, contentType = { "album" }) { album ->
-                    AlbumRow(album, "${album.yearDisplay} · ${album.trackCountDisplay}", browse, selected = album.title == selected) {
-                        selected = album.title
-                        actions.open(Route.Album(album.artistName, album.title))
+            val albums = artist?.albums.orEmpty()
+            val list = rememberLazyListState()
+            val index = remember(albums) { AlbumYearIndex.of(albums) }
+            val pad = t.dp("panel.listPadding")
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                // Rows are a fixed height, so whether the list scrolls is known before it is drawn.
+                val scrolls = t.dp("albums.rowHeight") * albums.size + pad * 2 > maxHeight
+                val strip = scrolls && showsStrip(index)
+                val padEnd = if (strip) stripRoom() else pad
+                LazyColumn(Modifier.fillMaxSize(), state = list, contentPadding = PaddingValues(start = pad, top = pad, end = padEnd, bottom = pad)) {
+                    items(albums, key = { it.title }, contentType = { "album" }) { album ->
+                        AlbumRow(album, "${album.yearDisplay} · ${album.trackCountDisplay}", browse, selected = album.title == selected) {
+                            selected = album.title
+                            actions.open(Route.Album(album.artistName, album.title))
+                        }
                     }
                 }
+                if (strip) IndexStrip(index, list, indexPreview)
             }
         }
     }

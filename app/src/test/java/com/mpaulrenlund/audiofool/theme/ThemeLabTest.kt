@@ -342,6 +342,15 @@ class ThemeLabTest {
         shoot(device, "edge-artists-index-full") {
             ArtistsScreen(Browse(ThemeLabFixtures.alphabetLibrary, emptyList(), NowPlaying()), actions, indexPreview = IndexPreview("M"))
         }
+        // Albums' year strip (0.11.0): albums that don't fit, a finger on ’99, a song playing.
+        fun years() = Browse(
+            ThemeLabFixtures.yearsLibrary,
+            emptyList(),
+            NowPlaying().apply { showForPictures(ThemeLabFixtures.yearsLibrary.allTracks.first { it.year == 1999 }) },
+        )
+        shoot(device, "edge-albums-years") { AlbumsScreen(ThemeLabFixtures.YEARS_ARTIST, years(), actions, indexPreview = IndexPreview("’99")) }
+        // Sixty years: more than the strip can write, so every few is written.
+        shoot(device, "edge-albums-years-full") { AlbumsScreen(ThemeLabFixtures.CAREER_ARTIST, years(), actions, indexPreview = IndexPreview("’80")) }
         shoot(device, "edge-artists-empty") { ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions) }
         shoot(device, "edge-search-empty") { SearchScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying()), actions, initialQuery = "polygon") }
     }

@@ -64,16 +64,18 @@
     "countSize": 13,
     "lineGap": 2,
     "index": {
-      "$note": "The letter strip at the list's right edge (0.2.0, the user's call; no mockup): always shown since 0.2.1, with the rows ending width + 2 × marginEnd from the panel's edge. A pill in the panel's colours; the letters text.muted, the current one text.primary at activeWeight. While a finger is on it, the bubble (the logo menu's surface) shows the letter in text.heading in the middle of the list.",
+      "$note": "The letter strip at the list's right edge (0.2.0, the user's call; no mockup): always shown since 0.2.1, with the rows ending width + 2 × marginEnd from the panel's edge. A pill in the panel's colours; the letters text.muted, the current one text.primary at activeWeight. While a finger is on it, the bubble (the logo menu's surface) shows the letter in text.heading in the middle of the list. Albums' year strip (0.11.0) uses the same sizes: labels closer than minSlot are thinned to one written label per run, and the bubble grows past its square for a year, bubblePaddingX either side.",
       "touchWidth": 40,
       "width": 24,
       "marginEnd": 4,
       "marginY": 8,
       "paddingY": 6,
       "letterSlot": 18,
+      "minSlot": 14,
       "textSize": 12,
       "activeWeight": 600,
       "bubble": 72,
+      "bubblePaddingX": 12,
       "bubbleTextSize": 36,
       "bubbleWeight": 600
     }

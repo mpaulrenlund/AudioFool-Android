@@ -61,6 +61,6 @@ class ArtistIndexTest {
 
     @Test fun an_empty_library_has_no_letters() {
         assertTrue(ArtistIndex.of(emptyList()).isEmpty)
-        assertEquals(-1, ArtistIndex.Empty.sectionAt(0))
+        assertEquals(-1, ScrollIndex.Empty.sectionAt(0))
     }
 }
