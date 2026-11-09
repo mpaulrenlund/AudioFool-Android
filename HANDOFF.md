@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-09, after 0.10.1 (the Album page's track numbers) and one change since (Albums' year strip, not released). Read this with `README.md` (how the app works) and
+Updated 2026-11-09, after 0.11.0 (Albums' year strip). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -13,28 +13,25 @@ you touch a feature from then.
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
 - **Where it stands:** nothing is broken that the user knows of, and no request is open. The
-  latest build is **0.10.1** (versionCode 44): **the Album page's track numbers moved left**
-  (spec §4.3; the user sent a photo of the S24, "the track numbers are too far to the right",
-  and chose the layout from three): left-aligned at the row's start, ▶ in the playing song's
-  number place. Published 2026-11-06 as the pre-release
-  [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1) (APK
-  attached). Before it, **0.10.0** (versionCode 43): **the Genius screen** (spec §5.2; the
-  desktop's session 75, ported; from the cover menu's new **Genius** row), published 2026-11-05
-  as [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0). Genius
+  latest build is **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
+  asked for "the same Alpha scroll bar from the Artists screen when there are enough albums to
+  warrant scrolling", and chose years over letters). Published 2026-11-09 as the pre-release
+  [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0) (APK
+  attached). Before it, **0.10.1** (versionCode 44): **the Album page's track numbers moved
+  left** (spec §4.3), published 2026-11-06 as
+  [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1); and
+  **0.10.0** (versionCode 43): **the Genius screen** (spec §5.2; the desktop's session 75,
+  ported; from the cover menu's new **Genius** row), published 2026-11-05 as
+  [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0). Genius
   has **never seen the real genius.com on Android**: the emulator can't get past this PC's
-  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.10.1 and
-  0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
+  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.11.0, 0.10.1
+  and 0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
-- **On `main` since 0.10.1, not released yet** (2026-11-09): **a year strip on Albums** (spec
-  §4.2; the user asked for "the same Alpha scroll bar from the Artists screen when there are enough
-  albums to warrant scrolling"). Albums is in release order, so the user chose **years** over
-  letters: "’97" on the strip, "1997" in the bubble, "?" for undated albums. Shown only when the
-  albums don't fit; when years would sit closer than 14 dp (`artists.index.minSlot`) it writes every few. Same
-  strip code as Artists (`IndexStrip.kt`). Checked with the tests, ThemeLab (8 new pictures, all
-  others identical) and the emulator. It goes into the next build (**0.11.0** proposed, a new
-  feature); the user hasn't asked for one.
 - **First thing in the next chat**, unless the user leads with something else: when they report
+  on the year strip, tick *Albums' year strip (from 0.11.0)* in both test lists and push; on
+  the M21, ask whether a crowded artist's thinned years (every second or third written) read
+  well. When they report
   on the Album page's numbers, tick *The Album page's track numbers (from 0.10.1)* in both test
   lists and push. When they report on Genius, tick the matching items under *Genius (from 0.10.0)* in both test lists and push.
   Ask how often a "Couldn't load … HTTP 403" or "didn't send" row came: that is Genius's
@@ -54,11 +51,11 @@ you touch a feature from then.
   Claude's safety check stopped 0.8.1's upload while the repo was public). Only the owner,
   `mpaulrenlund`, can change visibility; this PC (`marcusrenlund`) can't. 0.8.1 is the one
   build that never went to GitHub. All but v0.1.0 are pre-releases; v0.0.5 was skipped.
-  `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.10.1.apk`,
-  `dist/notes-0.10.1.md`.
-- **Next build:** **0.10.2** for fixes, **0.11.0** for new features. Confirm the number with the
+  `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.11.0.apk`,
+  `dist/notes-0.11.0.md`.
+- **Next build:** **0.11.1** for fixes, **0.12.0** for new features. Confirm the number with the
   user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's sign-in fixes).
-  versionCode 45 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  versionCode 46 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The routine the user expects**, when they say to build:
   1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
@@ -92,6 +89,15 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
+- **0.11.0** (2026-11-09, "Build 0.11.0", then "Publish it"): **a year strip on Albums**.
+  Albums is in release order, so the strip holds years, not letters (the user's call): "’97" on
+  the strip, "1997" in the bubble, "?" for undated albums (at the foot, as the desktop sorts
+  them). Shown only when the albums don't fit (fixed row heights decide it before drawing).
+  When years would sit closer than 14 dp (`artists.index.minSlot`), every few is written; the
+  touch still stops on each. One strip for both screens: core `ScrollIndex` behind
+  `ArtistIndex` and `AlbumYearIndex`, the app's `IndexStrip.kt` (was `ArtistIndexStrip.kt`).
+  8 new ThemeLab pictures (`edge-albums-years*`), every other one unchanged. The emulator keeps
+  a test artist, `/sdcard/Music/Year Strip Band` (25 albums, 1971–2024, one untagged).
 - **0.10.1** (2026-11-06, "Build 0.10.1", then "Publish it"): **the Album page's track
   numbers** start at the row's start, left-aligned, in a column as wide as the album's longest
   number (`numberColumnWidth` in `LibraryScreens.kt`; `album.columns.number.width` is the
