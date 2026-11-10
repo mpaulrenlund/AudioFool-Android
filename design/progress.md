@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **The cover menu keeps only Settings, Theme and Version of the logo menu's rows** (Listening History, Rescan Library and Statistics are the logo menu's only) — built and checked 2026-11-10, not in a build yet
 - [x] **0.15.0**: Version opens the releases page (the logo menu's and the cover menu's Version row, in the default browser); the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing); no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — 2026-11-10, released as pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0). It replaces 0.14.1 (versionCode 49), built the same day without the Version change and never published
 - [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
@@ -70,6 +71,18 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-10, after 0.15.0 (not in a build yet): **Listening History, Rescan Library and Statistics
+leave the cover menu** (the user: "for the menu in the Now Playing screen, let's remove Listening
+History, Rescan Library, and Statistics. These should just be in the Main Logo menu."). Spec §5
+(*Cover menu*), §4.1, §4.7; README.
+- The cover menu is now Resolution, Analyze, Bit-Perfect, Genius, Settings, Theme, Version: still
+  alphabetical after the resolution. The logo menu keeps all six of its rows. `AppMenuRows` gained
+  `libraryRows` (false for the cover menu) rather than a second copy of the rows.
+- **Checked:** 101 app tests (`NowPlayingTouchTest`: the cover menu has its seven rows and not
+  the three; `VersionRowTest`: the logo menu still has all six). ThemeLab: the 12 cover menu
+  pictures changed (three rows shorter), the logo menu's and every other one unchanged. Emulator:
+  a tap on the cover shows the seven rows.
 
 2026-11-10, 0.15.0 (versionCode 50; released the same day as pre-release
 [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256
@@ -984,6 +997,11 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The cover menu's rows (from the next build)
+
+- [ ] Tap the cover: Resolution, Analyze, Bit-Perfect, Genius, Settings, Theme and Version, and no
+  Listening History, Rescan Library or Statistics (they're in the logo menu, which still has all six).
+
 ### Version opens the releases page (from 0.15.0)
 
 - [ ] Logo menu > Version: the releases page opens in your default browser (not GitHub's app,
@@ -1218,6 +1236,10 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The cover menu's rows (from the next build)
+
+- [ ] As on the S24. The menu is three rows shorter: does it still fit by the cover wherever you tap?
 
 ### Version opens the releases page (from 0.15.0)
 

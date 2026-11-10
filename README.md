@@ -90,7 +90,7 @@ every decision and what is still to be checked on the phones.
 - **Statistics.** Tracks, albums, artists, play time and size on disk; tracks per format
   (the desktop's `LibraryStatistics`); and the time listened, counted by the app from the
   first run of 0.1.0 on (`listening.json`).
-- **Listening History.** From the logo menu or the cover menu: what you've played, as
+- **Listening History.** From the logo menu: what you've played, as
   Last.fm has it (the desktop's Listening History, ported with its tests). Your totals, the
   top ten artists, albums and tracks for 7D, 1M, 3M, 6M, 12M or All, and the last 20 plays.
   A row the library holds opens its artist, its album, or its album with the song

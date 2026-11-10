@@ -416,8 +416,10 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int,
  * Analyze, which opens the Analysis screen; Bit-Perfect (spec 6.4, 2026-11-10, the
  * user's call: the BP button moved here), checked while on, which switches it and
  * keeps the menu open; and Genius, which opens the Genius screen (spec 5.2); then
- * the logo menu's rows (0.7.4, the user's call), so all but the resolution are in
- * alphabetical order with the version last.
+ * the logo menu's Settings, Theme and version (0.7.4, the user's call; Listening
+ * History, Rescan Library and Statistics are the logo menu's only since 2026-11-10,
+ * the user's call), so all but the resolution are in alphabetical order with the
+ * version last.
  */
 @Composable
 private fun ArtMenu(
@@ -443,7 +445,7 @@ private fun ArtMenu(
             // The check in Bit-Perfect's own "on" colour, as Settings' dot (spec 4.5); greyed out where it can't work (spec 6.2).
             MenuCheckRow("Bit-Perfect", nowPlaying.bitPerfect, "color.status.bitPerfectOn", toggleBitPerfect, greyed = nowPlaying.bitPerfectGreyed)
             MenuRow("Genius", onClick = genius)
-            AppMenuRows(onClose, appActions, version)
+            AppMenuRows(onClose, appActions, version, libraryRows = false)
         }
     }
 }

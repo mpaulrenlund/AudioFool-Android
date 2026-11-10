@@ -84,29 +84,37 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
 }
 
 /**
- * The logo menu's rows, also the end of Now Playing's cover menu (0.7.4, the user's
- * call): Listening History (spec 4.7), Rescan Library, Settings, Statistics, Theme,
- * then the version, a tap on which opens the releases page ([RELEASES_URL]) in the
- * default browser (2026-11-10, the user's call).
+ * The logo menu's rows: Listening History (spec 4.7), Rescan Library, Settings,
+ * Statistics, Theme, then the version, a tap on which opens the releases page
+ * ([RELEASES_URL]) in the default browser (2026-11-10, the user's call).
+ *
+ * Now Playing's cover menu ends with them too (0.7.4, the user's call), but
+ * [libraryRows] false leaves out Listening History, Rescan Library and Statistics
+ * there (2026-11-10, the user's call: "These should just be in the Main Logo menu"),
+ * so it keeps Settings, Theme and the version.
  */
 @Composable
-fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String) {
+fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String, libraryRows: Boolean = true) {
     val t = LocalAppTheme.current
-    MenuRow("Listening History") {
-        onClose()
-        actions.openListeningHistory()
-    }
-    MenuRow("Rescan Library") {
-        onClose()
-        actions.rescan()
+    if (libraryRows) {
+        MenuRow("Listening History") {
+            onClose()
+            actions.openListeningHistory()
+        }
+        MenuRow("Rescan Library") {
+            onClose()
+            actions.rescan()
+        }
     }
     MenuRow("Settings") {
         onClose()
         actions.open(Route.Settings)
     }
-    MenuRow("Statistics") {
-        onClose()
-        actions.open(Route.Statistics)
+    if (libraryRows) {
+        MenuRow("Statistics") {
+            onClose()
+            actions.open(Route.Statistics)
+        }
     }
     MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
     MenuRow("Version", value = version) {

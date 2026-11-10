@@ -12,6 +12,12 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Built after 0.15.0, not in a build yet (2026-11-10): the cover menu keeps only Settings,
+  Theme and Version of the logo menu's rows** (the user: "...remove Listening History, Rescan
+  Library, and Statistics. These should just be in the Main Logo menu."; spec §5, *Cover menu*).
+  `AppMenuRows(libraryRows = false)` in `ArtMenu`; the logo menu is unchanged. Checked: 101 app
+  tests, the 12 cover menu pictures, and the emulator. The next build: **0.15.1** (versionCode 51)
+  if the user counts it a tweak, **0.16.0** if a feature; ask.
 - **0.15.0, published 2026-11-10 ("Build 0.15.0", then "Publish it") as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0) (versionCode 50, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256, `a5168eba…12bf42`, matched `dist/`; notes in `dist/notes-0.15.0.md`): Version opens the releases page** (the
   user's request; spec §4.1). The logo menu's and the cover menu's Version row close the menu and
   open `RELEASES_URL` in the default browser (`ui/OpenInBrowser.kt`: sent to the browser by
@@ -48,7 +54,7 @@ you touch a feature from then.
   **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
   emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
-- **Where it stands:** nothing is broken that the user knows of. The latest release is **0.15.0** (versionCode 50, the first item above), published 2026-11-10; before it **0.14.0** (versionCode 48), the same day. Before
+- **Where it stands:** nothing is broken that the user knows of; the cover menu's shorter list (above) waits for a build. The latest release is **0.15.0** (versionCode 50, the first item above), published 2026-11-10; before it **0.14.0** (versionCode 48), the same day. Before
   that, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
   published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
