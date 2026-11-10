@@ -70,6 +70,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 val started = now.library?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) } == true
                 if (started) nav.open(Route.NowPlaying)
             },
+            // Spec 4.1 (2026-11-10): the menus' Version row, in the default browser rather than GitHub's app.
+            openReleases = { openInBrowser(context, RELEASES_URL) },
             // Spec 4.2 (2026-11-10): the same for one artist, from Albums; back returns there.
             shuffleArtist = { name ->
                 val now = app.library.state.value

@@ -40,7 +40,8 @@ const val LOGO_ASSET = "brand/PlayStation-Logo-1994.png"
 /**
  * The logo, which is the menu button (spec 4.1): 36 x 28 in a 48 dp touch area.
  * Its menu holds Listening History, Rescan Library (0.5.0), Settings, Statistics and
- * Theme (switches at once), in that order, then the app's [version].
+ * Theme (switches at once), in that order, then the app's [version], which opens
+ * its releases page.
  */
 @Composable
 fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, actions: AppActions, version: String) {
@@ -61,8 +62,8 @@ fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, a
  * colours, border and corners) with settings-sized rows, and `shadow.headerArt`
  * under it so it reads as lifted over the list. The rows are in alphabetical order
  * (the user's call, 0.7.1). Theme keeps the menu open, so the switch can be seen and
- * undone; the others close it. Last, the version, information only like the cover
- * menu's resolution.
+ * undone; the others close it. Last, the version, which opens AudioFool's releases
+ * page in the browser (2026-11-10, the user's call; information only before).
  *
  * The logo is at the bar's right (2026-11-10), so the menu hangs from its right
  * edge: `menu.offsetX` in from the logo's touch area, level with the panel below.
@@ -85,7 +86,8 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
 /**
  * The logo menu's rows, also the end of Now Playing's cover menu (0.7.4, the user's
  * call): Listening History (spec 4.7), Rescan Library, Settings, Statistics, Theme,
- * then the version.
+ * then the version, a tap on which opens the releases page ([RELEASES_URL]) in the
+ * default browser (2026-11-10, the user's call).
  */
 @Composable
 fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String) {
@@ -107,7 +109,10 @@ fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String) {
         actions.open(Route.Statistics)
     }
     MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
-    MenuRow("Version", value = version, onClick = null)
+    MenuRow("Version", value = version) {
+        onClose()
+        actions.openReleases()
+    }
 }
 
 /** The room a menu's popup window leaves round it for `shadow.headerArt`, or the shadow is cut off. */

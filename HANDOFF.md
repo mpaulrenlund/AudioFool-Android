@@ -12,6 +12,13 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Built after 0.14.1, not in a build yet (2026-11-10): Version opens the releases page** (the
+  user's request; spec §4.1). The logo menu's and the cover menu's Version row close the menu and
+  open `RELEASES_URL` in the default browser (`ui/OpenInBrowser.kt`: sent to the browser by
+  name, so GitHub's app doesn't take it; a `<queries>` entry in the manifest lets the app see
+  browsers). Checked: `VersionRowTest`, the 16 menu pictures (Version's colours), and the
+  emulator (Chrome got it). A new feature, so the next build would be **0.15.0** (versionCode 50)
+  in place of the unpublished 0.14.1, if the user agrees.
 - **0.14.1, built 2026-11-10 (versionCode 49, `dist/AudioFool-0.14.1.apk`, notes in `dist/notes-0.14.1.md`), not published yet: the mini player's buttons follow Now Playing's** (the
   user: "...follow the same logic as the Now Playing screen? Including showing the glow around
   the play button when audio is playing."; spec §3). The three icons and Play/Pause's ring and
@@ -572,9 +579,11 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - Tapping by text: `adb shell uiautomator dump /sdcard/ui.xml`, find the node whose `text="…"`
   starts with what you want, skipping `EditText` (the search field holds the query too),
   and tap the centre of its `bounds`.
-- With the logo menu open (alphabetical since 0.7.0's follow-up): Listening History at about
-  (250, 280), then each row 126 px lower: Rescan Library (320, 405), Settings (320, 531),
-  Statistics (320, 657), Theme (320, 783), Version (320, 909), which does nothing. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
+- With the logo menu open (alphabetical since 0.7.0's follow-up; at the right since the logo
+  moved there, 2026-11-10): Listening History at about (650, 282), then each row 126 px lower:
+  Rescan Library (650, 408), Settings (650, 534), Statistics (650, 660), Theme (650, 786),
+  Version (650, 912), which opens the releases page in Chrome (its first-run screen, the first
+  time: leave it). A tap at x = 320 misses the menu and closes it. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
   counts are the quick check that a rescan ran.
 - A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.

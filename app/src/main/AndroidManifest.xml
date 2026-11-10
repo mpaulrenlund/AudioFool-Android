@@ -18,6 +18,15 @@
     <!-- 0.3.0: reading a USB DAC directly (design/usb-bit-perfect.md). Not required: the M21 needs no USB host. -->
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
+    <!-- The menus' Version row (2026-11-10) opens its page in the default browser: this lets the app see which that is. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:name=".AudioFoolApp"
         android:allowBackup="false"

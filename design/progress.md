@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Version opens the releases page** (the logo menu's and the cover menu's Version row, in the default browser) — built and checked 2026-11-10, not in a build yet
 - [ ] **0.14.1**: the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing), and no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — built 2026-11-10 (versionCode 49), not published yet
 - [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
@@ -70,6 +71,25 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-10, after 0.14.1 was built (not in a build yet): **Version opens the releases page**
+(the user: "In the App menu, if i tap the Version row, I'd like the app to open the default
+browser and this website: https://github.com/mpaulrenlund/AudioFool-Android/releases"). Spec §4.1.
+- A tap on Version closes the menu and opens the page (`RELEASES_URL`, `openInBrowser` in
+  `ui/OpenInBrowser.kt`; `AppActions.openReleases`). **My call: in the default browser, by
+  name**: a plain link to github.com goes to GitHub's app where it is installed, which claims
+  those links; "the default browser" is the one a plain web link goes to, so the link is sent
+  to that one (`setPackage`). With no default chosen, Android asks; with no browser, nothing
+  happens. The manifest gained a `<queries>` entry for web links, so the app can see the
+  browsers (no new permission).
+- **My call: the cover menu's Version too**, since it ends with the logo menu's rows.
+- The row now reads as the others (`text.primary`, value `text.muted`), not as information.
+- The repository is private: the page shows only where that browser is signed in to GitHub.
+- **Checked:** 3 new tests (`VersionRowTest`: the tap opens it and closes the menu; the page
+  goes to the default browser and not to an app claiming github.com; with no browser known,
+  Android chooses). ThemeLab: the 16 menu pictures changed (Version's colours), every other one
+  unchanged. Emulator: the tap sent the page to Chrome by name (the log's `pkg=com.android.chrome`);
+  Chrome showed its first-run screen, never having been opened there.
 
 2026-11-10, 0.14.1 (versionCode 49; built, not published yet): **the mini player's buttons follow Now Playing's**
 (the user: "Can we update the mini-player's icons to follow the same logic as the Now Playing
@@ -959,6 +979,12 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Version opens the releases page (from the next build)
+
+- [ ] Logo menu > Version: the releases page opens in your default browser (not GitHub's app,
+  if you have it), and you see the builds (that browser signed in to GitHub). Back returns to
+  AudioFool. The cover menu's Version does the same.
+
 ### The mini player's buttons (from 0.14.1)
 
 - [ ] Play something with a colourful cover and go back to a list: are the mini player's three
@@ -1187,6 +1213,10 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Version opens the releases page (from the next build)
+
+- [ ] As on the S24.
 
 ### The mini player's buttons (from 0.14.1)
 
