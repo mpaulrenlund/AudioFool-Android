@@ -140,9 +140,9 @@ you touch a feature from then.
   build that never went to GitHub. All but v0.1.0 are pre-releases; v0.0.5 was skipped.
   `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.14.0.apk`,
   `dist/notes-0.14.0.md`.
-- **Next build after 0.14.0:** **0.14.1** for fixes, **0.15.0** for new features. Confirm the
+- **Next build after 0.15.0:** **0.15.1** for fixes, **0.16.0** for new features. Confirm the
   number with the user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's
-  sign-in fixes). versionCode 49 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  sign-in fixes). versionCode 51 next (49 went to the unpublished 0.14.1). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The routine the user expects**, when they say to build:
   1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
