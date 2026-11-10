@@ -48,6 +48,10 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -59,6 +63,7 @@ import com.mpaulrenlund.audiofool.theme.AppTheme
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import com.mpaulrenlund.audiofool.theme.WindowBackground
 import com.mpaulrenlund.audiofool.theme.tokenSurface
+import kotlin.math.roundToInt
 
 // The shared parts of spec 2: the screen frame, panel, panel header, rows, art,
 // chip, round buttons, top bars and the search field. Everything is sized and
@@ -330,38 +335,72 @@ fun AlbumArt(
  * shadow along the bottom of both, is left out (the user's call, 0.7.2: it read as a
  * small fill); the top highlight and the drop shadow stay.
  *
- * [playTint] puts Play/Pause's ring and glow in another colour, each at its own
- * token's opacity (so both stay invisible in Light): Now Playing's cover colour
- * (spec 5).
+ * While a finger is on it the face is `control.faceHover`, the desktop's hover
+ * colour standing in for touch, as on the rows. A touch within 48 dp of a smaller
+ * button's middle still presses it: Compose widens small touch areas itself
+ * (`NowPlayingTouchTest`), so Now Playing's 34 dp buttons need no larger box.
+ *
+ * [label] is what a screen reader calls it, [state] what it adds ("On", "Off").
+ * With [onClick] null it can't be pressed (BP where it can't work).
+ *
+ * [playTint] puts Play/Pause's ring and glow in another colour: Now Playing's
+ * cover colour (spec 5). Each takes its own token's opacity; where the theme's
+ * ring is clear (Light), the ring is `nowPlaying.coverAccent.ring` instead, and
+ * there is still no glow. [playGlow] false leaves the glow out: on Now Playing
+ * the glow means playing.
  */
 @Composable
 fun RoundButton(
     face: Dp,
     targetWidth: Dp,
     targetHeight: Dp,
-    onClick: () -> Unit,
+    label: String,
+    onClick: (() -> Unit)?,
     play: Boolean = false,
     playTint: ThemeColor? = null,
+    playGlow: Boolean = true,
+    state: String? = null,
     content: @Composable () -> Unit,
 ) {
     val t = LocalAppTheme.current
     val shadows = if (play) {
-        fun tinted(color: ThemeColor) = playTint?.copy(a = color.a) ?: color
-        val ring = ShadowLayer(inset = false, offsetX = 0.0, offsetY = 0.0, blur = 0.0, spread = t.number("borderWidth"), color = tinted(t.themeColor("color.control.playRing")))
-        t.shadow("shadow.playButton") + ring + t.shadow("shadow.playGlow").map { it.copy(color = tinted(it.color)) }
+        val themeRing = t.themeColor("color.control.playRing")
+        val ring = when {
+            playTint == null -> ShadowLayer(inset = false, offsetX = 0.0, offsetY = 0.0, blur = 0.0, spread = t.number("borderWidth"), color = themeRing)
+            themeRing.a > 0 -> ShadowLayer(inset = false, offsetX = 0.0, offsetY = 0.0, blur = 0.0, spread = t.number("borderWidth"), color = playTint.copy(a = themeRing.a))
+            else -> ShadowLayer(
+                inset = false, offsetX = 0.0, offsetY = 0.0, blur = 0.0,
+                spread = t.number("nowPlaying.coverAccent.ring.width"),
+                color = playTint.copy(a = (t.number("nowPlaying.coverAccent.ring.opacity") * 255).roundToInt()),
+            )
+        }
+        val glow = if (playGlow) t.shadow("shadow.playGlow").map { if (playTint != null) it.copy(color = playTint.copy(a = it.color.a)) else it } else emptyList()
+        t.shadow("shadow.playButton") + ring + glow
     } else {
         t.shadow("shadow.controlButton")
     }.filterNot { it.inset && it.offsetY < 0 }
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
     Box(
         Modifier
             .size(targetWidth, targetHeight)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
+            .semantics {
+                contentDescription = label
+                if (state != null) stateDescription = state
+            }
+            .clickable(interactionSource = source, indication = null, enabled = onClick != null, role = Role.Button, onClick = onClick ?: {}),
         contentAlignment = Alignment.Center,
     ) {
         Box(
             Modifier
                 .size(face)
-                .tokenSurface(CircleShape, t.color("color.control.face"), shadows, t.color("color.control.faceBorder"), t.dp("borderWidth")),
+                .tokenSurface(
+                    CircleShape,
+                    t.color(if (pressed) "color.control.faceHover" else "color.control.face"),
+                    shadows,
+                    t.color("color.control.faceBorder"),
+                    t.dp("borderWidth"),
+                ),
             contentAlignment = Alignment.Center,
         ) { content() }
     }

@@ -101,6 +101,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 app.genius.show(track)
                 nav.open(Route.Genius(track.filePath))
             },
+            // Spec 5: the artist's and the album's names open them; back returns to Now Playing.
+            openArtist = { track -> artistRouteFor(track, app.library.state.value.library)?.let(nav::open) },
+            openAlbum = { track -> albumRouteFor(track, app.library.state.value.library)?.let(nav::open) },
         )
     }
     val geniusActions = remember {

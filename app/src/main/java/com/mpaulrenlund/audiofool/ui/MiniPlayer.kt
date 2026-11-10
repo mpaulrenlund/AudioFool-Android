@@ -44,13 +44,14 @@ fun MiniPlayerBar(browse: Browse, actions: AppActions) {
         Row(horizontalArrangement = Arrangement.spacedBy(t.dp("miniPlayer.buttonGroupGap")), verticalAlignment = Alignment.CenterVertically) {
             val skipW = t.dp("miniPlayer.skipTarget.width")
             val skipH = t.dp("miniPlayer.skipTarget.height")
-            RoundButton(t.dp("miniPlayer.skipButton"), skipW, skipH, actions.previous) {
+            RoundButton(t.dp("miniPlayer.skipButton"), skipW, skipH, "Previous", actions.previous) {
                 Icon(AppIcons.PREVIOUS, t.dp("miniPlayer.skipIcon"), "color.control.iconNeutral")
             }
-            RoundButton(t.dp("miniPlayer.playButton"), t.dp("miniPlayer.playTarget"), t.dp("miniPlayer.playTarget"), actions.playPause, play = true) {
-                Icon(if (browse.nowPlaying.isPlaying) AppIcons.PAUSE else AppIcons.PLAY, t.dp("miniPlayer.playIcon"), "color.accent.playback")
+            val playing = browse.nowPlaying.isPlaying
+            RoundButton(t.dp("miniPlayer.playButton"), t.dp("miniPlayer.playTarget"), t.dp("miniPlayer.playTarget"), if (playing) "Pause" else "Play", actions.playPause, play = true) {
+                Icon(if (playing) AppIcons.PAUSE else AppIcons.PLAY, t.dp("miniPlayer.playIcon"), "color.accent.playback")
             }
-            RoundButton(t.dp("miniPlayer.skipButton"), skipW, skipH, actions.next) {
+            RoundButton(t.dp("miniPlayer.skipButton"), skipW, skipH, "Next", actions.next) {
                 Icon(AppIcons.NEXT, t.dp("miniPlayer.skipIcon"), "color.control.iconNeutral")
             }
         }

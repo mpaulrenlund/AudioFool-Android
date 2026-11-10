@@ -210,17 +210,39 @@ class ThemeLabTest {
             }
             NowPlayingScreen(np, NowPlayingActions())
         }
-        // The cover's colour as the playback colour (2026-11-09, no mockup), on made-up covers: a deep red
-        // (made lighter on Dark), a bright yellow (made darker on Light; paused, for the Play triangle),
-        // several colours (the sky wins), and black and white (no colour to take: the theme's own).
+        // The cover's colour (2026-11-09, no mockup), on made-up covers: the seekbar, Play/Pause with its
+        // ring and glow, Repeat and Shuffle when on, the artist's name and the glow at the top.
+        // A deep red (made lighter on Dark), Repeat All and Shuffle on.
         val deepRed = ThemeLabFixtures.coverDeepRed()
-        shoot(device, "now-playing-cover-red") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = deepRed) }
+        shoot(device, "now-playing-cover-red") {
+            val np = nowPlaying().apply {
+                repeat = RepeatMode.All
+                shuffle = true
+            }
+            NowPlayingScreen(np, NowPlayingActions(), coverForPictures = deepRed)
+        }
+        // A bright yellow (made darker on Light), paused: the Play triangle, the ring without the glow,
+        // and Repeat One's badge in the cover's colour.
         val yellow = ThemeLabFixtures.coverYellow()
-        shoot(device, "now-playing-cover-yellow") { NowPlayingScreen(nowPlaying(playing = false), NowPlayingActions(), coverForPictures = yellow) }
+        shoot(device, "now-playing-cover-yellow") {
+            NowPlayingScreen(nowPlaying(playing = false).apply { repeat = RepeatMode.One }, NowPlayingActions(), coverForPictures = yellow)
+        }
+        // Several colours (the sky wins), Repeat and Shuffle off.
         val landscape = ThemeLabFixtures.coverLandscape()
         shoot(device, "now-playing-cover-landscape") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = landscape) }
+        // Black and white: no colour to take, so everything keeps the theme's, Repeat's and Shuffle's own included.
         val blackAndWhite = ThemeLabFixtures.coverBlackAndWhite()
-        shoot(device, "now-playing-cover-grey") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = blackAndWhite) }
+        shoot(device, "now-playing-cover-grey") {
+            val np = nowPlaying().apply {
+                repeat = RepeatMode.All
+                shuffle = true
+            }
+            NowPlayingScreen(np, NowPlayingActions(), coverForPictures = blackAndWhite)
+        }
+        // A finger dragging the seekbar, 62% along: the time bubble over it, and the same time at the left.
+        shoot(device, "now-playing-scrub") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = landscape, scrubForPictures = 0.62f) }
+        // The bubble kept inside the bar's end, with no cover.
+        shoot(device, "now-playing-scrub-end") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), scrubForPictures = 0.99f) }
         // Analyze (0.6.0): finished on a 24/96 FLAC made from a lossy file, the file being read, and one that couldn't be.
         shoot(device, "analysis") {
             val track = ThemeLabFixtures.nowPlayingTrack

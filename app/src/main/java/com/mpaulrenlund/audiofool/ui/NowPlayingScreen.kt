@@ -21,12 +21,15 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,8 +53,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -65,6 +74,7 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.mpaulrenlund.audiofool.core.art.CoverColor
 import com.mpaulrenlund.audiofool.core.format.Display
+import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.QualityLines
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
@@ -98,7 +108,27 @@ class NowPlayingActions(
     val analyze: (Track) -> Unit = {},
     /** The cover menu's Genius (spec 5.2): opens the Genius screen on the song, looked up afresh. */
     val genius: (Track) -> Unit = {},
+    /** A tap on the artist's name (spec 5): opens that artist's albums. */
+    val openArtist: (Track) -> Unit = {},
+    /** A tap on the album's name (spec 5): opens the album, the song chosen. */
+    val openAlbum: (Track) -> Unit = {},
 )
+
+/**
+ * Where Now Playing's artist line leads (spec 5): the albums of the artist named
+ * on it, where the library lists that artist; otherwise of the artist the song's
+ * album is under (a guest on someone else's album, a compilation). Null when the
+ * library doesn't hold the song.
+ */
+fun artistRouteFor(track: Track, library: MusicLibrary?): Route.Albums? {
+    val album = library?.albumHolding(track.filePath) ?: return null
+    val named = library.artists.firstOrNull { it.name == track.artist }?.name
+    return Route.Albums(named ?: album.artistName)
+}
+
+/** Where Now Playing's album line leads (spec 5): the song's album with the song chosen, as a Listening History song row opens it. */
+fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
+    library?.albumHolding(track.filePath)?.let { Route.Album(it.artistName, it.title, track.filePath) }
 
 /**
  * Now Playing (spec 5), opened from the mini player. No buttons at the top:
@@ -109,13 +139,15 @@ class NowPlayingActions(
  * right for a right thumb) and the output readout. A long press on the art opens
  * its menu (0.6.0), which ends with the logo menu's rows ([appActions], [version]; 0.7.4).
  *
- * The playback colour here is the cover's (the user's call, 2026-11-09): the seekbar's
- * played part, Play/Pause's icon and the ring and glow round it take the cover's main
- * colour, fitted to the theme ([AppTheme.coverAccent]). A cover with no colour of its
- * own, or no cover, leaves them the theme's `accent.playback`.
+ * The colour here is the cover's (the user's calls, 2026-11-09; spec 5, Cover colour):
+ * the seekbar's played part, Play/Pause's icon and the ring and glow round it, Repeat
+ * and Shuffle when on, the artist's name and the glow at the top of the screen take
+ * the cover's main colour, fitted to the theme ([AppTheme.coverAccent]). A cover with
+ * no colour of its own, or no cover, leaves them the theme's.
  *
  * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
- * So is [coverForPictures]: a made-up cover, shown as if it had been read from the song.
+ * So are [coverForPictures], a made-up cover shown as if it had been read from the song, and
+ * [scrubForPictures], a finger held on the seekbar that far along it.
  */
 @Composable
 fun NowPlayingScreen(
@@ -125,53 +157,54 @@ fun NowPlayingScreen(
     version: String = "",
     artMenuForPictures: String? = null,
     coverForPictures: Bitmap? = null,
+    scrubForPictures: Float? = null,
 ) {
     val t = LocalAppTheme.current
     val track = nowPlaying.track
 
-    WindowBackground(t, Modifier.fillMaxSize()) {
-        BoxWithConstraints(
-            Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical)),
-        ) {
-            val screenHeight = maxHeight + barHeights()
-            val padX = t.dp("nowPlaying.paddingX")
-            // Spec 5: the smaller of (width − 40) and (height − artHeightReserve), so the M21 keeps room for the controls.
-            // The reserve holds artReserveText of text, which grows with Android's font size (session 5: at 1.3 the
-            // M21 lost the readout off the bottom).
-            val textGrowth = t.dp("nowPlaying.artReserveText") * (LocalDensity.current.fontScale - 1f).coerceAtLeast(0f)
-            val heightForArt = screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth
-            val art = minOf(maxWidth - padX * 2, heightForArt)
-            // Spare height (0.2.3, the user's call): where the width limits the cover (the S24), the height it
-            // can't use. The waveform takes a share and the space below the times grows toward the space above,
-            // so it isn't one gap over the quality line. None on the M21, which stays as it was.
-            val spare = (heightForArt - art).coerceAtLeast(Dp(0f))
-            val waveformGrowth = minOf(spare * t.number("nowPlaying.waveformGrowth.ofSpare").toFloat(), t.dp("nowPlaying.waveformGrowth.max"))
-            val aboveWeight = t.number("nowPlaying.spaceAboveQualityWeight").toFloat()
-            val belowWeight = t.number("nowPlaying.spaceBelowTimesWeight").toFloat()
-            val evenness = (spare / t.dp("nowPlaying.spareEvenAt")).coerceIn(0f, 1f)
-            // 0.2.4 (the user's call): the S24's six buttons sat too low to press comfortably; spare height
-            // between them and the readout lifts them, the readout staying put.
-            val controlsLift = minOf(spare * t.number("nowPlaying.controlsLift.ofSpare").toFloat(), t.dp("nowPlaying.controlsLift.max"))
-            // 0.7.1 (the user's call): the S24's readout sat awkwardly close to the bottom. Part of that
-            // gap goes under the readout instead, so it rises and the buttons stay where they were.
-            val readoutLift = minOf(spare * t.number("nowPlaying.readoutLift.ofSpare").toFloat(), t.dp("nowPlaying.readoutLift.max"), controlsLift)
-            val shown = shownCover(track, art, coverForPictures)
-            // Fitted to the theme as it is now, not kept from the last one: a theme switch gives the other theme's.
-            val accent = remember(t, shown.color) { shown.color?.let { t.coverAccent(it) } }
+    // The whole screen, bars included: the spec's sizes are fractions of it, and the
+    // cover's colour, worked out in here, also goes to the glow behind the status bar.
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val screenHeight = maxHeight
+        val padX = t.dp("nowPlaying.paddingX")
+        // Spec 5: the smaller of (width − 40) and (height − artHeightReserve), so the M21 keeps room for the controls.
+        // The reserve holds artReserveText of text, which grows with Android's font size (session 5: at 1.3 the
+        // M21 lost the readout off the bottom).
+        val textGrowth = t.dp("nowPlaying.artReserveText") * (LocalDensity.current.fontScale - 1f).coerceAtLeast(0f)
+        val heightForArt = screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth
+        val art = minOf(maxWidth - padX * 2, heightForArt)
+        // Spare height (0.2.3, the user's call): where the width limits the cover (the S24), the height it
+        // can't use. The waveform takes a share and the space below the times grows toward the space above,
+        // so it isn't one gap over the quality line. None on the M21, which stays as it was.
+        val spare = (heightForArt - art).coerceAtLeast(Dp(0f))
+        val waveformGrowth = minOf(spare * t.number("nowPlaying.waveformGrowth.ofSpare").toFloat(), t.dp("nowPlaying.waveformGrowth.max"))
+        val aboveWeight = t.number("nowPlaying.spaceAboveQualityWeight").toFloat()
+        val belowWeight = t.number("nowPlaying.spaceBelowTimesWeight").toFloat()
+        val evenness = (spare / t.dp("nowPlaying.spareEvenAt")).coerceIn(0f, 1f)
+        // 0.2.4 (the user's call): the S24's six buttons sat too low to press comfortably; spare height
+        // between them and the readout lifts them, the readout staying put.
+        val controlsLift = minOf(spare * t.number("nowPlaying.controlsLift.ofSpare").toFloat(), t.dp("nowPlaying.controlsLift.max"))
+        // 0.7.1 (the user's call): the S24's readout sat awkwardly close to the bottom. Part of that
+        // gap goes under the readout instead, so it rises and the buttons stay where they were.
+        val readoutLift = minOf(spare * t.number("nowPlaying.readoutLift.ofSpare").toFloat(), t.dp("nowPlaying.readoutLift.max"), controlsLift)
+        val cover = shownCover(track, art, coverForPictures)
+        // Fitted to the theme as it is now, not kept from the last one: a theme switch gives the other theme's.
+        val accent = remember(t, cover?.color) { cover?.color?.let { t.coverAccent(it) } }
+        // The artist's name is text, so it stands in for the theme's text blue, lighter (darker on Light) than the playback colour.
+        val artistColor = remember(t, cover?.color) { cover?.color?.let { t.coverAccent(it, "color.accent.blue") } }
 
-            Column(Modifier.fillMaxSize()) {
+        WindowBackground(t, Modifier.fillMaxSize(), glowTint = accent) {
+            Column(Modifier.fillMaxSize().windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical))) {
                 SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
-                        BigArt(track, art, shown.cover, actions, appActions, version, artMenuForPictures)
+                        BigArt(track, art, cover, actions, appActions, version, artMenuForPictures)
                     }
-                    TitleBlock(nowPlaying, track)
+                    TitleBlock(nowPlaying, track, artistColor, actions)
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
                     track?.let { Quality(it) }
-                    Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent)
+                    Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent, scrubForPictures)
                 }
                 Spacer(Modifier.weight(belowWeight + (aboveWeight - belowWeight) * evenness))
                 Controls(nowPlaying, actions, screenHeight, accent)
@@ -253,37 +286,22 @@ private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, cont
     )
 }
 
-/** The status and navigation bars' heights: the spec's sizes are fractions of the whole screen. */
-@Composable
-private fun barHeights(): Dp {
-    val density = LocalDensity.current
-    val insets = barInsets()
-    return with(density) { (insets.getTop(this) + insets.getBottom(this)).toDp() }
-}
-
-/** The song's cover as far as it has been read, and the colour the playback controls take from a cover (null: the theme's). */
-private class ShownCover(val cover: BigCover?, val color: Int?)
-
 /**
- * Reads [track]'s cover at the art's size, off the main thread; null until it is
- * in. The colour is kept from one cover until the next has been read: an album's
- * songs share a cover, and the theme's colour would flash between them otherwise.
+ * The cover to show for [track], read at the art's size off the main thread. Until
+ * the next song's cover has been read the last one stays, picture and colour: an
+ * album's songs share a cover, and the placeholder and the theme's colour would
+ * blink between them otherwise (the placeholder did, up to 0.12.0). Null before the
+ * first one is in; a song without a cover gives one with no picture.
  * [forPictures] is ThemeLab's cover, which can't read one.
  */
 @Composable
-private fun shownCover(track: Track?, side: Dp, forPictures: Bitmap?): ShownCover {
+private fun shownCover(track: Track?, side: Dp, forPictures: Bitmap?): BigCover? {
     val px = with(LocalDensity.current) { side.roundToPx() }
-    val pictured = remember(forPictures) { forPictures?.let { BigCover.of(it) } }
-    var cover by remember(track?.filePath) { mutableStateOf(pictured) }
-    var color by remember { mutableStateOf(pictured?.color) }
+    var cover by remember { mutableStateOf(forPictures?.let { BigCover.of(it) }) }
     if (track != null && LocalArt.current != null) {
-        LaunchedEffect(track.filePath, px) {
-            val read = withContext(Dispatchers.IO) { BigCover.read(track, px) }
-            cover = read
-            color = read.color
-        }
+        LaunchedEffect(track.filePath, px) { cover = withContext(Dispatchers.IO) { BigCover.read(track, px) } }
     }
-    return ShownCover(cover, color.takeIf { track != null })
+    return cover.takeIf { track != null }
 }
 
 /**
@@ -437,10 +455,17 @@ private class AtFinger(private val at: IntOffset, private val room: Int, private
     }
 }
 
-/** Title, artist and album, left-aligned, with the track count "3 / 10" right of the title. */
+/**
+ * Title, artist and album, left-aligned, with the track count "3 / 10" right of the
+ * title. The artist's name is in the cover's colour ([artistColor]; `accent.blue`
+ * without one). A tap on the artist's name opens that artist's albums, a tap on the
+ * album's name the album with the song chosen (spec 5); each shows the press, as a
+ * row does. A sideways drag across them still skips.
+ */
 @Composable
-private fun TitleBlock(nowPlaying: NowPlaying, track: Track?) {
+private fun TitleBlock(nowPlaying: NowPlaying, track: Track?, artistColor: ThemeColor?, actions: NowPlayingActions) {
     val t = LocalAppTheme.current
+    val lineShape = RoundedCornerShape(t.radius("radius.row"))
     Row(
         Modifier.fillMaxWidth().padding(start = t.dp("nowPlaying.paddingX"), end = t.dp("nowPlaying.paddingX"), top = t.dp("nowPlaying.artToText")),
         horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.trackCountGap")),
@@ -451,8 +476,13 @@ private fun TitleBlock(nowPlaying: NowPlaying, track: Track?) {
                 track?.displayTitle ?: "",
                 t.text("nowPlaying.titleSize", "color.text.heading", weight = t.number("nowPlaying.titleWeight").toInt(), lineHeight = t.number("nowPlaying.titleLineHeight")),
             )
-            Line(track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "", t.text("nowPlaying.artistSize", "color.accent.blue", weight = t.number("nowPlaying.artistWeight").toInt()))
-            Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"))
+            val artistStyle = t.text("nowPlaying.artistSize", "color.accent.blue", weight = t.number("nowPlaying.artistWeight").toInt())
+            Line(
+                track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "",
+                if (artistColor != null) artistStyle.copy(color = artistColor.toCompose()) else artistStyle,
+                Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
+            )
+            Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
         }
         if (nowPlaying.queueSize > 0) {
             Line(
@@ -483,17 +513,19 @@ private fun Quality(track: Track) {
  * in the cover's colour ([accent]; `slider.seekFill` without one), the rest
  * `slider.track`, split at the exact place so it
  * glides while playing. Until the waveform is ready, a flat bar `waveformFloor` high. Drag or tap to seek; the bar follows
- * the finger and the seek happens on letting go. The elapsed and total times
- * sit under it.
+ * the finger and the seek happens on letting go. While a finger drags it, the time
+ * it would seek to shows in a bubble over the finger ([ScrubBubble]). The elapsed
+ * and total times sit under it. [scrubForPictures] is ThemeLab's finger, held that
+ * far along the bar.
  */
 @Composable
-private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp, accent: ThemeColor?) {
+private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp, accent: ThemeColor?, scrubForPictures: Float?) {
     val t = LocalAppTheme.current
     val duration = nowPlaying.durationMs
     // Read every frame while playing, and only then; the rest of the screen doesn't
     // recompose for it. Paused, the held place is read (it is state, so a seek shows).
     var ticked by remember { mutableLongStateOf(0L) }
-    var dragging by remember { mutableStateOf<Float?>(null) }
+    var dragging by remember { mutableStateOf(scrubForPictures) }
     val ticking = nowPlaying.live && nowPlaying.isPlaying
     LaunchedEffect(nowPlaying, ticking) {
         if (ticking) while (true) withFrameMillis { if (dragging == null) ticked = nowPlaying.positionMs() }
@@ -506,41 +538,88 @@ private fun Seekbar(nowPlaying: NowPlaying, seek: (Long) -> Unit, height: Dp, ac
     val levels = nowPlaying.waveform
     val shape = remember(levels) { WaveShape(levels) }
 
-    Canvas(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = t.dp("nowPlaying.waveformTop"))
-            .height(height)
-            .pointerInput(duration) {
-                if (duration <= 0) return@pointerInput
-                detectTapGestures { offset -> seek((offset.x / size.width * duration).toLong().coerceIn(0, duration)) }
-            }
-            .pointerInput(duration) {
-                if (duration <= 0) return@pointerInput
-                detectHorizontalDragGestures(
-                    onDragStart = { offset -> dragging = (offset.x / size.width).coerceIn(0f, 1f) },
-                    onDragEnd = {
-                        dragging?.let {
-                            seek((it * duration).toLong())
-                            ticked = (it * duration).toLong()
-                        }
-                        dragging = null
-                    },
-                    onDragCancel = { dragging = null },
-                    onHorizontalDrag = { change, _ -> dragging = (change.position.x / size.width).coerceIn(0f, 1f) },
-                )
-            },
-    ) {
-        val path = shape.pathFor(size, floor.toPx())
-        // The split falls at the exact place, the shape clipped there, as the desktop's WaveformView does.
-        val split = fraction * size.width
-        clipRect(right = split) { drawPath(path, played) }
-        clipRect(left = split) { drawPath(path, rest) }
+    Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.waveformTop"))) {
+        Canvas(
+            Modifier
+                .fillMaxWidth()
+                .height(height)
+                // For a screen reader: a slider it can name, read and move.
+                .semantics {
+                    contentDescription = "Seek"
+                    progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
+                    setProgress { to ->
+                        if (duration > 0) seek((to.coerceIn(0f, 1f) * duration).toLong())
+                        duration > 0
+                    }
+                }
+                .pointerInput(duration) {
+                    if (duration <= 0) return@pointerInput
+                    detectTapGestures { offset -> seek((offset.x / size.width * duration).toLong().coerceIn(0, duration)) }
+                }
+                .pointerInput(duration) {
+                    if (duration <= 0) return@pointerInput
+                    detectHorizontalDragGestures(
+                        onDragStart = { offset -> dragging = (offset.x / size.width).coerceIn(0f, 1f) },
+                        onDragEnd = {
+                            dragging?.let {
+                                seek((it * duration).toLong())
+                                ticked = (it * duration).toLong()
+                            }
+                            dragging = null
+                        },
+                        onDragCancel = { dragging = null },
+                        onHorizontalDrag = { change, _ -> dragging = (change.position.x / size.width).coerceIn(0f, 1f) },
+                    )
+                },
+        ) {
+            val path = shape.pathFor(size, floor.toPx())
+            // The split falls at the exact place, the shape clipped there, as the desktop's WaveformView does.
+            val split = fraction * size.width
+            clipRect(right = split) { drawPath(path, played) }
+            clipRect(left = split) { drawPath(path, rest) }
+        }
+        dragging?.let { ScrubBubble(Display.time((it * duration).toLong()), it) }
     }
     val shown = if (dragging != null) (fraction * duration).toLong() else position
     Row(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.timesTop")), horizontalArrangement = Arrangement.SpaceBetween) {
         Line(Display.time(shown), t.text("nowPlaying.timeSize", "color.text.muted"))
         Line(Display.time(duration), t.text("nowPlaying.timeSize", "color.text.muted"))
+    }
+}
+
+/**
+ * The time under the finger while the seekbar is dragged (spec 5; the user's call,
+ * 2026-11-09): big, on the lifted surface the index strips' bubble uses, centred
+ * over the finger `scrubBubble.gap` above the bar and kept within the bar's ends.
+ * It takes no room: the bar and everything round it stay where they are.
+ * [fraction] is how far along the bar the finger is.
+ */
+@Composable
+private fun ScrubBubble(time: String, fraction: Float) {
+    val t = LocalAppTheme.current
+    val gap = t.dp("nowPlaying.scrubBubble.gap")
+    Box(
+        Modifier
+            .layout { measurable, constraints ->
+                val bubble = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+                val bar = constraints.maxWidth
+                layout(0, 0) {
+                    bubble.place(((bar * fraction).roundToInt() - bubble.width / 2).coerceIn(0, maxOf(0, bar - bubble.width)), -bubble.height - gap.roundToPx())
+                }
+            }
+            .heightIn(min = t.dp("nowPlaying.scrubBubble.height"))
+            .widthIn(min = t.dp("nowPlaying.scrubBubble.minWidth"))
+            .tokenSurface(
+                RoundedCornerShape(t.radius("radius.surface")),
+                t.color("color.panel.bg"),
+                t.shadow("shadow.headerArt") + t.shadow("shadow.panelHighlight"),
+                t.color("color.panel.border"),
+                t.dp("borderWidth"),
+            )
+            .padding(horizontal = t.dp("nowPlaying.scrubBubble.paddingX")),
+        contentAlignment = Alignment.Center,
+    ) {
+        Line(time, t.text("nowPlaying.scrubBubble.textSize", "color.text.heading", weight = t.number("nowPlaying.scrubBubble.weight").toInt()))
     }
 }
 
@@ -584,7 +663,9 @@ private class WaveShape(private val levels: FloatArray?) {
  * fraction of the screen height between a min and a max. At least
  * `modeToTransportGap` lies between the two groups: where the screen is too
  * narrow for the transport's own gaps (the S24), they shrink to fit.
- * [accent] is the cover's colour, for Play/Pause.
+ * [accent] is the cover's colour, for Play/Pause and for Repeat and Shuffle when
+ * they are on (`control.repeatOn` and `control.shuffleOn` without one), so the
+ * screen has one colour for "on"; BP keeps its own two (spec 6.4).
  */
 @Composable
 private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp, accent: ThemeColor?) {
@@ -616,14 +697,15 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
             Box(Modifier.size(modesWidth, play)) {
                 Row(Modifier.align(Alignment.TopStart), horizontalArrangement = Arrangement.spacedBy(modeGap)) {
                     val repeat = nowPlaying.repeat
+                    val off = t.color("color.control.iconOff")
                     Box {
-                        RoundButton(mode, mode, mode, actions.cycleRepeat) {
-                            Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) "color.control.iconOff" else "color.control.repeatOn")
+                        RoundButton(mode, mode, mode, "Repeat", actions.cycleRepeat, state = repeat.name) {
+                            Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) off else accent?.toCompose() ?: t.color("color.control.repeatOn"))
                         }
-                        if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd))
+                        if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd), accent)
                     }
-                    RoundButton(mode, mode, mode, actions.toggleShuffle) {
-                        Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) "color.control.shuffleOn" else "color.control.iconOff")
+                    RoundButton(mode, mode, mode, "Shuffle", actions.toggleShuffle, state = if (nowPlaying.shuffle) "On" else "Off") {
+                        Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) accent?.toCompose() ?: t.color("color.control.shuffleOn") else off)
                     }
                 }
                 Box(Modifier.align(Alignment.BottomCenter)) {
@@ -639,31 +721,35 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
 /**
  * Previous, Play/Pause and Next, [gap] apart, centred on Play/Pause. Play/Pause's
  * icon, ring and glow are in the cover's colour ([accent]; `accent.playback` and
- * the theme's ring and glow without one).
+ * the theme's ring and glow without one). The glow shows only while playing (the
+ * user's call, 2026-11-09): paused, the ring alone is left, so the glow says at a
+ * glance that music is playing.
  */
 @Composable
 private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions, skip: Dp, play: Dp, gap: Dp, accent: ThemeColor?) {
     val t = LocalAppTheme.current
     Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
         val skipIcon = skip * t.number("nowPlaying.skipIconOfButton").toFloat()
-        RoundButton(skip, skip, skip, actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, "color.control.iconNeutral") }
-        RoundButton(play, play, play, actions.playPause, play = true, playTint = accent) {
+        val playing = nowPlaying.isPlaying
+        RoundButton(skip, skip, skip, "Previous", actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, "color.control.iconNeutral") }
+        RoundButton(play, play, play, if (playing) "Pause" else "Play", actions.playPause, play = true, playTint = accent, playGlow = playing) {
             Icon(
-                if (nowPlaying.isPlaying) AppIcons.PAUSE else AppIcons.PLAY,
+                if (playing) AppIcons.PAUSE else AppIcons.PLAY,
                 play * t.number("nowPlaying.playIconOfButton").toFloat(),
                 accent?.toCompose() ?: t.color("color.accent.playback"),
             )
         }
-        RoundButton(skip, skip, skip, actions.next) { Icon(AppIcons.NEXT, skipIcon, "color.control.iconNeutral") }
+        RoundButton(skip, skip, skip, "Next", actions.next) { Icon(AppIcons.NEXT, skipIcon, "color.control.iconNeutral") }
     }
 }
 
 /**
  * Repeat One's badge, the desktop's (`playbackBar.repeatOneBadge`): a "1" in a
- * `control.repeatOn` disc on the button's top-right corner, `outset` beyond it.
+ * disc on the button's top-right corner, `outset` beyond it. The disc is the
+ * cover's colour ([accent]), as the lit Repeat icon is; `control.repeatOn` without one.
  */
 @Composable
-private fun RepeatOneBadge(modifier: Modifier) {
+private fun RepeatOneBadge(modifier: Modifier, accent: ThemeColor?) {
     val t = LocalAppTheme.current
     val disc = t.desktopNumber("playbackBar.repeatOneBadge.discSize").dp
     val outset = t.desktopNumber("playbackBar.repeatOneBadge.outset").dp
@@ -671,7 +757,7 @@ private fun RepeatOneBadge(modifier: Modifier) {
         modifier
             .offset { IntOffset(outset.roundToPx(), -outset.roundToPx()) }
             .size(disc)
-            .tokenSurface(CircleShape, t.color("color.control.repeatOn"), emptyList(), null, 0.dp),
+            .tokenSurface(CircleShape, accent?.toCompose() ?: t.color("color.control.repeatOn"), emptyList(), null, 0.dp),
         contentAlignment = Alignment.Center,
     ) {
         Line(
@@ -693,7 +779,7 @@ fun BitPerfectButton(on: Boolean, onClick: (() -> Unit)?, greyed: Boolean = fals
     val t = LocalAppTheme.current
     val mode = t.dp("nowPlaying.modeButton")
     Box(Modifier.alpha(if (greyed) t.number("disabledOpacity").toFloat() else 1f)) {
-        RoundButton(mode, mode, mode, onClick ?: {}) {
+        RoundButton(mode, mode, mode, "Bit-Perfect", onClick, state = if (on) "On" else "Off") {
             Line(
                 "BP",
                 t.text(

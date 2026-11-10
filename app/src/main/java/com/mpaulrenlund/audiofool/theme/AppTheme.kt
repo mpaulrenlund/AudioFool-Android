@@ -47,14 +47,16 @@ class AppTheme(val isDark: Boolean, val tokens: AppTokens) {
     fun mobileColor(path: String): Color = tokens.mobile.color("$path.${if (isDark) "dark" else "light"}").toCompose()
 
     /**
-     * A cover's main colour (core `CoverColor.main`) as Now Playing's playback
-     * colour in this theme (spec 5): its hue, at a lightness within
-     * `nowPlaying.coverAccent.lightnessRange` of `accent.playback`, so it reads
-     * as well as the theme's own. Worked out from the theme each time, as any
-     * colour is: a theme switch gives the other theme's.
+     * A cover's main colour (core `CoverColor.main`) standing in for one of this
+     * theme's colours on Now Playing (spec 5): its hue, at a lightness within
+     * `nowPlaying.coverAccent.lightnessRange` of the colour it [standsInFor], so
+     * it reads as well as the theme's own. That is `accent.playback` for the
+     * seekbar, Play/Pause and the lit Repeat and Shuffle, and `accent.blue`, a
+     * text colour, for the artist's name. Worked out from the theme each time,
+     * as any colour is: a theme switch gives the other theme's.
      */
-    fun coverAccent(main: Int): ThemeColor {
-        val argb = CoverColor.accent(main, themeColor("color.accent.playback").argb, isDark, number("nowPlaying.coverAccent.lightnessRange"))
+    fun coverAccent(main: Int, standsInFor: String = "color.accent.playback"): ThemeColor {
+        val argb = CoverColor.accent(main, themeColor(standsInFor).argb, isDark, number("nowPlaying.coverAccent.lightnessRange"))
         return ThemeColor(a = 0xFF, r = (argb shr 16) and 0xFF, g = (argb shr 8) and 0xFF, b = argb and 0xFF)
     }
 

@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import com.mpaulrenlund.audiofool.core.theme.ShadowLayer
+import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 import kotlin.math.max
 
 /**
@@ -127,10 +128,13 @@ private fun Path.asAndroid(): android.graphics.Path = (this as androidx.compose.
  * The desktop's title-bar glow at the top of every screen (spec 2): a radial
  * gradient from `color.window.titleGlow`, shaped by `titleBar.glow.*` (900 x 130,
  * centred at 50% / -40), at 40% of its alpha by 45% and clear by 75%. The colour
- * is transparent in Light, so the same drawing shows nothing there.
+ * is transparent in Light, so the same drawing shows nothing there. [tint] puts
+ * the glow in another colour at the theme glow's own opacity (so Light still has
+ * none): Now Playing's cover colour (spec 5).
  */
-fun Modifier.titleGlow(theme: AppTheme): Modifier = drawWithContent {
-    val color = theme.color("color.window.titleGlow")
+fun Modifier.titleGlow(theme: AppTheme, tint: ThemeColor? = null): Modifier = drawWithContent {
+    val glow = theme.themeColor("color.window.titleGlow")
+    val color = (tint?.copy(a = glow.a) ?: glow).toCompose()
     if (color.alpha > 0f) {
         val rx = theme.desktopNumber("titleBar.glow.radiusX").toFloat() * density
         val ry = theme.desktopNumber("titleBar.glow.radiusY").toFloat() * density
@@ -153,13 +157,13 @@ fun Modifier.titleGlow(theme: AppTheme): Modifier = drawWithContent {
     drawContent()
 }
 
-/** The window: `color.window.bg` with the Dark title glow over its top. */
+/** The window: `color.window.bg` with the Dark title glow over its top, in [glowTint] if given (Now Playing's cover colour). */
 @Composable
-fun WindowBackground(theme: AppTheme, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+fun WindowBackground(theme: AppTheme, modifier: Modifier = Modifier, glowTint: ThemeColor? = null, content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = modifier
             .drawBehind { drawRect(theme.color("color.window.bg")) }
-            .titleGlow(theme),
+            .titleGlow(theme, glowTint),
         content = content,
     )
 }
