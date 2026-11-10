@@ -142,8 +142,8 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  *
  * The colour here is the cover's (the user's calls, 2026-11-09 and 2026-11-10; spec 5,
  * Cover colour): the seekbar's played part, the transport's icons and the ring and glow
- * round Play/Pause, Repeat and Shuffle when on, the artist's name and the glow at the
- * top of the screen take the cover's main colour, fitted to the theme
+ * round Play/Pause, Repeat and Shuffle when on, and the artist's name take the cover's
+ * main colour (the glow at the top of the screen did too, until it went on 2026-11-10), fitted to the theme
  * ([AppTheme.coverAccent]). A cover with no colour of its own, or no cover, leaves them
  * the theme's.
  *
@@ -164,8 +164,7 @@ fun NowPlayingScreen(
     val t = LocalAppTheme.current
     val track = nowPlaying.track
 
-    // The whole screen, bars included: the spec's sizes are fractions of it, and the
-    // cover's colour, worked out in here, also goes to the glow behind the status bar.
+    // The whole screen, bars included: the spec's sizes are fractions of it.
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val screenHeight = maxHeight
         val padX = t.dp("nowPlaying.paddingX")
@@ -195,7 +194,7 @@ fun NowPlayingScreen(
         // The artist's name is text, so it stands in for the theme's text blue, lighter (darker on Light) than the playback colour.
         val artistColor = remember(t, cover?.color) { cover?.color?.let { t.coverAccent(it, "color.accent.blue") } }
 
-        WindowBackground(t, Modifier.fillMaxSize(), glowTint = accent) {
+        WindowBackground(t, Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical))) {
                 SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {

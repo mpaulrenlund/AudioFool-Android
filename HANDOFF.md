@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-10, after 0.14.0 (five layout requests). Read this with `README.md` (how the app works) and
+Updated 2026-11-10, after 0.14.0 (five layout requests) and the Dark glow removed on top of it, not released yet. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,11 +12,18 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Built, not released (2026-11-10): no glow at the top of the screen in Dark** (the user:
+  "Can we remove the glow at the top of the window in the Dark theme?"; spec §2). Every
+  screen, since `WindowBackground` is shared; Now Playing's cover-coloured glow went too
+  (`Modifier.titleGlow` and `glowTint` removed; the desktop's glow tokens kept, unread).
+  Checked: 620 tests; all 150 Dark ThemeLab pictures changed only in their top 80 dp, no
+  Light one changed; the emulator has this build, still labelled 0.14.0. No bump yet:
+  **0.14.1** proposed (a removal, not a feature), versionCode 49, when the user says to build.
 - **0.14.0 is the user's five layout requests** (2026-11-10; "Build 0.14.0", then "Publish
   it"): versionCode 48, published as the pre-release
   [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0) (APK
   attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256,
-  `832e8d78…da06d826`, matched `dist/`). The emulator has 0.14.0. Spec §4.1, §4.2, §5, §6.4;
+  `832e8d78…da06d826`, matched `dist/`). Spec §4.1, §4.2, §5, §6.4;
   the decisions in `design/progress.md`: Artists' logo at
   the right of the search field; a shuffle button on Albums for that artist; a **tap** on Now
   Playing's cover opens its menu, which now holds **Bit-Perfect** (a check while on) in place
@@ -25,8 +32,8 @@ you touch a feature from then.
   **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
   emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
-- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
-  latest release is **0.14.0** (versionCode 48, the item above), published 2026-11-10. Before
+- **Where it stands:** nothing is broken that the user knows of; the glow's removal (above)
+  waits for a build. The latest release is **0.14.0** (versionCode 48, the item above), published 2026-11-10. Before
   it, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
   published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK

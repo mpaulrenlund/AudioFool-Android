@@ -19,7 +19,7 @@ This file is the source of truth for layout and behaviour. Numbers are in `mobil
 - Every colour comes from a token. Don't put hex values in screens.
 - Both colour files are the desktop's, copied unchanged. A test checks they have the same keys, as the desktop parity test does.
 - Mobile-only colours live in `mobile-tokens.json` → `color`. There is one so far, the BP label, unused since Bit-Perfect moved into the cover menu (§6.4, 2026-11-10), and kept should the button come back.
-- In Dark, the desktop's title-bar glow sits at the top of every screen: a radial gradient from `color.window.titleGlow`, shape `titleBar.glow.*` (900 × 130 at 50% / −40), fading at 45% (40% of the alpha) and clear at 75%. It's transparent in Light.
+- **No glow at the top of the screen** (2026-11-10, the user's call): the window is plain `color.window.bg` in both themes, behind the status bar too. Until then Dark drew the desktop's title-bar glow at the top of every screen (a radial gradient from `color.window.titleGlow`, shape `titleBar.glow.*`, 900 × 130 at 50% / −40, fading at 45% to 40% of the alpha and clear at 75%; in the cover's colour on Now Playing from 0.13.0). Its tokens stay in the desktop's colour files, unused here; the mockups in `design/screens/` still show it.
 
 ### Mockup variable → token
 
@@ -47,7 +47,7 @@ The mockup files use short CSS variables. Each one is exactly the desktop token 
 | `--phl` | shadow.panelHighlight | `--shc` | shadow.controlButton |
 | `--shs` | shadow.searchInset | `--shp` | shadow.playButton |
 | `--sha` | shadow.headerArt | `--glow` | shadow.playGlow |
-| `--shn` | shadow.nowPlayingArt | `--tgl` | the title glow (§2) |
+| `--shn` | shadow.nowPlayingArt | `--tgl` | the title glow (§2; not drawn since 2026-11-10) |
 | `--bpon` / `--bpoff` | mobile color.bpLabel.on / off | `--art1`, `--art2`, `--artl`, `--artlt` | mockup placeholder stripes only |
 
 The striped squares in the mockups stand for album art. Where an album has no art, use the desktop's placeholder (the panel's colours with a placeholder icon, `albums.placeholderIconSize`).
@@ -150,8 +150,9 @@ Repeat: off `control.iconOff`; on, the cover's colour (`control.repeatOn` withou
 - **Previous's and Next's icons** (for `control.iconNeutral`; 2026-11-10, the user's call: "the same color scheme as the album art like the Play button does"). Only the icons: their faces keep the theme's border, with no ring or glow, so Play/Pause still stands out;
 - the **ring and glow round Play/Pause**, each at its own token's opacity (`control.playRing`, `shadow.playGlow`). In Light, where the theme's ring is clear, the cover's colour still makes one (`nowPlaying.coverAccent.ring`: 2 dp at 0.67), so the colour shows round the button there too; Light has no glow, with or without a cover;
 - **Repeat and Shuffle when on**, and Repeat One's badge (for `control.repeatOn` and `control.shuffleOn`), so the screen has one colour for "on";
-- the **artist's name** (for `accent.blue`; the one place an artist's name isn't blue);
-- the **glow at the top of the screen** (for `window.titleGlow`, at its opacity; Dark only, as the glow is).
+- the **artist's name** (for `accent.blue`; the one place an artist's name isn't blue).
+
+From 0.13.0 the glow at the top of the screen took the cover's colour too, in Dark; since 2026-11-10 there is no glow (§2).
 
 Nothing else changes: the mini player, the now-playing rows, the other buttons and every other screen keep the theme's colours.
 

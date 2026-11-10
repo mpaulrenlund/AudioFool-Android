@@ -85,8 +85,8 @@ class ArtSources(val list: Thumbnails, val header: Thumbnails)
 val LocalArt = staticCompositionLocalOf<ArtSources?> { null }
 
 /**
- * A whole screen: the window background with the Dark title glow behind the
- * status bar, the top bar, the content (a panel, given the remaining height), and
+ * A whole screen: the window background (no glow since 2026-11-10), the top bar,
+ * the content (a panel, given the remaining height), and
  * under it [bottom] (the mini player on library screens).
  */
 @Composable

@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -21,12 +19,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import com.mpaulrenlund.audiofool.core.theme.ShadowLayer
-import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 import kotlin.math.max
 
 /**
@@ -125,45 +121,15 @@ private fun DrawScope.drawInsetShadow(layer: ShadowLayer) {
 private fun Path.asAndroid(): android.graphics.Path = (this as androidx.compose.ui.graphics.AndroidPath).internalPath
 
 /**
- * The desktop's title-bar glow at the top of every screen (spec 2): a radial
- * gradient from `color.window.titleGlow`, shaped by `titleBar.glow.*` (900 x 130,
- * centred at 50% / -40), at 40% of its alpha by 45% and clear by 75%. The colour
- * is transparent in Light, so the same drawing shows nothing there. [tint] puts
- * the glow in another colour at the theme glow's own opacity (so Light still has
- * none): Now Playing's cover colour (spec 5).
+ * The window: plain `color.window.bg`. Dark had the desktop's title-bar glow over
+ * its top (`color.window.titleGlow`, `titleBar.glow.*`; in the cover's colour on Now
+ * Playing from 0.13.0) until 2026-11-10, when the user asked for it to go (spec 2).
+ * The desktop's tokens for it are still in the colour files, which stay the desktop's.
  */
-fun Modifier.titleGlow(theme: AppTheme, tint: ThemeColor? = null): Modifier = drawWithContent {
-    val glow = theme.themeColor("color.window.titleGlow")
-    val color = (tint?.copy(a = glow.a) ?: glow).toCompose()
-    if (color.alpha > 0f) {
-        val rx = theme.desktopNumber("titleBar.glow.radiusX").toFloat() * density
-        val ry = theme.desktopNumber("titleBar.glow.radiusY").toFloat() * density
-        val center = Offset(size.width / 2f, theme.desktopNumber("titleBar.glow.centerY").toFloat() * density)
-        // A circle of radius rx, squashed to ry vertically about the centre.
-        scale(scaleX = 1f, scaleY = ry / rx, pivot = center) {
-            drawCircle(
-                brush = Brush.radialGradient(
-                    0f to color,
-                    0.45f to color.copy(alpha = color.alpha * 0.4f),
-                    0.75f to Color.Transparent,
-                    center = center,
-                    radius = rx,
-                ),
-                radius = rx,
-                center = center,
-            )
-        }
-    }
-    drawContent()
-}
-
-/** The window: `color.window.bg` with the Dark title glow over its top, in [glowTint] if given (Now Playing's cover colour). */
 @Composable
-fun WindowBackground(theme: AppTheme, modifier: Modifier = Modifier, glowTint: ThemeColor? = null, content: @Composable BoxScope.() -> Unit) {
+fun WindowBackground(theme: AppTheme, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
     Box(
-        modifier = modifier
-            .drawBehind { drawRect(theme.color("color.window.bg")) }
-            .titleGlow(theme, glowTint),
+        modifier = modifier.drawBehind { drawRect(theme.color("color.window.bg")) },
         content = content,
     )
 }
