@@ -13,15 +13,20 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Built, not released (2026-11-10):** the user's **five layout requests**, on `main` after
-  0.13.0 (spec §4.1, §4.2, §5, §6.4; the decisions in `design/progress.md`): Artists' logo at
+- **0.14.0 is built, not published (2026-11-10, "Build 0.14.0"):** versionCode 48, bump commit
+  `4dd2ebba6821e64e797f371262405ab5b4e3c802` (the full SHA for `gh release create --target`),
+  `dist/AudioFool-0.14.0.apk` (SHA-256 `832e8d78e7ce498692129a819f8299b807f30352f49bcb0c37543c95da06d826`;
+  release signer and the real Last.fm key checked), notes `dist/notes-0.14.0.md`, shown to
+  the user. **Waiting for "Publish it"**: then step 7 of the routine below (check `PRIVATE`
+  first), and tick the Sessions line in `design/progress.md`. The emulator has 0.14.0.
+  It holds the user's **five layout requests** (spec §4.1, §4.2, §5, §6.4; the decisions in
+  `design/progress.md`): Artists' logo at
   the right of the search field; a shuffle button on Albums for that artist; a **tap** on Now
   Playing's cover opens its menu, which now holds **Bit-Perfect** (a check while on) in place
   of the BP button; **Repeat over Shuffle** at the left, 44 dp on the S24 / 35 on the M21, and
   the **transport centred** (the S24's Previous and Next shrank to 60 dp to make room);
   **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
-  emulator (which has this build, still labelled 0.13.0). No version bump yet: **0.14.0**
-  proposed, versionCode 48, when the user says to build. Listen for: the S24's smaller skip
+  emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
 - **Where it stands:** nothing is broken that the user knows of. The latest release is
   **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below).
@@ -107,11 +112,11 @@ you touch a feature from then.
   Claude's safety check stopped 0.8.1's upload while the repo was public). Only the owner,
   `mpaulrenlund`, can change visibility; this PC (`marcusrenlund`) can't. 0.8.1 is the one
   build that never went to GitHub. All but v0.1.0 are pre-releases; v0.0.5 was skipped.
-  `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.13.0.apk`,
-  `dist/notes-0.13.0.md`.
-- **Next build:** **0.13.1** for fixes, **0.14.0** for new features. Confirm the number with the
-  user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's sign-in fixes).
-  versionCode 48 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.14.0.apk`,
+  `dist/notes-0.14.0.md`.
+- **Next build after 0.14.0:** **0.14.1** for fixes, **0.15.0** for new features. Confirm the
+  number with the user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's
+  sign-in fixes). versionCode 49 next. The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The routine the user expects**, when they say to build:
   1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.

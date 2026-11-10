@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **Five layout requests** (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — built and checked 2026-11-10, not released yet (0.14.0 proposed)
+- [ ] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — built 2026-11-10 (versionCode 48), not published yet
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
@@ -70,8 +70,8 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-10, after 0.13.0 (not released yet): **five layout requests** in one message, built as
-asked. Spec §4.1, §4.2, §5 (item 8, *Cover colour*, *Cover menu*), §6.2, §6.4 and §2
+2026-11-10, 0.14.0 (versionCode 48; built after "Build 0.14.0", the number the wrap-up
+proposed; not published yet): **five layout requests** in one message, built as asked. Spec §4.1, §4.2, §5 (item 8, *Cover colour*, *Cover menu*), §6.2, §6.4 and §2
 (*Round buttons*, the mobile colours line).
 - **Artists' bar**: the search field from the left, the logo at the right (the user: "move
   the app logo to the right hand side of the Search box"). `topBar.logoBarPaddingStart` and
@@ -127,6 +127,12 @@ asked. Spec §4.1, §4.2, §5 (item 8, *Cover colour*, *Cover menu*), §6.2, §6
   44 dp; Previous and Next in the cover's orange; a tap on the cover opened the menu, with
   Bit-Perfect greyed on the speaker; on Debug's pretend Headphones route a tap cleared the
   check and another brought it back, the menu staying open.
+- **The build** (bump commit `4dd2ebb`): 620 tests and ThemeLab passed again with the bump; the
+  APK (`dist/AudioFool-0.14.0.apk`, SHA-256 `832e8d78…da06d826`) is signed with the release key
+  (`1fdefe0a…be2c21`) and carries AudioFool's Last.fm key and secret (compared with
+  `gradle.properties` in the shell, not printed). On the emulator it installed as an update
+  (versionCode 48, library and settings kept); the logo menu says "Version 0.14.0", Artist
+  001's shuffle and the cover menu worked as before. Notes: `dist/notes-0.14.0.md`.
 
 2026-11-09, 0.13.0 (versionCode 47; released the same day as pre-release
 [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0), "AudioFool
@@ -908,7 +914,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### The five layout requests (from the next build, 0.14.0 proposed)
+### The five layout requests (from 0.14.0)
 
 - [ ] **Artists**: the search field starts at the left and the logo is at the right; its menu
   opens under it.
@@ -1124,7 +1130,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### The five layout requests (from the next build, 0.14.0 proposed)
+### The five layout requests (from 0.14.0)
 
 - [ ] As on the S24. Repeat and Shuffle grew only to 35 dp here (the M21's Play/Pause is
   shorter, and they are as tall as it together): big enough, or worth a slightly smaller
