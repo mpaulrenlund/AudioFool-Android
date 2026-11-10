@@ -4,11 +4,16 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -29,7 +34,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/** Now Playing's touches (spec 5): the small buttons' touch areas, the buttons' names, and the artist and album lines. */
+/** Now Playing's touches (spec 5): the small buttons' touch areas, the buttons' names and places, the cover menu, and the artist and album lines. */
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = ThemeLabTest.S24)
 class NowPlayingTouchTest {
@@ -63,45 +68,123 @@ class NowPlayingTouchTest {
         compose.waitForIdle()
     }
 
-    /** A tap [above] the middle of a 34 dp button; its face ends 17 dp from there. */
-    private fun tapAbove(button: String, above: Int) {
+    /** A tap [outside] dp straight above a button's face, or under it ([below]). */
+    private fun tapOutside(button: String, outside: Int, below: Boolean = false) {
         compose.onNodeWithContentDescription(button).performTouchInput {
-            down(Offset(centerX, centerY - above.dp.toPx()))
+            val by = outside.dp.toPx()
+            down(Offset(centerX, if (below) bottom + by else top - by))
             up()
         }
         compose.waitForIdle()
     }
 
+    private fun bounds(name: String) = compose.onNodeWithContentDescription(name).fetchSemanticsNode().boundsInRoot
+
+    private fun dp(px: Float) = with(compose.density) { px.toDp().value }
+
     /**
-     * Repeat, Shuffle and BP are 34 dp across, under the 48 dp a finger wants. Compose
-     * widens a small touch area to 48 dp itself, so a tap 5 dp outside the face still
-     * presses the button and nothing on screen had to grow; this pins that.
+     * Repeat and Shuffle are under the 48 dp a finger wants (44 dp on the S24, 35 on the
+     * M21). Compose widens a small touch area to 48 dp itself, so a tap just outside
+     * the face still presses the button and nothing on screen had to grow; this pins
+     * that. Repeat is above Shuffle, so Shuffle is tried from below.
      */
     @Test fun a_tap_just_outside_a_small_button_still_presses_it() {
         show()
-        tapAbove("Repeat", 22)
-        tapAbove("Shuffle", 22)
-        tapAbove("Bit-Perfect", 22)
-        assertEquals(listOf("repeat", "shuffle", "bp"), pressed)
+        tapOutside("Repeat", 1)
+        tapOutside("Shuffle", 1, below = true)
+        assertEquals(listOf("repeat", "shuffle"), pressed)
+    }
+
+    @Test @Config(qualifiers = ThemeLabTest.M21)
+    fun a_tap_just_outside_a_small_button_still_presses_it_on_the_m21() {
+        show()
+        tapOutside("Repeat", 5)
+        tapOutside("Shuffle", 5, below = true)
+        assertEquals(listOf("repeat", "shuffle"), pressed)
     }
 
     @Test fun a_tap_well_outside_a_small_button_does_nothing() {
         show()
-        tapAbove("Bit-Perfect", 32)
+        tapOutside("Repeat", 10)
         assertEquals(emptyList(), pressed)
     }
 
     @Test fun every_button_has_a_name_for_a_screen_reader() {
         show()
-        for (name in listOf("Previous", "Pause", "Next", "Repeat", "Shuffle", "Bit-Perfect")) compose.onNodeWithContentDescription(name).performClick()
-        assertEquals(listOf("previous", "play", "next", "repeat", "shuffle", "bp"), pressed)
+        for (name in listOf("Previous", "Pause", "Next", "Repeat", "Shuffle")) compose.onNodeWithContentDescription(name).performClick()
+        assertEquals(listOf("previous", "play", "next", "repeat", "shuffle"), pressed)
+        compose.onNodeWithContentDescription("Bit-Perfect").assertDoesNotExist()
     }
 
-    @Test fun bp_cannot_be_pressed_where_it_cannot_work() {
+    // ---- the controls row (2026-11-10): Repeat over Shuffle at the left, the transport centred ----
+
+    private fun checkControlsRow(modeSize: Float) {
+        show()
+        val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
+        val repeat = bounds("Repeat")
+        val shuffle = bounds("Shuffle")
+        val play = bounds("Pause")
+        val previous = bounds("Previous")
+        val next = bounds("Next")
+        assertEquals(screen.center.x, play.center.x, 1f, "Play/Pause in the screen's middle")
+        assertEquals(dp(play.left - previous.right), dp(next.left - play.right), 0.5f, "Previous and Next the same way from it")
+        assertEquals(modeSize, dp(repeat.width), 0.5f)
+        assertEquals(modeSize, dp(shuffle.width), 0.5f)
+        assertEquals(repeat.center.x, shuffle.center.x, 0.5f, "Repeat over Shuffle")
+        assertEquals(20f, dp(repeat.left), 0.5f, "level with the cover's and the seekbar's left")
+        assertEquals(play.top, repeat.top, 1f, "Repeat's top level with Play/Pause's")
+        assertEquals(play.bottom, shuffle.bottom, 1f, "Shuffle's bottom level with Play/Pause's")
+        assertTrue(dp(previous.left - repeat.right) >= 11.5f, "at least 12 dp before Previous")
+    }
+
+    @Test fun the_transport_is_centred_with_repeat_over_shuffle_at_the_left() = checkControlsRow(44f)
+
+    @Test @Config(qualifiers = ThemeLabTest.M21)
+    fun the_transport_is_centred_with_repeat_over_shuffle_at_the_left_on_the_m21() = checkControlsRow(35f)
+
+    // ---- the cover menu (2026-11-10): a tap opens it, and Bit-Perfect is a row in it ----
+
+    @Test fun a_tap_on_the_cover_opens_its_menu() {
+        show()
+        compose.onNodeWithText("Analyze").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Analyze").assertExists()
+        compose.onNodeWithText("Bit-Perfect").assertExists()
+    }
+
+    @Test fun a_long_press_on_the_cover_still_opens_it() {
+        show()
+        compose.onNodeWithContentDescription("Cover").performTouchInput { longClick() }
+        compose.waitForIdle()
+        compose.onNodeWithText("Bit-Perfect").assertExists()
+    }
+
+    @Test fun bit_perfect_is_unchecked_while_off_and_a_tap_switches_it_keeping_the_menu_open() {
+        show()
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Bit-Perfect").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Off")).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("bp"), pressed)
+        compose.onNodeWithText("Bit-Perfect").assertExists()
+    }
+
+    @Test fun bit_perfect_is_checked_while_on() {
+        nowPlaying.bitPerfect = true
+        show()
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Bit-Perfect").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "On"))
+    }
+
+    @Test fun bit_perfect_cannot_be_switched_where_it_cannot_work() {
         nowPlaying.showForPictures(song, index = 2, size = 10, bitPerfectGreyed = true)
         show()
-        compose.onNodeWithContentDescription("Bit-Perfect").assertIsNotEnabled()
-        tapAbove("Bit-Perfect", 0)
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Bit-Perfect").assertIsNotEnabled().performClick()
+        compose.waitForIdle()
         assertEquals(emptyList(), pressed)
     }
 

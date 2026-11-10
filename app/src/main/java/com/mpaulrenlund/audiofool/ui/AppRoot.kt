@@ -70,6 +70,13 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 val started = now.library?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) } == true
                 if (started) nav.open(Route.NowPlaying)
             },
+            // Spec 4.2 (2026-11-10): the same for one artist, from Albums; back returns there.
+            shuffleArtist = { name ->
+                val now = app.library.state.value
+                val artist = now.library?.artists?.firstOrNull { it.name == name }
+                val started = artist?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) } == true
+                if (started) nav.open(Route.NowPlaying)
+            },
         )
     }
     // Listening History (spec 4.7): a row goes to its artist's albums, its album, or its

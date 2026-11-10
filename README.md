@@ -46,8 +46,10 @@ every decision and what is still to be checked on the phones.
   one has been heard out. DSD is converted to PCM at 88.2 kHz, or sent as DoP (below).
   A tap on a song plays it with the rest of its album after it; Previous, Next, shuffle
   and repeat follow the desktop's `PlayOrder`. The shuffle button in the ARTISTS header
-  plays the whole library shuffled, from a random song (`LibraryShuffle`).
-- **Bit-Perfect** (the BP button, and the same setting in Settings). Off: the normal shared
+  plays the whole library shuffled, from a random song (`LibraryShuffle`); the one in the
+  ALBUMS header does the same with that artist's songs.
+- **Bit-Perfect** (a row in Now Playing's cover menu, opened by a tap on the cover, and the
+  same setting in Settings). Off: the normal shared
   output, which Android's mixer resamples to its own rate. On, it depends on the route:
   - **A USB DAC on Android 14+ (the S24):** the app asks Android for the DAC's bit-perfect
     mixer at each song's rate (`setPreferredMixerAttributes`, `MIXER_BEHAVIOR_BIT_PERFECT`):

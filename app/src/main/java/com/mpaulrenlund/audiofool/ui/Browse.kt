@@ -77,6 +77,8 @@ class AppActions(
     val openListeningHistory: () -> Unit = {},
     /** Artists' shuffle button (spec 4.1, 0.9.0): the whole library, shuffled, from a random song. */
     val shuffleLibrary: () -> Unit = {},
+    /** Albums' shuffle button (spec 4.2, 2026-11-10): that artist's songs, shuffled, from a random one. */
+    val shuffleArtist: (String) -> Unit = {},
 )
 
 /**

@@ -17,9 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
@@ -59,6 +63,9 @@ fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, a
  * (the user's call, 0.7.1). Theme keeps the menu open, so the switch can be seen and
  * undone; the others close it. Last, the version, information only like the cover
  * menu's resolution.
+ *
+ * The logo is at the bar's right (2026-11-10), so the menu hangs from its right
+ * edge: `menu.offsetX` in from the logo's touch area, level with the panel below.
  */
 @Composable
 private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) {
@@ -66,9 +73,9 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
     val room = menuShadowRoom()
     val density = LocalDensity.current
     val offset = with(density) {
-        IntOffset((t.dp("menu.offsetX") - room).toPx().roundToInt(), (t.dp("topBar.logoButton") - room).toPx().roundToInt())
+        IntOffset((room - t.dp("menu.offsetX")).toPx().roundToInt(), (t.dp("topBar.logoButton") - room).toPx().roundToInt())
     }
-    Popup(offset = offset, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
+    Popup(alignment = Alignment.TopEnd, offset = offset, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
         MenuSurface(t.dp("menu.width")) {
             AppMenuRows(onClose, actions, version)
         }
@@ -127,6 +134,35 @@ fun MenuSurface(width: Dp, content: @Composable ColumnScope.() -> Unit) {
             .padding(t.dp("menu.listPadding")),
         content = content,
     )
+}
+
+/**
+ * A menu row that is on or off (the cover menu's Bit-Perfect, 2026-11-10, the user's
+ * call): a check (`menu.checkIcon`, in [checkColorPath]) at the row's end while it is
+ * on, nothing while off. A tap switches it and the menu stays open, so the check can
+ * be seen to come or go. [greyed]: drawn at `disabledOpacity` and not tappable, where
+ * the setting can't work (the check still says how it is set).
+ */
+@Composable
+fun MenuCheckRow(label: String, checked: Boolean, checkColorPath: String, onClick: () -> Unit, greyed: Boolean = false) {
+    val t = LocalAppTheme.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .height(t.dp("menu.rowHeight"))
+            .alpha(if (greyed) t.number("disabledOpacity").toFloat() else 1f)
+            // One node for a screen reader (and a test), whether or not it can be tapped.
+            .semantics(mergeDescendants = true) {
+                stateDescription = if (checked) "On" else "Off"
+                if (greyed) disabled()
+            }
+            .tappable(RoundedCornerShape(t.radius("radius.row")), onClick.takeUnless { greyed })
+            .padding(horizontal = t.dp("menu.rowPaddingX")),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Line(label, t.text("menu.textSize", "color.text.primary"), Modifier.weight(1f))
+        if (checked) Icon(AppIcons.CHECK, t.dp("menu.checkIcon"), checkColorPath)
+    }
 }
 
 /**

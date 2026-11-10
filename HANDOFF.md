@@ -1,6 +1,7 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-09, after 0.13.0 (Now Playing's ideas). Read this with `README.md` (how the app works) and
+Updated 2026-11-10, after 0.13.0 (Now Playing's ideas) and five layout requests built on it,
+not released yet. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,8 +13,18 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
-  latest build is **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below).
+- **Built, not released (2026-11-10):** the user's **five layout requests**, on `main` after
+  0.13.0 (spec §4.1, §4.2, §5, §6.4; the decisions in `design/progress.md`): Artists' logo at
+  the right of the search field; a shuffle button on Albums for that artist; a **tap** on Now
+  Playing's cover opens its menu, which now holds **Bit-Perfect** (a check while on) in place
+  of the BP button; **Repeat over Shuffle** at the left, 44 dp on the S24 / 35 on the M21, and
+  the **transport centred** (the S24's Previous and Next shrank to 60 dp to make room);
+  **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
+  emulator (which has this build, still labelled 0.13.0). No version bump yet: **0.14.0**
+  proposed, versionCode 48, when the user says to build. Listen for: the S24's smaller skip
+  buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
+- **Where it stands:** nothing is broken that the user knows of. The latest release is
+  **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below).
   Published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
   attached). Before it, **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
@@ -535,9 +546,12 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.
   Session 2 used 200 artists × 2 albums.
 - Taps are in device pixels (1080 × 2400): a 360-wide screenshot is a third of that.
-- Artists' letter strip sits near x = 1012 px; the mini player at about (300, 2210). On Now
-  Playing (the emulator's tall screen) Repeat is near (96, 2052), Shuffle (207, 2052), Play
-  (657, 2130).
+- Artists' letter strip sits near x = 1012 px; the mini player at about (300, 2210); the logo
+  (at the right since 2026-11-10) at (1006, 137), and the ARTISTS / ALBUMS shuffle buttons at
+  (996, 256). On Now Playing (the emulator's tall screen, from 2026-11-10) Repeat is near
+  (111, 1917), Shuffle (111, 2054), Play (540, 1986), and a tap on the cover (540, 560) opens
+  its menu, Bit-Perfect at about (715, 891). The sample songs are 2 s long and the menu closes
+  at a song change: pause first.
 - **`uiautomator dump` drops a text that holds quote marks** (the Route row's `speaker "…"`):
   take a screenshot to read those.
 - **Measuring something that moves** (the seekbar's split): crop one pixel row of rapid

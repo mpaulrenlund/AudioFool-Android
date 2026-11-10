@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Five layout requests** (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — built and checked 2026-11-10, not released yet (0.14.0 proposed)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
@@ -68,6 +69,64 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-10, after 0.13.0 (not released yet): **five layout requests** in one message, built as
+asked. Spec §4.1, §4.2, §5 (item 8, *Cover colour*, *Cover menu*), §6.2, §6.4 and §2
+(*Round buttons*, the mobile colours line).
+- **Artists' bar**: the search field from the left, the logo at the right (the user: "move
+  the app logo to the right hand side of the Search box"). `topBar.logoBarPaddingStart` and
+  `End` swapped values (12 / 4), so the field starts 12 dp in, as Search's does. **My call:**
+  the logo menu now hangs from the logo's right edge (`Popup` aligned `TopEnd`), its right
+  edge level with the panel's, the mirror of where it was.
+- **Albums' shuffle button**: Artists' button at the far right of the ALBUMS header, for that
+  artist ("start playing/shuffling music from that artist and open the Now Playing screen").
+  Core `LibraryShuffle.queue(artist)`: the artist's albums as Albums lists them, each album's
+  songs, unreachable ones left out; then `Player.shuffleAll` as for the library, Shuffle on,
+  a random song first. Back from Now Playing returns to Albums.
+- **The cover menu opens on a tap** ("tapping on the album art opens the menu"). **My call:**
+  the long press still opens it too (with its haptic tick), so 0.6.0's habit keeps working.
+  A sideways swipe still skips and doesn't open it (the emulator: 3 / 4 to 4 / 4).
+- **Bit-Perfect moved into the cover menu**, as a row with a check at its end while on
+  ("call it 'Bit-Perfect' with a checkmark at the end of the row if it's enabled. Tapping the
+  row should remove the checkmark"). **My calls:** it sits between Analyze and Genius, which
+  keeps the menu alphabetical; a tap keeps the menu open (as Theme does) so the check is seen
+  to go; the check is `status.bitPerfectOn`, Settings' "on" dot (the same green / teal as
+  the BP label's "on"); where BP can't work the row is greyed and can't be tapped, the check
+  still showing the setting, as the button did. New `MenuCheckRow`, `menu.checkIcon` (18 dp).
+  The BP button and its `nowPlaying.bpLabel*` sizes are gone; **the `color.bpLabel` pair is
+  kept, unused** (the token sheet still shows it, and `ThemeSettingTest` reads it to test
+  mobile colours), should the button come back.
+- **Repeat over Shuffle at the left, the transport centred** ("place the repeat button above
+  the shuffle button … move these two buttons to the left … make the shuffle and repeat
+  buttons any bigger … center the previous, play, and next buttons on the screen"). **My
+  calls on the sizes**, because centring and bigger buttons pull against each other on the
+  S24: the two are as tall as Play/Pause together (Repeat's top at its top, Shuffle's bottom
+  at its bottom), so each is (Play/Pause − 8) / 2, within `modeButton.min`–`max` (34–44):
+  **44 dp on the S24, 35 on the M21** (34 before). The M21's grow only 1 dp: its Play/Pause
+  is 78 dp and its screen has no height to spare; bigger there would take height from the
+  cover. With Play/Pause in the screen's middle, the S24 is too narrow for 44 dp buttons and
+  its full-size transport (70 / 96 / 22): its gaps go to `transportGap.fitMin` (8 dp) and
+  **Previous and Next shrink to 60 dp** to keep 12 dp before Previous. The M21's transport
+  is unchanged. Repeat and Shuffle start at `paddingX`, level with the cover and the
+  seekbar. No height changed on either phone, so nothing above the row moved.
+- **Previous and Next in the cover's colour** ("follow the same color scheme as the album art
+  like the Play button does"). **My calls:** only their icons (no ring or glow, so Play/Pause
+  still stands out), and without a cover colour they keep `control.iconNeutral`, so a black
+  and white cover gives the same grey buttons as before (not `accent.playback`, which would
+  have widened the playback colour's role).
+- **Checked:** 620 tests, 22 more than 0.13.0's: 7 in `NowPlayingTouchTest` (the row's layout
+  on both phones, the M21's touch areas, the cover's tap and long press, the Bit-Perfect row
+  off and switched, on, and greyed; the BP button's test gone, the touch-area and name tests
+  rewritten), 4 in the new `AlbumsShuffleTest` (the button, its place, none for an unknown
+  artist, the logo's place), 3 in core `LibraryShuffleTest`, 8 menu pictures. ThemeLab: the Artists, Albums, logo menu, Now
+  Playing and cover menu pictures re-recorded (128 changed), 8 new `art-menu-bp-on` and
+  `art-menu-bp-greyed`, the 8 `now-playing-bp-*` removed; looked at in both themes at both
+  sizes; every other picture identical. Emulator (this build over 0.13.0, still labelled
+  0.13.0): the logo at the right and its menu under it; Artist 001's shuffle opened Now
+  Playing on "3 / 4" with Shuffle lit; Play/Pause centred (x 414–666 of 1080) and Repeat
+  44 dp; Previous and Next in the cover's orange; a tap on the cover opened the menu, with
+  Bit-Perfect greyed on the speaker; on Debug's pretend Headphones route a tap cleared the
+  check and another brought it back, the menu staying open.
 
 2026-11-09, 0.13.0 (versionCode 47; released the same day as pre-release
 [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0), "AudioFool
@@ -849,6 +908,23 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The five layout requests (from the next build, 0.14.0 proposed)
+
+- [ ] **Artists**: the search field starts at the left and the logo is at the right; its menu
+  opens under it.
+- [ ] **Albums**: the shuffle button at the right of ALBUMS plays that artist shuffled and opens
+  Now Playing; back returns to Albums.
+- [ ] **Now Playing's controls**: Repeat over Shuffle at the left (44 dp, from 34), Previous,
+  Play/Pause and Next centred. Previous and Next are smaller than before (60 dp, from 70) to
+  make the room: do they still feel easy to hit? Are Repeat and Shuffle easy to reach with a
+  thumb on the left?
+- [ ] **Colour**: with a colourful cover, Previous and Next take its colour, as Play/Pause does.
+- [ ] **The cover menu**: a tap on the cover opens it. Any opened by accident, while swiping
+  to skip or just holding the phone?
+- [ ] **Bit-Perfect in the menu**, with the DAC plugged in: the row has a check while on; a
+  tap takes the check away and Bit-Perfect goes off (the music pauses, as BP off always
+  did); another tap brings it back. Unplugged (the speaker, Bluetooth), the row is greyed.
+
 ### Now Playing's ideas (from 0.13.0)
 
 - [ ] **The colour goes further**: with a colourful cover, Repeat and Shuffle when on, the
@@ -1047,6 +1123,15 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The five layout requests (from the next build, 0.14.0 proposed)
+
+- [ ] As on the S24. Repeat and Shuffle grew only to 35 dp here (the M21's Play/Pause is
+  shorter, and they are as tall as it together): big enough, or worth a slightly smaller
+  cover to make them bigger?
+- [ ] **Bit-Perfect in the menu** on the 3.5 mm or 4.4 mm jack: the check comes and goes
+  with a tap, and the readout follows (Bit-Perfect / Resampled).
+- [ ] **Albums' shuffle** on an artist with many albums: how quickly Now Playing opens.
 
 ### Now Playing's ideas (from 0.13.0)
 

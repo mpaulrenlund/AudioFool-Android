@@ -42,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
@@ -58,6 +57,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
@@ -102,7 +102,7 @@ class NowPlayingActions(
     val seek: (Long) -> Unit = {},
     val cycleRepeat: () -> Unit = {},
     val toggleShuffle: () -> Unit = {},
-    /** The BP button (spec 6.4); not called while it is greyed out. */
+    /** The cover menu's Bit-Perfect row (spec 6.4; the BP button until 2026-11-10); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
     /** The cover menu's Analyze (0.6.0): opens the Analysis screen on the song. */
     val analyze: (Track) -> Unit = {},
@@ -135,15 +135,17 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * system back closes it. A sideways swipe on the art or the title block skips:
  * left for Next, right for Previous. From the top: the art, the title block
  * with the track count, the quality lines, the waveform seekbar with the times,
- * the controls row (Repeat / Shuffle / BP on the left, the transport on the
- * right for a right thumb) and the output readout. A long press on the art opens
- * its menu (0.6.0), which ends with the logo menu's rows ([appActions], [version]; 0.7.4).
+ * the controls row (Repeat over Shuffle at the left, the transport centred;
+ * 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
+ * press until 2026-11-10), which holds Bit-Perfect and ends with the logo menu's rows
+ * ([appActions], [version]; 0.7.4).
  *
- * The colour here is the cover's (the user's calls, 2026-11-09; spec 5, Cover colour):
- * the seekbar's played part, Play/Pause's icon and the ring and glow round it, Repeat
- * and Shuffle when on, the artist's name and the glow at the top of the screen take
- * the cover's main colour, fitted to the theme ([AppTheme.coverAccent]). A cover with
- * no colour of its own, or no cover, leaves them the theme's.
+ * The colour here is the cover's (the user's calls, 2026-11-09 and 2026-11-10; spec 5,
+ * Cover colour): the seekbar's played part, the transport's icons and the ring and glow
+ * round Play/Pause, Repeat and Shuffle when on, the artist's name and the glow at the
+ * top of the screen take the cover's main colour, fitted to the theme
+ * ([AppTheme.coverAccent]). A cover with no colour of its own, or no cover, leaves them
+ * the theme's.
  *
  * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
  * So are [coverForPictures], a made-up cover shown as if it had been read from the song, and
@@ -197,7 +199,7 @@ fun NowPlayingScreen(
             Column(Modifier.fillMaxSize().windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical))) {
                 SwipeToSkip(track, art, actions) {
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
-                        BigArt(track, art, cover, actions, appActions, version, artMenuForPictures)
+                        BigArt(nowPlaying, art, cover, actions, appActions, version, artMenuForPictures)
                     }
                     TitleBlock(nowPlaying, track, artistColor, actions)
                 }
@@ -308,10 +310,13 @@ private fun shownCover(track: Track?, side: Dp, forPictures: Bitmap?): BigCover?
  * The cover, square, with `shadow.headerArt`; the full picture decoded at its size.
  * No border round a cover (the user's call, 0.2.2: it read as a light frame); the
  * placeholder keeps its 1 dp `art.border`, or its square would vanish into the page.
+ * A tap opens its menu at the finger (2026-11-10, the user's call); so does a long
+ * press, with a haptic tick, as it did from 0.6.0.
  */
 @Composable
-private fun BigArt(track: Track?, side: Dp, cover: BigCover?, actions: NowPlayingActions, appActions: AppActions, version: String, menuForPictures: String?) {
+private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: NowPlayingActions, appActions: AppActions, version: String, menuForPictures: String?) {
     val t = LocalAppTheme.current
+    val track = nowPlaying.track
     val density = LocalDensity.current
     val px = with(density) { side.roundToPx() }
     val bitmap = cover?.image
@@ -323,11 +328,22 @@ private fun BigArt(track: Track?, side: Dp, cover: BigCover?, actions: NowPlayin
             .size(side)
             .pointerInput(track?.filePath) {
                 if (track == null) return@pointerInput
-                // A sideways drag (the skip) takes the touch from this before the long press is due.
-                detectTapGestures(onLongPress = { at ->
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    menuAt = IntOffset(at.x.roundToInt(), at.y.roundToInt())
-                })
+                // A sideways drag (the skip) takes the touch from this before it is a tap or a long press.
+                detectTapGestures(
+                    onTap = { at -> menuAt = IntOffset(at.x.roundToInt(), at.y.roundToInt()) },
+                    onLongPress = { at ->
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        menuAt = IntOffset(at.x.roundToInt(), at.y.roundToInt())
+                    },
+                )
+            }
+            // For a screen reader: the cover is the menu's button, opened in its middle.
+            .semantics {
+                contentDescription = "Cover"
+                if (track != null) onClick("Menu") {
+                    menuAt = IntOffset(px / 2, px / 2)
+                    true
+                }
             }
             .tokenSurface(
                 RectangleShape,
@@ -352,6 +368,8 @@ private fun BigArt(track: Track?, side: Dp, cover: BigCover?, actions: NowPlayin
                 onClose = { menuAt = null },
                 appActions,
                 version,
+                nowPlaying,
+                actions.toggleBitPerfect,
                 analyze = {
                     menuAt = null
                     actions.analyze(track)
@@ -411,10 +429,12 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int,
 }
 
 /**
- * The cover menu (0.6.0, the user's call): a long press on the cover opens it at
- * the finger, kept `artMenu.edgeMargin` inside the screen. The logo menu's look.
- * The first row is the cover's resolution, information only; then Analyze, which
- * opens the Analysis screen, and Genius, which opens the Genius screen (spec 5.2); then
+ * The cover menu (0.6.0, the user's call): a tap on the cover opens it at the finger
+ * (a long press until 2026-11-10), kept `artMenu.edgeMargin` inside the screen. The
+ * logo menu's look. The first row is the cover's resolution, information only; then
+ * Analyze, which opens the Analysis screen; Bit-Perfect (spec 6.4, 2026-11-10, the
+ * user's call: the BP button moved here), checked while on, which switches it and
+ * keeps the menu open; and Genius, which opens the Genius screen (spec 5.2); then
  * the logo menu's rows (0.7.4, the user's call), so all but the resolution are in
  * alphabetical order with the version last.
  */
@@ -425,6 +445,8 @@ private fun ArtMenu(
     onClose: () -> Unit,
     appActions: AppActions,
     version: String,
+    nowPlaying: NowPlaying,
+    toggleBitPerfect: () -> Unit,
     analyze: () -> Unit,
     genius: () -> Unit,
 ) {
@@ -437,6 +459,8 @@ private fun ArtMenu(
         MenuSurface(t.dp("artMenu.width")) {
             MenuRow("Resolution", value = resolution, onClick = null)
             MenuRow("Analyze", onClick = analyze)
+            // The check in Bit-Perfect's own "on" colour, as Settings' dot (spec 4.5); greyed out where it can't work (spec 6.2).
+            MenuCheckRow("Bit-Perfect", nowPlaying.bitPerfect, "color.status.bitPerfectOn", toggleBitPerfect, greyed = nowPlaying.bitPerfectGreyed)
             MenuRow("Genius", onClick = genius)
             AppMenuRows(onClose, appActions, version)
         }
@@ -656,82 +680,72 @@ private class WaveShape(private val levels: FloatArray?) {
 }
 
 /**
- * The controls row (spec 5): on the left Repeat and Shuffle side by side,
- * `modeGap` apart, their tops level with Play/Pause's, and BP centred under them
- * with its bottom level with Play/Pause's (the user's call, 0.2.2; a column of
- * three until then); on the right Previous, Play/Pause and Next, sized as a
- * fraction of the screen height between a min and a max. At least
- * `modeToTransportGap` lies between the two groups: where the screen is too
- * narrow for the transport's own gaps (the S24), they shrink to fit.
- * [accent] is the cover's colour, for Play/Pause and for Repeat and Shuffle when
- * they are on (`control.repeatOn` and `control.shuffleOn` without one), so the
- * screen has one colour for "on"; BP keeps its own two (spec 6.4).
+ * The controls row (spec 5; 2026-11-10, the user's call): Previous, Play/Pause and
+ * Next centred on the screen, and at the left Repeat over Shuffle, `modeGap` apart,
+ * the two as tall as Play/Pause (Repeat's top level with its top, Shuffle's bottom
+ * with its bottom), so they grow with it, within `modeButton.min` and `max`: 44 dp
+ * on the S24, 35 on the M21 (34, side by side with BP under them, from 0.2.2 until
+ * then). The transport's sizes are fractions of the screen height between a min and
+ * a max. At least `modeToTransportGap` lies between Repeat and Shuffle and Previous:
+ * where the screen is too narrow for that (the S24), the transport's gaps shrink, to
+ * `transportGap.fitMin` at most, and then Previous and Next do.
+ * [accent] is the cover's colour, for the transport's icons and for Repeat and
+ * Shuffle when they are on (`control.repeatOn` and `control.shuffleOn` without one),
+ * so the screen has one colour for "on".
  */
 @Composable
 private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp, accent: ThemeColor?) {
     val t = LocalAppTheme.current
     fun scaled(path: String): Dp =
         (screenHeight.value * t.number("$path.ofScreenHeight")).coerceIn(t.number("$path.min"), t.number("$path.max")).dp
-    val skip = scaled("nowPlaying.skipButton")
     val play = scaled("nowPlaying.playButton")
-    val mode = t.dp("nowPlaying.modeButton")
     val modeGap = t.dp("nowPlaying.modeGap")
-    val modeIcon = t.dp("nowPlaying.modeIcon")
+    val mode = ((play - modeGap) / 2).coerceIn(t.dp("nowPlaying.modeButton.min"), t.dp("nowPlaying.modeButton.max"))
+    val modeIcon = mode * t.number("nowPlaying.modeIconOfButton").toFloat()
     val padX = t.dp("nowPlaying.paddingX")
 
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val modesWidth = mode * 2 + modeGap
-        val room = maxWidth - padX * 2 - modesWidth - t.dp("nowPlaying.modeToTransportGap") - skip * 2 - play
-        val gap = minOf(scaled("nowPlaying.transportGap"), (room / 2).coerceAtLeast(Dp(0f)))
-        Row(
-            Modifier.fillMaxWidth().padding(
-                start = padX,
-                end = padX,
-                top = t.dp("nowPlaying.controlsPaddingTop"),
-                bottom = t.dp("nowPlaying.controlsPaddingBottom"),
-            ),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // As tall as Play/Pause: Repeat and Shuffle at its top, BP at its bottom.
-            Box(Modifier.size(modesWidth, play)) {
-                Row(Modifier.align(Alignment.TopStart), horizontalArrangement = Arrangement.spacedBy(modeGap)) {
-                    val repeat = nowPlaying.repeat
-                    val off = t.color("color.control.iconOff")
-                    Box {
-                        RoundButton(mode, mode, mode, "Repeat", actions.cycleRepeat, state = repeat.name) {
-                            Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) off else accent?.toCompose() ?: t.color("color.control.repeatOn"))
-                        }
-                        if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd), accent)
-                    }
-                    RoundButton(mode, mode, mode, "Shuffle", actions.toggleShuffle, state = if (nowPlaying.shuffle) "On" else "Off") {
-                        Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) accent?.toCompose() ?: t.color("color.control.shuffleOn") else off)
-                    }
+    BoxWithConstraints(
+        Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.controlsPaddingTop"), bottom = t.dp("nowPlaying.controlsPaddingBottom")),
+    ) {
+        // Play/Pause's middle is the screen's: what is left of each half for a gap and a skip button.
+        val half = maxWidth / 2 - padX - mode - t.dp("nowPlaying.modeToTransportGap") - play / 2
+        val fullSkip = scaled("nowPlaying.skipButton")
+        val gap = minOf(scaled("nowPlaying.transportGap"), maxOf(t.dp("nowPlaying.transportGap.fitMin"), half - fullSkip))
+        val skip = minOf(fullSkip, half - gap)
+        Column(Modifier.align(Alignment.CenterStart).padding(start = padX), verticalArrangement = Arrangement.spacedBy(modeGap)) {
+            val repeat = nowPlaying.repeat
+            val off = t.color("color.control.iconOff")
+            Box {
+                RoundButton(mode, mode, mode, "Repeat", actions.cycleRepeat, state = repeat.name) {
+                    Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) off else accent?.toCompose() ?: t.color("color.control.repeatOn"))
                 }
-                Box(Modifier.align(Alignment.BottomCenter)) {
-                    val greyed = nowPlaying.bitPerfectGreyed
-                    BitPerfectButton(nowPlaying.bitPerfect, if (greyed) null else actions.toggleBitPerfect, greyed)
-                }
+                if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd), accent)
             }
-            TransportButtons(nowPlaying, actions, skip, play, gap, accent)
+            RoundButton(mode, mode, mode, "Shuffle", actions.toggleShuffle, state = if (nowPlaying.shuffle) "On" else "Off") {
+                Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) accent?.toCompose() ?: t.color("color.control.shuffleOn") else off)
+            }
         }
+        TransportButtons(nowPlaying, actions, skip, play, gap, accent, Modifier.align(Alignment.Center))
     }
 }
 
 /**
- * Previous, Play/Pause and Next, [gap] apart, centred on Play/Pause. Play/Pause's
- * icon, ring and glow are in the cover's colour ([accent]; `accent.playback` and
- * the theme's ring and glow without one). The glow shows only while playing (the
- * user's call, 2026-11-09): paused, the ring alone is left, so the glow says at a
- * glance that music is playing.
+ * Previous, Play/Pause and Next, [gap] apart, centred on Play/Pause. Their icons
+ * are in the cover's colour ([accent]): Play/Pause's ring and glow too (Previous and
+ * Next keep their plain faces, 2026-11-10, the user's call). Without one, Play/Pause
+ * has `accent.playback` and the theme's ring and glow, and Previous and Next
+ * `control.iconNeutral`. The glow shows only while playing (the user's call,
+ * 2026-11-09): paused, the ring alone is left, so the glow says at a glance that
+ * music is playing.
  */
 @Composable
-private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions, skip: Dp, play: Dp, gap: Dp, accent: ThemeColor?) {
+private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions, skip: Dp, play: Dp, gap: Dp, accent: ThemeColor?, modifier: Modifier = Modifier) {
     val t = LocalAppTheme.current
-    Row(horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
         val skipIcon = skip * t.number("nowPlaying.skipIconOfButton").toFloat()
+        val skipColor = accent?.toCompose() ?: t.color("color.control.iconNeutral")
         val playing = nowPlaying.isPlaying
-        RoundButton(skip, skip, skip, "Previous", actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, "color.control.iconNeutral") }
+        RoundButton(skip, skip, skip, "Previous", actions.previous) { Icon(AppIcons.PREVIOUS, skipIcon, skipColor) }
         RoundButton(play, play, play, if (playing) "Pause" else "Play", actions.playPause, play = true, playTint = accent, playGlow = playing) {
             Icon(
                 if (playing) AppIcons.PAUSE else AppIcons.PLAY,
@@ -739,7 +753,7 @@ private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions,
                 accent?.toCompose() ?: t.color("color.accent.playback"),
             )
         }
-        RoundButton(skip, skip, skip, "Next", actions.next) { Icon(AppIcons.NEXT, skipIcon, "color.control.iconNeutral") }
+        RoundButton(skip, skip, skip, "Next", actions.next) { Icon(AppIcons.NEXT, skipIcon, skipColor) }
     }
 }
 
@@ -760,35 +774,11 @@ private fun RepeatOneBadge(modifier: Modifier, accent: ThemeColor?) {
             .tokenSurface(CircleShape, accent?.toCompose() ?: t.color("color.control.repeatOn"), emptyList(), null, 0.dp),
         contentAlignment = Alignment.Center,
     ) {
+        // The size is the desktop badge's, set over the style's.
         Line(
             "1",
-            t.text("nowPlaying.modeIcon", "color.control.face", weight = t.desktopNumber("playbackBar.repeatOneBadge.weight").toInt())
+            t.text("nowPlaying.timeSize", "color.control.face", weight = t.desktopNumber("playbackBar.repeatOneBadge.weight").toInt())
                 .copy(fontSize = t.desktopNumber("playbackBar.repeatOneBadge.size").sp),
         )
-    }
-}
-
-/**
- * The BP button (spec 6.4): a `modeButton` round button labelled "BP" (12/700),
- * `bpLabel.on` when Bit-Perfect is on and `bpLabel.off` when off. Greyed out
- * (`disabledOpacity`) and not tappable where it can't work (spec 6.2: Bluetooth,
- * the speaker): [greyed], with [onClick] null.
- */
-@Composable
-fun BitPerfectButton(on: Boolean, onClick: (() -> Unit)?, greyed: Boolean = false) {
-    val t = LocalAppTheme.current
-    val mode = t.dp("nowPlaying.modeButton")
-    Box(Modifier.alpha(if (greyed) t.number("disabledOpacity").toFloat() else 1f)) {
-        RoundButton(mode, mode, mode, "Bit-Perfect", onClick, state = if (on) "On" else "Off") {
-            Line(
-                "BP",
-                t.text(
-                    "nowPlaying.bpLabelSize",
-                    "color.text.primary",
-                    weight = t.number("nowPlaying.bpLabelWeight").toInt(),
-                    letterSpacingEm = t.number("nowPlaying.bpLabelLetterSpacingEm"),
-                ).copy(color = t.mobileColor(if (on) "color.bpLabel.on" else "color.bpLabel.off")),
-            )
-        }
     }
 }

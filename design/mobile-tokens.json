@@ -1,7 +1,7 @@
 {
   "$description": "AudioFool Android sizes, in dp (text in sp). Colours, shadows and radii come from theme-tokens.json (PS1 Light) and theme-tokens.dark.json (PS2 Dark), copied unchanged from the desktop. This file holds everything mobile-only and is the same in both themes, apart from the colour block at the top. Values match design/android-spec.md.",
   "color": {
-    "$note": "Mobile-only colours, one value per theme. Every other colour is a desktop token.",
+    "$note": "Mobile-only colours, one value per theme. Every other colour is a desktop token. bpLabel was Now Playing's BP button's label; since 2026-11-10 Bit-Perfect is a row in the cover menu, checked in the desktop's status.bitPerfectOn, so nothing draws bpLabel now. Kept so the button could come back as it was.",
     "bpLabel": {
       "on":  { "light": "#15786C", "dark": "#3DDC84" },
       "off": { "light": "#B3261E", "dark": "#FF5A5F" }
@@ -24,8 +24,9 @@
     "searchIcon": 20,
     "logoButton": 48,
     "logo": { "width": 36, "height": 28 },
-    "logoBarPaddingStart": 4,
-    "logoBarPaddingEnd": 12,
+    "$logoBarNote": "Artists' bar: the search field from the left, then the logo in its 48 dp touch area at the right (2026-11-10, the user's call; the logo was at the left, with these two the other way round). So the field starts 12 dp from the edge, as Search's does, and the logo sits 4 + 6 dp from the right edge.",
+    "logoBarPaddingStart": 12,
+    "logoBarPaddingEnd": 4,
     "logoToSearchGap": 6,
     "searchBarPaddingX": 12,
     "titleSize": 18,
@@ -131,14 +132,15 @@
     "timeWidth": 40
   },
   "menu": {
-    "$note": "The logo menu (spec 4.1: Rescan Library, Settings, Statistics, Theme, in alphabetical order, then the version, information only). No mockup: a panel under the logo with settings-sized rows (session 2).",
+    "$note": "The logo menu (spec 4.1: Rescan Library, Settings, Statistics, Theme, in alphabetical order, then the version, information only). No mockup: a panel under the logo with settings-sized rows (session 2). Since the logo moved right (2026-11-10), the menu's right edge is offsetX in from the logo's touch area, so it lines up with the panel below. checkIcon: a ticked row's check (the cover menu's Bit-Perfect).",
     "width": 208,
     "offsetX": 4,
     "listPadding": 6,
     "rowHeight": 48,
     "rowPaddingX": 12,
     "textSize": 16,
-    "valueSize": 13
+    "valueSize": 13,
+    "checkIcon": 18
   },
   "artMenu": {
     "$note": "Now Playing's cover menu (0.6.0, the user's call): a long press on the cover opens it at the finger. The logo menu's look and rows (menu.*). The first row, the cover's resolution, is information only; then Analyze; then the logo menu's rows (0.7.4). Kept edgeMargin inside the screen.",
@@ -318,17 +320,14 @@
     "timeSize": 13,
     "controlsPaddingTop": 12,
     "controlsPaddingBottom": 8,
-    "modeButton": 34,
-    "modeIcon": 15,
+    "$modeNote": "2026-11-10 (the user's call; BP moved to the cover menu): Repeat over Shuffle at the left, modeGap apart, the two as tall as Play/Pause (Repeat's top level with its top, Shuffle's bottom with its bottom), so each is (playButton - modeGap) / 2 within modeButton.min and max: 44 dp on the S24, 35 on the M21. The icon is modeIconOfButton of the button. Previous, Play/Pause and Next centred on the screen. At least modeToTransportGap between Repeat and Shuffle and Previous; where the screen is too narrow (the S24), the transport's gaps shrink to transportGap.fitMin at most, then Previous and Next shrink (the S24: 8 dp gaps, 60 dp buttons). From 0.2.2 until then: 34 dp buttons, Repeat and Shuffle side by side with BP under them, and the transport at the right.",
+    "modeButton": { "min": 34, "max": 44 },
+    "modeIconOfButton": 0.44,
     "modeGap": 8,
-    "$modeNote": "0.2.2 (the user's call): Repeat and Shuffle side by side, modeGap apart, their tops level with Play/Pause's; BP centred under them, its bottom level with Play/Pause's. At least modeToTransportGap between them and Previous; where the screen is too narrow (the S24), the transport's gaps shrink to fit.",
     "modeToTransportGap": 12,
-    "bpLabelSize": 12,
-    "bpLabelWeight": 700,
-    "bpLabelLetterSpacingEm": 0.02,
     "skipButton": { "min": 52, "ofScreenHeight": 0.085, "max": 70 },
     "playButton": { "min": 68, "ofScreenHeight": 0.117, "max": 96 },
-    "transportGap": { "min": 16, "ofScreenHeight": 0.026, "max": 22 },
+    "transportGap": { "min": 16, "ofScreenHeight": 0.026, "max": 22, "fitMin": 8 },
     "skipIconOfButton": 0.42,
     "playIconOfButton": 0.44,
     "outputSize": 13,

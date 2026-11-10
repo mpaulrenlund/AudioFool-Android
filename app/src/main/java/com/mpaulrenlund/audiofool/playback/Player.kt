@@ -117,8 +117,9 @@ class Player(
 
     /**
      * Artists' shuffle button (0.9.0, the user's request): [tracks] (the whole library,
-     * [LibraryShuffle.queue]) played shuffled from a random song. Shuffle stays on, as
-     * if turned on in Now Playing; turned off, the library plays on in its own order.
+     * [LibraryShuffle.queue]; one artist's songs from Albums' button, 2026-11-10) played
+     * shuffled from a random song. Shuffle stays on, as if turned on in Now Playing;
+     * turned off, the songs play on in their own order.
      * True when the random song is the one now playing (audio focus may say no).
      */
     fun shuffleAll(tracks: List<Track>): Boolean {

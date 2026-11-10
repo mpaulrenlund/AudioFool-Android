@@ -60,6 +60,28 @@ class LibraryShuffleTest {
         assertEquals(emptyList(), LibraryShuffle.queue(library) { true })
     }
 
+    // ---- one artist (Albums' shuffle button, 2026-11-10) ----
+
+    private fun artist(name: String) = library.artists.single { it.name == name }
+
+    @Test fun an_artists_queue_is_their_albums_in_the_albums_screens_order() {
+        assertEquals(listOf("Pink Flag 1", "Chairs Missing 1", "Chairs Missing 2"), LibraryShuffle.queue(artist("Wire")).map { it.title })
+        assertEquals(listOf("Moon Safari 1", "Moon Safari 2", "Talkie Walkie 1"), LibraryShuffle.queue(artist("Air")).map { it.title })
+    }
+
+    @Test fun an_artists_queue_holds_only_their_songs_the_librarys_own() {
+        val wire = artist("Wire")
+        val queue = LibraryShuffle.queue(wire)
+        assertEquals(wire.trackCount, queue.size)
+        assertTrue(queue.all { q -> wire.albums.any { album -> album.tracks.any { it === q } } })
+    }
+
+    @Test fun an_artists_songs_that_cant_be_reached_are_left_out() {
+        val air = artist("Air")
+        assertEquals(listOf("Talkie Walkie 1"), LibraryShuffle.queue(air) { it.filePath.startsWith("/sdcard/") }.map { it.title })
+        assertEquals(emptyList(), LibraryShuffle.queue(air) { true })
+    }
+
     @Test fun the_start_is_any_song_of_the_queue() {
         val rng = Random(42)
         val starts = List(2000) { LibraryShuffle.start(6, rng) }

@@ -196,20 +196,7 @@ class ThemeLabTest {
             }
             NowPlayingScreen(np, NowPlayingActions())
         }
-        // BP's other two states (spec 6.4; off is the mockup's): on through a USB DAC's
-        // bit-perfect mixer, and greyed out on the phone speaker.
-        shoot(device, "now-playing-bp-on") {
-            val np = nowPlaying(readout = OutputReadout.describe("Shanling UA2 Plus", OutputPath.BitPerfect, 96000, 24, 96000, false)).apply {
-                bitPerfect = true
-            }
-            NowPlayingScreen(np, NowPlayingActions())
-        }
-        shoot(device, "now-playing-bp-greyed") {
-            val np = nowPlaying(readout = OutputReadout.describe(OutputRoute.Speaker.label, OutputPath.Shared, 48000, 0, 96000, false)).apply {
-                bitPerfectGreyed = true
-            }
-            NowPlayingScreen(np, NowPlayingActions())
-        }
+        // BP's states are pictured in the cover menu since it moved there (2026-11-10): ThemeLabMenuTest's art-menu-bp-*.
         // The cover's colour (2026-11-09, no mockup), on made-up covers: the seekbar, Play/Pause with its
         // ring and glow, Repeat and Shuffle when on, the artist's name and the glow at the top.
         // A deep red (made lighter on Dark), Repeat All and Shuffle on.

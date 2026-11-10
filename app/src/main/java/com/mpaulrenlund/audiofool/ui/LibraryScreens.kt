@@ -56,9 +56,10 @@ fun ArtistsScreen(
     var menuOpen by rememberSaveable { mutableStateOf(initialMenuOpen) }
     ScreenFrame(
         topBar = {
+            // The search field from the left, the logo at the right (2026-11-10, the user's call; the logo led until then).
             TopBar(t.dp("topBar.logoBarPaddingStart"), t.dp("topBar.logoBarPaddingEnd"), t.dp("topBar.logoToSearchGap")) {
-                LogoMenuButton(menuOpen, { menuOpen = true }, { menuOpen = false }, actions, version)
                 SearchFieldButton(Modifier.weight(1f)) { actions.open(Route.Search) }
+                LogoMenuButton(menuOpen, { menuOpen = true }, { menuOpen = false }, actions, version)
             }
         },
         bottom = { MiniPlayerBar(browse, actions) },
@@ -164,7 +165,9 @@ private fun ArtistRow(artist: ArtistGroup, browse: Browse, selected: Boolean, on
 
 /**
  * Albums (spec 4.2): one artist's albums, in the desktop's release-date order, with
- * a year strip at the right when they don't all fit (0.11.0, the user's call).
+ * a year strip at the right when they don't all fit (0.11.0, the user's call), and a
+ * shuffle button at the right of the ALBUMS header that plays the artist's songs
+ * shuffled (2026-11-10, the user's request), as Artists' does the library's.
  */
 @Composable
 fun AlbumsScreen(
@@ -190,8 +193,12 @@ fun AlbumsScreen(
         bottom = { MiniPlayerBar(browse, actions) },
     ) {
         PanelSurface(Modifier.weight(1f)) {
-            PanelHeader("Albums")
             val albums = artist?.albums.orEmpty()
+            // Artists' shuffle button, for this artist (2026-11-10, the user's request), at the far right.
+            PanelHeader(
+                "Albums",
+                action = if (artist != null && albums.isNotEmpty()) ({ IconButtonSmall(AppIcons.SHUFFLE, { actions.shuffleArtist(artist.name) }, label = "Shuffle artist") }) else null,
+            )
             val list = rememberLazyListState()
             val index = remember(albums) { AlbumYearIndex.of(albums) }
             val pad = t.dp("panel.listPadding")
