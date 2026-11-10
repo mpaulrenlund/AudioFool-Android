@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-10: 0.15.0 (versionCode 50) built, not published yet: Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
+Updated 2026-11-10: 0.15.0 (versionCode 50) published as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0): Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,13 +12,13 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **0.15.0, built 2026-11-10 (versionCode 50, `dist/AudioFool-0.15.0.apk`, notes in `dist/notes-0.15.0.md`), not published yet: Version opens the releases page** (the
+- **0.15.0, published 2026-11-10 ("Build 0.15.0", then "Publish it") as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0) (versionCode 50, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256, `a5168eba…12bf42`, matched `dist/`; notes in `dist/notes-0.15.0.md`): Version opens the releases page** (the
   user's request; spec §4.1). The logo menu's and the cover menu's Version row close the menu and
   open `RELEASES_URL` in the default browser (`ui/OpenInBrowser.kt`: sent to the browser by
   name, so GitHub's app doesn't take it; a `<queries>` entry in the manifest lets the app see
   browsers). Checked: `VersionRowTest`, the 16 menu pictures (Version's colours), and the
   emulator (Chrome got it). Signer checked (`1fdefe0a…be2c21`) and the real Last.fm key in it;
-  the emulator has 0.15.0. Publish when the user approves the notes, after checking `PRIVATE`.
+  the emulator has 0.15.0.
 - **Also in 0.15.0 (first built as 0.14.1, never published): the mini player's buttons follow Now Playing's** (the
   user: "...follow the same logic as the Now Playing screen? Including showing the glow around
   the play button when audio is playing."; spec §3). The three icons and Play/Pause's ring and
@@ -48,9 +48,8 @@ you touch a feature from then.
   **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
   emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
-- **Where it stands:** nothing is broken that the user knows of; the glow's removal (above)
-  and the mini player's buttons (above) are in 0.15.0, built and waiting to be published. The latest release is **0.14.0** (versionCode 48, the item above), published 2026-11-10. Before
-  it, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
+- **Where it stands:** nothing is broken that the user knows of. The latest release is **0.15.0** (versionCode 50, the first item above), published 2026-11-10; before it **0.14.0** (versionCode 48), the same day. Before
+  that, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
   published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
   attached); **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the

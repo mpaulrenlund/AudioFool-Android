@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.15.0**: Version opens the releases page (the logo menu's and the cover menu's Version row, in the default browser); the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing); no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — built 2026-11-10 (versionCode 50), not published yet. It replaces 0.14.1 (versionCode 49), built the same day without the Version change and never published
+- [x] **0.15.0**: Version opens the releases page (the logo menu's and the cover menu's Version row, in the default browser); the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing); no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — 2026-11-10, released as pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0). It replaces 0.14.1 (versionCode 49), built the same day without the Version change and never published
 - [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
@@ -71,7 +71,9 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-10, 0.15.0 (versionCode 50; built, not published yet): **Version opens the releases page**
+2026-11-10, 0.15.0 (versionCode 50; released the same day as pre-release
+[`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256
+`a5168eba…12bf42` matching `dist/`): **Version opens the releases page**
 (the user: "In the App menu, if i tap the Version row, I'd like the app to open the default
 browser and this website: https://github.com/mpaulrenlund/AudioFool-Android/releases"). Spec §4.1.
 - A tap on Version closes the menu and opens the page (`RELEASES_URL`, `openInBrowser` in
