@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **Now Playing's ideas** (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — built and checked 2026-11-09, not released yet (0.13.0 proposed)
+- [ ] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — built 2026-11-09 (versionCode 47), not published yet
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
 - [x] **0.10.1**: the Album page's track numbers (left-aligned at the row's start, ▶ in the playing song's number place) — 2026-11-06, released as pre-release [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1)
@@ -69,7 +69,9 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-09, after 0.12.0 (not released yet): **Now Playing's ideas, all but the "Next" line**
+2026-11-09, 0.13.0 (versionCode 47; built the same day after "Build 0.13.0", the number the
+wrap-up proposed; **not published yet**: the notes were shown and wait for the user's word):
+**Now Playing's ideas, all but the "Next" line**
 (the user asked for "recommendations or mockups on how to improve this Now Playing screen", got
 a critique and eight numbered mock-ups, and answered "Let's do everything except for idea 6").
 Spec §5 (*Cover colour*, items 2, 5 and 8) and §2 (*Round buttons*); `CLAUDE.md`'s colour rule
@@ -125,6 +127,12 @@ gained its Now Playing exception.
   press; the artist line opened Air's albums and the album line *Moon Safari* with the song
   shown, back returning to Now Playing each time; across three song changes in an album
   every one of 273 recorded frames had the cover, none the placeholder.
+- **The build:** `dist/AudioFool-0.13.0.apk` (SHA-256 `a4dbbf18…8841344c`), signer
+  `1fdefe0a…be2c21`, AudioFool's own Last.fm key in it (compared with `gradle.properties`,
+  neither printed), 598 tests and ThemeLab passing. Installed over the emulator's build in
+  place (the song and the library kept): the cover menu says "Version 0.13.0"; paused, the
+  ring only, and the glow once playing; the mini player as it was. Notes in
+  `dist/notes-0.13.0.md`.
 - **A ThemeLab scare, once:** one record run changed 32 untouched pictures (Search's cursor
   missing, the index strips' lists not scrolled): effects that hadn't run when the picture
   was taken. Five more runs, alone and with everything else, gave them back identical, and
@@ -839,7 +847,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Now Playing's ideas (next build)
+### Now Playing's ideas (from 0.13.0)
 
 - [ ] **The colour goes further**: with a colourful cover, Repeat and Shuffle when on, the
   artist's name and the faint glow at the very top are in the cover's colour too. Does the
@@ -1038,7 +1046,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Now Playing's ideas (next build)
+### Now Playing's ideas (from 0.13.0)
 
 - [ ] As on the S24, on the shorter screen: the time bubble sits between the album's name and
   the quality line; does it cover anything you want to see while scrubbing?
