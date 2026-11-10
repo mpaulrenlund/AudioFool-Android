@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Now Playing's ideas** (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — built and checked 2026-11-09, not released yet (0.13.0 proposed)
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
 - [x] **0.10.1**: the Album page's track numbers (left-aligned at the row's start, ▶ in the playing song's number place) — 2026-11-06, released as pre-release [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1)
@@ -67,6 +68,68 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-09, after 0.12.0 (not released yet): **Now Playing's ideas, all but the "Next" line**
+(the user asked for "recommendations or mockups on how to improve this Now Playing screen", got
+a critique and eight numbered mock-ups, and answered "Let's do everything except for idea 6").
+Spec §5 (*Cover colour*, items 2, 5 and 8) and §2 (*Round buttons*); `CLAUDE.md`'s colour rule
+gained its Now Playing exception.
+- **1. The glow at the top** takes the cover's colour, at `window.titleGlow`'s own opacity
+  (Dark only: Light has no glow).
+- **2. Repeat and Shuffle when on**, and Repeat One's badge, take the cover's colour, so the
+  screen has one colour for "on". BP keeps its red and green: they are a status. On a red
+  cover, a lit Repeat sits next to BP's red "off"; the user saw that and chose it.
+- **3. The artist's name** takes the cover's colour (the user's call, against my note that it
+  breaks "artist names are blue"). **My call:** it is fitted to `accent.blue`, the text colour
+  it replaces, not to `accent.playback`, so it comes out lighter on Dark and darker on Light
+  than the seekbar; fitted to the playback colour it would have been 2.7:1 against Light's
+  background. `AppTheme.coverAccent(main, standsInFor)` does both.
+- **4. The glow round Play/Pause means playing**: paused, the ring alone. **My call:** on Now
+  Playing only; the mini player's glow stays on while paused, since the request was this
+  screen. Open to carrying over.
+- **5. A time bubble while scrubbing**: the index strips' bubble surface over the finger,
+  inside the bar's ends, 36 dp above the bar so it clears the quality line (the first render
+  sat on it; the mock-up had it clear). New tokens `nowPlaying.scrubBubble.*`.
+- **6. The "Next" line: not built**, the user's call (it only fitted the S24).
+- **7. Light gets a ring** round Play/Pause in the cover's colour, 2 dp at 0.67
+  (`nowPlaying.coverAccent.ring`), where the theme's ring is clear. No cover colour, no ring,
+  as before.
+- **8. Touch areas: nothing to build, and my critique was wrong.** It said Repeat, Shuffle and
+  BP had 34 dp touch areas. A test showed a tap 5 dp outside one already presses it: Compose
+  widens a small touch area to 48 dp by itself. `NowPlayingTouchTest` pins it; the user was
+  told.
+- **Not pictured, built as "everything":**
+  - *The cover stays until the next is read.* The art used to blink to the placeholder at
+    every song change; now picture and colour both wait for the new cover.
+  - *A pressed round button* shows `control.faceHover`. **My call:** all nine round buttons,
+    the mini player's three included (one shared part, and a press shows nowhere at rest).
+    BP greyed can't be pressed and doesn't show one.
+  - *The artist's and the album's names open them* (`artistRouteFor`, `albumRouteFor`): the
+    artist's albums; the album with the song chosen. **My call:** an artist the library
+    doesn't list (a guest) leads to the artist the album is under.
+  - *Screen reader names* on every round button, and the seekbar as a slider ("Seek").
+- **Left alone:** Light's small grey text is about 4.3:1 on the window (just under 4.5:1). It
+  is the desktop's `text.muted`; changing it needs a phone-only colour on every screen, which
+  nobody asked for.
+- **The screen's frame was turned inside out** to get the cover's colour to the top glow: the
+  measuring box is now the whole screen, with the window background and the inset column
+  inside it (`screenHeight` is its height; `barHeights()` is gone). Every picture without a
+  cover came out pixel-identical, so the sizes didn't move.
+- **Checked:** 598 tests (11 new in `NowPlayingTouchTest`: touch areas, names, BP greyed,
+  the two taps, the bubble and the seek, where the lines lead). ThemeLab: the 16
+  `now-playing-cover-*` pictures re-recorded (Repeat and Shuffle now on in red and grey,
+  yellow paused with Repeat One), `now-playing-modes` changed in Dark only (paused: no
+  glow), 8 new `now-playing-scrub*`; looked at in both themes at both sizes; every other
+  picture identical. Emulator (this build over 0.12.0, still labelled 0.12.0): paused shows
+  the ring only and playing the glow; the bubble follows a drag; a held Next shows the
+  press; the artist line opened Air's albums and the album line *Moon Safari* with the song
+  shown, back returning to Now Playing each time; across three song changes in an album
+  every one of 273 recorded frames had the cover, none the placeholder.
+- **A ThemeLab scare, once:** one record run changed 32 untouched pictures (Search's cursor
+  missing, the index strips' lists not scrolled): effects that hadn't run when the picture
+  was taken. Five more runs, alone and with everything else, gave them back identical, and
+  the cause wasn't found. If `verify` ever fails on only those, run it again before
+  believing it.
 
 2026-11-09, 0.12.0 (versionCode 46; released the same day as pre-release
 [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0), "AudioFool
@@ -776,6 +839,21 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Now Playing's ideas (next build)
+
+- [ ] **The colour goes further**: with a colourful cover, Repeat and Shuffle when on, the
+  artist's name and the faint glow at the very top are in the cover's colour too. Does the
+  artist's name read well in it, on bright and dark covers?
+- [ ] **Paused and playing**: paused, Play/Pause has its ring only; playing, the glow comes on.
+- [ ] **Scrubbing**: drag the seekbar; the time is in a bubble over your thumb, and it stays
+  inside the screen at both ends. Is it clear of your thumb?
+- [ ] **Skipping**: within an album the cover no longer blinks; to another album, the old
+  cover stays for a moment, then the new one. Does that moment feel right?
+- [ ] **Taps**: the artist's name opens their albums, the album's name the album; back returns
+  to Now Playing. Any opened by accident, while swiping to skip or just holding the phone?
+- [ ] **Presses**: the round buttons lighten under your thumb, here and on the mini player.
+- [ ] **Light theme**: Play/Pause has a ring in the cover's colour.
+
 ### Now Playing's cover colour (from 0.12.0)
 
 - [ ] **A few albums with very different covers**: the seekbar's played part, the Play/Pause
@@ -959,6 +1037,12 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Now Playing's ideas (next build)
+
+- [ ] As on the S24, on the shorter screen: the time bubble sits between the album's name and
+  the quality line; does it cover anything you want to see while scrubbing?
+- [ ] Skipping through an album with large covers: the cover stays put, with no blink.
 
 ### Now Playing's cover colour (from 0.12.0)
 

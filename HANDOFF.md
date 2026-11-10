@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-09, after 0.12.0 (Now Playing's cover colour). Read this with `README.md` (how the app works) and
+Updated 2026-11-09, after 0.12.0 (Now Playing's cover colour) and one batch since (Now Playing's ideas, not released). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -42,22 +42,26 @@ you touch a feature from then.
   colour for this album" or "turn it off"; the knobs are in core `CoverColor` (which hue wins,
   what counts as grey) and `nowPlaying.coverAccent.lightnessRange`. Checked with the tests,
   ThemeLab (16 new pictures, all others identical) and the emulator, which now has 0.12.0.
-- **Ideas for Now Playing were shown, none chosen yet** (2026-11-09; the user: "recommendations
-  or mockups on how to improve this Now Playing screen"). Nothing in the app changed. The
-  pictures are real ThemeLab renders of throwaway code, as labelled sheets in `dist/`
-  (`ideas-1-colour.png`, `ideas-2-state.png`, `ideas-3-light-touch.png`); the throwaway code is
-  `dist/now-playing-ideas.patch` (a `Proto` switch object; a reference for building properly,
-  not to apply as it is). Numbered as on the sheets: **1** the top glow in the cover's colour;
-  **2** Repeat and Shuffle "on" in it; **3** the artist's name too (optional; breaks "artist
-  names use `accent.blue`"); **4** paused shows the ring only, the glow means playing; **5** a
-  time bubble while scrubbing (the index strip's bubble); **6** a "Next · song" line, S24 only
-  (on the M21 it pushed the readout off the screen); **7** Light gets a ring in the cover's
-  colour; **8** 48 dp touch areas for Repeat, Shuffle and BP (34 dp now), nothing moving. Not
-  pictured: the cover blinks to the placeholder at every song change (keep the old one until
-  the new is read, as the colour already does); the round buttons show no press
-  (`control.faceHover` is unused); the artist and album lines could open their screens; no
-  TalkBack labels on the buttons. Wait for the user to pick by number; each is a spec change
-  to confirm, built into one version.
+- **On `main` since 0.12.0, not released yet** (2026-11-09): **Now Playing's ideas**. The user
+  asked for "recommendations or mockups on how to improve this Now Playing screen", got a
+  critique and eight numbered mock-ups (real ThemeLab renders of throwaway code, the sheets
+  `dist/ideas-*.png`), and chose "everything except for idea 6". Built (spec §5 and §2;
+  the decisions and what was checked are in `design/progress.md`):
+  - the cover's colour also on **Repeat and Shuffle when on**, the **artist's name** (fitted
+    to `accent.blue`, so lighter on Dark and darker on Light than the seekbar) and the **glow
+    at the top**; in **Light a ring** round Play/Pause in it;
+  - the **glow round Play/Pause only while playing** (Now Playing only; the mini player's
+    stays, my call, open to carrying over);
+  - a **time bubble while scrubbing**;
+  - the **cover kept until the next one is read** (no placeholder blink at a song change);
+  - a **press shown on all nine round buttons** (`control.faceHover`), the mini player's too;
+  - the **artist's and the album's names open them**, back returning to Now Playing;
+  - **screen reader names** on the buttons and the seekbar.
+  Not built: **6**, the "Next" line (the user's call). **8**, bigger touch areas, needed
+  nothing: Compose already widens a small touch area to 48 dp, and my critique was wrong to
+  say otherwise (`NowPlayingTouchTest` pins it). Checked with the tests (598), ThemeLab and
+  the emulator, which has this build over 0.12.0 (still labelled 0.12.0). It goes into the
+  next build (**0.13.0** proposed, new features); the user hasn't asked for one.
 - **First thing in the next chat**, unless the user leads with something else: when they say
   how the cover colours look, tick the matching items under *Now Playing's cover colour (from
   0.12.0)* in both test lists and push; if a cover gave a colour they wouldn't have picked, ask
@@ -351,6 +355,7 @@ don't block anything.
 | The library | `library/LibraryRepository`: the cache first, then a background rescan; the scan reuses tags for files whose size and date haven't changed, and carries over every track of a folder it can't reach |
 | Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
 | Now Playing's cover colour (0.12.0) | `core/.../art/CoverColor.kt` (`main`: the cover's main colour from 64 × 64 pixels; `accent`: that colour at a lightness the theme can show; OKLab; tests in `CoverColorTest`); the app's `AppTheme.coverAccent` (reads `accent.playback` and `nowPlaying.coverAccent.lightnessRange`), and in `ui/NowPlayingScreen.kt` `shownCover` / `BigCover.color` (read with the cover, kept until the next cover is in) feeding `Seekbar` and `TransportButtons`; `RoundButton(playTint)` in `Parts.kt`. ThemeLab's made-up covers: `ThemeLabFixtures.coverDeepRed()` and three more, through `NowPlayingScreen(coverForPictures)` |
+| Now Playing's ideas (after 0.12.0) | `ui/NowPlayingScreen.kt`: the screen's measuring box is the whole screen, with `WindowBackground(glowTint)` and the inset column inside it; `shownCover` keeps the last cover until the next is read; `TitleBlock` (the artist in `coverAccent(…, "color.accent.blue")`, both names `tappable`, leading where `artistRouteFor` / `albumRouteFor` say, wired in `AppRoot`); `Seekbar` with `ScrubBubble` (`nowPlaying.scrubBubble.*`; `scrubForPictures` for ThemeLab) and its slider semantics; `Controls` (the lit Repeat and Shuffle), `TransportButtons` (`playGlow` only while playing). `Parts.kt`'s `RoundButton`: `label` and `state` for a screen reader, `onClick` null when it can't be pressed, `control.faceHover` while pressed, the Light ring (`nowPlaying.coverAccent.ring`). `TokenDrawing.kt`: `titleGlow(tint)`. Tests: `ui/NowPlayingTouchTest` |
 | Playback | `app/.../playback/`: `BassRuntime` (start-up, add-ons), `Decoder` (one BASS stream per song; DSD as PCM or DoP), `OutputStage` (the `AudioTrack` thread: gapless, what's heard, opening by `OutputPlan`, reopening on a route or setting change), `OutputRoutes` (the route, a USB device's mixer entries, setting the mixer, the pretend route, the debug numbers), `Player` (queue, order, focus, unplug, resume, the Bit-Perfect setting, the readout), `NowPlaying` (what the screens read), `SystemControls` (media session), `PlaybackService` (notification, foreground), `WaveformReader`. Ported and new logic in `core/.../playback/` (`DopRule`, `BitPerfect.kt`: `BitPerfectRule`, `MixerChoice`, `SpeakerlessPlayers`; `OutputReadout` with `hardwareRate`; `SeekFade`, the desktop's 5 ms fade, used by `OutputStage.cut` and `Decoder.fadeInNext`; `LibraryShuffle`, the whole library as one queue for Artists' shuffle button, 0.9.0) and `core/.../analysis/` |
 | USB DAC, read directly (0.3.0) and the driver (0.4.0) | `app/.../playback/UsbDriver.kt` (take, permission, rates, format, rate, volume, give back with a reset, unplug), `UsbStream.kt` (the native calls), `PcmOutput.kt` (`AudioTrackOutput`, `UsbOutput`), `app/src/main/cpp/usbaudio_driver.cpp` (libusb streaming, feedback, ring, fade; library `audiofoolusb`, linked to `usb-1.0` from `third_party/libusb`), `UsbDac.kt` (the Debug panel and report), `UsbAttachActivity.kt` (the "always open" filter), core `usbaudio/` (`UsbAudioDescriptors.kt`, `UsbStreamRules.kt`); write-up in `design/usb-bit-perfect.md` |
 | Last.fm | `core/.../scrobbling/` (ported: `LastFmApi`, `PlayTracker`, `ScrobbleEntry`, `ScrobbleQueue`, `LastFmScrobbler`; the phone's own `getMobileSession`); the app's `lastfm/LastFm.kt` (the username-and-password sign-in, what Settings shows, a `PlayWatcher`) and `LastFmStore.kt` (Keystore-encrypted key, secret and session) |
@@ -590,6 +595,15 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   `LaunchedEffect` that asks for every frame (`withFrameMillis` in a loop) never lets it,
   and the test run hangs with no output. Now Playing's seekbar ticks only while playing and
   `NowPlaying.live` (false in `showForPictures`).
+- **ThemeLab's pictures that wait on an effect can, rarely, be taken too early**: Search's
+  text cursor (the focus) and the index strips' pressed pictures (the list scrolled to the
+  letter). Once (2026-11-09) a record run changed all 32 of them, with nothing of theirs
+  touched; five runs after it gave them back identical and the cause wasn't found. If
+  `verify` fails on only those, or a record changes only those, run it again before believing
+  it, and never commit them changed.
+- **A small button's touch area is already 48 dp.** Compose widens any touch area smaller than
+  that by itself, to the nearest one where two overlap, so a 34 dp button needs no bigger box
+  (`NowPlayingTouchTest`). Read a button's layout size as its look, not its reach.
 - **Tracks are matched by identity** (`===`) in the player and the hearing timeline, as
   the desktop's `ReferenceEquals`: `Track` is a data class, so `==` would mix up two copies
   of the same song (the emulator's SD card holds a copy of the sample set, so some albums
