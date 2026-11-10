@@ -14,8 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **Version opens the releases page** (the logo menu's and the cover menu's Version row, in the default browser) — built and checked 2026-11-10, not in a build yet
-- [ ] **0.14.1**: the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing), and no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — built 2026-11-10 (versionCode 49), not published yet
+- [ ] **0.15.0**: Version opens the releases page (the logo menu's and the cover menu's Version row, in the default browser); the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing); no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — built 2026-11-10 (versionCode 50), not published yet. It replaces 0.14.1 (versionCode 49), built the same day without the Version change and never published
 - [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
@@ -72,7 +71,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-10, after 0.14.1 was built (not in a build yet): **Version opens the releases page**
+2026-11-10, 0.15.0 (versionCode 50; built, not published yet): **Version opens the releases page**
 (the user: "In the App menu, if i tap the Version row, I'd like the app to open the default
 browser and this website: https://github.com/mpaulrenlund/AudioFool-Android/releases"). Spec §4.1.
 - A tap on Version closes the menu and opens the page (`RELEASES_URL`, `openInBrowser` in
@@ -91,7 +90,7 @@ browser and this website: https://github.com/mpaulrenlund/AudioFool-Android/rele
   unchanged. Emulator: the tap sent the page to Chrome by name (the log's `pkg=com.android.chrome`);
   Chrome showed its first-run screen, never having been opened there.
 
-2026-11-10, 0.14.1 (versionCode 49; built, not published yet): **the mini player's buttons follow Now Playing's**
+2026-11-10, 0.15.0 (versionCode 50; first built as 0.14.1, never published): **the mini player's buttons follow Now Playing's**
 (the user: "Can we update the mini-player's icons to follow the same logic as the Now Playing
 screen? Including showing the glow around the play button when audio is playing."). Spec §2, §3,
 §5 (*Cover colour*, Controls row).
@@ -109,6 +108,10 @@ screen? Including showing the glow around the play button when audio is playing.
   (keyed by path, modified time and size, so a changed file is worked out afresh). The mini
   player keeps the last song's colour until the next one's is in, as Now Playing does. Now
   Playing's colour can shift very slightly on a busy cover; on plain ones it is the same.
+- **So the buttons follow the song's own cover, the thumbnail the album's.** Where an album's
+  songs carry different covers (the emulator's sample music does), the mini player's buttons can
+  be in another colour than its thumbnail, as Now Playing shows the song's cover. Seen on the
+  emulator with 0.15.0; an album with one cover has the two agree.
 - **Checked:** 624 tests (4 new, `CoverColorsTest`: worked out once, the file and ThemeLab's
   pictures agree, no colour kept too, a changed file afresh). ThemeLab: 12 new pictures
   (`mini-player-cover-red`, playing; `-cover-yellow-paused`; `mini-player-paused`, no colour),
@@ -117,7 +120,7 @@ screen? Including showing the glow around the play button when audio is playing.
   ring are orange with no glow; playing, the glow is orange; Now Playing and the mini player show
   the same orange for the same song.
 
-2026-11-10, 0.14.1 (versionCode 49; built, not published yet): **no glow at the top of the screen** (the user:
+2026-11-10, 0.15.0 (versionCode 50; first built as 0.14.1, never published): **no glow at the top of the screen** (the user:
 "Can we remove the glow at the top of the window in the Dark theme?"). Spec §2; §5's *Cover
 colour* list lost its last item.
 - **My call: every screen**, since it was one drawing (`WindowBackground`) that every screen
@@ -979,20 +982,20 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Version opens the releases page (from the next build)
+### Version opens the releases page (from 0.15.0)
 
 - [ ] Logo menu > Version: the releases page opens in your default browser (not GitHub's app,
   if you have it), and you see the builds (that browser signed in to GitHub). Back returns to
   AudioFool. The cover menu's Version does the same.
 
-### The mini player's buttons (from 0.14.1)
+### The mini player's buttons (from 0.15.0)
 
 - [ ] Play something with a colourful cover and go back to a list: are the mini player's three
   icons and the ring round Play/Pause in the same colour Now Playing shows? Does the glow show
   while playing and go when paused (Dark)? A black-and-white cover keeps the theme's blue.
 - [ ] Skip through an album: does the colour stay put between its songs rather than blinking?
 
-### No glow at the top (from 0.14.1)
+### No glow at the top (from 0.15.0)
 
 - [ ] **Dark theme**: the top of every screen, behind the status bar, is the plain window
   colour, with no blue (or, on Now Playing, cover-coloured) glow. Does the top look right
@@ -1214,15 +1217,15 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Version opens the releases page (from the next build)
+### Version opens the releases page (from 0.15.0)
 
 - [ ] As on the S24.
 
-### The mini player's buttons (from 0.14.1)
+### The mini player's buttons (from 0.15.0)
 
 - [ ] As on the S24, in Light as well: a ring in the cover's colour, and no glow.
 
-### No glow at the top (from 0.14.1)
+### No glow at the top (from 0.15.0)
 
 - [ ] As on the S24.
 
