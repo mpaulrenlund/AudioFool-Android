@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — built 2026-11-10 (versionCode 48), not published yet
+- [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
 - [x] **0.12.0**: Now Playing's cover colour (the seekbar, Play/Pause's icon and the ring and glow round it take the cover's main colour) — 2026-11-09, released as pre-release [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0)
 - [x] **0.11.0**: Albums' year strip (Artists' letter strip on Albums, holding release years, when the albums don't fit) — 2026-11-09, released as pre-release [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0)
@@ -70,8 +70,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-10, 0.14.0 (versionCode 48; built after "Build 0.14.0", the number the wrap-up
-proposed; not published yet): **five layout requests** in one message, built as asked. Spec §4.1, §4.2, §5 (item 8, *Cover colour*, *Cover menu*), §6.2, §6.4 and §2
+2026-11-10, 0.14.0 (versionCode 48; released the same day as pre-release
+[`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0), "AudioFool
+0.14.0", after "Build 0.14.0" (the number the wrap-up proposed) and "Publish it"; the repo
+checked `PRIVATE` right before the upload; the downloaded APK's SHA-256 matched `dist/`):
+**five layout requests** in one message, built as asked. Spec §4.1, §4.2, §5 (item 8, *Cover colour*, *Cover menu*), §6.2, §6.4 and §2
 (*Round buttons*, the mobile colours line).
 - **Artists' bar**: the search field from the left, the logo at the right (the user: "move
   the app logo to the right hand side of the Search box"). `topBar.logoBarPaddingStart` and

@@ -1,7 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-10, after 0.13.0 (Now Playing's ideas) and five layout requests built on it,
-not released yet. Read this with `README.md` (how the app works) and
+Updated 2026-11-10, after 0.14.0 (five layout requests). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -13,14 +12,12 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **0.14.0 is built, not published (2026-11-10, "Build 0.14.0"):** versionCode 48, bump commit
-  `4dd2ebba6821e64e797f371262405ab5b4e3c802` (the full SHA for `gh release create --target`),
-  `dist/AudioFool-0.14.0.apk` (SHA-256 `832e8d78e7ce498692129a819f8299b807f30352f49bcb0c37543c95da06d826`;
-  release signer and the real Last.fm key checked), notes `dist/notes-0.14.0.md`, shown to
-  the user. **Waiting for "Publish it"**: then step 7 of the routine below (check `PRIVATE`
-  first), and tick the Sessions line in `design/progress.md`. The emulator has 0.14.0.
-  It holds the user's **five layout requests** (spec §4.1, §4.2, §5, §6.4; the decisions in
-  `design/progress.md`): Artists' logo at
+- **0.14.0 is the user's five layout requests** (2026-11-10; "Build 0.14.0", then "Publish
+  it"): versionCode 48, published as the pre-release
+  [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0) (APK
+  attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256,
+  `832e8d78…da06d826`, matched `dist/`). The emulator has 0.14.0. Spec §4.1, §4.2, §5, §6.4;
+  the decisions in `design/progress.md`: Artists' logo at
   the right of the search field; a shuffle button on Albums for that artist; a **tap** on Now
   Playing's cover opens its menu, which now holds **Bit-Perfect** (a check while on) in place
   of the BP button; **Repeat over Shuffle** at the left, 44 dp on the S24 / 35 on the M21, and
@@ -28,11 +25,12 @@ you touch a feature from then.
   **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
   emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
-- **Where it stands:** nothing is broken that the user knows of. The latest release is
-  **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below).
-  Published 2026-11-09 as the pre-release
+- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
+  latest release is **0.14.0** (versionCode 48, the item above), published 2026-11-10. Before
+  it, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
+  published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
-  attached). Before it, **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
+  attached); **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
   cover** (spec §5, *Cover colour*; next item), published 2026-11-09 as
   [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0);
   **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
@@ -46,7 +44,7 @@ you touch a feature from then.
   ported; from the cover menu's new **Genius** row), published 2026-11-05 as
   [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0). Genius
   has **never seen the real genius.com on Android**: the emulator can't get past this PC's
-  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.13.0, 0.12.0, 0.11.0, 0.10.1
+  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.14.0, 0.13.0, 0.12.0, 0.11.0, 0.10.1
   and 0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
@@ -82,6 +80,11 @@ you touch a feature from then.
   say otherwise (`NowPlayingTouchTest` pins it). Checked with the tests (598), ThemeLab and
   the emulator, which now has 0.13.0.
 - **First thing in the next chat**, unless the user leads with something else: when they say
+  how 0.14.0 feels, tick the matching items under *The five layout requests (from 0.14.0)* in
+  both test lists and push. If the S24's 60 dp Previous and Next feel small, the trade is
+  Repeat and Shuffle's size (`modeButton.max`) or Play/Pause's (`playButton`), since the
+  transport is centred; if the M21's Repeat and Shuffle want to be bigger, the cover gives up
+  height (`artHeightReserve`). Ask which before changing it. When they say
   how 0.13.0 feels, tick the matching items under *Now Playing's ideas (from 0.13.0)* in both
   test lists and push. Listen for three things I chose and they may want otherwise: the mini
   player's glow staying on while paused, the old cover staying a moment when skipping to
@@ -150,6 +153,15 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
+- **0.14.0** (2026-11-10, "Build 0.14.0", then "Publish it"): **five layout requests** (spec
+  §4.1, §4.2, §5, §6.4). Artists' search field first, the logo at the right, its menu hanging
+  from its right edge; Albums' shuffle button (core `LibraryShuffle.queue(artist)`); a tap on
+  Now Playing's cover opens its menu (the long press too); Bit-Perfect is a checked row in it
+  (`MenuCheckRow`, `status.bitPerfectOn`), the BP button gone (`color.bpLabel` kept, unused);
+  Repeat over Shuffle at the left, as tall as Play/Pause together (44 dp S24, 35 M21), the
+  transport centred (the S24's skip buttons 60 dp, gaps 8); Previous's and Next's icons in the
+  cover's colour. 128 ThemeLab pictures changed, 8 new `art-menu-bp-*`, the 8
+  `now-playing-bp-*` gone; every other picture unchanged.
 - **0.13.0** (2026-11-09, "Build 0.13.0", then "Publish it"): **Now Playing's ideas**, all but
   the "Next" line (spec §5 and §2). The cover's colour also on Repeat and Shuffle when on, the
   artist's name (fitted to `accent.blue`) and the top glow, with a ring in Light; the glow
