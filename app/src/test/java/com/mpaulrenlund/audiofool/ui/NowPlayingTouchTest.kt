@@ -153,13 +153,13 @@ class NowPlayingTouchTest {
         compose.onNodeWithText("Bit-Perfect").assertExists()
     }
 
-    @Test fun the_cover_menu_keeps_settings_theme_and_version_but_not_the_library_rows() {
-        // 2026-11-10, the user's call: Listening History, Rescan Library and Statistics are the logo menu's only.
+    @Test fun the_cover_menu_keeps_theme_and_version_but_not_the_logo_menus_other_rows() {
+        // 2026-11-10, the user's calls: Listening History, Rescan Library, Settings and Statistics are the logo menu's only.
         show()
         compose.onNodeWithContentDescription("Cover").performClick()
         compose.waitForIdle()
-        for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Settings", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
-        for (row in listOf("Listening History", "Rescan Library", "Statistics")) compose.onNodeWithText(row).assertDoesNotExist()
+        for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
+        for (row in listOf("Listening History", "Rescan Library", "Settings", "Statistics")) compose.onNodeWithText(row).assertDoesNotExist()
     }
 
     @Test fun a_long_press_on_the_cover_still_opens_it() {

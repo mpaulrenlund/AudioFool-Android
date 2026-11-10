@@ -12,10 +12,10 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Built after 0.15.0, not in a build yet (2026-11-10): the cover menu keeps only Settings,
-  Theme and Version of the logo menu's rows** (the user: "...remove Listening History, Rescan
-  Library, and Statistics. These should just be in the Main Logo menu."; spec §5, *Cover menu*).
-  `AppMenuRows(libraryRows = false)` in `ArtMenu`; the logo menu is unchanged. Checked: 101 app
+- **Built after 0.15.0, not in a build yet (2026-11-10): the cover menu keeps only Theme and
+  Version of the logo menu's rows** (the user: "...remove Listening History, Rescan Library, and
+  Statistics. These should just be in the Main Logo menu.", then "Let's remove settings as well.";
+  spec §5, *Cover menu*). `AppMenuRows(allRows = false)` in `ArtMenu`; the logo menu is unchanged. Checked: 101 app
   tests, the 12 cover menu pictures, and the emulator. The next build: **0.15.1** (versionCode 51)
   if the user counts it a tweak, **0.16.0** if a feature; ask.
 - **0.15.0, published 2026-11-10 ("Build 0.15.0", then "Publish it") as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0) (versionCode 50, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256, `a5168eba…12bf42`, matched `dist/`; notes in `dist/notes-0.15.0.md`): Version opens the releases page** (the

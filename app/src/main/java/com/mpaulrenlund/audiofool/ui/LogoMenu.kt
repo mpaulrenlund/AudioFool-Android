@@ -88,15 +88,15 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
  * Statistics, Theme, then the version, a tap on which opens the releases page
  * ([RELEASES_URL]) in the default browser (2026-11-10, the user's call).
  *
- * Now Playing's cover menu ends with them too (0.7.4, the user's call), but
- * [libraryRows] false leaves out Listening History, Rescan Library and Statistics
- * there (2026-11-10, the user's call: "These should just be in the Main Logo menu"),
- * so it keeps Settings, Theme and the version.
+ * Now Playing's cover menu ends with them too (0.7.4, the user's call), but with
+ * [allRows] false it keeps only Theme and the version: Listening History, Rescan
+ * Library and Statistics left it on 2026-11-10 (the user's call: "These should just
+ * be in the Main Logo menu"), then Settings the same day.
  */
 @Composable
-fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String, libraryRows: Boolean = true) {
+fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String, allRows: Boolean = true) {
     val t = LocalAppTheme.current
-    if (libraryRows) {
+    if (allRows) {
         MenuRow("Listening History") {
             onClose()
             actions.openListeningHistory()
@@ -105,12 +105,10 @@ fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String, libra
             onClose()
             actions.rescan()
         }
-    }
-    MenuRow("Settings") {
-        onClose()
-        actions.open(Route.Settings)
-    }
-    if (libraryRows) {
+        MenuRow("Settings") {
+            onClose()
+            actions.open(Route.Settings)
+        }
         MenuRow("Statistics") {
             onClose()
             actions.open(Route.Statistics)
