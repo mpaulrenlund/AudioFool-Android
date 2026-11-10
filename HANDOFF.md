@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-09: 0.13.0 (Now Playing's ideas) is built and waits for the user's word to publish; 0.12.0 (Now Playing's cover colour) is the latest release. Read this with `README.md` (how the app works) and
+Updated 2026-11-09, after 0.13.0 (Now Playing's ideas). Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,11 +12,14 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Where it stands:** nothing is broken that the user knows of; 0.13.0 is built and waits to be
-  published (below). The latest published build is **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
-  cover** (spec §5, *Cover colour*; next item). Published 2026-11-09 as the pre-release
-  [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0) (APK
-  attached). Before it, **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
+- **Where it stands:** nothing is broken that the user knows of, and no request is open. The
+  latest build is **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below).
+  Published 2026-11-09 as the pre-release
+  [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
+  attached). Before it, **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
+  cover** (spec §5, *Cover colour*; next item), published 2026-11-09 as
+  [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0);
+  **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
   asked for "the same Alpha scroll bar from the Artists screen when there are enough albums to
   warrant scrolling", and chose years over letters), published 2026-11-09 as
   [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0);
@@ -27,7 +30,7 @@ you touch a feature from then.
   ported; from the cover menu's new **Genius** row), published 2026-11-05 as
   [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0). Genius
   has **never seen the real genius.com on Android**: the emulator can't get past this PC's
-  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.12.0, 0.11.0, 0.10.1
+  Zscaler (below), so the phones are its first live run. **Not yet reported:** 0.13.0, 0.12.0, 0.11.0, 0.10.1
   and 0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
   user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
   Listening History).
@@ -42,13 +45,8 @@ you touch a feature from then.
   colour for this album" or "turn it off"; the knobs are in core `CoverColor` (which hue wins,
   what counts as grey) and `nowPlaying.coverAccent.lightnessRange`. Checked with the tests,
   ThemeLab (16 new pictures, all others identical) and the emulator, which now has 0.12.0.
-- **0.13.0 (versionCode 47) is built, not published** (2026-11-09, "Build 0.13.0"): the bump is
-  commit `0e6c773cf1498841a0a5b00fc6fbe8ff275456b8`, the APK `dist/AudioFool-0.13.0.apk`
-  (SHA-256 `a4dbbf18…8841344c`; signer and Last.fm key checked), the notes
-  `dist/notes-0.13.0.md`, shown to the user. **Publishing waits for their word** ("Publish
-  it"): then step 7 of the routine with `--target` that commit, and step 8. If they ask for a
-  change first, make it, build again as 0.13.0 with versionCode 48 and replace both files.
-  What it is: **Now Playing's ideas**. The user
+- **0.13.0 is the user's pick from a set of mock-ups** (2026-11-09; "Build 0.13.0", then
+  "Publish it"): **Now Playing's ideas**. The user
   asked for "recommendations or mockups on how to improve this Now Playing screen", got a
   critique and eight numbered mock-ups (real ThemeLab renders of throwaway code, the sheets
   `dist/ideas-*.png`), and chose "everything except for idea 6". Built (spec §5 and §2;
@@ -68,6 +66,10 @@ you touch a feature from then.
   say otherwise (`NowPlayingTouchTest` pins it). Checked with the tests (598), ThemeLab and
   the emulator, which now has 0.13.0.
 - **First thing in the next chat**, unless the user leads with something else: when they say
+  how 0.13.0 feels, tick the matching items under *Now Playing's ideas (from 0.13.0)* in both
+  test lists and push. Listen for three things I chose and they may want otherwise: the mini
+  player's glow staying on while paused, the old cover staying a moment when skipping to
+  another album, and the names opening by accident. When they say
   how the cover colours look, tick the matching items under *Now Playing's cover colour (from
   0.12.0)* in both test lists and push; if a cover gave a colour they wouldn't have picked, ask
   which album and what colour they expected before changing the rule.
@@ -132,7 +134,7 @@ In short; the user's calls, the reasoning and what was checked are in
 `design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
 don't block anything.
 
-- **0.13.0** (2026-11-09, "Build 0.13.0"; not published yet): **Now Playing's ideas**, all but
+- **0.13.0** (2026-11-09, "Build 0.13.0", then "Publish it"): **Now Playing's ideas**, all but
   the "Next" line (spec §5 and §2). The cover's colour also on Repeat and Shuffle when on, the
   artist's name (fitted to `accent.blue`) and the top glow, with a ring in Light; the glow
   round Play/Pause only while playing (Now Playing only); a time bubble while scrubbing; the
