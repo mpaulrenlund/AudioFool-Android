@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **The mini player's buttons follow Now Playing's** (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing) — built and checked 2026-11-10, not released yet (0.14.1 proposed)
 - [ ] **No glow at the top of the screen in Dark** (every screen, Now Playing's cover-coloured one too) — built and checked 2026-11-10, not released yet (0.14.1 proposed)
 - [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
 - [x] **0.13.0**: Now Playing's ideas (the cover's colour on Repeat, Shuffle, the artist's name and the top glow; the glow only while playing; a time bubble while scrubbing; a ring in Light; the cover kept between songs; a press shown on the round buttons; the artist's and album's names open them; screen reader names) — 2026-11-09, released as pre-release [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0)
@@ -70,6 +71,32 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-10, after 0.14.0 (not released yet): **the mini player's buttons follow Now Playing's**
+(the user: "Can we update the mini-player's icons to follow the same logic as the Now Playing
+screen? Including showing the glow around the play button when audio is playing."). Spec §2, §3,
+§5 (*Cover colour*, Controls row).
+- Previous's, Play/Pause's and Next's icons and Play/Pause's ring and glow take the cover's
+  colour, as on Now Playing, and **the glow shows only while playing** (it showed paused too, in
+  the theme's blue). Without a colour of its own the theme's stay, and paused there is still no
+  glow. Light has no glow, as on Now Playing; the cover's colour still makes its 2 dp ring there.
+- **My call: the title and the artist's name keep their colours.** The request was the icons;
+  Now Playing's artist name in the cover's colour could follow if wanted.
+- **My call: one colour per song, shared** (`art/CoverColors`, provided as `LocalCoverColors`).
+  Now Playing worked the colour out from the cover decoded at its own size, so the S24 and the
+  M21 could differ a little, and the mini player, which has only the small album thumbnail,
+  couldn't match it. Now both screens take it from the song's cover decoded no smaller than
+  512 px a side (the lock screen's size), worked out once and kept for the last 64 songs
+  (keyed by path, modified time and size, so a changed file is worked out afresh). The mini
+  player keeps the last song's colour until the next one's is in, as Now Playing does. Now
+  Playing's colour can shift very slightly on a busy cover; on plain ones it is the same.
+- **Checked:** 624 tests (4 new, `CoverColorsTest`: worked out once, the file and ThemeLab's
+  pictures agree, no colour kept too, a changed file afresh). ThemeLab: 12 new pictures
+  (`mini-player-cover-red`, playing; `-cover-yellow-paused`; `mini-player-paused`, no colour),
+  every other one unchanged; the thumbnail stays the placeholder there. Emulator (Dark, this
+  build over 0.14.0, still labelled 0.14.0): paused on an orange cover, the three icons and the
+  ring are orange with no glow; playing, the glow is orange; Now Playing and the mini player show
+  the same orange for the same song.
 
 2026-11-10, after 0.14.0 (not released yet): **no glow at the top of the screen** (the user:
 "Can we remove the glow at the top of the window in the Dark theme?"). Spec §2; §5's *Cover
@@ -933,6 +960,13 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The mini player's buttons (from the next build, 0.14.1 proposed)
+
+- [ ] Play something with a colourful cover and go back to a list: are the mini player's three
+  icons and the ring round Play/Pause in the same colour Now Playing shows? Does the glow show
+  while playing and go when paused (Dark)? A black-and-white cover keeps the theme's blue.
+- [ ] Skip through an album: does the colour stay put between its songs rather than blinking?
+
 ### No glow at the top (from the next build, 0.14.1 proposed)
 
 - [ ] **Dark theme**: the top of every screen, behind the status bar, is the plain window
@@ -1154,6 +1188,10 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The mini player's buttons (from the next build, 0.14.1 proposed)
+
+- [ ] As on the S24, in Light as well: a ring in the cover's colour, and no glow.
 
 ### No glow at the top (from the next build, 0.14.1 proposed)
 

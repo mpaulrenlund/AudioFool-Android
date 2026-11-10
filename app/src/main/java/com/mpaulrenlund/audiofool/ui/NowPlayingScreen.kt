@@ -72,7 +72,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
-import com.mpaulrenlund.audiofool.core.art.CoverColor
+import com.mpaulrenlund.audiofool.art.CoverColors
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
@@ -145,7 +145,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * round Play/Pause, Repeat and Shuffle when on, and the artist's name take the cover's
  * main colour (the glow at the top of the screen did too, until it went on 2026-11-10), fitted to the theme
  * ([AppTheme.coverAccent]). A cover with no colour of its own, or no cover, leaves them
- * the theme's.
+ * the theme's. The mini player's buttons take the same colour ([MiniPlayerBar]).
  *
  * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
  * So are [coverForPictures], a made-up cover shown as if it had been read from the song, and
@@ -288,19 +288,21 @@ private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, cont
 }
 
 /**
- * The cover to show for [track], read at the art's size off the main thread. Until
- * the next song's cover has been read the last one stays, picture and colour: an
- * album's songs share a cover, and the placeholder and the theme's colour would
- * blink between them otherwise (the placeholder did, up to 0.12.0). Null before the
- * first one is in; a song without a cover gives one with no picture.
+ * The cover to show for [track], read at the art's size off the main thread, with
+ * its colour from [CoverColors] (the mini player's too). Until the next song's cover
+ * has been read the last one stays, picture and colour: an album's songs share a
+ * cover, and the placeholder and the theme's colour would blink between them
+ * otherwise (the placeholder did, up to 0.12.0). Null before the first one is in; a
+ * song without a cover gives one with no picture.
  * [forPictures] is ThemeLab's cover, which can't read one.
  */
 @Composable
 private fun shownCover(track: Track?, side: Dp, forPictures: Bitmap?): BigCover? {
     val px = with(LocalDensity.current) { side.roundToPx() }
     var cover by remember { mutableStateOf(forPictures?.let { BigCover.of(it) }) }
-    if (track != null && LocalArt.current != null) {
-        LaunchedEffect(track.filePath, px) { cover = withContext(Dispatchers.IO) { BigCover.read(track, px) } }
+    val colors = LocalCoverColors.current
+    if (track != null && LocalArt.current != null && colors != null) {
+        LaunchedEffect(track.filePath, px) { cover = withContext(Dispatchers.IO) { BigCover.read(track, px, colors) } }
     }
     return cover.takeIf { track != null }
 }
@@ -384,46 +386,26 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
 
 /**
  * The cover decoded at the art's size; the picture's own size, for the menu; and
- * its main colour (core `CoverColor`; null when it has none), for the playback
- * controls.
+ * its main colour (core `CoverColor` through [CoverColors]; null when it has none),
+ * for the playback controls.
  */
 private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int, val color: Int?) {
     /** "1200 × 1200", as the desktop's art viewer gives it; "No cover" when there is none. */
     val resolution: String get() = if (width > 0 && height > 0) "$width × $height" else "No cover"
 
     companion object {
-        fun read(track: Track, px: Int): BigCover {
-            val bytes = CoverArt.read(track)?.bytes ?: return BigCover(null, 0, 0, null)
+        fun read(track: Track, px: Int, colors: CoverColors): BigCover {
+            val bytes = CoverArt.read(track)?.bytes
+            val color = colors.load(track) { bytes }.color
+            if (bytes == null) return BigCover(null, 0, 0, color)
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
             BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
             val bitmap = SystemControls.decode(bytes, px)
-            return BigCover(bitmap?.asImageBitmap(), bounds.outWidth, bounds.outHeight, bitmap?.let { mainColor(it) })
+            return BigCover(bitmap?.asImageBitmap(), bounds.outWidth, bounds.outHeight, color)
         }
 
         /** ThemeLab's made-up cover, as [read] would give it. */
-        fun of(bitmap: Bitmap) = BigCover(bitmap.asImageBitmap(), bitmap.width, bitmap.height, mainColor(bitmap))
-
-        /**
-         * The main colour of what the screen shows of the cover: its middle square (the
-         * art is cropped to one), scaled down to `CoverColor.SAMPLE_SIDE` pixels a side.
-         */
-        private fun mainColor(bitmap: Bitmap): Int? {
-            val n = CoverColor.SAMPLE_SIDE
-            val side = minOf(bitmap.width, bitmap.height)
-            val left = (bitmap.width - side) / 2
-            val top = (bitmap.height - side) / 2
-            val small = Bitmap.createBitmap(n, n, Bitmap.Config.ARGB_8888)
-            android.graphics.Canvas(small).drawBitmap(
-                bitmap,
-                android.graphics.Rect(left, top, left + side, top + side),
-                android.graphics.Rect(0, 0, n, n),
-                android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG),
-            )
-            val pixels = IntArray(n * n)
-            small.getPixels(pixels, 0, n, 0, 0, n, n)
-            small.recycle()
-            return CoverColor.main(pixels)
-        }
+        fun of(bitmap: Bitmap) = BigCover(bitmap.asImageBitmap(), bitmap.width, bitmap.height, CoverColors.main(bitmap))
     }
 }
 

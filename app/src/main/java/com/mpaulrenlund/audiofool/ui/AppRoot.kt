@@ -166,7 +166,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
         if (openNowPlaying > 0 && app.nowPlaying.track != null) nav.open(Route.NowPlaying)
     }
 
-    CompositionLocalProvider(LocalArt provides app.art) {
+    CompositionLocalProvider(LocalArt provides app.art, LocalCoverColors provides app.coverColors) {
         NavHost(nav) { route ->
             when (route) {
                 Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME)

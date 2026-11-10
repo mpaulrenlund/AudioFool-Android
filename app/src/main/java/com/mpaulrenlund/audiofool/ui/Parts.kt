@@ -55,14 +55,18 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import com.mpaulrenlund.audiofool.art.CoverColors
 import com.mpaulrenlund.audiofool.art.Thumbnails
 import com.mpaulrenlund.audiofool.core.model.Album
+import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.theme.ShadowLayer
 import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 import com.mpaulrenlund.audiofool.theme.AppTheme
 import com.mpaulrenlund.audiofool.theme.LocalAppTheme
 import com.mpaulrenlund.audiofool.theme.WindowBackground
 import com.mpaulrenlund.audiofool.theme.tokenSurface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 // The shared parts of spec 2: the screen frame, panel, panel header, rows, art,
@@ -83,6 +87,25 @@ fun barInsets(): WindowInsets = LocalBarInsets.current ?: WindowInsets.systemBar
 class ArtSources(val list: Thumbnails, val header: Thumbnails)
 
 val LocalArt = staticCompositionLocalOf<ArtSources?> { null }
+
+/** Each song's cover colour, for Now Playing and the mini player; null keeps the theme's (ThemeLab, unless a picture fills one in). */
+val LocalCoverColors = staticCompositionLocalOf<CoverColors?> { null }
+
+/**
+ * [track]'s cover colour ([CoverColors]), worked out off the main thread the first
+ * time. The last song's stays until the next one's is in, as on Now Playing, so an
+ * album's songs don't blink to the theme's colour between them. Null when the cover
+ * has no colour of its own.
+ */
+@Composable
+fun rememberCoverColor(track: Track): Int? {
+    val colors = LocalCoverColors.current ?: return null
+    var shown by remember(colors) { mutableStateOf(colors.peek(track)) }
+    LaunchedEffect(colors, track) {
+        shown = colors.peek(track) ?: withContext(Dispatchers.IO) { colors.load(track) }
+    }
+    return shown?.color
+}
 
 /**
  * A whole screen: the window background (no glow since 2026-11-10), the top bar,

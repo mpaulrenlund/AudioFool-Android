@@ -30,6 +30,8 @@ import com.mpaulrenlund.audiofool.ui.DebugNumbers
 import com.mpaulrenlund.audiofool.ui.FolderLine
 import com.mpaulrenlund.audiofool.ui.IndexPreview
 import com.mpaulrenlund.audiofool.ui.LocalBarInsets
+import com.mpaulrenlund.audiofool.ui.LocalCoverColors
+import com.mpaulrenlund.audiofool.art.CoverColors
 import com.mpaulrenlund.audiofool.ui.SearchScreen
 import com.mpaulrenlund.audiofool.ui.SettingsActions
 import com.mpaulrenlund.audiofool.ui.SettingsScreen
@@ -79,11 +81,18 @@ class ThemeLabTest {
     /** The mockups' bars: a 28 dp status row and a 20 dp gesture handle. */
     private val mockupBars = WindowInsets(top = 28.dp, bottom = 20.dp)
 
-    internal fun browse(playing: Boolean = true, unavailable: List<String> = emptyList()) = Browse(
+    internal fun browse(playing: Boolean = true, unavailable: List<String> = emptyList(), paused: Boolean = false) = Browse(
         library = ThemeLabFixtures.library,
         unavailableFolders = unavailable,
-        nowPlaying = NowPlaying().apply { if (playing) showForPictures(ThemeLabFixtures.playing) },
+        nowPlaying = NowPlaying().apply { if (playing) showForPictures(ThemeLabFixtures.playing, playing = !paused) },
     )
+
+    /** The playing song's cover colour as if read from [cover] (ThemeLab can't read one, nor show it in the mini player's thumbnail). */
+    @Composable
+    private fun withCoverColour(cover: android.graphics.Bitmap, content: @Composable () -> Unit) {
+        val colors = CoverColors().apply { putForPictures(ThemeLabFixtures.playing, cover) }
+        CompositionLocalProvider(LocalCoverColors provides colors) { content() }
+    }
 
     private fun shoot(device: String, name: String, content: @Composable () -> Unit) {
         for (dark in listOf(true, false)) {
@@ -198,7 +207,7 @@ class ThemeLabTest {
         }
         // BP's states are pictured in the cover menu since it moved there (2026-11-10): ThemeLabMenuTest's art-menu-bp-*.
         // The cover's colour (2026-11-09, no mockup), on made-up covers: the seekbar, Play/Pause with its
-        // ring and glow, Repeat and Shuffle when on, the artist's name and the glow at the top.
+        // ring and glow, Repeat and Shuffle when on, and the artist's name.
         // A deep red (made lighter on Dark), Repeat All and Shuffle on.
         val deepRed = ThemeLabFixtures.coverDeepRed()
         shoot(device, "now-playing-cover-red") {
@@ -226,6 +235,12 @@ class ThemeLabTest {
             }
             NowPlayingScreen(np, NowPlayingActions(), coverForPictures = blackAndWhite)
         }
+        // The mini player's buttons follow Now Playing's (2026-11-10, no mockup): the cover's colour, playing, so
+        // the glow is in it too; paused in another, the ring alone; and paused with no colour, the theme's ring and
+        // no glow. The thumbnail stays the placeholder here.
+        shoot(device, "mini-player-cover-red") { withCoverColour(deepRed) { ArtistsScreen(browse(), actions) } }
+        shoot(device, "mini-player-cover-yellow-paused") { withCoverColour(yellow) { ArtistsScreen(browse(paused = true), actions) } }
+        shoot(device, "mini-player-paused") { ArtistsScreen(browse(paused = true), actions) }
         // A finger dragging the seekbar, 62% along: the time bubble over it, and the same time at the left.
         shoot(device, "now-playing-scrub") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = landscape, scrubForPictures = 0.62f) }
         // The bubble kept inside the bar's end, with no cover.

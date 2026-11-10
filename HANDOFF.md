@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-10, after 0.14.0 (five layout requests) and the Dark glow removed on top of it, not released yet. Read this with `README.md` (how the app works) and
+Updated 2026-11-10, after 0.14.0 (five layout requests), with the Dark glow removed and the mini player's buttons following Now Playing's on top of it, not released yet. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,13 +12,24 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Built, not released (2026-11-10): the mini player's buttons follow Now Playing's** (the
+  user: "...follow the same logic as the Now Playing screen? Including showing the glow around
+  the play button when audio is playing."; spec §3). The three icons and Play/Pause's ring and
+  glow take the cover's colour, and the glow shows only while playing. The colour is one per
+  song, shared by both screens: `art/CoverColors` (provided as `LocalCoverColors` next to
+  `LocalArt`; `rememberCoverColor` in `Parts.kt`) works it out once from the cover decoded
+  at no less than 512 px and keeps the last 64. Now Playing's `BigCover` takes it from there
+  too, so its colour may shift very slightly from 0.14.0 on a busy cover. ThemeLab fills a colour
+  in with `putForPictures`, since it can't read a cover. Checked: 624 tests, 12 new pictures
+  (all others unchanged), and the emulator.
 - **Built, not released (2026-11-10): no glow at the top of the screen in Dark** (the user:
   "Can we remove the glow at the top of the window in the Dark theme?"; spec §2). Every
   screen, since `WindowBackground` is shared; Now Playing's cover-coloured glow went too
   (`Modifier.titleGlow` and `glowTint` removed; the desktop's glow tokens kept, unread).
   Checked: 620 tests; all 150 Dark ThemeLab pictures changed only in their top 80 dp, no
-  Light one changed; the emulator has this build, still labelled 0.14.0. No bump yet:
-  **0.14.1** proposed (a removal, not a feature), versionCode 49, when the user says to build.
+  Light one changed. The emulator has this build and the mini player's, still labelled
+  0.14.0. No bump yet: **0.14.1** proposed for both (small changes, not features),
+  versionCode 49, when the user says to build.
 - **0.14.0 is the user's five layout requests** (2026-11-10; "Build 0.14.0", then "Publish
   it"): versionCode 48, published as the pre-release
   [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0) (APK
@@ -33,7 +44,7 @@ you touch a feature from then.
   emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
 - **Where it stands:** nothing is broken that the user knows of; the glow's removal (above)
-  waits for a build. The latest release is **0.14.0** (versionCode 48, the item above), published 2026-11-10. Before
+  and the mini player's buttons (above) wait for a build. The latest release is **0.14.0** (versionCode 48, the item above), published 2026-11-10. Before
   it, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
   published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK

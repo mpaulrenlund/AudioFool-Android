@@ -18,6 +18,7 @@ import com.mpaulrenlund.audiofool.settings.AppSettings
 import com.mpaulrenlund.audiofool.settings.MusicFolder
 import com.mpaulrenlund.audiofool.storage.Storage
 import com.mpaulrenlund.audiofool.theme.AppTokens
+import com.mpaulrenlund.audiofool.art.CoverColors
 import com.mpaulrenlund.audiofool.art.Thumbnails
 import com.mpaulrenlund.audiofool.core.playback.ResumePoint
 import com.mpaulrenlund.audiofool.playback.Listening
@@ -126,6 +127,9 @@ class AudioFoolApp : Application() {
         val folder = File(noBackupFilesDir, "art")
         ArtSources(Thumbnails(folder, px("albums.thumb"), scope), Thumbnails(folder, px("album.art"), scope))
     }
+
+    /** Each song's cover colour, worked out once, for Now Playing and the mini player (2026-11-10). */
+    val coverColors = CoverColors()
 
     private var libraryStarted = false
 
