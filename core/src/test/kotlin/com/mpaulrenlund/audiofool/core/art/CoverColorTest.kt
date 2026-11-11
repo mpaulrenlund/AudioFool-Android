@@ -39,10 +39,21 @@ class CoverColorTest {
     @Test fun a_dark_brown_cover_is_brown_not_grey() =
         assertHue(DARK_BROWN, CoverColor.main(picture(DARK_BROWN to 70, 0x0C0A08 to 30)))
 
+    /** Under half a percent (2% until 2026-11-11, the user's call: "take any predominant color"). */
     @Test fun a_speck_of_colour_is_not_the_covers_colour() {
-        assertNull(CoverColor.main(picture(0x808080 to 99, RED to 1)))
-        assertEquals(opaque(RED), CoverColor.main(picture(0x808080 to 97, RED to 3)))
+        assertNull(CoverColor.main(picture(0x808080 to 299, RED to 1)))
+        assertEquals(opaque(RED), CoverColor.main(picture(0x808080 to 99, RED to 1)))
     }
+
+    /** A JPEG's black has a cast; made as light as the playback colour it was a strong blue (2026-11-11). */
+    @Test fun a_black_covers_faint_tint_is_not_its_colour() {
+        assertHue(GOLD, CoverColor.main(picture(BLUISH_BLACK to 95, GOLD to 5)))
+        assertNull(CoverColor.main(picture(BLUISH_BLACK to 60, 0xFFFFFF to 40)))
+    }
+
+    /** Each pixel counts by its chroma squared (2026-11-11): a grey's faint cast doesn't outweigh the colour in it. */
+    @Test fun a_faint_cast_over_most_of_a_cover_loses_to_a_vivid_part() =
+        assertHue(ORANGE, CoverColor.main(picture(BLUE_GREY to 85, ORANGE to 15)))
 
     @Test fun the_hue_with_the_most_colour_wins() =
         assertHue(SKY, CoverColor.main(picture(SKY to 60, GRASS to 30, ORANGE to 10)))
@@ -162,5 +173,8 @@ class CoverColorTest {
         const val PALE_PINK = 0xFFD0E0
         const val TERRACOTTA = 0xE07A5F
         const val LIGHT_BLUE = 0x00519A
+        const val GOLD = 0xC8A040
+        const val BLUISH_BLACK = 0x000814
+        const val BLUE_GREY = 0x5A6E8C
     }
 }

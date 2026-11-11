@@ -31,19 +31,34 @@ object CoverColor {
     const val GREY_BELOW_DARK = 0.02
     private const val GREY_PER_LIGHTNESS = 0.1
 
-    /** A cover with a smaller share of coloured pixels than this has no colour of its own. */
-    const val MIN_SHARE = 0.02
+    /**
+     * Below this lightness a pixel is black, whatever its tint: a JPEG's black is
+     * rarely neutral, and a black cover's faint blue or green cast, made as light
+     * as the playback colour, came out a strong blue or green (2026-11-11: a black
+     * cover with a gold outline was blue). A dark brown is above it.
+     */
+    const val BLACK_BELOW = 0.15
+
+    /**
+     * A cover with a smaller share of coloured pixels than this has no colour of its
+     * own: a few pixels, not a part of the picture. 2% until 2026-11-11 (the user's
+     * call: "take any predominant color from the album"). Of the desktop's 8,604
+     * covers, 9% still find none; those looked at were all black and white.
+     */
+    const val MIN_SHARE = 0.005
 
     /** Hues are counted in slices of 10 degrees; the winner is the best three neighbours. */
     private const val SLICES = 36
 
     /**
      * The cover's main colour, as opaque 0xAARRGGBB: the hue that most of its
-     * colour is in, counting each pixel by how colourful it is, so a red logo on a
-     * black cover is red and a blue sky with a small sun is blue. The colour given
-     * is the average of the pixels of that hue. Null when the cover has no colour
-     * to speak of (black and white, or under [MIN_SHARE] coloured); see-through
-     * pixels are not part of the picture.
+     * colour is in, counting each pixel by its chroma squared, so a red logo on a
+     * black cover is red, a blue sky with a small sun is blue, and a grey's faint
+     * cast doesn't outweigh the colour beside it (by its chroma until 2026-11-11).
+     * Black pixels ([BLACK_BELOW]) don't count. The colour given is the average of
+     * the pixels of that hue. Null when the cover has no colour to speak of (black
+     * and white, or under [MIN_SHARE] coloured); see-through pixels are not part of
+     * the picture.
      */
     fun main(pixels: IntArray): Int? {
         val weight = DoubleArray(SLICES)
@@ -57,13 +72,15 @@ object CoverColor {
             seen++
             val lab = Lab.of(pixel)
             val chroma = lab.chroma
+            if (lab.l < BLACK_BELOW) continue
             if (chroma < (GREY_PER_LIGHTNESS * lab.l).coerceIn(GREY_BELOW_DARK, GREY_BELOW)) continue
             coloured++
             val slice = (lab.hueDegrees / 360.0 * SLICES).toInt().coerceIn(0, SLICES - 1)
-            weight[slice] += chroma
-            l[slice] += chroma * lab.l
-            a[slice] += chroma * lab.a
-            b[slice] += chroma * lab.b
+            val w = chroma * chroma
+            weight[slice] += w
+            l[slice] += w * lab.l
+            a[slice] += w * lab.a
+            b[slice] += w * lab.b
         }
         if (seen == 0 || coloured < seen * MIN_SHARE) return null
 

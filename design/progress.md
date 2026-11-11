@@ -73,6 +73,29 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, not released yet: **the cover colour is found in more covers** (the user: "For the
+accent color, I think it's defaulting to the default teal/blue colors too often. Can we have the
+album art scan take any predominant color from the album and use that as the accent color?").
+Spec §5, *Cover colour*. `CoverColor.main` (core) changed in three ways: black pixels (OKLab
+lightness under 0.15) no longer count, whatever their tint; each pixel counts by its chroma
+squared, not its chroma; and a cover needs 0.5% coloured pixels, not 2%. Measured, not guessed:
+the real `CoverColor.main` run over the desktop's art cache (8,604 covers of the user's library,
+a throwaway test, not kept):
+- **No colour** (so teal or blue): 10.2% → 9.0%. The ones left that I looked at are all black and
+  white (their most colourful pixel has chroma ≤ 0.025); for them the theme's colours stay.
+- **The real cause of "blue too often"**: a black cover's JPEG black has a faint blue cast, which
+  counted over the whole cover and, made as light as the playback colour, came out a strong blue
+  (a black cover with a thin gold outline was blue; it is now gold). Squaring the chroma also cuts
+  washed-out picks (chroma under 0.05) from 11% to 8% of covers.
+- **Still blue, and rightly:** 1,445 covers (17%) come out within 20° of Dark's default blue; a
+  sample were all plainly blue covers (skies, night scenes, blue artwork). On Dark those look much
+  like the default. Not changed: picking a second colour would no longer be the cover's main one.
+  Black-and-white covers could take a neutral accent instead of teal or blue; that is a colour
+  outside the spec's roles, so it is open for the user.
+New tests: a black cover's tint, a faint cast against a vivid part, the 0.5% speck (each fails on
+the old rule). 12 ThemeLab pictures changed slightly (the made-up red and yellow covers' dark parts
+no longer count); still red and yellow.
+
 2026-11-11, not released yet: **Now Playing's artist name in the seekbar's and Play/Pause's colour**
 (the user: "Now Playing screen, can we make it so the Artist Name color matches the same color as
 the seekbar and playback buttons?"). Spec §5 (*Title*, *Cover colour*), CLAUDE.md's colour rule.
