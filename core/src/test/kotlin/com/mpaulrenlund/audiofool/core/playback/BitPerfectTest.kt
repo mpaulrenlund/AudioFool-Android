@@ -145,6 +145,31 @@ class BitPerfectTest {
         )
     }
 
+    // 2026-11-11 (the user's call): the music's depth, not the slot's. The M21 sends 24-bit in 32-bit slots.
+
+    @Test fun the_depth_shown_is_the_tracks_when_the_slot_is_wider() {
+        assertEquals(24, OutputReadout.shownBits(trackBits = 24, sentBits = 32))
+        assertEquals(16, OutputReadout.shownBits(trackBits = 16, sentBits = 32))
+        assertEquals(16, OutputReadout.shownBits(trackBits = 16, sentBits = 24))
+    }
+
+    @Test fun the_depth_shown_is_the_slots_when_it_fits_or_is_narrower() {
+        assertEquals(24, OutputReadout.shownBits(trackBits = 24, sentBits = 24))
+        assertEquals(16, OutputReadout.shownBits(trackBits = 16, sentBits = 16))
+        assertEquals(16, OutputReadout.shownBits(trackBits = 24, sentBits = 16))
+    }
+
+    @Test fun a_track_with_no_depth_of_its_own_shows_the_slots() {
+        assertEquals(32, OutputReadout.shownBits(trackBits = 0, sentBits = 32))
+        assertEquals(0, OutputReadout.shownBits(trackBits = 24, sentBits = 0))
+    }
+
+    @Test fun the_m21_shows_a_24_bit_track_as_24_bit() =
+        assertEquals(
+            "4.4mm · 24-Bit · 48 kHz · Exclusive",
+            OutputReadout.describe("4.4mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), OutputReadout.shownBits(24, 32), 48000, false),
+        )
+
     // 0.2.2: no "Shared", and the words capitalised (the user's call).
     @Test fun shared_readout_names_the_output_and_not_shared() {
         assertEquals("Speaker · 48 kHz · Resampled", OutputReadout.describe("Speaker", OutputPath.Shared, 48000, 24, 44100, false))

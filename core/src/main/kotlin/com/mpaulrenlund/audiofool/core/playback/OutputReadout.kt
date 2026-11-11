@@ -83,6 +83,19 @@ object OutputReadout {
      */
     fun hardwareRate(systemRate: Int, reportedRate: Int): Int = if (reportedRate > 0) reportedRate else systemRate
 
+    /**
+     * The depth the readout gives (2026-11-11, the user's call): the music's own,
+     * not the size of the slot it travels in. The M21 takes a 24-bit track only in
+     * 32-bit slots (24-bit packed is static there): the samples whole, eight empty
+     * bits after each. "32-Bit" there read as if Android had changed them. A slot
+     * narrower than the track stands, since that is what is heard; so does the
+     * slot's own size for a track with no whole-number depth (lossy, DSD as PCM).
+     *
+     * @param trackBits The decoded track's own depth, or 0 when it has none.
+     * @param sentBits The depth of the slot the output was opened with, or 0 when unknown.
+     */
+    fun shownBits(trackBits: Int, sentBits: Int): Int = if (trackBits in 1 until sentBits) trackBits else sentBits
+
     /** "44.1 kHz", "96 kHz". */
     fun rate(hz: Int): String = Display.sampleRate(hz)
 }

@@ -74,6 +74,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, after 0.17.1 (on `main`, not in a build yet): **the output row shows the music's
+depth, not the slot's** (the user, on the M21's "4.4mm · 32-Bit · 48 kHz · Exclusive" for a
+24-bit FLAC: "32-Bit makes me think that android is re-sampling the audio"; "Yes, everywhere").
+The M21 sends a 24-bit track in 32-bit slots, since 24-bit packed is static there (0.1.1):
+`Decoder` writes each sample times 256, so the eight added bits are zeros and nothing is
+rounded. The row now says "24-Bit" there. The rule is core `OutputReadout.shownBits(trackBits,
+sentBits)`: the track's depth when the slot is wider, else the slot's (a narrower slot is what
+is heard; lossy and DSD-as-PCM tracks have no depth of their own and keep the slot's "32-Bit").
+`Player.readoutFor` uses it for every path that shows a depth, so a USB DAC offering only
+32-bit slots reads the same way; the S24 with the UA2 Plus is unchanged (its 24-bit slot
+matches). Debug's "Opened as" still gives the slot. Spec §6.3. What is sent is unchanged.
+**My call:** the mobile's own rule (the desktop's exclusive readout gives no depth). Four tests
+in `BitPerfectTest` (29 in all); `:core:test` and `:app:testDebugUnitTest` pass. No picture
+changed. Not checked on a phone or the emulator: on the M21 list.
+
 2026-11-11, 0.17.1 (versionCode 54; released the same day as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `56023173…d2b8026a` matching `dist/`; checked on the emulator first, all five swipe and Previous checks passing, the library kept): **Now Playing's swipe is easier, and a swipe right
 always goes back a song** (the user: swiping the art "is too resistant", and "swiping right on
 Album Art should go to the previous track"). `nowPlaying.swipeSkipDistance` 96 → 56 dp and
@@ -1380,6 +1395,12 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The output row's depth (from the build after 0.17.1)
+
+- [ ] A 24-bit song through the 4.4 mm jack with BP on: "4.4mm · 24-Bit · 48 kHz · Exclusive"
+  (it said 32-Bit), and it sounds as before.
+- [ ] A 16-bit song still says 16-Bit; an MP3 says 32-Bit.
 
 ### Easier swipe on Now Playing's art (from 0.17.1)
 

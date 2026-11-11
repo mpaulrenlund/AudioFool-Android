@@ -575,9 +575,11 @@ class Player(
         // A FiiO's own headphone out: the rate FiiO says its DAC runs at, once it has said (0.1.5).
         val fiio = route == OutputRoute.Headphones && routes.speakerIsHeadphones
         val rate = if (fiio) OutputReadout.hardwareRate(routes.systemOutputRate(), fiioRate) else routes.systemOutputRate()
+        // The music's depth, not the slot's: the M21 sends 24-bit in 32-bit slots (2026-11-11, the user's call).
+        val bits = OutputReadout.shownBits(asked?.let { OutputRoutes.sourceBits(it) } ?: 0, opened.bits)
         return when (val path = engine.openedPath) {
-            OutputPath.BitPerfect, OutputPath.RateMatched -> OutputReadout.describe(name, path, opened.sampleRate, opened.bits, source, opened.dop)
-            OutputPath.SourceRate -> OutputReadout.describe(name, path, rate, opened.bits, source, false)
+            OutputPath.BitPerfect, OutputPath.RateMatched -> OutputReadout.describe(name, path, opened.sampleRate, bits, source, opened.dop)
+            OutputPath.SourceRate -> OutputReadout.describe(name, path, rate, bits, source, false)
             OutputPath.Shared -> OutputReadout.describe(name, path, rate, 0, source, false)
         }
     }

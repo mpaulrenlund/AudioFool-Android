@@ -19,6 +19,9 @@ listed under *Other docs* at the end: read each only when the work touches it.
   build by build, is in `design/progress.md` (Sessions).
 - **Next build:** 0.17.2 for fixes, 0.18.0 for new features (confirm the number with the user);
   **versionCode 55**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **On `main`, not in a build yet** (2026-11-11): the output row shows the music's depth, not
+  the slot's, so the M21's 24-bit songs read "24-Bit" where they read "32-Bit"
+  (`OutputReadout.shownBits`; spec §6.3). A fix, so 0.17.2. Its M21 checks are already listed.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.17.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
