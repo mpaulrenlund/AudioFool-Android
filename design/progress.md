@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.16.0**: Repeat at the left of the transport and Shuffle at the right; the cover full screen from the cover menu's Resolution row (pinch, drag and double tap to zoom) — 2026-11-10, released as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
 - [x] **0.15.1**: the cover menu keeps only Theme and Version of the logo menu's rows (Listening History, Rescan Library, Settings and Statistics are the logo menu's only) — 2026-11-10, released as pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1)
 - [x] **0.15.0**: Version opens the releases page (the logo menu's and the cover menu's Version row, in the default browser); the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing); no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — 2026-11-10, released as pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0). It replaces 0.14.1 (versionCode 49), built the same day without the Version change and never published
 - [x] **0.14.0**: five layout requests (Artists' logo at the right of the search field; a shuffle button on Albums for the artist; the cover menu opened by a tap, with Bit-Perfect in it in place of the BP button; Repeat over Shuffle at the left and the transport centred; Previous and Next in the cover's colour) — 2026-11-10, released as pre-release [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0)
@@ -72,7 +73,9 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-10, after 0.15.1 (not built as a release yet): **Repeat at the left of the transport, Shuffle
+2026-11-10, 0.16.0 (versionCode 52; released the same day as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0),
+APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `6df57c7f…efde5ce9`
+matching `dist/`; signer `1fdefe0a…be2c21`, the real Last.fm key; notes in `dist/notes-0.16.0.md`): **Repeat at the left of the transport, Shuffle
 at the right** (the user: "On the now playing screen, lets put the Repeat button on the left hand
 side of the playback buttons, and lets putt the shuffle button on the right hand side of the
 playback buttons."), and **the cover full screen, to zoom** (the user: "Can we make it so tapping on
@@ -1026,7 +1029,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Repeat and Shuffle either side, and the cover full screen (after 0.15.1)
+### Repeat and Shuffle either side, and the cover full screen (from 0.16.0)
 
 - [ ] Now Playing: Repeat at the left of Previous, Shuffle at the right of Next, level with
   Play/Pause. Easy to reach with a thumb at both sides?
@@ -1275,7 +1278,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Repeat and Shuffle either side, and the cover full screen (after 0.15.1)
+### Repeat and Shuffle either side, and the cover full screen (from 0.16.0)
 
 - [ ] As on the S24. The M21's screen is smaller: is 8× enough, or too much?
 

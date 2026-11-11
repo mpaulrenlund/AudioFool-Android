@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-10: 0.15.1 (versionCode 51, a shorter cover menu) published as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1), after 0.15.0 (versionCode 50), published as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0): Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
+Updated 2026-11-10: 0.16.0 (versionCode 52: Repeat and Shuffle either side of the transport, and the cover full screen) published as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0), after 0.15.1 (versionCode 51, a shorter cover menu), published as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1), after 0.15.0 (versionCode 50), published as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0): Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,7 +12,10 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **On `main` after 0.15.1, not built as a release yet (2026-11-10): Repeat at the left of the
+- **0.16.0, published 2026-11-10 ("Yes, 0.16.0", then "Publish it") as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
+  (versionCode 52, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
+  APK's SHA-256, `6df57c7f…efde5ce9`, matched `dist/`; notes in `dist/notes-0.16.0.md`; signer
+  `1fdefe0a…be2c21` and the real Last.fm key checked; the emulator has 0.16.0): Repeat at the left of the
   transport and Shuffle at the right, and the cover full screen from the cover menu's Resolution
   row** (the user's two requests; spec §5 *Controls row*, new §5.3; the decisions in
   `design/progress.md`). Repeat and Shuffle kept their size (44 / 35 dp) and sit level with
@@ -20,9 +23,10 @@ you touch a feature from then.
   the cover decoded whole (up to 4096 px a side), pinch up to 8×, drag clamped to the edges, a
   double tap to 3× at the finger and back, plain Compose gestures (no library), `coverViewer.*`
   tokens. Checked: all tests (new `CoverZoomTest`, `CoverViewerTouchTest`), ThemeLab (56 changed,
-  8 new), and the emulator (it has this build installed as 0.15.1, versionCode 51: not bumped).
-  **Next:** ask whether to release it (the user picks the number; a new feature, so 0.16.0).
-  A pinch can't be sent over adb, so the phones are its first real pinch.
+  8 new), and the emulator. A pinch can't be sent over adb, so the phones are its first real
+  pinch. When the user reports, tick *Repeat and Shuffle either side, and the cover full screen
+  (from 0.16.0)* in both test lists; if they want Repeat and Shuffle bigger now they don't stack,
+  that is `modeButton.max` and the `(play − modeGap) / 2` rule in `Controls`.
 - **0.15.1, published 2026-11-10 ("Build 0.15.1", then "Publish it") as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1)
   (versionCode 51, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
   APK's SHA-256, `e9838121…020ee0`, matched `dist/`; notes in `dist/notes-0.15.1.md`): the cover menu keeps only Theme and Version of the
@@ -67,7 +71,7 @@ you touch a feature from then.
   **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
   emulator. Listen for: the S24's smaller skip
   buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
-- **Where it stands:** nothing is broken that the user knows of. The latest release is **0.15.1** (versionCode 51, the first item above), published 2026-11-10; before it **0.15.0** (versionCode 50) and **0.14.0** (versionCode 48), the same day. Before
+- **Where it stands:** nothing is broken that the user knows of. The latest release is **0.16.0** (versionCode 52, the first item above), published 2026-11-10; before it **0.15.1** (versionCode 51), **0.15.0** (versionCode 50) and **0.14.0** (versionCode 48), the same day. Before
   that, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
   published 2026-11-09 as the pre-release
   [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
