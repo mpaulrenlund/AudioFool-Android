@@ -73,6 +73,19 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, not released yet: **a black and white cover gives a grey, not teal or blue** (the
+user chose "Try a neutral accent" after the change below). Spec §5 (*Cover colour*) and §3.
+`CoverColor.main` returns a grey at the cover's average OKLab lightness where it used to return
+null; `accent` fits it as it fits any colour, so on Dark it is a grey between `accent.playback`'s
+lightness and 0.15 above (about #9A9A9A to #C0C0C0), on Light between it and 0.15 below (about #444
+to #6B6B6B), never harder to see than the theme's colour. No new token: it is the cover's colour,
+the same role. Null now means no cover only. **My calls:** the cover's own lightness, so a white
+cover gives the lighter grey of the band and a black one the darker; the controls, ring, glow,
+seekbar and artist's name all take it, as with any cover. **For the user to judge:** on Dark the
+grey is as light as the theme's blue but has no colour, so Play/Pause reads quieter than with a
+coloured cover; the top of the band (or `text.heading`) would make it brighter. 4 pictures changed
+(`now-playing-cover-grey`).
+
 2026-11-11, not released yet: **the cover colour is found in more covers** (the user: "For the
 accent color, I think it's defaulting to the default teal/blue colors too often. Can we have the
 album art scan take any predominant color from the album and use that as the accent color?").

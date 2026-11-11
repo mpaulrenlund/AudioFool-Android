@@ -19,7 +19,7 @@ import com.mpaulrenlund.audiofool.playback.SystemControls
  * [capacity] songs' are kept, so a screen opening has its song's at once.
  */
 class CoverColors(capacity: Int = 64) {
-    /** A song's colour once worked out: [color] null when its cover has no colour of its own, or there is no cover. */
+    /** A song's colour once worked out: [color] null when there is no cover (a black and white one gives a grey, since 2026-11-11). */
     class Known(val color: Int?)
 
     private val known = LruCache<String, Known>(capacity)

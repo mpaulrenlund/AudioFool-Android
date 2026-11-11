@@ -30,25 +30,42 @@ class CoverColorTest {
     @Test fun a_red_logo_on_a_black_cover_is_red() =
         assertEquals(opaque(RED), CoverColor.main(picture(0x000000 to 95, RED to 5)))
 
-    @Test fun black_and_white_has_no_colour() =
-        assertNull(CoverColor.main(picture(0x000000 to 40, 0xFFFFFF to 20, 0x808080 to 30, 0x8A8580 to 10)))
+    /** Since 2026-11-11 (the user's call) a cover without a colour is a grey, at its average lightness; it was null. */
+    private fun assertGrey(lightness: Double, actual: Int?) {
+        assertNotNull(actual, "no colour found")
+        assertTrue(CoverColor.chroma(actual) < 0.002, "chroma ${CoverColor.chroma(actual)}")
+        assertEquals(lightness, CoverColor.lightness(actual), 0.01)
+    }
 
-    @Test fun an_off_white_cover_has_no_colour() =
-        assertNull(CoverColor.main(picture(CREAM to 90, 0x000000 to 10)))
+    private fun averageLightness(vararg parts: Pair<Int, Int>) =
+        parts.sumOf { (rgb, count) -> CoverColor.lightness(opaque(rgb)) * count } / parts.sumOf { it.second }
+
+    @Test fun black_and_white_is_a_grey_of_its_lightness() {
+        val parts = arrayOf(0x000000 to 40, 0xFFFFFF to 20, 0x808080 to 30, 0x8A8580 to 10)
+        assertGrey(averageLightness(*parts), CoverColor.main(picture(*parts)))
+    }
+
+    @Test fun a_black_cover_is_a_dark_grey_and_a_white_one_a_light_grey() {
+        assertGrey(0.0, CoverColor.main(picture(0x000000 to 100)))
+        assertGrey(1.0, CoverColor.main(picture(0xFFFFFF to 100)))
+    }
+
+    @Test fun an_off_white_cover_is_a_grey() =
+        assertGrey(averageLightness(CREAM to 90, 0x000000 to 10), CoverColor.main(picture(CREAM to 90, 0x000000 to 10)))
 
     @Test fun a_dark_brown_cover_is_brown_not_grey() =
         assertHue(DARK_BROWN, CoverColor.main(picture(DARK_BROWN to 70, 0x0C0A08 to 30)))
 
     /** Under half a percent (2% until 2026-11-11, the user's call: "take any predominant color"). */
     @Test fun a_speck_of_colour_is_not_the_covers_colour() {
-        assertNull(CoverColor.main(picture(0x808080 to 299, RED to 1)))
+        assertGrey(CoverColor.lightness(opaque(0x808080)), CoverColor.main(picture(0x808080 to 299, RED to 1)))
         assertEquals(opaque(RED), CoverColor.main(picture(0x808080 to 99, RED to 1)))
     }
 
     /** A JPEG's black has a cast; made as light as the playback colour it was a strong blue (2026-11-11). */
     @Test fun a_black_covers_faint_tint_is_not_its_colour() {
         assertHue(GOLD, CoverColor.main(picture(BLUISH_BLACK to 95, GOLD to 5)))
-        assertNull(CoverColor.main(picture(BLUISH_BLACK to 60, 0xFFFFFF to 40)))
+        assertGrey(averageLightness(BLUISH_BLACK to 60, 0xFFFFFF to 40), CoverColor.main(picture(BLUISH_BLACK to 60, 0xFFFFFF to 40)))
     }
 
     /** Each pixel counts by its chroma squared (2026-11-11): a grey's faint cast doesn't outweigh the colour in it. */
@@ -75,7 +92,7 @@ class CoverColorTest {
     @Test fun see_through_pixels_are_not_part_of_the_picture() {
         val clearRed = 0x00C0392B
         assertHue(SKY, CoverColor.main(IntArray(90) { clearRed } + picture(SKY to 10)))
-        assertNull(CoverColor.main(IntArray(100) { clearRed }))
+        assertNull(CoverColor.main(IntArray(100) { clearRed }), "nothing to see is no colour, not a grey")
     }
 
     @Test fun an_empty_picture_has_no_colour() = assertNull(CoverColor.main(IntArray(0)))

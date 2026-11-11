@@ -12,6 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 /**
  * Each song's cover colour, shared by Now Playing and the mini player (2026-11-10):
@@ -48,12 +49,21 @@ class CoverColorsTest {
     }
 
     @Test
-    fun no_cover_or_a_grey_one_has_no_colour_and_is_kept_too() {
+    fun no_cover_has_no_colour_and_is_kept_too() {
         val colors = CoverColors()
         assertNull(colors.load(song) { null }.color)
         assertNotNull(colors.peek(song))
+    }
+
+    /** Since 2026-11-11 (the user's call) a black and white cover is a grey, not the theme's colour. */
+    @Test
+    fun a_black_and_white_cover_is_a_grey() {
+        val colors = CoverColors()
         val grey = song.copy(filePath = song.filePath.replace("01", "02"))
-        assertNull(colors.load(grey) { png(ThemeLabFixtures.coverBlackAndWhite()) }.color)
+        val color = colors.load(grey) { png(ThemeLabFixtures.coverBlackAndWhite()) }.color
+        assertNotNull(color)
+        val (r, g, b) = listOf(16, 8, 0).map { (color shr it) and 0xFF }
+        assertTrue(maxOf(r, g, b) - minOf(r, g, b) <= 2, "#%06X is not a grey".format(color and 0xFFFFFF))
     }
 
     @Test

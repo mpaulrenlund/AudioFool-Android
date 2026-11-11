@@ -40,10 +40,10 @@ object CoverColor {
     const val BLACK_BELOW = 0.15
 
     /**
-     * A cover with a smaller share of coloured pixels than this has no colour of its
-     * own: a few pixels, not a part of the picture. 2% until 2026-11-11 (the user's
-     * call: "take any predominant color from the album"). Of the desktop's 8,604
-     * covers, 9% still find none; those looked at were all black and white.
+     * A cover with a smaller share of coloured pixels than this is black and white:
+     * a few pixels, not a part of the picture. 2% until 2026-11-11 (the user's call:
+     * "take any predominant color from the album"). Of the desktop's 8,604 covers,
+     * 9% are under it; those looked at were all black and white.
      */
     const val MIN_SHARE = 0.005
 
@@ -56,9 +56,13 @@ object CoverColor {
      * black cover is red, a blue sky with a small sun is blue, and a grey's faint
      * cast doesn't outweigh the colour beside it (by its chroma until 2026-11-11).
      * Black pixels ([BLACK_BELOW]) don't count. The colour given is the average of
-     * the pixels of that hue. Null when the cover has no colour to speak of (black
-     * and white, or under [MIN_SHARE] coloured); see-through pixels are not part of
-     * the picture.
+     * the pixels of that hue.
+     *
+     * A cover with no colour to speak of (black and white, or under [MIN_SHARE]
+     * coloured) is a grey, at its pixels' average lightness, so [accent] makes it
+     * a neutral that reads on the theme (2026-11-11, the user's call: until then
+     * such a cover kept the theme's teal or blue). Null only for a picture with
+     * nothing in it; see-through pixels are not part of the picture.
      */
     fun main(pixels: IntArray): Int? {
         val weight = DoubleArray(SLICES)
@@ -67,10 +71,12 @@ object CoverColor {
         val b = DoubleArray(SLICES)
         var seen = 0
         var coloured = 0
+        var lightness = 0.0
         for (pixel in pixels) {
             if (pixel ushr 24 < 128) continue
             seen++
             val lab = Lab.of(pixel)
+            lightness += lab.l
             val chroma = lab.chroma
             if (lab.l < BLACK_BELOW) continue
             if (chroma < (GREY_PER_LIGHTNESS * lab.l).coerceIn(GREY_BELOW_DARK, GREY_BELOW)) continue
@@ -82,7 +88,8 @@ object CoverColor {
             a[slice] += w * lab.a
             b[slice] += w * lab.b
         }
-        if (seen == 0 || coloured < seen * MIN_SHARE) return null
+        if (seen == 0) return null
+        if (coloured < seen * MIN_SHARE) return Lab(lightness / seen, 0.0, 0.0).toArgb()
 
         // A hue that straddles two slices isn't split: each slice is counted with its neighbours.
         fun around(values: DoubleArray, i: Int) = values[(i + SLICES - 1) % SLICES] + values[i] + values[(i + 1) % SLICES]

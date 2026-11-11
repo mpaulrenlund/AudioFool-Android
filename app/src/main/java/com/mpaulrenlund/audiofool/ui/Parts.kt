@@ -94,8 +94,8 @@ val LocalCoverColors = staticCompositionLocalOf<CoverColors?> { null }
 /**
  * [track]'s cover colour ([CoverColors]), worked out off the main thread the first
  * time. The last song's stays until the next one's is in, as on Now Playing, so an
- * album's songs don't blink to the theme's colour between them. Null when the cover
- * has no colour of its own.
+ * album's songs don't blink to the theme's colour between them. Null when there is
+ * no cover (a black and white one gives a grey, since 2026-11-11).
  */
 @Composable
 fun rememberCoverColor(track: Track): Int? {

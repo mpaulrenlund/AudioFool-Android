@@ -146,8 +146,8 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * Cover colour): the seekbar's played part, the transport's icons and the ring and glow
  * round Play/Pause, Repeat and Shuffle when on, and the artist's name (the same colour, since 2026-11-11) take the cover's
  * main colour (the glow at the top of the screen did too, until it went on 2026-11-10), fitted to the theme
- * ([AppTheme.coverAccent]). A cover with no colour of its own, or no cover, leaves them
- * the theme's. The mini player's buttons take the same colour ([MiniPlayerBar]).
+ * ([AppTheme.coverAccent]); a black and white cover's is a grey (2026-11-11). No cover
+ * leaves them the theme's. The mini player's buttons take the same colour ([MiniPlayerBar]).
  *
  * [artMenuForPictures] is ThemeLab's: the menu open in the art's middle, showing that resolution.
  * So are [coverForPictures], a made-up cover shown as if it had been read from the song, and
@@ -393,7 +393,7 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
 
 /**
  * The cover decoded at the art's size; the picture's own size, for the menu; and
- * its main colour (core `CoverColor` through [CoverColors]; null when it has none),
+ * its main colour (core `CoverColor` through [CoverColors]; null without a cover),
  * for the playback controls.
  */
 private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int, val color: Int?) {

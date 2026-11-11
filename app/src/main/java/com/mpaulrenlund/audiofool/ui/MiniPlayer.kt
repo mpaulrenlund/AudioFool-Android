@@ -24,7 +24,7 @@ import com.mpaulrenlund.audiofool.theme.toCompose
  * Its three buttons follow Now Playing's (2026-11-10, the user's call): the icons,
  * and Play/Pause's ring and glow, take the cover's colour ([rememberCoverColor],
  * the same colour Now Playing shows for the song), and the glow shows only while
- * playing. A cover with no colour of its own, or no cover, leaves them the theme's:
+ * playing. No cover leaves them the theme's (a black and white cover gives a grey, 2026-11-11):
  * `accent.playback` for Play/Pause, `control.iconNeutral` for Previous and Next.
  */
 @Composable
