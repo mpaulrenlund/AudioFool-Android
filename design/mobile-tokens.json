@@ -132,7 +132,7 @@
     "timeWidth": 40
   },
   "menu": {
-    "$note": "The logo menu (spec 4.1: Rescan Library, Settings, Statistics, Theme, in alphabetical order, then the version, information only). No mockup: a panel under the logo with settings-sized rows (session 2). Since the logo moved right (2026-11-10), the menu's right edge is offsetX in from the logo's touch area, so it lines up with the panel below. checkIcon: a ticked row's check (the cover menu's Bit-Perfect).",
+    "$note": "The logo menu (spec 4.1: Library Statistics, Listening History, Rescan Library, Settings, Theme, in alphabetical order, then the version). No mockup: a panel under the logo with settings-sized rows (session 2). Since the logo moved right (2026-11-10), the menu's right edge is offsetX in from the logo's touch area, so it lines up with the panel below. checkIcon: a ticked row's check (the cover menu's Bit-Perfect).",
     "width": 208,
     "offsetX": 4,
     "listPadding": 6,

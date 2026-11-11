@@ -12,6 +12,10 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Since 0.16.0, not released yet (2026-11-11): the logo menu's Statistics row reads "Library
+  Statistics"** (the user's request; spec §4.1), first in the menu since the rows are alphabetical.
+  The screen's title is still "Statistics". Checked: all app tests and the 4 menu pictures (the only
+  ones that changed). Goes out with the next build.
 - **0.16.0, published 2026-11-10 ("Yes, 0.16.0", then "Publish it") as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
   (versionCode 52, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
   APK's SHA-256, `6df57c7f…efde5ce9`, matched `dist/`; notes in `dist/notes-0.16.0.md`; signer
@@ -601,8 +605,8 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
   starts with what you want, skipping `EditText` (the search field holds the query too),
   and tap the centre of its `bounds`.
 - With the logo menu open (alphabetical since 0.7.0's follow-up; at the right since the logo
-  moved there, 2026-11-10): Listening History at about (650, 282), then each row 126 px lower:
-  Rescan Library (650, 408), Settings (650, 534), Statistics (650, 660), Theme (650, 786),
+  moved there, 2026-11-10): Library Statistics at about (650, 282), then each row 126 px lower:
+  Listening History (650, 408), Rescan Library (650, 534), Settings (650, 660), Theme (650, 786),
   Version (650, 912), which opens the releases page in Chrome (its first-run screen, the first
   time: leave it). A tap at x = 320 misses the menu and closes it. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
   counts are the quick check that a rescan ran.

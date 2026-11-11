@@ -50,7 +50,7 @@ class VersionRowTest {
         }
         compose.onNodeWithContentDescription("Menu").performClick()
         // The logo menu keeps every row (2026-11-10: the cover menu lost four of them).
-        for (row in listOf("Listening History", "Rescan Library", "Settings", "Statistics", "Theme")) compose.onNodeWithText(row).assertExists()
+        for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings", "Theme")) compose.onNodeWithText(row).assertExists()
         compose.onNodeWithText("Version").performClick()
         compose.waitForIdle()
         assertEquals(1, opened)

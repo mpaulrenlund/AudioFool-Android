@@ -164,7 +164,7 @@ class NowPlayingTouchTest {
         compose.onNodeWithContentDescription("Cover").performClick()
         compose.waitForIdle()
         for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
-        for (row in listOf("Listening History", "Rescan Library", "Settings", "Statistics")) compose.onNodeWithText(row).assertDoesNotExist()
+        for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings")) compose.onNodeWithText(row).assertDoesNotExist()
     }
 
     /** 2026-11-10, the user's call: the resolution opens the cover full screen (spec 5.3); with no cover it is information only, as before. */
