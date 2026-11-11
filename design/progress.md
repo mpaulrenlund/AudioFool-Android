@@ -75,8 +75,9 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 2026-11-11, not released yet: **the logo menu's Statistics row reads "Library Statistics"** (the
 user: "in the logo menu, can we rename statistics to Library Statistics?"). Spec §4.1. The rows stay
-alphabetical (the user's call, 0.7.1), so it moves to the top, above Listening History. **My call:**
-only the menu row changed; the screen's own title still reads "Statistics" (spec §4.6).
+alphabetical (the user's call, 0.7.1), so it moves to the top, above Listening History. Then the
+screen's own title too (asked: "Yes, rename it too"; spec §4.6). The code's names (`Route.Statistics`,
+`StatisticsScreen`) and the Debug notes' "Statistics > Debug" stay as they are.
 
 2026-11-10, 0.16.0 (versionCode 52; released the same day as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0),
 APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `6df57c7f…efde5ce9`

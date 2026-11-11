@@ -106,7 +106,9 @@ The screen title "Settings" (18/600) and four panels, `settings.sectionGap` apar
 - **Music folders**: a refresh button in the header (rescans; the same note as the ARTISTS header, left of the button, 0.7.0). One row per folder, with a checkbox (filled `accent.playback`, check in `panel.bg`) to include or leave out, the folder's name ("SD card · Music") and its path. Then "Add Folder…", which opens a folder picker and saves the plain path.
 - **Last.fm**: a dot and "Last.fm: not connected", with a Connect button. Once connected: "Last.fm: connected as <user>" with Disconnect. The dot is `status.lastFmDot` while scrobbling, `status.lastFmOff` otherwise; "Last.fm: connect again" when Last.fm rejects the session. Connect opens a form in the panel (after 0.8.0, the user's call): a line saying AudioFool keeps the session, never the password, then the Last.fm **Username** and **Password** fields (the password as dots; both offered to the phone's password manager; the name filled in when connecting again), Cancel and Connect, and "Signing in…" while it's sent. A refusal shows over the fields: "Last.fm didn't accept that username and password." Until 0.8.0 the form asked for the API key and shared secret and approved in the browser (session 5). A failed send adds the queue line under the status.
 
-### 4.6 Statistics
+### 4.6 Library Statistics
+
+Its title reads "Library Statistics", as the logo menu's row does ("Statistics" until 2026-11-11, the user's call).
 
 There's no mockup. Build it from the same parts (panels, headers, rows, `type.statValue` for big numbers), and show the user a screenshot before finishing. It shows:
 

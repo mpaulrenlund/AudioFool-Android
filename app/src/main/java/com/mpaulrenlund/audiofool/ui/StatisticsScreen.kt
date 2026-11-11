@@ -97,7 +97,7 @@ fun StatisticsScreen(
     stats: LibraryStatistics = LibraryStatistics.Empty,
     listening: ListeningTime? = null,
 ) {
-    TitledScreen("Statistics") {
+    TitledScreen("Library Statistics") { // "Statistics" until 2026-11-11 (the user's call, as the logo menu's row)
         Panel("Library") {
             if (state.library == null) {
                 SettingRow("Reading the library…")

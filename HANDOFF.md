@@ -14,8 +14,8 @@ you touch a feature from then.
   unticked items in *To test on the S24* / *To test on the M21*.
 - **Since 0.16.0, not released yet (2026-11-11): the logo menu's Statistics row reads "Library
   Statistics"** (the user's request; spec §4.1), first in the menu since the rows are alphabetical.
-  The screen's title is still "Statistics". Checked: all app tests and the 4 menu pictures (the only
-  ones that changed). Goes out with the next build.
+  The screen's title reads the same (spec §4.6). Checked: all app tests, the 4 menu pictures and the
+  12 Statistics pictures (the only ones that changed). Goes out with the next build.
 - **0.16.0, published 2026-11-10 ("Yes, 0.16.0", then "Publish it") as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
   (versionCode 52, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
   APK's SHA-256, `6df57c7f…efde5ce9`, matched `dist/`; notes in `dist/notes-0.16.0.md`; signer
