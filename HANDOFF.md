@@ -12,6 +12,17 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **On `main` after 0.15.1, not built as a release yet (2026-11-10): Repeat at the left of the
+  transport and Shuffle at the right, and the cover full screen from the cover menu's Resolution
+  row** (the user's two requests; spec §5 *Controls row*, new §5.3; the decisions in
+  `design/progress.md`). Repeat and Shuffle kept their size (44 / 35 dp) and sit level with
+  Play/Pause, `paddingX` from each edge. The viewer is `Route.Cover` → `ui/CoverViewerScreen.kt`:
+  the cover decoded whole (up to 4096 px a side), pinch up to 8×, drag clamped to the edges, a
+  double tap to 3× at the finger and back, plain Compose gestures (no library), `coverViewer.*`
+  tokens. Checked: all tests (new `CoverZoomTest`, `CoverViewerTouchTest`), ThemeLab (56 changed,
+  8 new), and the emulator (it has this build installed as 0.15.1, versionCode 51: not bumped).
+  **Next:** ask whether to release it (the user picks the number; a new feature, so 0.16.0).
+  A pinch can't be sent over adb, so the phones are its first real pinch.
 - **0.15.1, published 2026-11-10 ("Build 0.15.1", then "Publish it") as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1)
   (versionCode 51, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
   APK's SHA-256, `e9838121…020ee0`, matched `dist/`; notes in `dist/notes-0.15.1.md`): the cover menu keeps only Theme and Version of the

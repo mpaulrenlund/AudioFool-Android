@@ -46,7 +46,7 @@ class NowPlayingTouchTest {
     private val pressed = ArrayList<String>()
     private var seeks = ArrayList<Long>()
 
-    private fun show() {
+    private fun show(cover: android.graphics.Bitmap? = null) {
         val actions = NowPlayingActions(
             playPause = { pressed += "play" },
             previous = { pressed += "previous" },
@@ -57,11 +57,12 @@ class NowPlayingTouchTest {
             toggleBitPerfect = { pressed += "bp" },
             openArtist = { pressed += "artist ${it.artist}" },
             openAlbum = { pressed += "album ${it.album}" },
+            openCover = { pressed += "cover ${it.title}" },
         )
         compose.setContent {
             AudioFoolTheme(AppTheme(true, tokens)) {
                 CompositionLocalProvider(LocalBarInsets provides WindowInsets(top = 28.dp, bottom = 20.dp)) {
-                    NowPlayingScreen(nowPlaying, actions)
+                    NowPlayingScreen(nowPlaying, actions, coverForPictures = cover)
                 }
             }
         }
@@ -86,13 +87,15 @@ class NowPlayingTouchTest {
      * Repeat and Shuffle are under the 48 dp a finger wants (44 dp on the S24, 35 on the
      * M21). Compose widens a small touch area to 48 dp itself, so a tap just outside
      * the face still presses the button and nothing on screen had to grow; this pins
-     * that. Repeat is above Shuffle, so Shuffle is tried from below.
+     * that. Both are tried from above and from below.
      */
     @Test fun a_tap_just_outside_a_small_button_still_presses_it() {
         show()
         tapOutside("Repeat", 1)
+        tapOutside("Repeat", 1, below = true)
+        tapOutside("Shuffle", 1)
         tapOutside("Shuffle", 1, below = true)
-        assertEquals(listOf("repeat", "shuffle"), pressed)
+        assertEquals(listOf("repeat", "repeat", "shuffle", "shuffle"), pressed)
     }
 
     @Test @Config(qualifiers = ThemeLabTest.M21)
@@ -106,6 +109,7 @@ class NowPlayingTouchTest {
     @Test fun a_tap_well_outside_a_small_button_does_nothing() {
         show()
         tapOutside("Repeat", 10)
+        tapOutside("Shuffle", 10, below = true)
         assertEquals(emptyList(), pressed)
     }
 
@@ -116,7 +120,7 @@ class NowPlayingTouchTest {
         compose.onNodeWithContentDescription("Bit-Perfect").assertDoesNotExist()
     }
 
-    // ---- the controls row (2026-11-10): Repeat over Shuffle at the left, the transport centred ----
+    // ---- the controls row (2026-11-10): Repeat at the left, the transport centred, Shuffle at the right ----
 
     private fun checkControlsRow(modeSize: Float) {
         show()
@@ -130,17 +134,18 @@ class NowPlayingTouchTest {
         assertEquals(dp(play.left - previous.right), dp(next.left - play.right), 0.5f, "Previous and Next the same way from it")
         assertEquals(modeSize, dp(repeat.width), 0.5f)
         assertEquals(modeSize, dp(shuffle.width), 0.5f)
-        assertEquals(repeat.center.x, shuffle.center.x, 0.5f, "Repeat over Shuffle")
-        assertEquals(20f, dp(repeat.left), 0.5f, "level with the cover's and the seekbar's left")
-        assertEquals(play.top, repeat.top, 1f, "Repeat's top level with Play/Pause's")
-        assertEquals(play.bottom, shuffle.bottom, 1f, "Shuffle's bottom level with Play/Pause's")
-        assertTrue(dp(previous.left - repeat.right) >= 11.5f, "at least 12 dp before Previous")
+        assertEquals(20f, dp(repeat.left), 0.5f, "Repeat level with the cover's and the seekbar's left")
+        assertEquals(20f, dp(screen.right - shuffle.right), 0.5f, "Shuffle level with their right")
+        assertEquals(play.center.y, repeat.center.y, 1f, "Repeat level with Play/Pause's middle")
+        assertEquals(play.center.y, shuffle.center.y, 1f, "Shuffle level with Play/Pause's middle")
+        assertTrue(dp(previous.left - repeat.right) >= 11.5f, "at least 12 dp between Repeat and Previous")
+        assertTrue(dp(shuffle.left - next.right) >= 11.5f, "at least 12 dp between Next and Shuffle")
     }
 
-    @Test fun the_transport_is_centred_with_repeat_over_shuffle_at_the_left() = checkControlsRow(44f)
+    @Test fun the_transport_is_centred_between_repeat_and_shuffle() = checkControlsRow(44f)
 
     @Test @Config(qualifiers = ThemeLabTest.M21)
-    fun the_transport_is_centred_with_repeat_over_shuffle_at_the_left_on_the_m21() = checkControlsRow(35f)
+    fun the_transport_is_centred_between_repeat_and_shuffle_on_the_m21() = checkControlsRow(35f)
 
     // ---- the cover menu (2026-11-10): a tap opens it, and Bit-Perfect is a row in it ----
 
@@ -160,6 +165,27 @@ class NowPlayingTouchTest {
         compose.waitForIdle()
         for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
         for (row in listOf("Listening History", "Rescan Library", "Settings", "Statistics")) compose.onNodeWithText(row).assertDoesNotExist()
+    }
+
+    /** 2026-11-10, the user's call: the resolution opens the cover full screen (spec 5.3); with no cover it is information only, as before. */
+    @Test fun the_resolution_opens_the_cover_full_screen() {
+        show(cover = ThemeLabFixtures.coverYellow())
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Resolution").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("cover ${song.title}"), pressed)
+        compose.onNodeWithText("Analyze").assertDoesNotExist()
+    }
+
+    @Test fun without_a_cover_the_resolution_does_nothing() {
+        show()
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Resolution").performClick()
+        compose.waitForIdle()
+        assertEquals(emptyList(), pressed)
+        compose.onNodeWithText("Analyze").assertExists()
     }
 
     @Test fun a_long_press_on_the_cover_still_opens_it() {

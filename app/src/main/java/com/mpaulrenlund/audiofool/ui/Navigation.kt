@@ -49,6 +49,8 @@ sealed interface Route {
     @Serializable data class Analysis(val path: String) : Route
     /** Genius (spec 5.2), from Now Playing's cover menu: the song by its path, so it stays on it when the next one plays. */
     @Serializable data class Genius(val path: String) : Route
+    /** The cover full screen, to zoom (spec 5.3), from the cover menu's Resolution row: the song by its path, as Genius. */
+    @Serializable data class Cover(val path: String) : Route
     @Serializable data class TokenSheet(val page: SheetPage) : Route
 }
 

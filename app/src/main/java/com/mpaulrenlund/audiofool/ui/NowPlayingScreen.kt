@@ -106,6 +106,8 @@ class NowPlayingActions(
     val toggleBitPerfect: () -> Unit = {},
     /** The cover menu's Analyze (0.6.0): opens the Analysis screen on the song. */
     val analyze: (Track) -> Unit = {},
+    /** The cover menu's Resolution row (spec 5.3): opens the cover full screen, to zoom. */
+    val openCover: (Track) -> Unit = {},
     /** The cover menu's Genius (spec 5.2): opens the Genius screen on the song, looked up afresh. */
     val genius: (Track) -> Unit = {},
     /** A tap on the artist's name (spec 5): opens that artist's albums. */
@@ -135,7 +137,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * system back closes it. A sideways swipe on the art or the title block skips:
  * left for Next, right for Previous. From the top: the art, the title block
  * with the track count, the quality lines, the waveform seekbar with the times,
- * the controls row (Repeat over Shuffle at the left, the transport centred;
+ * the controls row (Repeat at the left, the transport centred, Shuffle at the right;
  * 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
  * press until 2026-11-10), which holds Bit-Perfect and ends with the logo menu's rows
  * ([appActions], [version]; 0.7.4).
@@ -371,6 +373,13 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
                 version,
                 nowPlaying,
                 actions.toggleBitPerfect,
+                // Only where there is a picture to show (ThemeLab's menu stands for one).
+                openCover = if (menuForPictures != null || bitmap != null) {
+                    {
+                        menuAt = null
+                        actions.openCover(track)
+                    }
+                } else null,
                 analyze = {
                     menuAt = null
                     actions.analyze(track)
@@ -412,8 +421,9 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int,
 /**
  * The cover menu (0.6.0, the user's call): a tap on the cover opens it at the finger
  * (a long press until 2026-11-10), kept `artMenu.edgeMargin` inside the screen. The
- * logo menu's look. The first row is the cover's resolution, information only; then
- * Analyze, which opens the Analysis screen; Bit-Perfect (spec 6.4, 2026-11-10, the
+ * logo menu's look. The first row is the cover's resolution, which opens the cover
+ * full screen ([openCover], spec 5.3; 2026-11-10, the user's call; information only
+ * until then, and still where there is no cover); then Analyze, which opens the Analysis screen; Bit-Perfect (spec 6.4, 2026-11-10, the
  * user's call: the BP button moved here), checked while on, which switches it and
  * keeps the menu open; and Genius, which opens the Genius screen (spec 5.2); then
  * the logo menu's Theme and version (0.7.4, the user's call; Listening History,
@@ -430,6 +440,7 @@ private fun ArtMenu(
     version: String,
     nowPlaying: NowPlaying,
     toggleBitPerfect: () -> Unit,
+    openCover: (() -> Unit)?,
     analyze: () -> Unit,
     genius: () -> Unit,
 ) {
@@ -440,7 +451,7 @@ private fun ArtMenu(
     val position = remember(at, room, margin) { AtFinger(at, room, margin) }
     Popup(popupPositionProvider = position, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
         MenuSurface(t.dp("artMenu.width")) {
-            MenuRow("Resolution", value = resolution, onClick = null)
+            MenuRow("Resolution", value = resolution, onClick = openCover)
             MenuRow("Analyze", onClick = analyze)
             // The check in Bit-Perfect's own "on" colour, as Settings' dot (spec 4.5); greyed out where it can't work (spec 6.2).
             MenuCheckRow("Bit-Perfect", nowPlaying.bitPerfect, "color.status.bitPerfectOn", toggleBitPerfect, greyed = nowPlaying.bitPerfectGreyed)
@@ -663,15 +674,16 @@ private class WaveShape(private val levels: FloatArray?) {
 }
 
 /**
- * The controls row (spec 5; 2026-11-10, the user's call): Previous, Play/Pause and
- * Next centred on the screen, and at the left Repeat over Shuffle, `modeGap` apart,
- * the two as tall as Play/Pause (Repeat's top level with its top, Shuffle's bottom
- * with its bottom), so they grow with it, within `modeButton.min` and `max`: 44 dp
- * on the S24, 35 on the M21 (34, side by side with BP under them, from 0.2.2 until
- * then). The transport's sizes are fractions of the screen height between a min and
- * a max. At least `modeToTransportGap` lies between Repeat and Shuffle and Previous:
- * where the screen is too narrow for that (the S24), the transport's gaps shrink, to
- * `transportGap.fitMin` at most, and then Previous and Next do.
+ * The controls row (spec 5; 2026-11-10, the user's calls): Previous, Play/Pause and
+ * Next centred on the screen, Repeat at the left and Shuffle at the right, each
+ * `paddingX` from its edge and level with Play/Pause's middle (Repeat over Shuffle at
+ * the left until the user's second call that day). They keep the size they had
+ * stacked, (Play/Pause − `modeGap`) / 2 within `modeButton.min` and `max`: 44 dp on
+ * the S24, 35 on the M21. The transport's sizes are fractions of the screen height
+ * between a min and a max. At least `modeToTransportGap` lies between Repeat and
+ * Previous, and between Next and Shuffle: where the screen is too narrow for that
+ * (the S24), the transport's gaps shrink, to `transportGap.fitMin` at most, and then
+ * Previous and Next do.
  * [accent] is the cover's colour, for the transport's icons and for Repeat and
  * Shuffle when they are on (`control.repeatOn` and `control.shuffleOn` without one),
  * so the screen has one colour for "on".
@@ -695,20 +707,20 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
         val fullSkip = scaled("nowPlaying.skipButton")
         val gap = minOf(scaled("nowPlaying.transportGap"), maxOf(t.dp("nowPlaying.transportGap.fitMin"), half - fullSkip))
         val skip = minOf(fullSkip, half - gap)
-        Column(Modifier.align(Alignment.CenterStart).padding(start = padX), verticalArrangement = Arrangement.spacedBy(modeGap)) {
-            val repeat = nowPlaying.repeat
-            val off = t.color("color.control.iconOff")
-            Box {
-                RoundButton(mode, mode, mode, "Repeat", actions.cycleRepeat, state = repeat.name) {
-                    Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) off else accent?.toCompose() ?: t.color("color.control.repeatOn"))
-                }
-                if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd), accent)
+        val repeat = nowPlaying.repeat
+        val off = t.color("color.control.iconOff")
+        Box(Modifier.align(Alignment.CenterStart).padding(start = padX)) {
+            RoundButton(mode, mode, mode, "Repeat", actions.cycleRepeat, state = repeat.name) {
+                Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) off else accent?.toCompose() ?: t.color("color.control.repeatOn"))
             }
+            if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd), accent)
+        }
+        TransportButtons(nowPlaying, actions, skip, play, gap, accent, Modifier.align(Alignment.Center))
+        Box(Modifier.align(Alignment.CenterEnd).padding(end = padX)) {
             RoundButton(mode, mode, mode, "Shuffle", actions.toggleShuffle, state = if (nowPlaying.shuffle) "On" else "Off") {
                 Icon(AppIcons.SHUFFLE, modeIcon, if (nowPlaying.shuffle) accent?.toCompose() ?: t.color("color.control.shuffleOn") else off)
             }
         }
-        TransportButtons(nowPlaying, actions, skip, play, gap, accent, Modifier.align(Alignment.Center))
     }
 }
 

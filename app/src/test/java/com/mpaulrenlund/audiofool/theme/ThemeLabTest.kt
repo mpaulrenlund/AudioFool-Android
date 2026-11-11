@@ -39,6 +39,7 @@ import com.mpaulrenlund.audiofool.ui.scanHeaderText
 import com.mpaulrenlund.audiofool.ui.SheetPage
 import com.mpaulrenlund.audiofool.ui.StatisticsScreen
 import com.mpaulrenlund.audiofool.ui.TokenSheet
+import com.mpaulrenlund.audiofool.ui.CoverViewerScreen
 import com.mpaulrenlund.audiofool.ui.NowPlayingActions
 import com.mpaulrenlund.audiofool.ui.NowPlayingScreen
 import com.mpaulrenlund.audiofool.core.playback.OutputPath
@@ -255,6 +256,9 @@ class ThemeLabTest {
         shoot(device, "analysis-error") {
             AnalysisScreen(ThemeLabFixtures.nowPlayingTrack, AnalysisState.Failed("The file isn't there. Is the SD card in?"))
         }
+        // The cover full screen (spec 5.3; 2026-11-10, no mockup): fitted, and zoomed in 2.5 times about the middle.
+        shoot(device, "cover-viewer") { CoverViewerScreen(ThemeLabFixtures.nowPlayingTrack, ThemeLabFixtures.coverYellow()) }
+        shoot(device, "cover-viewer-zoomed") { CoverViewerScreen(ThemeLabFixtures.nowPlayingTrack, ThemeLabFixtures.coverLandscape(), zoomForPictures = 2.5f) }
         shoot(device, "settings-bp-on") {
             SettingsScreen(
                 folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),

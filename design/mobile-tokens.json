@@ -143,9 +143,15 @@
     "checkIcon": 18
   },
   "artMenu": {
-    "$note": "Now Playing's cover menu (0.6.0, the user's call): a long press on the cover opens it at the finger. The logo menu's look and rows (menu.*). The first row, the cover's resolution, is information only; then Analyze; then the logo menu's rows (0.7.4). Kept edgeMargin inside the screen.",
+    "$note": "Now Playing's cover menu (0.6.0, the user's call): a tap on the cover opens it at the finger (a long press until 2026-11-10). The logo menu's look and rows (menu.*). The first row, the cover's resolution, opens the cover full screen (coverViewer; information only until 2026-11-10); then Analyze, Bit-Perfect, Genius, Theme and the version. Kept edgeMargin inside the screen.",
     "width": 224,
     "edgeMargin": 8
+  },
+  "coverViewer": {
+    "$note": "The cover full screen (spec 5.3; 2026-11-10, the user's call), from the cover menu's Resolution row. The picture is decoded whole, halved until no side is over maxDecodeSide px, and fitted inside the system bars. Pinch zooms up to maxZoom times the fitted size; a double tap zooms to doubleTapZoom at the finger, or back out.",
+    "maxDecodeSide": 4096,
+    "maxZoom": 8,
+    "doubleTapZoom": 3
   },
   "analysis": {
     "$note": "Analyze (0.6.0): the desktop's Analysis window as a screen. The colour scale (floorDb, topDb, legendStepDb), the label spacings and the cutoff marker are the desktop's analysis.* tokens; these are the phone's sizes. The picture is a fraction of the screen height, as Now Playing's buttons are.",

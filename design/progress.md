@@ -72,6 +72,33 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-10, after 0.15.1 (not built as a release yet): **Repeat at the left of the transport, Shuffle
+at the right** (the user: "On the now playing screen, lets put the Repeat button on the left hand
+side of the playback buttons, and lets putt the shuffle button on the right hand side of the
+playback buttons."), and **the cover full screen, to zoom** (the user: "Can we make it so tapping on
+the resolution opens up an album art view in full screen so that I can zoom in to better see the
+details of the album art?"). Spec §5 (*Controls row*, *Cover menu*), new §5.3.
+- **Controls:** Repeat `paddingX` from the left edge, Shuffle `paddingX` from the right, both
+  level with Play/Pause's middle. **My call: they keep 0.14.0's size** (44 dp on the S24, 35 on
+  the M21), worked out as before from Play/Pause, though they no longer stack; the transport is
+  exactly where it was, since the room each side was already the same. Making them bigger is open.
+- **Viewer:** a new screen, `Route.Cover(path)` → `CoverViewerScreen`, so back and predictive
+  back work as on every screen. Plain Compose gestures (`detectTransformGestures`,
+  `detectTapGestures`), no new library; the sums are `CoverZoom`. Tokens: `coverViewer.*`.
+  **My calls:** the window's background behind it (not black: no colour outside the theme's
+  roles); the system bars stay (immersive mode could get in the way of the back gesture);
+  pinch up to 8×, a double tap to 3× at the finger and back; decoded whole up to 4096 px a side;
+  it stays on its song if the next one starts. The Resolution row now reads as a tappable row
+  (`text.primary`); with no cover it stays information only.
+- **Checked:** all app and core tests pass; new `CoverZoomTest` (the sums), `CoverViewerTouchTest`
+  (a real double tap, a second one, and a pinch, read off the drawn screen), and
+  `NowPlayingTouchTest` (the new row: Repeat and Shuffle 20 dp from their edges, level with
+  Play/Pause, 12 dp clear of the transport; Resolution opens the viewer, and does nothing without a
+  cover). ThemeLab: the 44 Now Playing pictures and the 12 cover menu pictures changed, 8 new
+  (`cover-viewer`, `cover-viewer-zoomed`), every other one unchanged. Emulator: the row, the
+  viewer from Resolution, a double tap to 3× at the finger, a drag stopping at the picture's edge,
+  a double tap back out, and back to Now Playing. A pinch can't be sent over adb: the test covers it.
+
 2026-11-10, 0.15.1 (versionCode 51; released the same day as pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1),
 APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `e9838121…020ee0`
 matching `dist/`): **Listening History, Rescan Library, Settings and Statistics leave the cover menu** (the user: "for the menu in the Now Playing screen, let's remove
@@ -999,6 +1026,15 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Repeat and Shuffle either side, and the cover full screen (after 0.15.1)
+
+- [ ] Now Playing: Repeat at the left of Previous, Shuffle at the right of Next, level with
+  Play/Pause. Easy to reach with a thumb at both sides?
+- [ ] Tap the cover, then Resolution: the cover fills the screen. Pinch in on a big scan
+  (a 1500 px or larger cover) and look at the detail: sharp, smooth to move, stopping at the edges?
+  A double tap zooms in where you tap, another zooms out; back returns to Now Playing.
+- [ ] A very big cover (3000 px or more): how long before it shows?
+
 ### The cover menu's rows (from 0.15.1)
 
 - [ ] Tap the cover: Resolution, Analyze, Bit-Perfect, Genius, Theme and Version, and no Listening
@@ -1238,6 +1274,10 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Repeat and Shuffle either side, and the cover full screen (after 0.15.1)
+
+- [ ] As on the S24. The M21's screen is smaller: is 8× enough, or too much?
 
 ### The cover menu's rows (from 0.15.1)
 

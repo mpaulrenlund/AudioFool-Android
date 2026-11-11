@@ -178,7 +178,7 @@ fun MenuCheckRow(label: String, checked: Boolean, checkColorPath: String, onClic
 
 /**
  * A menu row, settings-sized, with an optional [value] on the right. A row with
- * no [onClick] is information only (the cover's resolution): its label is
+ * no [onClick] is information only (the cover's resolution, without a cover): its label is
  * `text.muted` and a press shows nothing.
  */
 @Composable

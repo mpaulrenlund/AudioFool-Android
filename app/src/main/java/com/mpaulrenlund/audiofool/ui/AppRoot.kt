@@ -105,6 +105,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             toggleShuffle = player::toggleShuffle,
             toggleBitPerfect = player::toggleBitPerfect,
             analyze = { track -> nav.open(Route.Analysis(track.filePath)) },
+            openCover = { track -> nav.open(Route.Cover(track.filePath)) },
             // Spec 5.2: looked up each time, as the desktop's Ctrl+G; a song already found shows at once.
             genius = { track ->
                 app.genius.show(track)
@@ -177,6 +178,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 Route.Search -> SearchScreen(browse, actions)
                 Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
                 is Route.Analysis -> AnalysisScreen(remember(library, route.path) { trackAt(library, route.path, app) })
+                is Route.Cover -> CoverViewerScreen(remember(library, route.path) { trackAt(library, route.path, app) })
                 is Route.Genius -> {
                     val track = remember(library, route.path) { trackAt(library, route.path, app) }
                     LaunchedEffect(route.path) { app.genius.showing(track) }
