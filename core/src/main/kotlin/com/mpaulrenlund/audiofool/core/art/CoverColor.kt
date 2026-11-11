@@ -47,6 +47,9 @@ object CoverColor {
      */
     const val MIN_SHARE = 0.005
 
+    /** A [main] with less chroma than this is the grey of a black and white cover: a colour has at least [GREY_BELOW_DARK]. */
+    const val NEUTRAL_BELOW = 0.01
+
     /** Hues are counted in slices of 10 degrees; the winner is the best three neighbours. */
     private const val SLICES = 36
 
@@ -109,9 +112,15 @@ object CoverColor {
      * so a deep red cover gives a red, not a greyish pink; made darker it keeps
      * its chroma, so a pastel stays a colour. Where the screen can't show that much
      * chroma at that lightness, it gets as much as there is. Opaque 0xAARRGGBB.
+     *
+     * A grey ([main] of a black and white cover) on Dark is [greyOnDark] light, when
+     * given, whatever the cover's lightness: at the band's lightness it read quieter
+     * than any colour (2026-11-11, the user's call: "Brighter on Dark"). On Light it
+     * is fitted as any colour is.
      */
-    fun accent(main: Int, playback: Int, dark: Boolean, range: Double): Int {
+    fun accent(main: Int, playback: Int, dark: Boolean, range: Double, greyOnDark: Double? = null): Int {
         val from = Lab.of(main)
+        if (dark && greyOnDark != null && from.chroma < NEUTRAL_BELOW) return Lab(greyOnDark, 0.0, 0.0).toArgb()
         val anchor = Lab.of(playback).l
         val lightness = if (dark) from.l.coerceIn(anchor, anchor + range) else from.l.coerceIn(anchor - range, anchor)
         val chroma = if (lightness > from.l && from.l > 0) from.chroma * lightness / from.l else from.chroma

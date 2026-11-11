@@ -12,6 +12,8 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Since 0.16.0, not released yet (2026-11-11): that grey is `nowPlaying.coverAccent.greyOnDark`
+  (0.9) light on Dark** (the user's call). To change how bright, change the token.
 - **Since 0.16.0, not released yet (2026-11-11): a black and white cover gives a grey**
   (the user's call; spec §5): `CoverColor.main` returns a grey at the cover's average lightness
   instead of null, and `accent` fits it to the theme. `CoverColors.Known.color` is null only

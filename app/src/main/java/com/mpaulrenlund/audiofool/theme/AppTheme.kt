@@ -52,11 +52,15 @@ class AppTheme(val isDark: Boolean, val tokens: AppTokens) {
      * `nowPlaying.coverAccent.lightnessRange` of the colour it [standsInFor], so
      * it reads as well as the theme's own. That is `accent.playback`, for the
      * seekbar, Play/Pause, the lit Repeat and Shuffle and, since 2026-11-11, the
-     * artist's name (fitted to `accent.blue` until then). Worked out from the theme each time,
-     * as any colour is: a theme switch gives the other theme's.
+     * artist's name (fitted to `accent.blue` until then). A black and white cover's
+     * grey is `nowPlaying.coverAccent.greyOnDark` light on Dark (2026-11-11). Worked
+     * out from the theme each time, as any colour is: a theme switch gives the other theme's.
      */
     fun coverAccent(main: Int, standsInFor: String = "color.accent.playback"): ThemeColor {
-        val argb = CoverColor.accent(main, themeColor(standsInFor).argb, isDark, number("nowPlaying.coverAccent.lightnessRange"))
+        val argb = CoverColor.accent(
+            main, themeColor(standsInFor).argb, isDark, number("nowPlaying.coverAccent.lightnessRange"),
+            greyOnDark = number("nowPlaying.coverAccent.greyOnDark"),
+        )
         return ThemeColor(a = 0xFF, r = (argb shr 16) and 0xFF, g = (argb shr 8) and 0xFF, b = argb and 0xFF)
     }
 

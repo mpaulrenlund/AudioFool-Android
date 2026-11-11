@@ -73,6 +73,14 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, not released yet: **the grey is brighter on Dark** (the user: "Brighter on Dark", after
+seeing the grey below). New token `nowPlaying.coverAccent.greyOnDark`, 0.9 OKLab lightness (about
+#E0E0E0), used for a black and white cover's grey on Dark whatever the cover's lightness
+(`CoverColor.accent(greyOnDark)`, a grey being a main under `NEUTRAL_BELOW` chroma). **My call:**
+0.9, brighter than any colour gets on Dark (the band tops out at about 0.8) and a step under the
+title's `text.heading`, so the artist's name still reads as apart from the title. Light unchanged.
+2 pictures changed (`now-playing-cover-grey`, Dark).
+
 2026-11-11, not released yet: **a black and white cover gives a grey, not teal or blue** (the
 user chose "Try a neutral accent" after the change below). Spec §5 (*Cover colour*) and §3.
 `CoverColor.main` returns a grey at the cover's average OKLab lightness where it used to return

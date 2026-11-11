@@ -147,6 +147,25 @@ class CoverColorTest {
         assertHue(PALE_PINK, accent)
     }
 
+    /** A black and white cover's grey on Dark (2026-11-11, the user's call: "Brighter on Dark"). */
+    @Test fun on_dark_a_grey_is_the_grey_lightness_whatever_the_cover() {
+        for (cover in listOf(0x000000, 0x404040, 0xFFFFFF)) {
+            val grey = CoverColor.main(picture(cover to 100))!!
+            val accent = CoverColor.accent(grey, DARK_PLAYBACK, dark = true, RANGE, greyOnDark = GREY_ON_DARK)
+            assertEquals(GREY_ON_DARK, CoverColor.lightness(accent), 0.005, "#%06X".format(cover))
+            assertTrue(CoverColor.chroma(accent) < 0.002)
+        }
+    }
+
+    @Test fun on_light_a_grey_is_fitted_as_a_colour_is() {
+        val grey = CoverColor.main(picture(0xFFFFFF to 100))!!
+        val accent = CoverColor.accent(grey, LIGHT_PLAYBACK, dark = false, RANGE, greyOnDark = GREY_ON_DARK)
+        assertEquals(lightAnchor, CoverColor.lightness(accent), 0.01)
+    }
+
+    @Test fun the_grey_lightness_leaves_colours_alone() =
+        assertEquals(onDark(RED), CoverColor.accent(opaque(RED), DARK_PLAYBACK, dark = true, RANGE, greyOnDark = GREY_ON_DARK))
+
     /** Every sixth step of each channel: 216 colours, the greys left out. */
     @Test fun any_colour_lands_in_the_band_opaque_with_its_hue() {
         val steps = (0..255 step 51).toList()
@@ -172,6 +191,9 @@ class CoverColorTest {
 
         /** mobile-tokens.json: nowPlaying.coverAccent.lightnessRange. */
         const val RANGE = 0.15
+
+        /** mobile-tokens.json: nowPlaying.coverAccent.greyOnDark. */
+        const val GREY_ON_DARK = 0.9
 
         const val RED = 0xC0392B
         const val SKY = 0x4A90D9
