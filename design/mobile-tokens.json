@@ -341,9 +341,9 @@
     "coverAccent": { "lightnessRange": 0.15, "greyOnDark": 0.9, "ring": { "width": 2, "opacity": 0.67 } },
     "$scrubBubbleNote": "The time under the finger while the seekbar is dragged (2026-11-09, the user's call): the index strips' bubble surface, at least minWidth wide and height tall, paddingX either side of the time, centred over the finger and kept inside the bar's ends. Its foot is gap above the bar's top: clear of the quality line (waveformTop + the line + a little), where a thumb doesn't hide it.",
     "scrubBubble": { "height": 44, "minWidth": 72, "paddingX": 12, "gap": 36, "textSize": 22, "weight": 600 },
-    "$swipeNote": "Swipe the art or the title block sideways (0.2.0, the user's call, replacing swipe-down to close): left is Next, right is Previous. Both follow the finger and fade toward swipeFadeTo over the art's width; let go past swipeSkipDistance, or flung faster than swipeSkipVelocity (dp/s), and the song changes; otherwise they spring back.",
-    "swipeSkipDistance": 96,
-    "swipeSkipVelocity": 1200,
+    "$swipeNote": "Swipe the art or the title block sideways (0.2.0, the user's call, replacing swipe-down to close): left is Next, right is the song before however far into this one (2026-11-11). Both follow the finger and fade toward swipeFadeTo over the art's width; let go past swipeSkipDistance, or flung faster than swipeSkipVelocity (dp/s), and the song changes; otherwise they spring back. Lowered 2026-11-11 (from 96 dp and 1200 dp/s, the user's call: too stiff).",
+    "swipeSkipDistance": 56,
+    "swipeSkipVelocity": 500,
     "swipeFadeTo": 0.35
   }
 }

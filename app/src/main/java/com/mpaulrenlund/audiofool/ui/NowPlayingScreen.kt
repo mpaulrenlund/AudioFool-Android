@@ -98,6 +98,8 @@ import kotlin.math.roundToInt
 class NowPlayingActions(
     val playPause: () -> Unit = {},
     val previous: () -> Unit = {},
+    /** Swipe right (2026-11-11): back a song however far in, without Previous's three seconds. */
+    val stepBack: () -> Unit = {},
     val next: () -> Unit = {},
     val seek: (Long) -> Unit = {},
     val cycleRepeat: () -> Unit = {},
@@ -135,7 +137,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
 /**
  * Now Playing (spec 5), opened from the mini player. No buttons at the top:
  * system back closes it. A sideways swipe on the art or the title block skips:
- * left for Next, right for Previous. From the top: the art, the title block
+ * left for Next, right for the song before. From the top: the art, the title block
  * with the track count, the quality lines, the waveform seekbar with the times,
  * the controls row (Repeat at the left, the transport centred, Shuffle at the right;
  * 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
@@ -222,8 +224,10 @@ fun NowPlayingScreen(
 
 /**
  * The art and title block, swiped sideways to skip (the user's call, 0.2.0): left
- * is Next, right is Previous (the button's rule, so more than 3 s in it restarts
- * the song). They follow the finger, fading toward `swipeFadeTo` over the art's
+ * is Next, right is the song before however far into this one (2026-11-11, the
+ * user's call; until then it took the button's 3 s rule and restarted the song).
+ * Both thresholds were lowered then too, the swipe having felt stiff on the S24
+ * (96 dp and 1200 dp/s before). They follow the finger, fading toward `swipeFadeTo` over the art's
  * width; past `swipeSkipDistance`, or flung faster than `swipeSkipVelocity`, the
  * song changes and they are back in place at once with the new song; short of it
  * they spring back. The seekbar keeps its own drag.
@@ -268,7 +272,7 @@ private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, cont
                     // A fling counts only away from the middle, not one flicked back.
                     val skip = when {
                         from < -skipAtPx || (velocity < -flingPx && from < 0) -> actions.next
-                        from > skipAtPx || (velocity > flingPx && from > 0) -> actions.previous
+                        from > skipAtPx || (velocity > flingPx && from > 0) -> actions.stepBack
                         else -> null
                     }
                     if (skip != null) {

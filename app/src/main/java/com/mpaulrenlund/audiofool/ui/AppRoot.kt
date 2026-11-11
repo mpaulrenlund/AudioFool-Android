@@ -99,6 +99,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
         NowPlayingActions(
             playPause = player::playPause,
             previous = player::previous,
+            stepBack = player::stepBack,
             next = player::next,
             seek = player::seek,
             cycleRepeat = player::cycleRepeat,

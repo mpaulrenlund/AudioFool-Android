@@ -73,6 +73,20 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, after 0.17.0 (not yet built): **Now Playing's swipe is easier, and a swipe right
+always goes back a song** (the user: swiping the art "is too resistant", and "swiping right on
+Album Art should go to the previous track"). `nowPlaying.swipeSkipDistance` 96 → 56 dp and
+`swipeSkipVelocity` 1200 → 500 dp/s (about what Android's own page swipers ask). A swipe right
+calls the new `Player.stepBack()`: the song before in the play order however far into this one,
+restarting the song at the start of the order without Repeat All, as Previous does there. Until
+now it called `previous()`, so more than 3 s in it restarted the song. The Previous button, the
+notification, the lock screen and the headset keys keep the desktop's rule (more than 3 s in
+restarts; `AudioEngine.Previous()`), which is what the user asked of the button. Spec §5.
+**My calls:** the numbers (the user can ask for easier still); the 3 s line stays "more than
+3 s" as the desktop has it. `SwipeToSkipTest` checks a swipe right calls stepBack and not
+Previous, a slow 90 dp drag skips (74 dp past the test's 16 dp touch slop) and a 40 dp flick
+skips. No picture changed.
+
 2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **Now Playing's track count moves to the quality line, at the left**
 (the user: "Can we move the track \"3/10\" to the same row as \"FLAC - 1,140 kbps - 24 Bit - 96 kHz\"
 but on the left hand side of the screen?"). Spec §5, items 2 and 4. `Quality` is a row: the count,
@@ -1100,6 +1114,13 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Easier swipe on Now Playing's art (next build)
+
+- [ ] Swipe the art left and right: does it skip with a relaxed swipe now, without skipping by
+  accident when you only touch it? Easier still, or too easy?
+- [ ] Well into a song, swipe right: the song before (not the same one from the start).
+- [ ] The Previous button: in the first 3 s, the song before; later, the same song from the start.
+
 ### The cover colour, the artist's name, the track count, Library Statistics (from 0.17.0)
 
 - [ ] A mostly black cover with a coloured logo or outline: the controls take the logo's colour, not blue.
@@ -1358,6 +1379,10 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Easier swipe on Now Playing's art (next build)
+
+- [ ] As on the S24. The M21's art is smaller: is the swipe still easy there?
 
 ### The cover colour, the artist's name, the track count, Library Statistics (from 0.17.0)
 

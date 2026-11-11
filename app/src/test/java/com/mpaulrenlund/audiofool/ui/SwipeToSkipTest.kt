@@ -39,6 +39,7 @@ class SwipeToSkipTest {
     private val nowPlaying = NowPlaying().apply { showForPictures(ThemeLabFixtures.nowPlayingTrack, index = 2, size = 10) }
     private var nexts = 0
     private var previouses = 0
+    private var stepBacks = 0
 
     private fun show() {
         val actions = NowPlayingActions(
@@ -47,6 +48,7 @@ class SwipeToSkipTest {
                 nowPlaying.showForPictures(second, index = 3, size = 10)
             },
             previous = { previouses++ },
+            stepBack = { stepBacks++ },
         )
         compose.setContent {
             AudioFoolTheme(AppTheme(true, tokens)) {
@@ -106,8 +108,49 @@ class SwipeToSkipTest {
         val home = artistLeft()
         swipe(30f, 20)
         settle()
-        assertEquals(1, previouses)
+        assertEquals(1, stepBacks)
         assertEquals(home, artistLeft())
+    }
+
+    /** 2026-11-11: right is the song before however far in, so not the button's Previous (which restarts after 3 s). */
+    @Test fun a_swipe_right_steps_back_not_previous() {
+        show()
+        swipe(30f, 20)
+        settle()
+        assertEquals(1, stepBacks)
+        assertEquals(0, previouses)
+    }
+
+    /**
+     * 2026-11-11, the swipe made easier: a slow drag of 90 dp, no flick, skips. The drag
+     * counts from past the touch slop (16 dp here, about 8 on a phone), so this is 74 dp
+     * against `swipeSkipDistance`; it took 96 before.
+     */
+    @Test fun a_slow_short_drag_skips() {
+        show()
+        val px = with(compose.density) { 90.dp.toPx() }
+        compose.onNodeWithText("Aphelion Drive").performTouchInput {
+            down(center)
+            // Slow: 90 dp over 32 moves 50 ms apart, about 55 dp/s, far below any flick.
+            repeat(32) { moveBy(Offset(-px / 32, 0f), delayMillis = 50) }
+            repeat(10) { moveBy(Offset(0f, 0f), delayMillis = 50) }
+            up()
+        }
+        settle()
+        assertEquals(1, nexts)
+    }
+
+    /** A moderate flick of 40 dp in about 60 ms skips (500 dp/s is enough now; it took 1200 before). */
+    @Test fun a_moderate_flick_skips() {
+        show()
+        val px = with(compose.density) { 40.dp.toPx() }
+        compose.onNodeWithText("Aphelion Drive").performTouchInput {
+            down(center)
+            repeat(8) { moveBy(Offset(px / 8, 0f), delayMillis = 8) }
+            up()
+        }
+        settle()
+        assertEquals(1, stepBacks)
     }
 
     @Test fun a_short_swipe_springs_back_without_skipping() {

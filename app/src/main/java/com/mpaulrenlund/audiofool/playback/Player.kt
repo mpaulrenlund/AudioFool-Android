@@ -217,6 +217,16 @@ class Player(
             seek(0)
             return
         }
+        stepBack()
+    }
+
+    /**
+     * Back a song however far into this one (Now Playing's swipe right, 2026-11-11,
+     * the user's call): Previous without its three seconds. At the start of the
+     * order, restarts, as Previous does.
+     */
+    fun stepBack() {
+        if (queue.isEmpty()) return
         val target = order.previous(heardIndex, wrap = state.repeat == RepeatMode.All)
         if (target < 0) seek(0) else jumpTo(target, forward = false)
     }

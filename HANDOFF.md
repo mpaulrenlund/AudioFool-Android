@@ -18,7 +18,9 @@ listed under *Other docs* at the end: read each only when the work touches it.
   Before it, 0.16.0 (52), 0.15.1 (51), 0.15.0 (50) and 0.14.0 (48); 49 went to the unpublished
   0.14.1. What each build did, build by build, is in `design/progress.md` (Sessions).
 - **Next build:** 0.17.1 for fixes, 0.18.0 for new features (confirm the number with the user);
-  **versionCode 54**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  **versionCode 54**. In it so far (unreleased, 2026-11-11): Now Playing's swipe made easier
+  (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); see the
+  top of *Decisions made for the build* and both device lists. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.17.0 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
