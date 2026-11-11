@@ -12,25 +12,31 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **Since 0.16.0, not released yet (2026-11-11): the track count is on the quality line, at the
+- **0.17.0, built 2026-11-11 ("Yes, prepare 0.17.0"), not published yet** (versionCode 53;
+  `dist/AudioFool-0.17.0.apk`, notes in `dist/notes-0.17.0.md`; signer `1fdefe0a…be2c21` and the
+  real Last.fm key checked; all tests and pictures pass; the emulator has 0.17.0, which updated over
+  0.16.0 keeping the library, shows Library Statistics and Version 0.17.0 in the logo menu, and the
+  count on the quality line with the artist in the cover's colour). Next: once the user approves the
+  notes, step 7 (check `PRIVATE`, `gh release create v0.17.0 … --prerelease`). The five changes:
+- **In 0.17.0 (2026-11-11): the track count is on the quality line, at the
   left** (the user's request; spec §5): `Quality(nowPlaying, track)` in `NowPlayingScreen.kt` is
   a baseline row; `TitleBlock` lost the count and `trackCountTop` went from the tokens.
-- **Since 0.16.0, not released yet (2026-11-11): that grey is `nowPlaying.coverAccent.greyOnDark`
+- **In 0.17.0 (2026-11-11): that grey is `nowPlaying.coverAccent.greyOnDark`
   (0.9) light on Dark** (the user's call). To change how bright, change the token.
-- **Since 0.16.0, not released yet (2026-11-11): a black and white cover gives a grey**
+- **In 0.17.0 (2026-11-11): a black and white cover gives a grey**
   (the user's call; spec §5): `CoverColor.main` returns a grey at the cover's average lightness
   instead of null, and `accent` fits it to the theme. `CoverColors.Known.color` is null only
   without a cover. Checked: all tests (new grey cases in `CoverColorTest`, `CoverColorsTest`
   split) and the 4 `now-playing-cover-grey` pictures, the only ones that changed.
-- **Since 0.16.0, not released yet (2026-11-11): the cover colour is found in more covers**
+- **In 0.17.0 (2026-11-11): the cover colour is found in more covers**
   (the user's request; spec §5, *Cover colour*): `CoverColor.main` skips black (lightness < 0.15),
   weights by chroma², needs 0.5%. Measured on the desktop's art cache (`%LOCALAPPDATA%\AudioFool\art`,
   8,604 JPEGs of the user's library): a throwaway core test that ran `CoverColor.main` on each
   with `ImageIO` gave the numbers in `design/progress.md`; rebuild one that way to measure a change.
-- **Since 0.16.0, not released yet (2026-11-11): Now Playing's artist name is in the seekbar's
+- **In 0.17.0 (2026-11-11): Now Playing's artist name is in the seekbar's
   and Play/Pause's colour** (the user's request; spec §5): `TitleBlock` takes `accent` (or
   `accent.playback`). Checked: all app tests and the 56 Now Playing pictures (the only ones that changed).
-- **Since 0.16.0, not released yet (2026-11-11): the logo menu's Statistics row reads "Library
+- **In 0.17.0 (2026-11-11): the logo menu's Statistics row reads "Library
   Statistics"** (the user's request; spec §4.1), first in the menu since the rows are alphabetical.
   The screen's title reads the same (spec §4.6). Checked: all app tests, the 4 menu pictures and the
   12 Statistics pictures (the only ones that changed). Goes out with the next build.
@@ -184,9 +190,9 @@ you touch a feature from then.
   build that never went to GitHub. All but v0.1.0 are pre-releases; v0.0.5 was skipped.
   `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.14.0.apk`,
   `dist/notes-0.14.0.md`.
-- **Next build after 0.15.1:** **0.15.2** for fixes, **0.16.0** for new features. Confirm the
+- **Next build after 0.17.0:** **0.17.1** for fixes, **0.18.0** for new features. Confirm the
   number with the user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's
-  sign-in fixes). versionCode 52 next (49 went to the unpublished 0.14.1). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  sign-in fixes). versionCode 54 next (49 went to the unpublished 0.14.1). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
   pictures use a fixed "0.7.0", so a bump changes no picture.
 - **The routine the user expects**, when they say to build:
   1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
