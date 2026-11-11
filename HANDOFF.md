@@ -14,7 +14,7 @@ you touch a feature from then.
   unticked items in *To test on the S24* / *To test on the M21*.
 - **Since 0.16.0, not released yet (2026-11-11): the cover colour is found in more covers**
   (the user's request; spec §5, *Cover colour*): `CoverColor.main` skips black (lightness < 0.15),
-  weights by chroma², needs 0.5%. Measured on the desktop's art cache (`%LOCALAPPDATA%\AudioFoolrt`,
+  weights by chroma², needs 0.5%. Measured on the desktop's art cache (`%LOCALAPPDATA%\AudioFool\art`,
   8,604 JPEGs of the user's library): a throwaway core test that ran `CoverColor.main` on each
   with `ImageIO` gave the numbers in `design/progress.md`; rebuild one that way to measure a change.
 - **Since 0.16.0, not released yet (2026-11-11): Now Playing's artist name is in the seekbar's
