@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
 - [x] **0.17.1**: Now Playing's swipe made easier (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous button keeps its 3 s rule — 2026-11-11, released as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1)
 - [x] **0.16.0**: Repeat at the left of the transport and Shuffle at the right; the cover full screen from the cover menu's Resolution row (pinch, drag and double tap to zoom) — 2026-11-10, released as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
 - [x] **0.15.1**: the cover menu keeps only Theme and Version of the logo menu's rows (Listening History, Rescan Library, Settings and Statistics are the logo menu's only) — 2026-11-10, released as pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1)
@@ -74,7 +75,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-11, after 0.17.1 (on `main`, not in a build yet): **the output row shows the music's
+2026-11-11, 0.17.2 (versionCode 55; released the same day as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `163bf510…ffd07f05` matching `dist/`; checked on the emulator first: updated over 0.17.1 with the library kept, and with the pretend Headphones route and BP on a 24-bit 48 kHz song read "3.5mm · 24-Bit · 48 kHz · Exclusive" on Now Playing, Settings and Debug, "Opened as" still "SourceRate · 48 kHz / 32-bit, 2 ch"; a 16-bit song at the system's rate isn't among the samples, so that is on the M21 list): **the output row shows the music's
 depth, not the slot's** (the user, on the M21's "4.4mm · 32-Bit · 48 kHz · Exclusive" for a
 24-bit FLAC: "32-Bit makes me think that android is re-sampling the audio"; "Yes, everywhere").
 The M21 sends a 24-bit track in 32-bit slots, since 24-bit packed is static there (0.1.1):
@@ -87,7 +88,7 @@ is heard; lossy and DSD-as-PCM tracks have no depth of their own and keep the sl
 matches). Debug's "Opened as" still gives the slot. Spec §6.3. What is sent is unchanged.
 **My call:** the mobile's own rule (the desktop's exclusive readout gives no depth). Four tests
 in `BitPerfectTest` (29 in all); `:core:test` and `:app:testDebugUnitTest` pass. No picture
-changed. Not checked on a phone or the emulator: on the M21 list.
+changed. Not checked on a phone: on the M21 list.
 
 2026-11-11, 0.17.1 (versionCode 54; released the same day as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `56023173…d2b8026a` matching `dist/`; checked on the emulator first, all five swipe and Previous checks passing, the library kept): **Now Playing's swipe is easier, and a swipe right
 always goes back a song** (the user: swiping the art "is too resistant", and "swiping right on
@@ -1130,6 +1131,11 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The output row's depth (from 0.17.2)
+
+- [ ] With the Shanling and BP on, nothing changed: a 24-bit song still reads "Shanling UA2
+  Plus · 24-Bit · … · Exclusive", a 16-bit one 16-Bit.
+
 ### Easier swipe on Now Playing's art (from 0.17.1)
 
 - [ ] Swipe the art left and right: does it skip with a relaxed swipe now, without skipping by
@@ -1396,11 +1402,12 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### The output row's depth (from the build after 0.17.1)
+### The output row's depth (from 0.17.2)
 
 - [ ] A 24-bit song through the 4.4 mm jack with BP on: "4.4mm · 24-Bit · 48 kHz · Exclusive"
   (it said 32-Bit), and it sounds as before.
-- [ ] A 16-bit song still says 16-Bit; an MP3 says 32-Bit.
+- [ ] A 16-bit song still says 16-Bit.
+- [ ] An MP3 says 32-Bit.
 
 ### Easier swipe on Now Playing's art (from 0.17.1)
 
