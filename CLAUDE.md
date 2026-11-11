@@ -4,10 +4,15 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 ## Read these first
 
-- **`HANDOFF.md`**: current state, the build–install–verify loop, and traps worth not rediscovering. Start here. (Session 1 creates it.)
+- **`HANDOFF.md`**: the latest build, what is open, what waits on the user, the next steps, and where everything lives. Start here.
+- `docs/build-and-emulator.md`: this PC's quirks, the build → test → verify → ship loop, the emulator and driving it. Read it before the first Gradle or emulator command.
+- `docs/devices.md`: what the S24 and the M21 turned out to do, and reaching them over adb. Read it before anything about the S24, the M21, adb or a USB DAC.
+- `docs/traps.md`: traps worth not rediscovering. Read it before changing playback, scanning, the output stage or ThemeLab tests.
+- `docs/background.md`: how the S24's own USB driver came about, Debug, the open Bit-Perfect items. Read it when a decision's history matters.
+- `docs/code-map.md`: where each part's code lives. Read it before working on a feature's code.
 - **`design/android-spec.md`**: the source of truth for every screen, size and behaviour. Read it before any UI work.
 - **`design/progress.md`**: every decision and what each session verified. Read the Decisions section before UI work, and add to it when you change something.
-- `design/progress-archive.md`: decisions and notes from 0.2.6 and older, and HANDOFF's history. Not read up front; search it before changing a feature built then (the letter strip, swipe to skip, the seekbar, the readout, Now Playing's layout, the M21's jack, Last.fm, Statistics).
+- `design/progress-archive.md`: decisions and notes from 0.2.6 and older, and HANDOFF's history (up to 0.17.0, with the old numbered build routine). Not read up front; search it before changing a feature built then (the letter strip, swipe to skip, the seekbar, the readout, Now Playing's layout, the M21's jack, Last.fm, Statistics).
 - `design/session-prompts.md`: the build sessions, in order.
 
 ## Where things are
@@ -47,6 +52,8 @@ The phones are plugged into this PC only when the user does it. Check `adb devic
 - Ask before big choices: a new library or dependency, a change to the spec, anything that touches stored data, and a release. Otherwise build.
 - Stay within the change asked for. Don't restyle other parts.
 - Verify by running it (unit tests, screenshot tests, the S24), not by reasoning about the code.
+- Run verification passes in a subagent (the user's call, 2026-11-11): the screenshot tests and their comparison with `design/screens/`, emulator checks, and logcat digs. Give it the `docs/build-and-emulator.md` section that describes the check, and have it bring back only pass or fail, the numbers that matter and the file paths. Open a picture in the main conversation only when a check failed or the user needs to see it.
 - When done: list what changed and anything that differs from the spec, update the spec if the user changed what it says, add the decisions to `design/progress.md`, and update `HANDOFF.md`.
+- **`HANDOFF.md` stays under 15 KB.** It holds only the latest build, what is open, what waits on the user, the next steps and where things live. Per-build history goes to `design/progress.md` (Sessions), and anything older or no longer current moves to `design/progress-archive.md` in the same session.
 - Work on `main`. Commit with clear messages and push.
 - Releases: confirm the version number and the notes with the user before installing a build on a phone. Middle number for new features, last for fixes. The signing keystore and AudioFool's Last.fm key live outside the repo.

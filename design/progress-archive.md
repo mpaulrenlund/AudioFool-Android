@@ -1662,3 +1662,320 @@ Started early (session 1, `v0.0.1`): the M21 has the SD card slot, and the full 
 - [ ] **Rescan.** The refresh button in MUSIC FOLDERS: Last scan should read about 0 and reuse every track.
 - [ ] **SD card out.** With the app open, eject or remove the card: the counts stay the same, and the LIBRARY line says "Unavailable: SD card · Music (N tracks kept)". Open the app with the card still out: the same. Put it back: "Up to date", nothing removed.
 
+## HANDOFF.md as of 2026-11-11 (moved out when the handoff was slimmed)
+
+HANDOFF.md's introduction, *Starting the next session* and *What the recent builds did* as they stood at 0.17.0, moved here unchanged except for cross-references when HANDOFF.md was cut to what a new session needs. The rest of the old HANDOFF.md went to `docs/`.
+
+### The introduction
+
+Updated 2026-11-11: 0.17.0 (versionCode 53: the cover colour from more covers, a grey for black and white ones, the artist in it, the track count on the quality line, Library Statistics) published as the pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), after 0.16.0 (versionCode 52: Repeat and Shuffle either side of the transport, and the cover full screen) published as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0), after 0.15.1 (versionCode 51, a shorter cover menu), published as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1), after 0.15.0 (versionCode 50), published as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0): Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
+`design/progress.md` (every decision, newest first, and the lists of what to test on each
+device). The spec is `design/android-spec.md`; the USB driver's story is
+`design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
+session notes, every decision up to 0.2.6) is in `design/progress-archive.md`: search it when
+you touch a feature from then.
+
+### Starting the next session
+
+- **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
+  for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
+  unticked items in *To test on the S24* / *To test on the M21*.
+- **0.17.0, published 2026-11-11 ("Yes, prepare 0.17.0", then "Publish it") as the pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0)** (versionCode 53, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256, `00d60565…bfd6d47e`, matched `dist/`;
+  `dist/AudioFool-0.17.0.apk`, notes in `dist/notes-0.17.0.md`; signer `1fdefe0a…be2c21` and the
+  real Last.fm key checked; all tests and pictures pass; the emulator has 0.17.0, which updated over
+  0.16.0 keeping the library, shows Library Statistics and Version 0.17.0 in the logo menu, and the
+  count on the quality line with the artist in the cover's colour). When the user reports, tick *The cover
+  colour, the artist's name, the track count, Library Statistics (from 0.17.0)* in both test lists;
+  if a cover gives a colour they wouldn't pick, ask which album and what they expected (the desktop's
+  art cache can reproduce it, below). The five changes:
+- **In 0.17.0 (2026-11-11): the track count is on the quality line, at the
+  left** (the user's request; spec §5): `Quality(nowPlaying, track)` in `NowPlayingScreen.kt` is
+  a baseline row; `TitleBlock` lost the count and `trackCountTop` went from the tokens.
+- **In 0.17.0 (2026-11-11): that grey is `nowPlaying.coverAccent.greyOnDark`
+  (0.9) light on Dark** (the user's call). To change how bright, change the token.
+- **In 0.17.0 (2026-11-11): a black and white cover gives a grey**
+  (the user's call; spec §5): `CoverColor.main` returns a grey at the cover's average lightness
+  instead of null, and `accent` fits it to the theme. `CoverColors.Known.color` is null only
+  without a cover. Checked: all tests (new grey cases in `CoverColorTest`, `CoverColorsTest`
+  split) and the 4 `now-playing-cover-grey` pictures, the only ones that changed.
+- **In 0.17.0 (2026-11-11): the cover colour is found in more covers**
+  (the user's request; spec §5, *Cover colour*): `CoverColor.main` skips black (lightness < 0.15),
+  weights by chroma², needs 0.5%. Measured on the desktop's art cache (`%LOCALAPPDATA%\AudioFool\art`,
+  8,604 JPEGs of the user's library): a throwaway core test that ran `CoverColor.main` on each
+  with `ImageIO` gave the numbers in `design/progress.md`; rebuild one that way to measure a change.
+- **In 0.17.0 (2026-11-11): Now Playing's artist name is in the seekbar's
+  and Play/Pause's colour** (the user's request; spec §5): `TitleBlock` takes `accent` (or
+  `accent.playback`). Checked: all app tests and the 56 Now Playing pictures (the only ones that changed).
+- **In 0.17.0 (2026-11-11): the logo menu's Statistics row reads "Library
+  Statistics"** (the user's request; spec §4.1), first in the menu since the rows are alphabetical.
+  The screen's title reads the same (spec §4.6). Checked: all app tests, the 4 menu pictures and the
+  12 Statistics pictures (the only ones that changed). Goes out with the next build.
+- **0.16.0, published 2026-11-10 ("Yes, 0.16.0", then "Publish it") as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
+  (versionCode 52, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
+  APK's SHA-256, `6df57c7f…efde5ce9`, matched `dist/`; notes in `dist/notes-0.16.0.md`; signer
+  `1fdefe0a…be2c21` and the real Last.fm key checked; the emulator has 0.16.0): Repeat at the left of the
+  transport and Shuffle at the right, and the cover full screen from the cover menu's Resolution
+  row** (the user's two requests; spec §5 *Controls row*, new §5.3; the decisions in
+  `design/progress.md`). Repeat and Shuffle kept their size (44 / 35 dp) and sit level with
+  Play/Pause, `paddingX` from each edge. The viewer is `Route.Cover` → `ui/CoverViewerScreen.kt`:
+  the cover decoded whole (up to 4096 px a side), pinch up to 8×, drag clamped to the edges, a
+  double tap to 3× at the finger and back, plain Compose gestures (no library), `coverViewer.*`
+  tokens. Checked: all tests (new `CoverZoomTest`, `CoverViewerTouchTest`), ThemeLab (56 changed,
+  8 new), and the emulator. A pinch can't be sent over adb, so the phones are its first real
+  pinch. When the user reports, tick *Repeat and Shuffle either side, and the cover full screen
+  (from 0.16.0)* in both test lists; if they want Repeat and Shuffle bigger now they don't stack,
+  that is `modeButton.max` and the `(play − modeGap) / 2` rule in `Controls`.
+- **0.15.1, published 2026-11-10 ("Build 0.15.1", then "Publish it") as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1)
+  (versionCode 51, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded
+  APK's SHA-256, `e9838121…020ee0`, matched `dist/`; notes in `dist/notes-0.15.1.md`): the cover menu keeps only Theme and Version of the
+  logo menu's rows** (the user: "...remove Listening History, Rescan Library, and
+  Statistics. These should just be in the Main Logo menu.", then "Let's remove settings as well.";
+  spec §5, *Cover menu*). `AppMenuRows(allRows = false)` in `ArtMenu`; the logo menu is unchanged. Checked: 101 app
+  tests, the 12 cover menu pictures, and the emulator, which has 0.15.1. Signer checked
+  (`1fdefe0a…be2c21`) and the real Last.fm key in it.
+- **0.15.0, published 2026-11-10 ("Build 0.15.0", then "Publish it") as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0) (versionCode 50, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256, `a5168eba…12bf42`, matched `dist/`; notes in `dist/notes-0.15.0.md`): Version opens the releases page** (the
+  user's request; spec §4.1). The logo menu's and the cover menu's Version row close the menu and
+  open `RELEASES_URL` in the default browser (`ui/OpenInBrowser.kt`: sent to the browser by
+  name, so GitHub's app doesn't take it; a `<queries>` entry in the manifest lets the app see
+  browsers). Checked: `VersionRowTest`, the 16 menu pictures (Version's colours), and the
+  emulator (Chrome got it). Signer checked (`1fdefe0a…be2c21`) and the real Last.fm key in it;
+  the emulator has 0.15.0.
+- **Also in 0.15.0 (first built as 0.14.1, never published): the mini player's buttons follow Now Playing's** (the
+  user: "...follow the same logic as the Now Playing screen? Including showing the glow around
+  the play button when audio is playing."; spec §3). The three icons and Play/Pause's ring and
+  glow take the cover's colour, and the glow shows only while playing. The colour is one per
+  song, shared by both screens: `art/CoverColors` (provided as `LocalCoverColors` next to
+  `LocalArt`; `rememberCoverColor` in `Parts.kt`) works it out once from the cover decoded
+  at no less than 512 px and keeps the last 64. Now Playing's `BigCover` takes it from there
+  too, so its colour may shift very slightly from 0.14.0 on a busy cover. ThemeLab fills a colour
+  in with `putForPictures`, since it can't read a cover. Checked: 624 tests, 12 new pictures
+  (all others unchanged), and the emulator.
+- **Also in 0.15.0: no glow at the top of the screen in Dark** (the user:
+  "Can we remove the glow at the top of the window in the Dark theme?"; spec §2). Every
+  screen, since `WindowBackground` is shared; Now Playing's cover-coloured glow went too
+  (`Modifier.titleGlow` and `glowTint` removed; the desktop's glow tokens kept, unread).
+  Checked: 620 tests; all 150 Dark ThemeLab pictures changed only in their top 80 dp, no
+  Light one changed.
+- **0.14.0 is the user's five layout requests** (2026-11-10; "Build 0.14.0", then "Publish
+  it"): versionCode 48, published as the pre-release
+  [`v0.14.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.14.0) (APK
+  attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256,
+  `832e8d78…da06d826`, matched `dist/`). Spec §4.1, §4.2, §5, §6.4;
+  the decisions in `design/progress.md`: Artists' logo at
+  the right of the search field; a shuffle button on Albums for that artist; a **tap** on Now
+  Playing's cover opens its menu, which now holds **Bit-Perfect** (a check while on) in place
+  of the BP button; **Repeat over Shuffle** at the left, 44 dp on the S24 / 35 on the M21, and
+  the **transport centred** (the S24's Previous and Next shrank to 60 dp to make room);
+  **Previous and Next** in the cover's colour. Checked with 620 tests, ThemeLab and the
+  emulator. Listen for: the S24's smaller skip
+  buttons, the M21's barely bigger Repeat and Shuffle, and covers opened by accident.
+- **Where it stands:** nothing is broken that the user knows of. The latest release is **0.16.0** (versionCode 52, the first item above), published 2026-11-10; before it **0.15.1** (versionCode 51), **0.15.0** (versionCode 50) and **0.14.0** (versionCode 48), the same day. Before
+  that, **0.13.0** (versionCode 47): **Now Playing's ideas** (spec §5 and §2; below),
+  published 2026-11-09 as the pre-release
+  [`v0.13.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.13.0) (APK
+  attached); **0.12.0** (versionCode 46): **Now Playing's playback colour comes from the
+  cover** (spec §5, *Cover colour*; next item), published 2026-11-09 as
+  [`v0.12.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.12.0);
+  **0.11.0** (versionCode 45): **a year strip on Albums** (spec §4.2; the user
+  asked for "the same Alpha scroll bar from the Artists screen when there are enough albums to
+  warrant scrolling", and chose years over letters), published 2026-11-09 as
+  [`v0.11.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.11.0);
+  **0.10.1** (versionCode 44): **the Album page's track numbers moved
+  left** (spec §4.3), published 2026-11-06 as
+  [`v0.10.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.1); and
+  **0.10.0** (versionCode 43): **the Genius screen** (spec §5.2; the desktop's session 75,
+  ported; from the cover menu's new **Genius** row), published 2026-11-05 as
+  [`v0.10.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.10.0). Genius
+  has **never seen the real genius.com on Android**: the emulator can't get past this PC's
+  Zscaler (`docs/traps.md`), so the phones are its first live run. **Not yet reported:** 0.14.0, 0.13.0, 0.12.0, 0.11.0, 0.10.1
+  and 0.10.0 on the phones, and 0.9.0's shuffle button before them. 0.8.1 was on both phones before those (installed over USB); the
+  user's last report on that: "looks its working on both devices" (the Last.fm sign-in and
+  Listening History).
+- **0.12.0 is a try** (2026-11-09; "Build 0.12.0", then "Publish it"): **Now Playing's playback colour
+  comes from the cover** (spec §5, *Cover colour*; the user: "I'd like try taking the main color
+  theme of the album art … as the accent color for the seekbar, the color around the play
+  button, and the Play button itself"). The seekbar's played part, Play/Pause's icon and the
+  ring and glow round it take the cover's main colour, fitted to the theme (no darker than
+  `accent.playback` on Dark, no lighter on Light); a cover with no colour, or no cover, keeps
+  `accent.playback`. The mini player and the lists are unchanged. Before the release the user had
+  seen only ThemeLab's made-up covers (a labelled sheet, `dist/cover-colour-s24.png`), so expect "more/less vivid", "wrong
+  colour for this album" or "turn it off"; the knobs are in core `CoverColor` (which hue wins,
+  what counts as grey) and `nowPlaying.coverAccent.lightnessRange`. Checked with the tests,
+  ThemeLab (16 new pictures, all others identical) and the emulator, which now has 0.12.0.
+- **0.13.0 is the user's pick from a set of mock-ups** (2026-11-09; "Build 0.13.0", then
+  "Publish it"): **Now Playing's ideas**. The user
+  asked for "recommendations or mockups on how to improve this Now Playing screen", got a
+  critique and eight numbered mock-ups (real ThemeLab renders of throwaway code, the sheets
+  `dist/ideas-*.png`), and chose "everything except for idea 6". Built (spec §5 and §2;
+  the decisions and what was checked are in `design/progress.md`):
+  - the cover's colour also on **Repeat and Shuffle when on**, the **artist's name** (fitted
+    to `accent.blue`, so lighter on Dark and darker on Light than the seekbar) and the **glow
+    at the top**; in **Light a ring** round Play/Pause in it;
+  - the **glow round Play/Pause only while playing** (Now Playing only; the mini player's
+    stays, my call, open to carrying over);
+  - a **time bubble while scrubbing**;
+  - the **cover kept until the next one is read** (no placeholder blink at a song change);
+  - a **press shown on all nine round buttons** (`control.faceHover`), the mini player's too;
+  - the **artist's and the album's names open them**, back returning to Now Playing;
+  - **screen reader names** on the buttons and the seekbar.
+  Not built: **6**, the "Next" line (the user's call). **8**, bigger touch areas, needed
+  nothing: Compose already widens a small touch area to 48 dp, and my critique was wrong to
+  say otherwise (`NowPlayingTouchTest` pins it). Checked with the tests (598), ThemeLab and
+  the emulator, which now has 0.13.0.
+- **First thing in the next chat**, unless the user leads with something else: when they say
+  how 0.14.0 feels, tick the matching items under *The five layout requests (from 0.14.0)* in
+  both test lists and push. If the S24's 60 dp Previous and Next feel small, the trade is
+  Repeat and Shuffle's size (`modeButton.max`) or Play/Pause's (`playButton`), since the
+  transport is centred; if the M21's Repeat and Shuffle want to be bigger, the cover gives up
+  height (`artHeightReserve`). Ask which before changing it. When they say
+  how 0.13.0 feels, tick the matching items under *Now Playing's ideas (from 0.13.0)* in both
+  test lists and push. Listen for three things I chose and they may want otherwise: the mini
+  player's glow staying on while paused, the old cover staying a moment when skipping to
+  another album, and the names opening by accident. When they say
+  how the cover colours look, tick the matching items under *Now Playing's cover colour (from
+  0.12.0)* in both test lists and push; if a cover gave a colour they wouldn't have picked, ask
+  which album and what colour they expected before changing the rule.
+  When they report
+  on the year strip, tick *Albums' year strip (from 0.11.0)* in both test lists and push; on
+  the M21, ask whether a crowded artist's thinned years (every second or third written) read
+  well. When they report
+  on the Album page's numbers, tick *The Album page's track numbers (from 0.10.1)* in both test
+  lists and push. When they report on Genius, tick the matching items under *Genius (from 0.10.0)* in both test lists and push.
+  Ask how often a "Couldn't load … HTTP 403" or "didn't send" row came: that is Genius's
+  Cloudflare check refusing the phone, and what to do about it is the user's call (see
+  *Genius* under *What the recent builds did*). When they report on 0.9.0, tick the matching
+  items under *The shuffle button on Artists (from 0.9.0)* in both
+  test lists and push. The M21 is the real test: a 27,115-song queue is new. If it's slow there:
+  the tap builds the queue (`LibraryShuffle.queue`) and `PlayOrder.candidates` (the whole
+  remaining order, mapped to tracks) on the main thread, at every song start too; a restart
+  decodes the ~3 MB `resume.json` on IO and resolves it on Default. Ask what was slow (the tap,
+  song changes, the restart) and measure with Debug's numbers before changing anything.
+- **Builds go out as GitHub pre-releases again, APK attached, because the repo is private**
+  (since 0.9.0, the user's call: they prefer it to USB installs, and made the repo private on
+  2026-11-05 so the key can ship). Every APK carries AudioFool's Last.fm key and secret, so
+  **check `gh repo view mpaulrenlund/AudioFool-Android --json visibility` says `PRIVATE` right
+  before every upload**; if it ever says `PUBLIC`, don't upload (the APK would leak the key;
+  Claude's safety check stopped 0.8.1's upload while the repo was public). Only the owner,
+  `mpaulrenlund`, can change visibility; this PC (`marcusrenlund`) can't. 0.8.1 is the one
+  build that never went to GitHub. All but v0.1.0 are pre-releases; v0.0.5 was skipped.
+  `dist/` (ignored by git) keeps each build's APK and its notes: `dist/AudioFool-0.14.0.apk`,
+  `dist/notes-0.14.0.md`.
+- **Next build after 0.17.0:** **0.17.1** for fixes, **0.18.0** for new features. Confirm the
+  number with the user (they called 0.7.1's version row, 0.7.4's cover menu rows and 0.8.1's
+  sign-in fixes). versionCode 54 next (49 went to the unpublished 0.14.1). The logo menu shows the version (`BuildConfig`); ThemeLab's menu
+  pictures use a fixed "0.7.0", so a bump changes no picture.
+- **The routine the user expects**, when they say to build:
+  1. Bump `versionCode` and `versionName` in `app/build.gradle.kts`.
+  2. `./gradlew :core:test :app:testDebugUnitTest :app:verifyRoborazziDebug :app:assembleRelease`
+     (with the environment under *This PC's quirks* in `docs/build-and-emulator.md`). `assembleRelease` stops unless AudioFool's
+     Last.fm key is in `gradle.properties`.
+  3. Copy `app/build/outputs/apk/release/app-release.apk` to `dist/AudioFool-<v>.apk`.
+  4. Check the signer (`apksigner verify --print-certs`: SHA-256 `1fdefe0a…be2c21`), and that
+     the APK has the real Last.fm key, not the emulator's dummy: compare the release
+     `BuildConfig.java` with `gradle.properties` in the shell, never printing either.
+  5. Install it on the emulator and look at what changed.
+  6. The notes (or when the user says **"Show <v> notes"**): show them in chat, written for the
+     user (what changed, then a numbered *To try on the S24* / *To try on the M21*), and save
+     them as `dist/notes-<v>.md`. Commit and push the bump ("<v> (versionCode N)").
+  7. Once the user is happy with the notes: check the repo is `PRIVATE` (above), then
+     `gh release create v<v> dist/AudioFool-<v>.apk -R mpaulrenlund/AudioFool-Android --target
+     <full SHA of the bump commit> --prerelease --title "AudioFool <v>" --notes-file
+     dist/notes-<v>.md` (`--target` takes a branch or a full SHA, not a short one). Download it
+     back (`gh release download`) and compare its SHA-256 with `dist/`. The user installs it
+     from the release page on each phone (signed in to GitHub); it updates in place and keeps
+     the library and settings. Over USB instead, only if the user asks: `adb -s <serial>
+     install -r dist/AudioFool-<v>.apk` (see *Reaching the phones* in `docs/devices.md`).
+  8. Record it in `design/progress.md` (Sessions, Decisions, the test lists) and in HANDOFF.md; commit
+     and push.
+- **Before the first Gradle run:** read *This PC's quirks* in `docs/build-and-emulator.md` (Android Studio's JDK, the Zscaler
+  trust store, the loopback directory, Gradle with the sandbox off).
+
+### What the recent builds did
+
+In short; the user's calls, the reasoning and what was checked are in
+`design/progress.md`. Most of 0.6.0–0.7.4's phone checks are still unticked in both lists; they
+don't block anything.
+
+- **0.14.0** (2026-11-10, "Build 0.14.0", then "Publish it"): **five layout requests** (spec
+  §4.1, §4.2, §5, §6.4). Artists' search field first, the logo at the right, its menu hanging
+  from its right edge; Albums' shuffle button (core `LibraryShuffle.queue(artist)`); a tap on
+  Now Playing's cover opens its menu (the long press too); Bit-Perfect is a checked row in it
+  (`MenuCheckRow`, `status.bitPerfectOn`), the BP button gone (`color.bpLabel` kept, unused);
+  Repeat over Shuffle at the left, as tall as Play/Pause together (44 dp S24, 35 M21), the
+  transport centred (the S24's skip buttons 60 dp, gaps 8); Previous's and Next's icons in the
+  cover's colour. 128 ThemeLab pictures changed, 8 new `art-menu-bp-*`, the 8
+  `now-playing-bp-*` gone; every other picture unchanged.
+- **0.13.0** (2026-11-09, "Build 0.13.0", then "Publish it"): **Now Playing's ideas**, all but
+  the "Next" line (spec §5 and §2). The cover's colour also on Repeat and Shuffle when on, the
+  artist's name (fitted to `accent.blue`) and the top glow, with a ring in Light; the glow
+  round Play/Pause only while playing (Now Playing only); a time bubble while scrubbing; the
+  cover kept until the next is read; a press shown on all nine round buttons; the artist's
+  and album's names open them; screen reader names. 26 Now Playing pictures changed or new,
+  every other one unchanged.
+- **0.12.0** (2026-11-09, "Build 0.12.0", then "Publish it"): **Now Playing's playback colour
+  from the cover** (spec §5, *Cover colour*). The seekbar's played part, Play/Pause's icon and
+  its ring and glow take the cover's main colour (core `CoverColor.main`: the hue with the most
+  colour in it), fitted to the theme (`CoverColor.accent`, `AppTheme.coverAccent`); black and
+  white or no cover keeps `accent.playback`. Light still has no ring or glow. Kept from one
+  cover until the next is read, so no blue flashes within an album. 16 new ThemeLab pictures
+  (`now-playing-cover-*`), every other one unchanged.
+- **0.11.0** (2026-11-09, "Build 0.11.0", then "Publish it"): **a year strip on Albums**.
+  Albums is in release order, so the strip holds years, not letters (the user's call): "’97" on
+  the strip, "1997" in the bubble, "?" for undated albums (at the foot, as the desktop sorts
+  them). Shown only when the albums don't fit (fixed row heights decide it before drawing).
+  When years would sit closer than 14 dp (`artists.index.minSlot`), every few is written; the
+  touch still stops on each. One strip for both screens: core `ScrollIndex` behind
+  `ArtistIndex` and `AlbumYearIndex`, the app's `IndexStrip.kt` (was `ArtistIndexStrip.kt`).
+  8 new ThemeLab pictures (`edge-albums-years*`), every other one unchanged. The emulator keeps
+  a test artist, `/sdcard/Music/Year Strip Band` (25 albums, 1971–2024, one untagged).
+- **0.10.1** (2026-11-06, "Build 0.10.1", then "Publish it"): **the Album page's track
+  numbers** start at the row's start, left-aligned, in a column as wide as the album's longest
+  number (`numberColumnWidth` in `LibraryScreens.kt`; `album.columns.number.width` is the
+  18 dp floor); the playing song shows ▶ in its number's place. The desktop and the mockups
+  keep a triangle slot left of a right-aligned number; the phone gives that width to the titles
+  (the user's call). The 20 Album ThemeLab pictures changed.
+- **0.10.0** (2026-11-05, "Build 0.10.0", then "Publish it"): **Genius**. The cover menu's **Genius** row opens
+  `Route.Genius(path)`, what genius.com has on the song (spec §5.2). Core `genius/` (ported with
+  the desktop's tests), the app's `genius/Genius.kt` (held as `AudioFoolApp.genius`, so a song
+  found is kept for the run) and `ui/GeniusScreen.kt`. It uses genius.com's undocumented web API
+  (no key). **Cloudflare stands in front of it**: from this PC, desktop Java's requests were
+  challenged (HTTP 403, `cf-mitigated: challenge`) about 1 in 4, curl's never. What the phones
+  get is unknown until the user tries it; if 403s are common there, ask the user before
+  changing anything, and never imitate a browser to get past the check.
+- **0.9.0** (2026-11-05, the first release from the private repo): **a shuffle button on
+  Artists** (spec §4.1). `LibraryShuffle` (core: the library in its own order, unreachable
+  songs left out), `Player.shuffleAll` (Shuffle on, a random start; says whether it started),
+  `ArtistsHeaderAction` with Settings' `IconButtonSmall`. Now Playing opens on the song (the
+  user's call). The queue can now be the whole library (27,115 on the M21), so `Player.save`
+  encodes the resume file (about 3 MB there) off the main thread, newest save only, and the
+  restore resolves paths off it too. Now Playing's count has thousands separators. Checked
+  with the tests, ThemeLab and the emulator; the M21's full library is on its list.
+- **0.8.1** (2026-11-05, over USB): **Last.fm signs in with the username and password**
+  (spec §4.5, §7). `LastFmApi.getMobileSession` (a signed POST over HTTPS), `LastFm.connect`,
+  with AudioFool's own key built in (`BuildConfig.LASTFM_*`, from `gradle.properties`;
+  `preReleaseBuild` stops without it). The password is never stored, nor in saved state
+  (`remember`); the form offers it to the password manager. A session is saved with the key it
+  was made with, so a phone connected earlier with a typed-in key stays connected. The browser
+  approval and the key fields are gone from the app; core keeps `getToken` / `getSession`
+  (ported). The emulator shows only the form: only the user signs in, on the phones.
+- **0.8.0** (2026-11-04, the last release from the public repo): **Listening History** (spec
+  §4.7), the desktop's ported with its 17 tests (`ListeningJson`, `ListeningMatch`,
+  `HistoryTime`, `LastFmApi`'s unsigned GET reads). From the logo menu and the cover menu
+  (`AppMenuRows`' first row).
+  `AudioFoolApp.history` holds it so back from a row finds it as it was (`open()` from a menu
+  fetches afresh, `showing()` only if nothing was). The period switch is 7D · 1M · 3M · 6M · 12M
+  · All; a song row opens `Route.Album(…, song)` with the song selected. The desktop's token
+  files were copied again (they had gained `listeningHistory.periodGap` and `genius.*`). If a
+  list ever comes back empty or wrong, read `ListeningJson` against Last.fm's real answer.
+- **0.7.4** (2026-11-03): the cover menu ends with the logo menu's rows (`AppMenuRows`).
+- **0.7.3** (2026-11-03): the S24's pop at the first Play with BP on (the first stream after a
+  take muted 500 ms, `COLD_SETTLE_MS`); the M21's "No Output" (only a whole-number FiiO `type`
+  counts, `OutputNames.fiioJackOf`; Debug's FiiO jack row shows what FiiO last sent). The user
+  reported both fixed.
+- **0.7.2** (2026-11-02): the round buttons without the desktop's molded lip (`RoundButton`).
+- **0.7.1** (2026-11-02): the logo menu in alphabetical order with the version at its foot;
+  Now Playing's readout 20 dp higher on the S24 (`nowPlaying.readoutLift`).
+- **0.7.0** (2026-11-02): rescan progress in the ARTISTS and MUSIC FOLDERS headers
+  (`RescanOutcome`, `scanHeaderText`, `rescan(asked = true)`).
+- **0.6.0** (2026-11-02): Now Playing's cover menu and Analyze (the desktop's spectrogram and
+  opinion, ported); the readout gives the bit depth before the rate.

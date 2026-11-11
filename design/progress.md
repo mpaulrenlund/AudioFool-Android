@@ -577,7 +577,7 @@ project private, if that's the concern"). Offered too and not taken: a public re
 without the key (signed-in phones keep their own saved key; a new sign-in would fail). The
 owner `mpaulrenlund` switched it; GitHub then said `PRIVATE`, and the repo and the release's
 APK gave 404 to an anonymous visitor. **Before every upload, check the repo is still
-`PRIVATE`**; `CLAUDE.md`, HANDOFF's routine and its traps say so. The user installs from the
+`PRIVATE`**; `CLAUDE.md`, the `/release` skill and `docs/traps.md` say so. The user installs from the
 release page on each phone, signed in to GitHub. USB stays for when they ask.
 
 2026-11-05, 0.9.0 (versionCode 42; released the same day as pre-release

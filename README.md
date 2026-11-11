@@ -140,8 +140,8 @@ Android Studio's SDK (platform 37, build tools 36), its JDK (`jbr`), NDK 30 and 
 ```
 
 The release build is signed with the release keystore named in
-`~/.gradle/gradle.properties` (`audiofool.signing`); it is not in the repo. HANDOFF.md has
-this PC's setup and the whole build, test and release loop.
+`~/.gradle/gradle.properties` (`audiofool.signing`); it is not in the repo. `docs/build-and-emulator.md` has
+this PC's setup and the whole build and test loop; `HANDOFF.md` says how a build is published.
 
 ## Third-party code and licences
 
