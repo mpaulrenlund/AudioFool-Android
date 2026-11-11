@@ -10,19 +10,17 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.17.0** (versionCode 53), published 2026-11-11 as the pre-release
-  [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0) (APK in
-  `dist/AudioFool-0.17.0.apk`, notes in `dist/notes-0.17.0.md`): the cover colour found in more
-  covers and a grey for black and white ones, Now Playing's artist in the cover's colour, the
-  track count on the quality line, and the logo menu's "Library Statistics". The emulator has it.
-  Before it, 0.16.0 (52), 0.15.1 (51), 0.15.0 (50) and 0.14.0 (48); 49 went to the unpublished
-  0.14.1. What each build did, build by build, is in `design/progress.md` (Sessions).
-- **Next build:** 0.17.1 for fixes, 0.18.0 for new features (confirm the number with the user);
-  **versionCode 54**. In it so far (unreleased, 2026-11-11): Now Playing's swipe made easier
-  (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); see the
-  top of *Decisions made for the build* and both device lists. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **Latest build: 0.17.1** (versionCode 54), published 2026-11-11 as the pre-release
+  [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1) (APK in
+  `dist/AudioFool-0.17.1.apk`, notes in `dist/notes-0.17.1.md`): Now Playing's swipe made easier
+  (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous
+  button keeps its 3 s rule. The emulator has it. Before it, 0.17.0 (53), 0.16.0 (52), 0.15.1
+  (51), 0.15.0 (50) and 0.14.0 (48); 49 went to the unpublished 0.14.1. What each build did,
+  build by build, is in `design/progress.md` (Sessions).
+- **Next build:** 0.17.2 for fixes, 0.18.0 for new features (confirm the number with the user);
+  **versionCode 55**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.17.0 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.17.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

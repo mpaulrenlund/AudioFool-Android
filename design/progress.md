@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.17.1**: Now Playing's swipe made easier (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous button keeps its 3 s rule — 2026-11-11, released as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1)
 - [x] **0.16.0**: Repeat at the left of the transport and Shuffle at the right; the cover full screen from the cover menu's Resolution row (pinch, drag and double tap to zoom) — 2026-11-10, released as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
 - [x] **0.15.1**: the cover menu keeps only Theme and Version of the logo menu's rows (Listening History, Rescan Library, Settings and Statistics are the logo menu's only) — 2026-11-10, released as pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1)
 - [x] **0.15.0**: Version opens the releases page (the logo menu's and the cover menu's Version row, in the default browser); the mini player's buttons follow Now Playing's (the cover's colour on the three icons and Play/Pause's ring and glow; the glow only while playing); no glow at the top of the screen in Dark (every screen, Now Playing's cover-coloured one too) — 2026-11-10, released as pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0). It replaces 0.14.1 (versionCode 49), built the same day without the Version change and never published
@@ -73,7 +74,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-11, after 0.17.0 (not yet built): **Now Playing's swipe is easier, and a swipe right
+2026-11-11, 0.17.1 (versionCode 54; released the same day as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `56023173…d2b8026a` matching `dist/`; checked on the emulator first, all five swipe and Previous checks passing, the library kept): **Now Playing's swipe is easier, and a swipe right
 always goes back a song** (the user: swiping the art "is too resistant", and "swiping right on
 Album Art should go to the previous track"). `nowPlaying.swipeSkipDistance` 96 → 56 dp and
 `swipeSkipVelocity` 1200 → 500 dp/s (about what Android's own page swipers ask). A swipe right
@@ -1114,7 +1115,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Easier swipe on Now Playing's art (next build)
+### Easier swipe on Now Playing's art (from 0.17.1)
 
 - [ ] Swipe the art left and right: does it skip with a relaxed swipe now, without skipping by
   accident when you only touch it? Easier still, or too easy?
@@ -1380,7 +1381,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Easier swipe on Now Playing's art (next build)
+### Easier swipe on Now Playing's art (from 0.17.1)
 
 - [ ] As on the S24. The M21's art is smaller: is the swipe still easy there?
 
