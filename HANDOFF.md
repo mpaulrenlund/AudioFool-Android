@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-10: 0.16.0 (versionCode 52: Repeat and Shuffle either side of the transport, and the cover full screen) published as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0), after 0.15.1 (versionCode 51, a shorter cover menu), published as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1), after 0.15.0 (versionCode 50), published as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0): Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
+Updated 2026-11-11: 0.17.0 (versionCode 53: the cover colour from more covers, a grey for black and white ones, the artist in it, the track count on the quality line, Library Statistics) published as the pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), after 0.16.0 (versionCode 52: Repeat and Shuffle either side of the transport, and the cover full screen) published as the pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0), after 0.15.1 (versionCode 51, a shorter cover menu), published as the pre-release [`v0.15.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.1), after 0.15.0 (versionCode 50), published as the pre-release [`v0.15.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.15.0): Version opens the releases page, the mini player's buttons follow Now Playing's, and the Dark glow is gone, on top of 0.14.0 (five layout requests). 0.14.1 (versionCode 49) was built before the Version change and never published. Read this with `README.md` (how the app works) and
 `design/progress.md` (every decision, newest first, and the lists of what to test on each
 device). The spec is `design/android-spec.md`; the USB driver's story is
 `design/usb-bit-perfect.md`. Older history (what sessions 2–5 left, the 0.2.x changes, the
@@ -12,12 +12,14 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
-- **0.17.0, built 2026-11-11 ("Yes, prepare 0.17.0"), not published yet** (versionCode 53;
+- **0.17.0, published 2026-11-11 ("Yes, prepare 0.17.0", then "Publish it") as the pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0)** (versionCode 53, APK attached; the repo checked `PRIVATE` right before the upload; the downloaded APK's SHA-256, `00d60565…bfd6d47e`, matched `dist/`;
   `dist/AudioFool-0.17.0.apk`, notes in `dist/notes-0.17.0.md`; signer `1fdefe0a…be2c21` and the
   real Last.fm key checked; all tests and pictures pass; the emulator has 0.17.0, which updated over
   0.16.0 keeping the library, shows Library Statistics and Version 0.17.0 in the logo menu, and the
-  count on the quality line with the artist in the cover's colour). Next: once the user approves the
-  notes, step 7 (check `PRIVATE`, `gh release create v0.17.0 … --prerelease`). The five changes:
+  count on the quality line with the artist in the cover's colour). When the user reports, tick *The cover
+  colour, the artist's name, the track count, Library Statistics (from 0.17.0)* in both test lists;
+  if a cover gives a colour they wouldn't pick, ask which album and what they expected (the desktop's
+  art cache can reproduce it, below). The five changes:
 - **In 0.17.0 (2026-11-11): the track count is on the quality line, at the
   left** (the user's request; spec §5): `Quality(nowPlaying, track)` in `NowPlayingScreen.kt` is
   a baseline row; `TitleBlock` lost the count and `trackCountTop` went from the tokens.

@@ -73,7 +73,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-11, 0.17.0 (versionCode 53; built, not published yet): **Now Playing's track count moves to the quality line, at the left**
+2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **Now Playing's track count moves to the quality line, at the left**
 (the user: "Can we move the track \"3/10\" to the same row as \"FLAC - 1,140 kbps - 24 Bit - 96 kHz\"
 but on the left hand side of the screen?"). Spec §5, items 2 and 4. `Quality` is a row: the count,
 `trackCountGap`, then the quality right-aligned, on one baseline; the title block is a plain column
@@ -83,7 +83,7 @@ than the quality's 13; it keeps its width and the quality line gives way (ellips
 meet. Checked "12,345 / 27,115" on the M21 and 130% font: both fit whole. 56 Now Playing pictures
 changed.
 
-2026-11-11, 0.17.0 (versionCode 53; built, not published yet): **the grey is brighter on Dark** (the user: "Brighter on Dark", after
+2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **the grey is brighter on Dark** (the user: "Brighter on Dark", after
 seeing the grey below). New token `nowPlaying.coverAccent.greyOnDark`, 0.9 OKLab lightness (about
 #E0E0E0), used for a black and white cover's grey on Dark whatever the cover's lightness
 (`CoverColor.accent(greyOnDark)`, a grey being a main under `NEUTRAL_BELOW` chroma). **My call:**
@@ -91,7 +91,7 @@ seeing the grey below). New token `nowPlaying.coverAccent.greyOnDark`, 0.9 OKLab
 title's `text.heading`, so the artist's name still reads as apart from the title. Light unchanged.
 2 pictures changed (`now-playing-cover-grey`, Dark).
 
-2026-11-11, 0.17.0 (versionCode 53; built, not published yet): **a black and white cover gives a grey, not teal or blue** (the
+2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **a black and white cover gives a grey, not teal or blue** (the
 user chose "Try a neutral accent" after the change below). Spec §5 (*Cover colour*) and §3.
 `CoverColor.main` returns a grey at the cover's average OKLab lightness where it used to return
 null; `accent` fits it as it fits any colour, so on Dark it is a grey between `accent.playback`'s
@@ -104,7 +104,7 @@ grey is as light as the theme's blue but has no colour, so Play/Pause reads quie
 coloured cover; the top of the band (or `text.heading`) would make it brighter. 4 pictures changed
 (`now-playing-cover-grey`).
 
-2026-11-11, 0.17.0 (versionCode 53; built, not published yet): **the cover colour is found in more covers** (the user: "For the
+2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **the cover colour is found in more covers** (the user: "For the
 accent color, I think it's defaulting to the default teal/blue colors too often. Can we have the
 album art scan take any predominant color from the album and use that as the accent color?").
 Spec §5, *Cover colour*. `CoverColor.main` (core) changed in three ways: black pixels (OKLab
@@ -127,7 +127,7 @@ New tests: a black cover's tint, a faint cast against a vivid part, the 0.5% spe
 the old rule). 12 ThemeLab pictures changed slightly (the made-up red and yellow covers' dark parts
 no longer count); still red and yellow.
 
-2026-11-11, 0.17.0 (versionCode 53; built, not published yet): **Now Playing's artist name in the seekbar's and Play/Pause's colour**
+2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **Now Playing's artist name in the seekbar's and Play/Pause's colour**
 (the user: "Now Playing screen, can we make it so the Artist Name color matches the same color as
 the seekbar and playback buttons?"). Spec §5 (*Title*, *Cover colour*), CLAUDE.md's colour rule.
 With a cover colour the name takes exactly the colour the seekbar has (`coverAccent` fitted to
@@ -138,7 +138,7 @@ playback colour is a lighter teal than the blue it replaces, so the name reads w
 contrast on the grey there (about 3.5 : 1 against 5 : 1 before, my estimate); Dark is unaffected.
 `accent.playbackText`, the desktop's darker text teal, is there if it should read darker.
 
-2026-11-11, 0.17.0 (versionCode 53; built, not published yet): **the logo menu's Statistics row reads "Library Statistics"** (the
+2026-11-11, 0.17.0 (versionCode 53; released the same day as pre-release [`v0.17.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `00d60565…bfd6d47e` matching `dist/`): **the logo menu's Statistics row reads "Library Statistics"** (the
 user: "in the logo menu, can we rename statistics to Library Statistics?"). Spec §4.1. The rows stay
 alphabetical (the user's call, 0.7.1), so it moves to the top, above Listening History. Then the
 screen's own title too (asked: "Yes, rename it too"; spec §4.6). The code's names (`Route.Statistics`,
