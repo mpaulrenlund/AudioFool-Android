@@ -73,6 +73,17 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, not released yet: **Now Playing's artist name in the seekbar's and Play/Pause's colour**
+(the user: "Now Playing screen, can we make it so the Artist Name color matches the same color as
+the seekbar and playback buttons?"). Spec §5 (*Title*, *Cover colour*), CLAUDE.md's colour rule.
+With a cover colour the name takes exactly the colour the seekbar has (`coverAccent` fitted to
+`accent.playback`); without one, `accent.playback`. Until now it was the cover's colour fitted to
+`accent.blue` (lighter in Dark, darker in Light) and `accent.blue` without a cover. Everywhere else
+artist names stay `accent.blue`, the mini player's included. **Worth knowing:** in Light the
+playback colour is a lighter teal than the blue it replaces, so the name reads with a little less
+contrast on the grey there (about 3.5 : 1 against 5 : 1 before, my estimate); Dark is unaffected.
+`accent.playbackText`, the desktop's darker text teal, is there if it should read darker.
+
 2026-11-11, not released yet: **the logo menu's Statistics row reads "Library Statistics"** (the
 user: "in the logo menu, can we rename statistics to Library Statistics?"). Spec §4.1. The rows stay
 alphabetical (the user's call, 0.7.1), so it moves to the top, above Listening History. Then the

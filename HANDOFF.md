@@ -12,6 +12,9 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Since 0.16.0, not released yet (2026-11-11): Now Playing's artist name is in the seekbar's
+  and Play/Pause's colour** (the user's request; spec §5): `TitleBlock` takes `accent` (or
+  `accent.playback`). Checked: all app tests and the 56 Now Playing pictures (the only ones that changed).
 - **Since 0.16.0, not released yet (2026-11-11): the logo menu's Statistics row reads "Library
   Statistics"** (the user's request; spec §4.1), first in the menu since the rows are alphabetical.
   The screen's title reads the same (spec §4.6). Checked: all app tests, the 4 menu pictures and the

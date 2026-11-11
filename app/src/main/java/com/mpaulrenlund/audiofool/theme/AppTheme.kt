@@ -50,9 +50,9 @@ class AppTheme(val isDark: Boolean, val tokens: AppTokens) {
      * A cover's main colour (core `CoverColor.main`) standing in for one of this
      * theme's colours on Now Playing (spec 5): its hue, at a lightness within
      * `nowPlaying.coverAccent.lightnessRange` of the colour it [standsInFor], so
-     * it reads as well as the theme's own. That is `accent.playback` for the
-     * seekbar, Play/Pause and the lit Repeat and Shuffle, and `accent.blue`, a
-     * text colour, for the artist's name. Worked out from the theme each time,
+     * it reads as well as the theme's own. That is `accent.playback`, for the
+     * seekbar, Play/Pause, the lit Repeat and Shuffle and, since 2026-11-11, the
+     * artist's name (fitted to `accent.blue` until then). Worked out from the theme each time,
      * as any colour is: a theme switch gives the other theme's.
      */
     fun coverAccent(main: Int, standsInFor: String = "color.accent.playback"): ThemeColor {

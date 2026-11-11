@@ -144,7 +144,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  *
  * The colour here is the cover's (the user's calls, 2026-11-09 and 2026-11-10; spec 5,
  * Cover colour): the seekbar's played part, the transport's icons and the ring and glow
- * round Play/Pause, Repeat and Shuffle when on, and the artist's name take the cover's
+ * round Play/Pause, Repeat and Shuffle when on, and the artist's name (the same colour, since 2026-11-11) take the cover's
  * main colour (the glow at the top of the screen did too, until it went on 2026-11-10), fitted to the theme
  * ([AppTheme.coverAccent]). A cover with no colour of its own, or no cover, leaves them
  * the theme's. The mini player's buttons take the same colour ([MiniPlayerBar]).
@@ -193,8 +193,6 @@ fun NowPlayingScreen(
         val cover = shownCover(track, art, coverForPictures)
         // Fitted to the theme as it is now, not kept from the last one: a theme switch gives the other theme's.
         val accent = remember(t, cover?.color) { cover?.color?.let { t.coverAccent(it) } }
-        // The artist's name is text, so it stands in for the theme's text blue, lighter (darker on Light) than the playback colour.
-        val artistColor = remember(t, cover?.color) { cover?.color?.let { t.coverAccent(it, "color.accent.blue") } }
 
         WindowBackground(t, Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical))) {
@@ -202,7 +200,7 @@ fun NowPlayingScreen(
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
                         BigArt(nowPlaying, art, cover, actions, appActions, version, artMenuForPictures)
                     }
-                    TitleBlock(nowPlaying, track, artistColor, actions)
+                    TitleBlock(nowPlaying, track, accent, actions)
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
@@ -475,13 +473,14 @@ private class AtFinger(private val at: IntOffset, private val room: Int, private
 
 /**
  * Title, artist and album, left-aligned, with the track count "3 / 10" right of the
- * title. The artist's name is in the cover's colour ([artistColor]; `accent.blue`
- * without one). A tap on the artist's name opens that artist's albums, a tap on the
- * album's name the album with the song chosen (spec 5); each shows the press, as a
+ * title. The artist's name is in the seekbar's and Play/Pause's colour (2026-11-11, the
+ * user's call): the cover's ([accent]), or `accent.playback` without one. Up to then it was
+ * the cover's colour fitted to `accent.blue`, and `accent.blue` without one. A tap on
+ * the artist's name opens that artist's albums, a tap on the album's name the album with the song chosen (spec 5); each shows the press, as a
  * row does. A sideways drag across them still skips.
  */
 @Composable
-private fun TitleBlock(nowPlaying: NowPlaying, track: Track?, artistColor: ThemeColor?, actions: NowPlayingActions) {
+private fun TitleBlock(nowPlaying: NowPlaying, track: Track?, accent: ThemeColor?, actions: NowPlayingActions) {
     val t = LocalAppTheme.current
     val lineShape = RoundedCornerShape(t.radius("radius.row"))
     Row(
@@ -494,10 +493,10 @@ private fun TitleBlock(nowPlaying: NowPlaying, track: Track?, artistColor: Theme
                 track?.displayTitle ?: "",
                 t.text("nowPlaying.titleSize", "color.text.heading", weight = t.number("nowPlaying.titleWeight").toInt(), lineHeight = t.number("nowPlaying.titleLineHeight")),
             )
-            val artistStyle = t.text("nowPlaying.artistSize", "color.accent.blue", weight = t.number("nowPlaying.artistWeight").toInt())
+            val artistStyle = t.text("nowPlaying.artistSize", "color.accent.playback", weight = t.number("nowPlaying.artistWeight").toInt())
             Line(
                 track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "",
-                if (artistColor != null) artistStyle.copy(color = artistColor.toCompose()) else artistStyle,
+                if (accent != null) artistStyle.copy(color = accent.toCompose()) else artistStyle,
                 Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
             )
             Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
