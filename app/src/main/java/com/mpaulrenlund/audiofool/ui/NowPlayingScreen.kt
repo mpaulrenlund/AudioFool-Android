@@ -200,11 +200,11 @@ fun NowPlayingScreen(
                     Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
                         BigArt(nowPlaying, art, cover, actions, appActions, version, artMenuForPictures)
                     }
-                    TitleBlock(nowPlaying, track, accent, actions)
+                    TitleBlock(track, accent, actions)
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
-                    track?.let { Quality(it) }
+                    track?.let { Quality(nowPlaying, it) }
                     Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent, scrubForPictures)
                 }
                 Spacer(Modifier.weight(belowWeight + (aboveWeight - belowWeight) * evenness))
@@ -472,55 +472,62 @@ private class AtFinger(private val at: IntOffset, private val room: Int, private
 }
 
 /**
- * Title, artist and album, left-aligned, with the track count "3 / 10" right of the
- * title. The artist's name is in the seekbar's and Play/Pause's colour (2026-11-11, the
+ * Title, artist and album, left-aligned, the full width (the track count "3 / 10" sat
+ * right of the title until 2026-11-11; it is on the quality line now, [Quality]). The artist's name is in the seekbar's and Play/Pause's colour (2026-11-11, the
  * user's call): the cover's ([accent]), or `accent.playback` without one. Up to then it was
  * the cover's colour fitted to `accent.blue`, and `accent.blue` without one. A tap on
  * the artist's name opens that artist's albums, a tap on the album's name the album with the song chosen (spec 5); each shows the press, as a
  * row does. A sideways drag across them still skips.
  */
 @Composable
-private fun TitleBlock(nowPlaying: NowPlaying, track: Track?, accent: ThemeColor?, actions: NowPlayingActions) {
+private fun TitleBlock(track: Track?, accent: ThemeColor?, actions: NowPlayingActions) {
     val t = LocalAppTheme.current
     val lineShape = RoundedCornerShape(t.radius("radius.row"))
-    Row(
+    Column(
         Modifier.fillMaxWidth().padding(start = t.dp("nowPlaying.paddingX"), end = t.dp("nowPlaying.paddingX"), top = t.dp("nowPlaying.artToText")),
-        horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.trackCountGap")),
-        verticalAlignment = Alignment.Top,
+        verticalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.lineGap")),
     ) {
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.lineGap"))) {
-            Line(
-                track?.displayTitle ?: "",
-                t.text("nowPlaying.titleSize", "color.text.heading", weight = t.number("nowPlaying.titleWeight").toInt(), lineHeight = t.number("nowPlaying.titleLineHeight")),
-            )
-            val artistStyle = t.text("nowPlaying.artistSize", "color.accent.playback", weight = t.number("nowPlaying.artistWeight").toInt())
-            Line(
-                track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "",
-                if (accent != null) artistStyle.copy(color = accent.toCompose()) else artistStyle,
-                Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
-            )
-            Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
-        }
+        Line(
+            track?.displayTitle ?: "",
+            t.text("nowPlaying.titleSize", "color.text.heading", weight = t.number("nowPlaying.titleWeight").toInt(), lineHeight = t.number("nowPlaying.titleLineHeight")),
+        )
+        val artistStyle = t.text("nowPlaying.artistSize", "color.accent.playback", weight = t.number("nowPlaying.artistWeight").toInt())
+        Line(
+            track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "",
+            if (accent != null) artistStyle.copy(color = accent.toCompose()) else artistStyle,
+            Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
+        )
+        Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
+    }
+}
+
+/**
+ * The line over the seekbar (spec 5): the track count "3 / 10" at the left (2026-11-11,
+ * the user's call; right of the title until then) and the quality, right-aligned:
+ * "FLAC · 1,901 kbps · 24-Bit · 48 kHz" (0.2.2). On one baseline; the count keeps its
+ * width and the quality ellipsizes if the two meet.
+ */
+@Composable
+private fun Quality(nowPlaying: NowPlaying, track: Track) {
+    val t = LocalAppTheme.current
+    Row(
+        Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.qualityTop")),
+        horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.trackCountGap")),
+    ) {
         if (nowPlaying.queueSize > 0) {
             Line(
                 // With thousands separators: the whole library shuffled is 27,115 on the M21 (0.9.0).
                 "${Display.count(nowPlaying.queueIndex + 1)} / ${Display.count(nowPlaying.queueSize)}",
                 t.text("nowPlaying.trackCountSize", "color.text.muted"),
-                Modifier.padding(top = t.dp("nowPlaying.trackCountTop")),
+                Modifier.alignByBaseline(),
             )
         }
+        Line(
+            QualityLines.of(track),
+            t.text("nowPlaying.qualitySize", "color.text.secondary").copy(textAlign = TextAlign.End),
+            Modifier.weight(1f).alignByBaseline(),
+        )
     }
-}
-
-/** One right-aligned line over the seekbar: "FLAC · 1,901 kbps · 24-Bit · 48 kHz" (spec 5; 0.2.2). */
-@Composable
-private fun Quality(track: Track) {
-    val t = LocalAppTheme.current
-    Line(
-        QualityLines.of(track),
-        t.text("nowPlaying.qualitySize", "color.text.secondary").copy(textAlign = TextAlign.End),
-        Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.qualityTop")),
-    )
 }
 
 /**

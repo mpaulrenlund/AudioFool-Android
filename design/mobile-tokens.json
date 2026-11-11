@@ -306,7 +306,6 @@
     "albumSize": 15,
     "lineGap": 3,
     "trackCountSize": 15,
-    "trackCountTop": 4,
     "trackCountGap": 8,
     "spaceAboveQualityWeight": 3,
     "spaceBelowTimesWeight": 1,

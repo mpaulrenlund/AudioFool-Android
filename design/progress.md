@@ -73,6 +73,16 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-11, not released yet: **Now Playing's track count moves to the quality line, at the left**
+(the user: "Can we move the track \"3/10\" to the same row as \"FLAC - 1,140 kbps - 24 Bit - 96 kHz\"
+but on the left hand side of the screen?"). Spec §5, items 2 and 4. `Quality` is a row: the count,
+`trackCountGap`, then the quality right-aligned, on one baseline; the title block is a plain column
+the full width. `nowPlaying.trackCountTop` (which set the count against the title's top) is gone.
+**My calls:** the count keeps its own size and colour (15, `text.muted`), so it is a touch larger
+than the quality's 13; it keeps its width and the quality line gives way (ellipsizes) if they ever
+meet. Checked "12,345 / 27,115" on the M21 and 130% font: both fit whole. 56 Now Playing pictures
+changed.
+
 2026-11-11, not released yet: **the grey is brighter on Dark** (the user: "Brighter on Dark", after
 seeing the grey below). New token `nowPlaying.coverAccent.greyOnDark`, 0.9 OKLab lightness (about
 #E0E0E0), used for a black and white cover's grey on Dark whatever the cover's lightness

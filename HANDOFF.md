@@ -12,6 +12,9 @@ you touch a feature from then.
 - **Read, in order:** `CLAUDE.md`, this file, then in `design/progress.md` the "Decisions made
   for the build" section from the top (0.9.0 down to 0.3.0, the S24's own USB driver) and the
   unticked items in *To test on the S24* / *To test on the M21*.
+- **Since 0.16.0, not released yet (2026-11-11): the track count is on the quality line, at the
+  left** (the user's request; spec §5): `Quality(nowPlaying, track)` in `NowPlayingScreen.kt` is
+  a baseline row; `TitleBlock` lost the count and `trackCountTop` went from the tokens.
 - **Since 0.16.0, not released yet (2026-11-11): that grey is `nowPlaying.coverAccent.greyOnDark`
   (0.9) light on Dark** (the user's call). To change how bright, change the token.
 - **Since 0.16.0, not released yet (2026-11-11): a black and white cover gives a grey**
