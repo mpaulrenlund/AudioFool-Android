@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-12. This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-12 (Playlists). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -33,21 +33,16 @@ listed under *Other docs* at the end: read each only when the work touches it.
   Details: `design/progress.md`, its fourth decision. Before it, 0.18.0 (56: Edit Tags and
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
-- **Edit Tags** (0.18.0, spec 5.4): a cover-menu row opening the
-  desktop's Edit Track Tags window for the song playing; the app's first writes to music files,
-  made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
-  in). Checked on the emulator in every format, the files read back with the desktop's own
-  TagLibSharp; what only the phones can show is on both test lists. Details and my calls:
-  `design/progress.md`, its sixth decision.
-- **Lyrics** (0.18.0, spec 5.5): a cover-menu row opening the song
-  playing's lyrics, the line being sung lit in the cover's colour and kept in view; from the
-  song's `.lrc` file or tags, else LRCLIB (the user's calls). The screen follows the song. The
-  emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
-  lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
-  LRCLIB): `design/progress.md`, its fifth decision.
-- **The repo is public again** (2026-11-12, the user's call), once 0.18.1 went out without the
-  key and the APK files of v0.9.0 to v0.18.0 were removed from GitHub (copies in `dist/`).
-- **Next build:** 0.20.1 for fixes, 0.21.0 for new features (confirm the number with the user);
+- **Built and pushed, not released: Playlists and the heart** (2026-11-12, the user's request;
+  spec 4.1, 4.8, 5): Artists' header holds ARTISTS and PLAYLISTS tabs; the Playlists tab lists
+  the desktop's Liked and Recently Added (ported from `AudioFool.Core/Playlists` with its tests);
+  a playlist opens as Album's screen with two-line song rows, and a tap plays the playlist from
+  that song. Now Playing's Repeat is gone (always off, a saved one dropped): a heart in its place
+  likes the song (filled `accent.like`). Saved in `no_backup/playlists.json`, the desktop's
+  format. Making other playlists is for later (the user's words). My calls and what the
+  emulator showed: `design/progress.md`, its newest decision. Recently Added goes by the date the
+  scan took for a file (on Android its modified time): on the S24's test list.
+- **Next build:** 0.21.0 (new features: Playlists below; confirm the number with the user);
   **versionCode 65**. The emulator has 0.20.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.20.0 has been
@@ -139,7 +134,8 @@ listed under *Other docs* at the end: read each only when the work touches it.
 | On the phone: Last.fm | SharedPreferences `lastfm` (API key, secret, user, session: each AES-GCM encrypted with the Keystore key `audiofool.lastfm`; the key and secret as typed on the phone, or built in by 0.9.0 to 0.18.0); `no_backup/scrobbles.json` (+ `.bak`): the queue |
 | On the phone: listening time | `no_backup/listening.json` (+ `.bak`): total ms and since when |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
-| On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat |
+| On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat (always off since the heart, 2026-11-12) |
+| On the phone: playlists | `no_backup/playlists.json` (+ `.bak`): Liked and any other playlist, the desktop's `PlaylistStore` format (2026-11-12) |
 | On the phone: waveforms | `no_backup/waveforms-600/*.wave` (600 levels per file, named from path, size, date and columns; the old 96-level `waveforms/` is deleted at start since 0.2.4) |
 
 Release key SHA-256: `1F:DE:FE:0A:0E:C5:F4:B6:63:61:39:B3:5B:F3:9D:B8:9E:EA:2C:68:9A:3A:A1:7A:BC:12:D8:CE:C5:BE:2C:21`.

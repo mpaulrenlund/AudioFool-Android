@@ -4,6 +4,11 @@ import com.mpaulrenlund.audiofool.core.library.LibraryScanner
 import com.mpaulrenlund.audiofool.core.library.LibraryStatistics
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.core.playlists.PlaylistText
+import com.mpaulrenlund.audiofool.core.playlists.RecentlyAdded
+import com.mpaulrenlund.audiofool.playlists.PlaylistRow
+import com.mpaulrenlund.audiofool.playlists.Playlists
+import com.mpaulrenlund.audiofool.playlists.ShownPlaylist
 
 /**
  * The mockups' sample library (design/mockup), so ThemeLab's pictures can be laid
@@ -255,6 +260,48 @@ object ThemeLabFixtures {
 
     /** A Second Sight song's path, for the Album screen with it chosen. */
     fun secondSightPath(title: String): String = tracks.first { it.album == "Second Sight" && it.title == title }.filePath
+
+    // ---- Playlists (2026-11-12): made-up Liked and Recently Added from the library above ----
+
+    private fun song(title: String, album: String? = null): Track = tracks.first { it.title == title && (album == null || it.album == album) }
+
+    private fun albumOf(track: Track) = library.albumHolding(track.filePath)
+
+    /** Liked: the song playing, one on the SD card, and others from several artists, in the order they were liked. */
+    private val likedSongs: List<Track> by lazy {
+        listOf(
+            song("Polygon Weather"), song("Low Polygon Lullaby"), song("Memory Card"), song("Polygon Count"),
+            song("Track 3", "Rumble"), song("Wireframe Hymn"), song("Track 5", "Pulse"), song("Track 2", "Interlaced"),
+        )
+    }
+
+    fun playlistRows(): List<PlaylistRow> = listOf(
+        PlaylistRow("liked", "Liked", PlaylistText.trackCount(likedSongs.size), albumOf(likedSongs.first())),
+        PlaylistRow(Playlists.RECENT_ID, RecentlyAdded.NAME, PlaylistText.trackCount(recentAlbums.sumOf { it.tracks.size }), recentAlbums.first()),
+    )
+
+    /** Liked as its screen shows it, modified 2026-11-12, with one song the library no longer has. */
+    fun likedPlaylist() = ShownPlaylist(
+        "liked", "Liked", "Modified 2026-11-12", PlaylistText.headerTrackCount(likedSongs.size, 1),
+        likedSongs.sumOf { it.durationMs }, likedSongs, albumOf(likedSongs.first()), numbered = true,
+    )
+
+    /** Recently Added: two albums, newest first, the songs by track number. */
+    private val recentAlbums by lazy { listOfNotNull(albumOf(song("Track 1", "Texture Pop")), albumOf(song("Track 1", "Pulse"))) }
+
+    fun recentlyAddedPlaylist(): ShownPlaylist {
+        val songs = RecentlyAdded.tracks(recentAlbums)
+        return ShownPlaylist(
+            Playlists.RECENT_ID, RecentlyAdded.NAME, RecentlyAdded.window, PlaylistText.headerTrackCount(songs.size, 0),
+            songs.sumOf { it.durationMs }, songs, recentAlbums.first(), numbered = false,
+        )
+    }
+
+    /** Liked before any song is liked. */
+    fun emptyLikedPlaylist() = ShownPlaylist(
+        "liked", "Liked", "Modified 2026-11-12", PlaylistText.headerTrackCount(0, 0), 0, emptyList(), null, numbered = true,
+        empty = PlaylistText.empty(isLiked = true, missing = 0),
+    )
 
     // ---- the Genius screen (spec 5.2): a made-up page for the song playing, in Genius's shape ----
 

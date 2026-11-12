@@ -80,6 +80,49 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-12, not yet built as a release (the next is 0.21.0 if the user agrees: new features):
+**Playlists, Liked and Recently Added, and the heart in Repeat's place** (the user: "The desktop
+version of AudioFool has Playlists. On the Artists screen, could we add a button to the right of
+"Artists" called "Playlists" … I'd like to mimic/copy the playlist logic for 2 default playlists
+that the desktop app has. "Liked" and "Recently added." Now playing screen, I never use the Repeat
+Song button/function. Can we remove this and put a heart icon … We can flesh out further playlist
+creation later"). Spec §4.1 (the tabs), new §4.8, §5 (the heart; no Repeat), §2. Asked first, all
+four answered with the recommended choice: the Playlists button switches the panel in place, like
+tabs (not a screen of its own); the heart is filled in the desktop's `accent.like` (not the
+cover's colour); Recently Added opens as one song list, newest album first (not an albums list);
+yes to a new stored file (`no_backup/playlists.json`, the desktop's format) and to Repeat being
+always off, a saved one dropped. **Ported** from `AudioFool.Core/Playlists` with their tests
+(`core/.../playlists/`: `Playlist`, `PlaylistResolver`, `PlaylistStore`, `PlaylistText`,
+`RecentlyAdded`; `PlaylistTest`, `RecentlyAddedTest`, 32 tests). Left out of the port: playlist
+pictures (no screen for them yet; a picture name the desktop wrote is kept) and the desktop's
+"Locked" load (no such thing on the phone). The phone's own: `PlaylistText.empty`'s detail for
+Liked ("Tap the heart on Now Playing to add a song."; the desktop's says to click the heart beside a song) and
+for a plain playlist. **My calls, open to change:** the tabs' look (the one showing in
+`text.primary`, the other in the label's `text.muted`, `panel.tabGap` 20 dp apart, the new
+mobile token); a playlist's screen is Album's with Search's two-line song rows (a playlist mixes
+artists) and the # column holding the place in the playlist; a tap on a song plays the playlist
+from it and opens Now Playing; the top bar reads "Playlists"; the heart outlined in
+`control.iconOff` while not liked, as Repeat was off; the heart works on the song as the screens
+show it (Edit Tags' saved tags), so its entry carries the current artist and album. App side:
+`playlists/Playlists.kt` (one background thread for the store; `likedKeys` and `version` as
+Compose state; `rows`, `shown`, `toggleLike`, `libraryChanged` re-pointing songs in each new
+library), `Route.Playlist(id)` with Recently Added's id `recently-added`, `PlaylistScreen` and
+`PanelTabsHeader` in `LibraryScreens.kt`, `AppActions.playIn`, `NowPlayingActions.toggleLike`
+and `isLiked` (Repeat's `cycleRepeat`, `Player.cycleRepeat`, `RepeatOneBadge` and the REPEAT icon
+are gone; `Player.restore` sets Repeat off). **Recently Added on the phone** uses
+`Track.addedUtc`, which Android's file system gives as the file's last-modified time when first
+scanned (no creation time): music copied with its old dates kept may not show. On the S24's
+list to check. **Checked**: 768 unit and Robolectric tests (new: `PlaylistTest`,
+`RecentlyAddedTest`, `PlaylistsTest`, `PlaylistsTabTest`, the heart in `NowPlayingTouchTest`);
+ThemeLab re-recorded (new `artists-playlists`, `playlist-liked`, `playlist-recently-added`,
+`playlist-liked-empty`; the Artists pictures differ only in the header's PLAYLISTS label, ARTISTS
+unmoved; Now Playing's only in the left button). On the emulator, a release build over 0.20.0
+(data kept): the tabs and back; the heart filling and emptying; Liked in the order liked, a song
+playing Liked from it ("1 / 2", Next to the other); unliking; after a force-stop the heart and
+Liked as left; Recently Added "899 tracks" (the sample music is from 2026-10-24), and a file
+copied in and rescanned showed at once; no crash. The empty Liked note was shortened to "Tap the
+heart on Now Playing to add a song." so it fits two lines.
+
 2026-11-12, 0.20.0 (versionCode 64, as 63 went to the emulator's test builds 0.19.9; released the
 same day as pre-release
 [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0), APK
@@ -1374,6 +1417,17 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Playlists and the heart (next build)
+
+- [ ] Artists: PLAYLISTS to the right of ARTISTS; a tap shows Liked and Recently Added, a tap on
+  ARTISTS or system back shows the artists again; the shuffle button only on Artists.
+- [ ] Now Playing: a heart where Repeat was. A tap fills it pink; Liked then holds the song; a
+  second tap empties it and takes the song out. Restart the app: the hearts are as left.
+- [ ] Liked: a tap on a song plays Liked from it (Next goes to the next liked song).
+- [ ] Recently Added: an album copied onto the phone this week shows, newest first. If one
+  doesn't, say how it was copied (the phone may only see the files' own dates).
+- [ ] Repeat was on before the update: it is off after it, and an album's last song stops.
+
 ### The Version row's update check (from 0.20.0)
 
 - [ ] Getting 0.20.0 through 0.19.x's own pop-up, if it shows on opening: Update, Android's OK
@@ -1709,6 +1763,15 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Playlists and the heart (next build)
+
+- [ ] Artists' header: ARTISTS and PLAYLISTS fit on the M21 beside a scan's note; PLAYLISTS
+  switches, back returns to Artists.
+- [ ] Now Playing: the heart where Repeat was, the same size as Shuffle, easy to hit; it fills
+  pink at a tap and empties at a second.
+- [ ] Liked: the songs liked on this phone, in the order liked; a tap plays Liked from that song.
+- [ ] A liked song on the SD card: card out, Liked still lists it (greyed); card back, it plays.
 
 ### The Version row's update check (from 0.20.0)
 

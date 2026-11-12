@@ -17,6 +17,7 @@ import com.mpaulrenlund.audiofool.lyrics.SongLyrics
 import com.mpaulrenlund.audiofool.lastfm.LastFm
 import com.mpaulrenlund.audiofool.lastfm.ListeningHistory
 import com.mpaulrenlund.audiofool.library.LibraryRepository
+import com.mpaulrenlund.audiofool.playlists.Playlists
 import com.mpaulrenlund.audiofool.settings.AppSettings
 import com.mpaulrenlund.audiofool.settings.MusicFolder
 import com.mpaulrenlund.audiofool.storage.Storage
@@ -112,6 +113,9 @@ class AudioFoolApp : Application() {
 
     /** The Genius screen (spec 5.2): what genius.com has on a song, each song's lookup kept for the run (nothing saved). */
     val genius: Genius by lazy { Genius(GeniusLookup(GeniusClient())) }
+
+    /** Playlists and Liked (2026-11-12): the desktop's store, in `no_backup/playlists.json` (+ `.bak`). */
+    val playlists: Playlists by lazy { Playlists(File(noBackupFilesDir, "playlists.json").path, scope) }
 
     /** The Lyrics screen (spec 5.5): the song's own lyrics, else LRCLIB's, LRCLIB's kept for the run (nothing saved). */
     val lyrics: SongLyrics by lazy { SongLyrics(OnlineLyrics(LrcLibClient())) }

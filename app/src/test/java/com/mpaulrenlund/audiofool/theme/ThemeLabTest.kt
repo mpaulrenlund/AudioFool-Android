@@ -35,6 +35,7 @@ import com.mpaulrenlund.audiofool.ui.AnalysisState
 import com.mpaulrenlund.audiofool.ui.AlbumsScreen
 import com.mpaulrenlund.audiofool.ui.AppActions
 import com.mpaulrenlund.audiofool.ui.ArtistsScreen
+import com.mpaulrenlund.audiofool.ui.PlaylistScreen
 import com.mpaulrenlund.audiofool.ui.Browse
 import com.mpaulrenlund.audiofool.ui.DebugActions
 import com.mpaulrenlund.audiofool.ui.DebugScreen
@@ -57,7 +58,6 @@ import com.mpaulrenlund.audiofool.ui.NowPlayingScreen
 import com.mpaulrenlund.audiofool.core.playback.OutputPath
 import com.mpaulrenlund.audiofool.core.playback.OutputReadout
 import com.mpaulrenlund.audiofool.core.playback.OutputRoute
-import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import com.mpaulrenlund.audiofool.core.playback.ListeningTime
 import com.mpaulrenlund.audiofool.core.scrobbling.ScrobblerState
 import com.mpaulrenlund.audiofool.lastfm.LastFm
@@ -130,6 +130,9 @@ class ThemeLabTest {
         for (page in SheetPage.entries) shoot(device, "tokens-${page.name.lowercase()}") { TokenSheet(page) }
     }
 
+    /** Now Playing's actions with the song in Liked: the heart filled (2026-11-12). */
+    private val liked = NowPlayingActions(isLiked = { true })
+
     private fun screens(device: String) {
         val actions = AppActions()
         shoot(device, "artists") { ArtistsScreen(browse(), actions, initialSelected = "Aphelion Drive") }
@@ -145,6 +148,11 @@ class ThemeLabTest {
                 actions = SettingsActions(),
             )
         }
+        // Playlists (2026-11-12, the user's request; no mockup): the Playlists tab, Liked, Recently Added, and Liked empty.
+        shoot(device, "artists-playlists") { ArtistsScreen(browse(), actions, playlists = ThemeLabFixtures.playlistRows(), initialPlaylistsShown = true) }
+        shoot(device, "playlist-liked") { PlaylistScreen(ThemeLabFixtures.likedPlaylist(), browse(), actions) }
+        shoot(device, "playlist-recently-added") { PlaylistScreen(ThemeLabFixtures.recentlyAddedPlaylist(), browse(), actions) }
+        shoot(device, "playlist-liked-empty") { PlaylistScreen(ThemeLabFixtures.emptyLikedPlaylist(), browse(), actions) }
         // Not in the mockups: nothing played yet, and the SD card taken out.
         shoot(device, "artists-nothing-played") { ArtistsScreen(browse(playing = false), actions) }
         // A first scan (no cache): the artists read so far, and the count in the header.
@@ -204,12 +212,11 @@ class ThemeLabTest {
         shoot(device, "statistics-empty") {
             StatisticsScreen(LibraryState(library = MusicLibrary.Empty), DebugNumbers(StartTimes()), actions = DebugActions(), listening = ListeningTime(sinceUtc = 1_792_800_000_000))
         }
-        // As the mockup: playing, Repeat on (All), Shuffle off.
-        shoot(device, "now-playing") { NowPlayingScreen(nowPlaying().apply { repeat = RepeatMode.All }, NowPlayingActions()) }
-        // Not in the mockups: Repeat One and Shuffle on, paused, the waveform not worked out yet.
+        // As the mockup: playing, Shuffle off; the song liked (the heart took Repeat's place, 2026-11-12; the mockup's Repeat is on).
+        shoot(device, "now-playing") { NowPlayingScreen(nowPlaying(), liked) }
+        // Not in the mockups: the song not liked and Shuffle on, paused, the waveform not worked out yet.
         shoot(device, "now-playing-modes") {
             val np = nowPlaying(playing = false, waveform = null).apply {
-                repeat = RepeatMode.One
                 shuffle = true
             }
             NowPlayingScreen(np, NowPlayingActions())
@@ -228,33 +235,30 @@ class ThemeLabTest {
         }
         // BP's states are pictured in the cover menu since it moved there (2026-11-10): ThemeLabMenuTest's art-menu-bp-*.
         // The cover's colour (2026-11-09, no mockup), on made-up covers: the seekbar, Play/Pause with its
-        // ring and glow, Repeat and Shuffle when on, and the artist's name.
-        // A deep red (made lighter on Dark), Repeat All and Shuffle on.
+        // ring and glow, Shuffle when on, and the artist's name; the heart keeps the like colour.
+        // A deep red (made lighter on Dark), liked and Shuffle on.
         val deepRed = ThemeLabFixtures.coverDeepRed()
         shoot(device, "now-playing-cover-red") {
             val np = nowPlaying().apply {
-                repeat = RepeatMode.All
                 shuffle = true
             }
-            NowPlayingScreen(np, NowPlayingActions(), coverForPictures = deepRed)
+            NowPlayingScreen(np, liked, coverForPictures = deepRed)
         }
-        // A bright yellow (made darker on Light), paused: the Play triangle, the ring without the glow,
-        // and Repeat One's badge in the cover's colour.
+        // A bright yellow (made darker on Light), paused: the Play triangle and the ring without the glow, liked.
         val yellow = ThemeLabFixtures.coverYellow()
         shoot(device, "now-playing-cover-yellow") {
-            NowPlayingScreen(nowPlaying(playing = false).apply { repeat = RepeatMode.One }, NowPlayingActions(), coverForPictures = yellow)
+            NowPlayingScreen(nowPlaying(playing = false), liked, coverForPictures = yellow)
         }
-        // Several colours (the sky wins), Repeat and Shuffle off.
+        // Several colours (the sky wins), not liked and Shuffle off.
         val landscape = ThemeLabFixtures.coverLandscape()
         shoot(device, "now-playing-cover-landscape") { NowPlayingScreen(nowPlaying(), NowPlayingActions(), coverForPictures = landscape) }
-        // Black and white: no colour to take, so everything keeps the theme's, Repeat's and Shuffle's own included.
+        // Black and white: no colour to take, so everything keeps the theme's, Shuffle's own included.
         val blackAndWhite = ThemeLabFixtures.coverBlackAndWhite()
         shoot(device, "now-playing-cover-grey") {
             val np = nowPlaying().apply {
-                repeat = RepeatMode.All
                 shuffle = true
             }
-            NowPlayingScreen(np, NowPlayingActions(), coverForPictures = blackAndWhite)
+            NowPlayingScreen(np, liked, coverForPictures = blackAndWhite)
         }
         // The mini player's buttons follow Now Playing's (2026-11-10, no mockup): the cover's colour, playing, so
         // the glow is in it too; paused in another, the ring alone; and paused with no colour, the theme's ring and
@@ -494,7 +498,7 @@ class ThemeLabTest {
         shoot(device, "font130-albums") { AlbumsScreen("Aphelion Drive", browse(), actions, initialSelected = "Second Sight") }
         shoot(device, "font130-album") { AlbumScreen("Aphelion Drive", "Second Sight", browse(), actions) }
         shoot(device, "font130-search") { SearchScreen(browse(), actions, initialQuery = "polygon") }
-        shoot(device, "font130-now-playing") { NowPlayingScreen(nowPlaying().apply { repeat = RepeatMode.All }, NowPlayingActions()) }
+        shoot(device, "font130-now-playing") { NowPlayingScreen(nowPlaying(), liked) }
         shoot(device, "font130-settings") {
             SettingsScreen(
                 folders = listOf(

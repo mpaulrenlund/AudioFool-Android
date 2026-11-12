@@ -53,6 +53,8 @@
     "headerActionPaddingEnd": 8,
     "headerTextSize": 12,
     "headerLetterSpacingEm": 0.12,
+    "$tabGapNote": "Artists' header tabs, ARTISTS and PLAYLISTS (2026-11-12, the user's request): the gap between the two labels, each label's touch area reaching half of it either side.",
+    "tabGap": 20,
     "listPadding": 6
   },
   "artists": {

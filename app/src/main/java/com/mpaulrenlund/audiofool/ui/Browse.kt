@@ -66,6 +66,8 @@ class AppActions(
     val toggleTheme: () -> Unit = {},
     /** A tap on a song (spec 2): it plays, and Now Playing opens. */
     val play: (Track) -> Unit = {},
+    /** A tap on a playlist's song (2026-11-12): the playlist plays from it, and Now Playing opens. */
+    val playIn: (Track, List<Track>) -> Unit = { _, _ -> },
     val playPause: () -> Unit = {},
     val previous: () -> Unit = {},
     val next: () -> Unit = {},

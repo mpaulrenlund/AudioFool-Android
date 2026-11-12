@@ -11,6 +11,23 @@ both test lists as they stood at 0.5.1, with every result the user reported.
 
 ## From HANDOFF.md
 
+### Moved out of HANDOFF.md on 2026-11-12 (Playlists)
+
+- **Edit Tags** (0.18.0, spec 5.4): a cover-menu row opening the
+  desktop's Edit Track Tags window for the song playing; the app's first writes to music files,
+  made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
+  in). Checked on the emulator in every format, the files read back with the desktop's own
+  TagLibSharp; what only the phones can show is on both test lists. Details and my calls:
+  `design/progress.md`, its sixth decision.
+- **Lyrics** (0.18.0, spec 5.5): a cover-menu row opening the song
+  playing's lyrics, the line being sung lit in the cover's colour and kept in view; from the
+  song's `.lrc` file or tags, else LRCLIB (the user's calls). The screen follows the song. The
+  emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
+  lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
+  LRCLIB): `design/progress.md`, its fifth decision.
+- **The repo is public again** (2026-11-12, the user's call), once 0.18.1 went out without the
+  key and the APK files of v0.9.0 to v0.18.0 were removed from GitHub (copies in `dist/`).
+
 ### What 0.2.x changed (all the user's requests)
 
 - **0.2.0–0.2.2 (2026-10-25):** the Artists **letter strip**, always shown (`ArtistIndexStrip`,

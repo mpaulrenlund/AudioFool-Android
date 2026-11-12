@@ -22,13 +22,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,7 +66,6 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
@@ -77,7 +74,6 @@ import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.QualityLines
-import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 import com.mpaulrenlund.audiofool.core.theme.ThemeColor
 import com.mpaulrenlund.audiofool.library.CoverArt
 import com.mpaulrenlund.audiofool.playback.NowPlaying
@@ -102,7 +98,10 @@ class NowPlayingActions(
     val stepBack: () -> Unit = {},
     val next: () -> Unit = {},
     val seek: (Long) -> Unit = {},
-    val cycleRepeat: () -> Unit = {},
+    /** The heart (2026-11-12, the user's request, in Repeat's place): likes the song, or unlikes it. */
+    val toggleLike: (Track) -> Unit = {},
+    /** Whether the song is in Liked; read while drawing, so the heart follows a change at once. */
+    val isLiked: (Track) -> Boolean = { false },
     val toggleShuffle: () -> Unit = {},
     /** The cover menu's Bit-Perfect row (spec 6.4; the BP button until 2026-11-10); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
@@ -145,14 +144,14 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * system back closes it. A sideways swipe on the art or the title block skips:
  * left for Next, right for the song before. From the top: the art, the title block
  * with the track count, the quality lines, the waveform seekbar with the times,
- * the controls row (Repeat at the left, the transport centred, Shuffle at the right;
- * 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
+ * the controls row (the heart at the left, Repeat's place until 2026-11-12, the transport
+ * centred, Shuffle at the right; 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
  * press until 2026-11-10), which holds Bit-Perfect and ends with the logo menu's rows
  * ([appActions], [version]; 0.7.4).
  *
  * The colour here is the cover's (the user's calls, 2026-11-09 and 2026-11-10; spec 5,
  * Cover colour): the seekbar's played part, the transport's icons and the ring and glow
- * round Play/Pause, Repeat and Shuffle when on, and the artist's name (the same colour, since 2026-11-11) take the cover's
+ * round Play/Pause, Shuffle when on, and the artist's name (the same colour, since 2026-11-11) take the cover's
  * main colour (the glow at the top of the screen did too, until it went on 2026-11-10), fitted to the theme
  * ([AppTheme.coverAccent]); a black and white cover's is a grey (2026-11-11). No cover
  * leaves them the theme's. The mini player's buttons take the same colour ([MiniPlayerBar]).
@@ -710,18 +709,17 @@ private class WaveShape(private val levels: FloatArray?) {
 
 /**
  * The controls row (spec 5; 2026-11-10, the user's calls): Previous, Play/Pause and
- * Next centred on the screen, Repeat at the left and Shuffle at the right, each
- * `paddingX` from its edge and level with Play/Pause's middle (Repeat over Shuffle at
+ * Next centred on the screen, the heart at the left (Repeat until 2026-11-12, the user's
+ * request) and Shuffle at the right, each `paddingX` from its edge and level with Play/Pause's middle (Repeat over Shuffle at
  * the left until the user's second call that day). They keep the size they had
  * stacked, (Play/Pause − `modeGap`) / 2 within `modeButton.min` and `max`: 44 dp on
  * the S24, 35 on the M21. The transport's sizes are fractions of the screen height
- * between a min and a max. At least `modeToTransportGap` lies between Repeat and
+ * between a min and a max. At least `modeToTransportGap` lies between the heart and
  * Previous, and between Next and Shuffle: where the screen is too narrow for that
  * (the S24), the transport's gaps shrink, to `transportGap.fitMin` at most, and then
  * Previous and Next do.
- * [accent] is the cover's colour, for the transport's icons and for Repeat and
- * Shuffle when they are on (`control.repeatOn` and `control.shuffleOn` without one),
- * so the screen has one colour for "on".
+ * [accent] is the cover's colour, for the transport's icons and for Shuffle when on
+ * (`control.shuffleOn` without one). The heart keeps the desktop's like colour.
  */
 @Composable
 private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenHeight: Dp, accent: ThemeColor?) {
@@ -742,13 +740,17 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
         val fullSkip = scaled("nowPlaying.skipButton")
         val gap = minOf(scaled("nowPlaying.transportGap"), maxOf(t.dp("nowPlaying.transportGap.fitMin"), half - fullSkip))
         val skip = minOf(fullSkip, half - gap)
-        val repeat = nowPlaying.repeat
         val off = t.color("color.control.iconOff")
+        // The heart in Repeat's place (2026-11-12, the user's request: "I never use the Repeat
+        // Song button"): the desktop's Like heart, outlined in `control.iconOff`, filled in
+        // `accent.like` (the desktop's like colour, the user's call) while the song is in Liked.
+        val track = nowPlaying.shownTrack
+        val liked = track != null && actions.isLiked(track)
         Box(Modifier.align(Alignment.CenterStart).padding(start = padX)) {
-            RoundButton(mode, mode, mode, "Repeat", actions.cycleRepeat, state = repeat.name) {
-                Icon(AppIcons.REPEAT, modeIcon, if (repeat == RepeatMode.Off) off else accent?.toCompose() ?: t.color("color.control.repeatOn"))
+            RoundButton(mode, mode, mode, "Like", track?.let { { actions.toggleLike(it) } }, state = if (liked) "Liked" else "Not liked") {
+                if (liked) Icon(AppIcons.HEART_FILLED, modeIcon, t.color("color.accent.like"))
+                else Icon(AppIcons.HEART, modeIcon, off)
             }
-            if (repeat == RepeatMode.One) RepeatOneBadge(Modifier.align(Alignment.TopEnd), accent)
         }
         TransportButtons(nowPlaying, actions, skip, play, gap, accent, Modifier.align(Alignment.Center))
         Box(Modifier.align(Alignment.CenterEnd).padding(end = padX)) {
@@ -784,31 +786,5 @@ private fun TransportButtons(nowPlaying: NowPlaying, actions: NowPlayingActions,
             )
         }
         RoundButton(skip, skip, skip, "Next", actions.next) { Icon(AppIcons.NEXT, skipIcon, skipColor) }
-    }
-}
-
-/**
- * Repeat One's badge, the desktop's (`playbackBar.repeatOneBadge`): a "1" in a
- * disc on the button's top-right corner, `outset` beyond it. The disc is the
- * cover's colour ([accent]), as the lit Repeat icon is; `control.repeatOn` without one.
- */
-@Composable
-private fun RepeatOneBadge(modifier: Modifier, accent: ThemeColor?) {
-    val t = LocalAppTheme.current
-    val disc = t.desktopNumber("playbackBar.repeatOneBadge.discSize").dp
-    val outset = t.desktopNumber("playbackBar.repeatOneBadge.outset").dp
-    Box(
-        modifier
-            .offset { IntOffset(outset.roundToPx(), -outset.roundToPx()) }
-            .size(disc)
-            .tokenSurface(CircleShape, accent?.toCompose() ?: t.color("color.control.repeatOn"), emptyList(), null, 0.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        // The size is the desktop badge's, set over the style's.
-        Line(
-            "1",
-            t.text("nowPlaying.timeSize", "color.control.face", weight = t.desktopNumber("playbackBar.repeatOneBadge.weight").toInt())
-                .copy(fontSize = t.desktopNumber("playbackBar.repeatOneBadge.size").sp),
-        )
     }
 }

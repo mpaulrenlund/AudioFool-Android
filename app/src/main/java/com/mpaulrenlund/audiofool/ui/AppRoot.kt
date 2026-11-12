@@ -10,6 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import com.mpaulrenlund.audiofool.playlists.PlaylistRow
+import com.mpaulrenlund.audiofool.playlists.ShownPlaylist
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,6 +67,11 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 player.playFromAlbum(track, album?.tracks ?: listOf(track))
                 if (app.nowPlaying.track?.filePath == track.filePath) nav.open(Route.NowPlaying)
             },
+            // A playlist's song (2026-11-12): the playlist plays from it, and Now Playing opens, as for an album's.
+            playIn = { track, tracks ->
+                player.playFromAlbum(track, tracks)
+                if (app.nowPlaying.track?.filePath == track.filePath) nav.open(Route.NowPlaying)
+            },
             playPause = player::playPause,
             previous = player::previous,
             next = player::next,
@@ -112,7 +120,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             stepBack = player::stepBack,
             next = player::next,
             seek = player::seek,
-            cycleRepeat = player::cycleRepeat,
+            // The heart (2026-11-12, in Repeat's place): the song as the screens show it (Edit Tags' saved tags).
+            toggleLike = { track -> app.playlists.toggleLike(app.nowPlaying.shown(track) ?: track) },
+            isLiked = app.playlists::isLiked,
             toggleShuffle = player::toggleShuffle,
             toggleBitPerfect = player::toggleBitPerfect,
             analyze = { track -> nav.open(Route.Analysis(track.filePath)) },
@@ -182,6 +192,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             openDebug = { nav.open(Route.Debug) },
         )
     }
+    // Playlists' songs found again in each new library (a scan, a card back under another name).
+    LaunchedEffect(library) { app.playlists.libraryChanged(library) }
     LaunchedEffect(openNowPlaying) {
         if (openNowPlaying > 0 && app.nowPlaying.track != null) nav.open(Route.NowPlaying)
     }
@@ -193,7 +205,16 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
         Box(Modifier.fillMaxSize()) {
             NavHost(nav) { route ->
                 when (route) {
-                    Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME)
+                    Route.Artists -> {
+                        // The Playlists tab's rows, read again on every playlist change and new library.
+                        val rows by produceState<List<PlaylistRow>?>(null, library, app.playlists.version) { value = app.playlists.rows(library) }
+                        ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME, playlists = rows)
+                    }
+                    is Route.Playlist -> {
+                        // Null while its songs are found; kept as it was while a new version is read.
+                        val shown by produceState<ShownPlaylist?>(null, route.id, library, app.playlists.version) { value = app.playlists.shown(route.id, library) }
+                        PlaylistScreen(shown, browse, actions)
+                    }
                     is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
                     is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions, chosenSong = route.song)
                     Route.Search -> SearchScreen(browse, actions)

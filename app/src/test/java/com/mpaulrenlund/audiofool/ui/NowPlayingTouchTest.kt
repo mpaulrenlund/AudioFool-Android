@@ -3,6 +3,9 @@ package com.mpaulrenlund.audiofool.ui
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -44,6 +47,7 @@ class NowPlayingTouchTest {
     private val song = ThemeLabFixtures.nowPlayingTrack
     private val nowPlaying = NowPlaying().apply { showForPictures(song, index = 2, size = 10) }
     private val pressed = ArrayList<String>()
+    private var liked by mutableStateOf(false)
     private var seeks = ArrayList<Long>()
 
     private fun show(cover: android.graphics.Bitmap? = null) {
@@ -52,7 +56,8 @@ class NowPlayingTouchTest {
             previous = { pressed += "previous" },
             next = { pressed += "next" },
             seek = { seeks += it },
-            cycleRepeat = { pressed += "repeat" },
+            toggleLike = { pressed += "like ${it.title}" },
+            isLiked = { liked },
             toggleShuffle = { pressed += "shuffle" },
             toggleBitPerfect = { pressed += "bp" },
             openArtist = { pressed += "artist ${it.artist}" },
@@ -85,68 +90,79 @@ class NowPlayingTouchTest {
     private fun dp(px: Float) = with(compose.density) { px.toDp().value }
 
     /**
-     * Repeat and Shuffle are under the 48 dp a finger wants (44 dp on the S24, 35 on the
+     * The heart and Shuffle are under the 48 dp a finger wants (44 dp on the S24, 35 on the
      * M21). Compose widens a small touch area to 48 dp itself, so a tap just outside
      * the face still presses the button and nothing on screen had to grow; this pins
      * that. Both are tried from above and from below.
      */
     @Test fun a_tap_just_outside_a_small_button_still_presses_it() {
         show()
-        tapOutside("Repeat", 1)
-        tapOutside("Repeat", 1, below = true)
+        tapOutside("Like", 1)
+        tapOutside("Like", 1, below = true)
         tapOutside("Shuffle", 1)
         tapOutside("Shuffle", 1, below = true)
-        assertEquals(listOf("repeat", "repeat", "shuffle", "shuffle"), pressed)
+        assertEquals(listOf("like ${song.title}", "like ${song.title}", "shuffle", "shuffle"), pressed)
     }
 
     @Test @Config(qualifiers = ThemeLabTest.M21)
     fun a_tap_just_outside_a_small_button_still_presses_it_on_the_m21() {
         show()
-        tapOutside("Repeat", 5)
+        tapOutside("Like", 5)
         tapOutside("Shuffle", 5, below = true)
-        assertEquals(listOf("repeat", "shuffle"), pressed)
+        assertEquals(listOf("like ${song.title}", "shuffle"), pressed)
     }
 
     @Test fun a_tap_well_outside_a_small_button_does_nothing() {
         show()
-        tapOutside("Repeat", 10)
+        tapOutside("Like", 10)
         tapOutside("Shuffle", 10, below = true)
         assertEquals(emptyList(), pressed)
     }
 
     @Test fun every_button_has_a_name_for_a_screen_reader() {
         show()
-        for (name in listOf("Previous", "Pause", "Next", "Repeat", "Shuffle")) compose.onNodeWithContentDescription(name).performClick()
-        assertEquals(listOf("previous", "play", "next", "repeat", "shuffle"), pressed)
+        for (name in listOf("Previous", "Pause", "Next", "Like", "Shuffle")) compose.onNodeWithContentDescription(name).performClick()
+        assertEquals(listOf("previous", "play", "next", "like ${song.title}", "shuffle"), pressed)
         compose.onNodeWithContentDescription("Bit-Perfect").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Repeat").assertDoesNotExist()
     }
 
-    // ---- the controls row (2026-11-10): Repeat at the left, the transport centred, Shuffle at the right ----
+    /** The heart (2026-11-12): says whether the song is liked, and a tap likes or unlikes the song playing. */
+    @Test fun the_heart_says_whether_the_song_is_liked() {
+        show()
+        compose.onNodeWithContentDescription("Like").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Not liked"))
+        liked = true
+        compose.waitForIdle()
+        compose.onNodeWithContentDescription("Like").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Liked")).performClick()
+        assertEquals(listOf("like ${song.title}"), pressed)
+    }
+
+    // ---- the controls row (2026-11-10): the heart (Repeat until 2026-11-12) at the left, the transport centred, Shuffle at the right ----
 
     private fun checkControlsRow(modeSize: Float) {
         show()
         val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
-        val repeat = bounds("Repeat")
+        val heart = bounds("Like")
         val shuffle = bounds("Shuffle")
         val play = bounds("Pause")
         val previous = bounds("Previous")
         val next = bounds("Next")
         assertEquals(screen.center.x, play.center.x, 1f, "Play/Pause in the screen's middle")
         assertEquals(dp(play.left - previous.right), dp(next.left - play.right), 0.5f, "Previous and Next the same way from it")
-        assertEquals(modeSize, dp(repeat.width), 0.5f)
+        assertEquals(modeSize, dp(heart.width), 0.5f)
         assertEquals(modeSize, dp(shuffle.width), 0.5f)
-        assertEquals(20f, dp(repeat.left), 0.5f, "Repeat level with the cover's and the seekbar's left")
+        assertEquals(20f, dp(heart.left), 0.5f, "The heart level with the cover's and the seekbar's left")
         assertEquals(20f, dp(screen.right - shuffle.right), 0.5f, "Shuffle level with their right")
-        assertEquals(play.center.y, repeat.center.y, 1f, "Repeat level with Play/Pause's middle")
+        assertEquals(play.center.y, heart.center.y, 1f, "The heart level with Play/Pause's middle")
         assertEquals(play.center.y, shuffle.center.y, 1f, "Shuffle level with Play/Pause's middle")
-        assertTrue(dp(previous.left - repeat.right) >= 11.5f, "at least 12 dp between Repeat and Previous")
+        assertTrue(dp(previous.left - heart.right) >= 11.5f, "at least 12 dp between the heart and Previous")
         assertTrue(dp(shuffle.left - next.right) >= 11.5f, "at least 12 dp between Next and Shuffle")
     }
 
-    @Test fun the_transport_is_centred_between_repeat_and_shuffle() = checkControlsRow(44f)
+    @Test fun the_transport_is_centred_between_the_heart_and_shuffle() = checkControlsRow(44f)
 
     @Test @Config(qualifiers = ThemeLabTest.M21)
-    fun the_transport_is_centred_between_repeat_and_shuffle_on_the_m21() = checkControlsRow(35f)
+    fun the_transport_is_centred_between_the_heart_and_shuffle_on_the_m21() = checkControlsRow(35f)
 
     // ---- the cover menu (2026-11-10): a tap opens it, and Bit-Perfect is a row in it ----
 

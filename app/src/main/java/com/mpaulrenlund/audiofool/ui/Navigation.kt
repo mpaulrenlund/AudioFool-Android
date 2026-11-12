@@ -38,6 +38,8 @@ sealed interface Route {
     @Serializable data class Albums(val artist: String) : Route
     /** [song], a path, is shown chosen: a Listening History song row opens its album so (spec 4.7). */
     @Serializable data class Album(val artist: String, val title: String, val song: String? = null) : Route
+    /** A playlist (2026-11-12), by its id; Recently Added's is [com.mpaulrenlund.audiofool.playlists.Playlists.RECENT_ID]. */
+    @Serializable data class Playlist(val id: String) : Route
     @Serializable data object Search : Route
     @Serializable data object Settings : Route
     @Serializable data object Statistics : Route

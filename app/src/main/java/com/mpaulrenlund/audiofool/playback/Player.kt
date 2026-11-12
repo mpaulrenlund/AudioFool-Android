@@ -255,18 +255,6 @@ class Player(
         onChange()
     }
 
-    /** Off, All, One, Off (the desktop's cycle). */
-    fun cycleRepeat() {
-        state.repeat = when (state.repeat) {
-            RepeatMode.Off -> RepeatMode.All
-            RepeatMode.All -> RepeatMode.One
-            RepeatMode.One -> RepeatMode.Off
-        }
-        if (engaged) engine.setUpcoming(upcomingAfter(decodingIndex))
-        save()
-        onChange()
-    }
-
     /**
      * A volume is being ejected (spec 8: the SD card can go at any time). Android
      * ends any process still holding a file open on it a moment later, so its
@@ -411,7 +399,9 @@ class Player(
         if (queue.isNotEmpty()) return
         queue = restored.queue
         state.shuffle = restored.shuffle
-        state.repeat = restored.repeat
+        // Repeat stays off (2026-11-12, the user's call: Now Playing's Repeat button made way for
+        // the heart), so one saved on before then is dropped here.
+        state.repeat = RepeatMode.Off
         if (!(restored.shuffle && order.restore(restored.order))) order.reset(queue.size, restored.index, restored.shuffle)
         heardIndex = restored.index
         decodingIndex = restored.index

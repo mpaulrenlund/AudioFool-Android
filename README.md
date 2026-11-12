@@ -44,10 +44,16 @@ every decision and what is still to be checked on the phones.
   The next song is opened while one plays and joined on in the same output, so an
   album plays without gaps; a song in another format reopens the output once the last
   one has been heard out. DSD is converted to PCM at 88.2 kHz, or sent as DoP (below).
-  A tap on a song plays it with the rest of its album after it; Previous, Next, shuffle
-  and repeat follow the desktop's `PlayOrder`. The shuffle button in the ARTISTS header
+  A tap on a song plays it with the rest of its album after it; Previous, Next and shuffle
+  follow the desktop's `PlayOrder` (repeat is always off since the heart took its button).
+  The shuffle button in the ARTISTS header
   plays the whole library shuffled, from a random song (`LibraryShuffle`); the one in the
   ALBUMS header does the same with that artist's songs.
+- **Playlists.** The PLAYLISTS tab beside ARTISTS lists the desktop's Liked and Recently
+  Added (its `PlaylistStore` and `RecentlyAdded`, ported with their tests). The heart on Now
+  Playing likes the song playing; Liked is saved in `playlists.json`, the desktop's format,
+  and keeps a song whose SD card is out. Recently Added is the last 30 days' songs, newest
+  album first. A tap on a playlist's song plays the playlist from it.
 - **Bit-Perfect** (a row in Now Playing's cover menu, opened by a tap on the cover, and the
   same setting in Settings). Off: the normal shared
   output, which Android's mixer resamples to its own rate. On, it depends on the route:
@@ -70,8 +76,8 @@ every decision and what is still to be checked on the phones.
   screen, the notification (with the cover), headset and Bluetooth buttons. Another
   app's sound pauses or ducks it (audio focus; on a bit-perfect path it pauses instead of
   ducking); unplugging headphones pauses it.
-- **Resume.** The queue, the song, the place heard (the desktop's `ReopenPoint`), shuffle
-  and repeat are saved (`resume.json`) and restored, paused, when the app opens again.
+- **Resume.** The queue, the song, the place heard (the desktop's `ReopenPoint`) and shuffle
+  are saved (`resume.json`) and restored, paused, when the app opens again.
 - **Last.fm.** Scrobbling as on the desktop (its `LastFmApi`, `PlayTracker`,
   `ScrobbleQueue` and `LastFmScrobbler`, ported with their tests): "now playing" when a song
   starts, a scrobble once it has played for half its length or four minutes (counted from
