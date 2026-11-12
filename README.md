@@ -100,6 +100,11 @@ every decision and what is still to be checked on the phones.
   lyrics, credits, connections (samples, covers) and listeners' comments, 50 at a time. With
   no matching page, Genius's five nearest results to choose from. It reads genius.com's own
   web API (no key; no lyrics); each song found is kept until the app closes, nothing saved.
+- **Lyrics.** From the cover menu: the song playing's lyrics, the line being sung lit in the
+  cover's colour and kept in view as the song plays; a tap on a line plays from there. From
+  the song's own `.lrc` file or its tags first, else from LRCLIB (lrclib.net, free, no key),
+  which is told the artist, title, album and length; what LRCLIB found is kept until the app
+  closes, nothing saved. The screen follows the song playing.
 - **The theme.** The desktop's token files are the app's theme, read by JSON path
   (`color.panel.bg`, `shadow.controlButton`); sizes come from `design/mobile-tokens.json`.
   Dark when nothing is saved; a switch applies at once.

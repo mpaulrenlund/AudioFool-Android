@@ -301,6 +301,23 @@
     "promptTitleSize": 17,
     "promptTextSize": 15
   },
+  "lyrics": {
+    "$note": "The Lyrics screen (spec 5.5; 2026-11-11, the user's request), from the cover menu. No mockup; the header is Analyze's (analysis.header*, titleSize, titleWeight, subtitleSize). Each line lineSize at lineWeight, paddingX each side and linePaddingY above and below (its tap area); the line being sung grows to currentScale from its left edge, every line laid out narrow enough to grow inside the padding; a break between verses (or a timed pause) is breakHeight. The list keeps the line being sung anchor of its height down; a finger's scroll stops that until followAgainMs after it lets go. Colour and size change over changeMs; the line is read every tickMs while playing. Under the lyrics, where they came from: sourceSize, sourceTop above it.",
+    "paddingTop": 8,
+    "paddingX": 20,
+    "linePaddingY": 6,
+    "lineSize": 22,
+    "lineWeight": 600,
+    "lineHeight": 1.3,
+    "currentScale": 1.06,
+    "breakHeight": 20,
+    "anchor": 0.3,
+    "followAgainMs": 3000,
+    "changeMs": 250,
+    "tickMs": 50,
+    "sourceSize": 13,
+    "sourceTop": 20
+  },
   "miniPlayer": {
     "height": 64,
     "marginX": 8,

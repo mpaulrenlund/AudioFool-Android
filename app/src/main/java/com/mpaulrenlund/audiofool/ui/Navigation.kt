@@ -53,6 +53,8 @@ sealed interface Route {
     @Serializable data class Cover(val path: String) : Route
     /** Edit Tags (spec 5.4), from the cover menu: the song by its path, as Genius. */
     @Serializable data class EditTags(val path: String) : Route
+    /** Lyrics (spec 5.5), from the cover menu: no song named, as it follows the song playing. */
+    @Serializable data object Lyrics : Route
     @Serializable data class TokenSheet(val page: SheetPage) : Route
 }
 

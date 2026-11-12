@@ -34,7 +34,9 @@ Traps worth not rediscovering: playback, the output stage, scanning, ThemeLab, J
   proportional to what's near the song playing.
 - **The emulator can't reach genius.com from this PC**: Zscaler re-signs its certificate, and
   Android doesn't trust Zscaler's root, so the Genius screen says "Couldn't reach Genius:
-  …Trust anchor for certification path not found." That's Zscaler, not the app. A JVM test can
+  …Trust anchor for certification path not found." That's Zscaler, not the app. LRCLIB (the
+  Lyrics screen, 0.18.0) is the same: "Couldn't reach LRCLIB" on the emulator; `curl` from Git
+  Bash does reach lrclib.net (Windows' store trusts Zscaler). A JVM test can
   reach it (the Gradle trust store has Zscaler's root), but Cloudflare challenges desktop
   Java's requests about 1 in 4, so a JVM probe's 403s say nothing about the phones.
 - **The listening time and scrobbles count the heard position**, not the clock: anything

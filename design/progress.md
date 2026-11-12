@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.18.0** (on `main`, not built or released yet): Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4) — 2026-11-11
+- [ ] **0.18.0** (on `main`, not built or released yet): Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11
 - [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
 - [x] **0.17.1**: Now Playing's swipe made easier (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous button keeps its 3 s rule — 2026-11-11, released as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1)
 - [x] **0.16.0**: Repeat at the left of the transport and Shuffle at the right; the cover full screen from the cover menu's Resolution row (pinch, drag and double tap to zoom) — 2026-11-10, released as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
@@ -75,6 +75,55 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-11, for 0.18.0 (not built or released yet): **Lyrics in the cover menu** (the user: "in
+the Now Playing menu, can we add a Lyrics button? This lyrics button would ideally open a new
+screen and highlight the lyrics as they are being sang while the music is playing"). Spec §5.5
+and §5 (*Cover menu*). No mockup, and nothing to port: the desktop has no lyrics. Asked first,
+as three short choices, all answered with the recommended option: **where lyrics come from**,
+"Files, then LRCLIB" (over "Only my files"); **the line being sung's colour**, "Cover's colour"
+(the seekbar's and Play/Pause's, so the playback colour now also means the line being sung; over
+the theme's heading colour); and the plan as described, "Yes, build it".
+- **Where from**: the song's `.lrc` file (same name, beside it), then its tags (ID3v2 SYLT in
+  milliseconds, LYRICS/USLT, "LYRICS:…", SYNCEDLYRICS, UNSYNCEDLYRICS), timed over plain;
+  then LRCLIB (`/api/get` under the exact names and length, then `/api/search`, matched as
+  Genius matches, length within 3 s, timed over plain). Read on opening the screen (a new JNI
+  call, `TagLibNative.embeddedLyrics`), never during the scan: the library cache is unchanged.
+  LRCLIB's answers are kept in memory for the run, as Genius's are; nothing is saved.
+- **My calls, open to change** (each was named in the plan the user approved): the screen
+  **follows the song playing** (Genius and Analyze stay on theirs); **a tap on a timed line
+  seeks there**; **the screen stays on** while timed lyrics play; **plain lyrics in the files
+  are shown as they are** and LRCLIB isn't asked for timed ones then (the option said LRCLIB
+  only "if neither exists"; asking LRCLIB for timing over a file's plain lyrics is the one
+  real alternative); the line being sung is 1.06 times larger, from its left edge, every line
+  laid out narrow enough that none rewraps; the list keeps it 0.3 of the way down; a finger's
+  scroll stops following for 3 s; the source is named under the lyrics.
+- **Timing**: the line is read from `positionMs()`, the place the speakers are (the output's
+  play head through the hearing timeline), every 50 ms while playing (not every frame: nothing
+  else moves there, and the frame clock would keep the display at full rate). So it is in step
+  with what is heard, unlike the desktop's decode position (its HISTORY: "build it with a
+  feature that needs exact timing (synced lyrics …)"). Bluetooth headphones add their own
+  delay, which only the S24 can show.
+- **Checked**: LRCLIB's real answers from this PC (curl, a well-known public song; none of the
+  user's library): `/api/get` gives the fields read, a song it lacks gives 404, `/api/search` a
+  list of up to 20. The emulator can't reach it (Zscaler), so the live lookup is on both test
+  lists. Tests: `LyricsTest` 22 (LRC, the .lrc file and its text, matching, the lookup with a
+  made-up LRCLIB), `LyricsScreenTest` 5 (a tap seeks; plain lines don't; the line in view
+  follows a seek; the source line under timed and plain lyrics, which the pictures of a whole
+  song stop short of), `NowPlayingTouchTest` +1 (the row opens the screen). ThemeLab: `lyrics`,
+  `lyrics-no-cover`, `lyrics-plain`, `lyrics-looking`, `lyrics-none`, `lyrics-failed`,
+  `font130-lyrics`; the cover menu's pictures gain the row.
+- **Emulator** (the release build over 0.17.2; three made-up FLACs: one with an `.lrc`, one
+  with LRC in its LYRICS tag, one with none): the row and header; the lit line within 0.5–0.9 s
+  of its time (screenshots about 0.55 s apart); it holds at 30% down the list; a tap on a line
+  jumps the song there; a swipe leaves the list put and it comes back about 3 s after; the
+  screen held on while playing and let go when paused; the next song's lyrics within 0.35 s,
+  "Timed lyrics from the song's .lrc file" / "…tags"; the third: "Couldn't look up the
+  lyrics." / "Couldn't reach LRCLIB: …Trust anchor for certification path not found." (Zscaler);
+  back to Now Playing; Light readable; no crash. **Once** in four plays of the first song the
+  screen stopped updating at 20 s (the screen-on hold let go too) until the next song started,
+  with nothing pressed; three more whole plays and 3 minutes of watching didn't repeat it, and
+  logcat showed no cause. On the S24's list to watch for.
 
 2026-11-11, for 0.18.0 (not built or released yet): **Edit Tags in the cover menu** (the user:
 "For the Now Playing Menu, can we add an "Edit Tags" button. Tapping this button would open a
@@ -1178,6 +1227,22 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Lyrics (for 0.18.0)
+
+- [ ] Cover menu: "Lyrics" after Genius; it opens the screen on the song playing.
+- [ ] A song with no `.lrc` file or lyrics in its tags: LRCLIB's lyrics come up (the emulator
+  can't reach LRCLIB), with "Timed lyrics from LRCLIB" under them.
+- [ ] The lit line keeps in step with the singing through a whole song, on the speaker and
+  on wired headphones; then on Bluetooth (if it lights early there, say by about how much).
+  Once on the emulator it stopped moving partway through a song until the next one started:
+  if that happens, say which song, how far in, and whether the music kept playing.
+- [ ] The next song starts (gapless too): the screen moves to its lyrics.
+- [ ] Scroll with a finger: it stays where you put it, and about 3 s after letting go it goes
+  back to the line being sung. A tap on a line plays from there.
+- [ ] The screen doesn't go dark while timed lyrics play, and does once paused.
+- [ ] A song with lyrics in its tags (or an `.lrc` beside it), if you have one: those are the
+  ones shown, named under them.
+
 ### Edit Tags (for 0.18.0)
 
 - [ ] Cover menu: "Edit Tags" between Bit-Perfect and Genius; it opens the screen with the
@@ -1463,6 +1528,14 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Lyrics (for 0.18.0)
+
+- [ ] The Lyrics screen on a song through the USB DAC with Bit-Perfect on: the lit line keeps
+  in step (the driver's own play head).
+- [ ] A song on the SD card with an `.lrc` beside it, if you have one: its lyrics show; take the
+  card out on the screen: nothing breaks, and the next song's come from LRCLIB or say none.
+- [ ] The cover menu with its extra row fits the M21's screen.
 
 ### Edit Tags (for 0.18.0)
 

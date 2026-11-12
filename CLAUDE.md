@@ -35,7 +35,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 - **A missing folder is not a deleted library.** The SD card can be removed at any time. Unreachable folders keep their tracks, shown as unavailable.
 - **No on-screen back buttons.** System back and predictive back handle navigation.
 - **Keep the PlayStation logo asset** (`PlayStation-Logo-1994.png`). Don't replace or redraw it.
-- **The playback colour means playback** (`accent.playback`): Play/Pause, the seekbar, the now-playing row, and Now Playing's artist name (2026-11-11, the user's call). Other artist names use `accent.blue`. On Now Playing the cover's own colour stands in for both, for Repeat and Shuffle when on (the user's call, 2026-11-09), and for Previous's and Next's icons (2026-11-10; spec §5, *Cover colour*). The mini player's three buttons take it the same way (2026-11-10; spec §3); everywhere else they are the theme's. No colours outside the roles in the spec.
+- **The playback colour means playback** (`accent.playback`): Play/Pause, the seekbar, the now-playing row, Now Playing's artist name (2026-11-11, the user's call), and the Lyrics screen's line being sung, in the cover's colour as the seekbar (2026-11-11, the user's call; spec §5.5). Other artist names use `accent.blue`. On Now Playing the cover's own colour stands in for both, for Repeat and Shuffle when on (the user's call, 2026-11-09), and for Previous's and Next's icons (2026-11-10; spec §5, *Cover colour*). The mini player's three buttons take it the same way (2026-11-10; spec §3); everywhere else they are the theme's. No colours outside the roles in the spec.
 - **No visible scrollbars.**
 
 ## Devices

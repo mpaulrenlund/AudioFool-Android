@@ -23,8 +23,14 @@ listed under *Other docs* at the end: read each only when the work touches it.
   made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
   in). Checked on the emulator in every format, the files read back with the desktop's own
   TagLibSharp; what only the phones can show is on both test lists. Details and my calls:
-  `design/progress.md`, its newest decision.
-- **Next build:** 0.18.0 (Edit Tags is a new feature; confirm the number with the user);
+  `design/progress.md`, its second decision.
+- **On `main`, not released: Lyrics** (spec 5.5, 2026-11-11): a cover-menu row opening the song
+  playing's lyrics, the line being sung lit in the cover's colour and kept in view; from the
+  song's `.lrc` file or tags, else LRCLIB (the user's calls). The screen follows the song. The
+  emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
+  lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
+  LRCLIB): `design/progress.md`, its newest decision.
+- **Next build:** 0.18.0 (Edit Tags and Lyrics are new features; confirm the number with the user);
   **versionCode 56**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.17.2 has been
@@ -101,7 +107,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
 | The Android app | `app/` — `theme/`, `library/`, `settings/`, `storage/`, `art/` (thumbnails), `playback/`, `ui/` (screens, navigation) |
 | The library | `library/LibraryRepository`: the cache first, then a background rescan; the scan reuses tags for files whose size and date haven't changed, and carries over every track of a folder it can't reach |
 | Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
-| Each part's code (playback, the screens, the cover colour, Now Playing's ideas, the USB DAC and driver, Last.fm, Listening History, Genius, Analyze, Edit Tags, Statistics, what is heard) | `docs/code-map.md` |
+| Each part's code (playback, the screens, the cover colour, Now Playing's ideas, the USB DAC and driver, Last.fm, Listening History, Genius, Analyze, Edit Tags, Lyrics, Statistics, what is heard) | `docs/code-map.md` |
 | **AudioFool's Last.fm key** | `~/.gradle/gradle.properties`: `audiofool.lastfm.apiKey=` and `audiofool.lastfm.secret=` (32 hex characters each, the user's own API account at last.fm/api/accounts). **Outside the repo**, put there by the user. `app/build.gradle.kts` makes them `BuildConfig.LASTFM_API_KEY` / `LASTFM_SECRET`; `preReleaseBuild` stops a release without them. Check they're set with `grep -c '^audiofool.lastfm.apiKey=..*'`, never by printing them |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |

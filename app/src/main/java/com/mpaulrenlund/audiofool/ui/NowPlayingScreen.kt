@@ -116,6 +116,8 @@ class NowPlayingActions(
     val editTags: (Track) -> Unit = {},
     /** Whether Edit Tags can open: not while the song's folder can't be reached. */
     val canEditTags: (Track) -> Boolean = { true },
+    /** The cover menu's Lyrics (spec 5.5): opens the Lyrics screen, which follows the song playing. */
+    val lyrics: () -> Unit = {},
     /** A tap on the artist's name (spec 5): opens that artist's albums. */
     val openArtist: (Track) -> Unit = {},
     /** A tap on the album's name (spec 5): opens the album, the song chosen. */
@@ -401,6 +403,10 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
                     menuAt = null
                     actions.genius(track)
                 },
+                lyrics = {
+                    menuAt = null
+                    actions.lyrics()
+                },
             )
         }
     }
@@ -440,7 +446,8 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int,
  * user's call: the BP button moved here), checked while on, which switches it and
  * keeps the menu open; Edit Tags, which opens the Edit Tags screen (spec 5.4,
  * 2026-11-11, the user's call; information only while the song's folder can't be
- * reached); and Genius, which opens the Genius screen (spec 5.2); then
+ * reached); Genius, which opens the Genius screen (spec 5.2); and Lyrics, which
+ * opens the Lyrics screen (spec 5.5, 2026-11-11, the user's call); then
  * the logo menu's Theme and version (0.7.4, the user's call; Listening History,
  * Rescan Library, Settings and Statistics are the logo menu's only since 2026-11-10,
  * the user's call), so all but the resolution are in alphabetical order with the
@@ -459,6 +466,7 @@ private fun ArtMenu(
     analyze: () -> Unit,
     editTags: (() -> Unit)?,
     genius: () -> Unit,
+    lyrics: () -> Unit,
 ) {
     val t = LocalAppTheme.current
     val density = LocalDensity.current
@@ -473,6 +481,7 @@ private fun ArtMenu(
             MenuCheckRow("Bit-Perfect", nowPlaying.bitPerfect, "color.status.bitPerfectOn", toggleBitPerfect, greyed = nowPlaying.bitPerfectGreyed)
             MenuRow("Edit Tags", onClick = editTags)
             MenuRow("Genius", onClick = genius)
+            MenuRow("Lyrics", onClick = lyrics)
             AppMenuRows(onClose, appActions, version, allRows = false)
         }
     }

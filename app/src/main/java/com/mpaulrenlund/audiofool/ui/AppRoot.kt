@@ -23,6 +23,9 @@ import com.mpaulrenlund.audiofool.genius.GeniusRows
 import com.mpaulrenlund.audiofool.genius.GeniusState
 import com.mpaulrenlund.audiofool.lastfm.historyTarget
 import com.mpaulrenlund.audiofool.library.TagEditing
+import com.mpaulrenlund.audiofool.lyrics.LyricsNote
+import com.mpaulrenlund.audiofool.lyrics.LyricsRows
+import com.mpaulrenlund.audiofool.lyrics.LyricsState
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
 import kotlinx.coroutines.Dispatchers
@@ -119,6 +122,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             // Spec 5.4: the song's tags; not while its folder can't be reached (the SD card out).
             editTags = { track -> nav.open(Route.EditTags(track.filePath)) },
             canEditTags = { track -> !app.library.state.value.isUnavailable(track) },
+            // Spec 5.5: the song playing's lyrics; the screen follows the song.
+            lyrics = { nav.open(Route.Lyrics) },
             // Spec 5: the artist's and the album's names open them; back returns to Now Playing.
             openArtist = { track -> artistRouteFor(track, app.library.state.value.library)?.let(nav::open) },
             openAlbum = { track -> albumRouteFor(track, app.library.state.value.library)?.let(nav::open) },
@@ -138,6 +143,7 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             },
         )
     }
+    val lyricsActions = remember { LyricsActions(seek = player::seek, retry = app.lyrics::retry) }
     val lastFmActions = remember {
         val lastFm = app.lastFm
         LastFmActions(
@@ -200,6 +206,15 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     val shown = app.genius.state.takeIf { it.track?.filePath == route.path }
                         ?: GeniusState(track = track, note = GeniusNote(GeniusRows.LOOKING_UP))
                     GeniusScreen(shown, remember(library, route.path) { library.albumHolding(route.path) }, geniusActions)
+                }
+                Route.Lyrics -> {
+                    // The song playing, as the screens show it (Edit Tags' saved tags); the next one when it changes.
+                    val playing = app.nowPlaying.shownTrack
+                    LaunchedEffect(playing) { app.lyrics.showing(playing) }
+                    // Until the model is on this song (a frame), the header and "Looking for lyrics…".
+                    val shown = app.lyrics.state.takeIf { it.track == playing }
+                        ?: LyricsState(playing, note = LyricsNote(LyricsRows.LOOKING))
+                    LyricsScreen(shown, app.nowPlaying, lyricsActions)
                 }
                 Route.Settings -> SettingsScreen(
                     folders = folders.map { f ->

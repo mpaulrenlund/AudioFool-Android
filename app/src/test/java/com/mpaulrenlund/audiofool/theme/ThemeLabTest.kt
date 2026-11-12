@@ -62,6 +62,12 @@ import com.mpaulrenlund.audiofool.genius.GeniusNote
 import com.mpaulrenlund.audiofool.genius.GeniusRows
 import com.mpaulrenlund.audiofool.genius.GeniusState
 import com.mpaulrenlund.audiofool.core.genius.GeniusException
+import com.mpaulrenlund.audiofool.core.lyrics.LyricsException
+import com.mpaulrenlund.audiofool.lyrics.LyricsNote
+import com.mpaulrenlund.audiofool.lyrics.LyricsRows
+import com.mpaulrenlund.audiofool.lyrics.LyricsState
+import com.mpaulrenlund.audiofool.ui.LyricsActions
+import com.mpaulrenlund.audiofool.ui.LyricsScreen
 import com.mpaulrenlund.audiofool.ui.ListeningHistoryScreen
 import androidx.compose.foundation.rememberScrollState
 import org.junit.Test
@@ -351,6 +357,22 @@ class ThemeLabTest {
         // A page without the comments Genius didn't send.
         shoot(device, "genius-missing") { GeniusScreen(ThemeLabFixtures.genius(missing = listOf("comments")), album, GeniusActions()) }
 
+        // Lyrics (spec 5.5, no mockup): made-up timed lyrics at 2:18, the line being sung in a
+        // deep red cover's colour, then with no cover (the theme's); plain lyrics; each note.
+        val red = ThemeLabFixtures.coverDeepRed()
+        shoot(device, "lyrics") { withCoverColour(red) { LyricsScreen(ThemeLabFixtures.lyrics(), nowPlaying(), LyricsActions()) } }
+        shoot(device, "lyrics-no-cover") { LyricsScreen(ThemeLabFixtures.lyrics(), nowPlaying(), LyricsActions()) }
+        shoot(device, "lyrics-plain") { LyricsScreen(ThemeLabFixtures.lyrics(synced = false), nowPlaying(), LyricsActions()) }
+        shoot(device, "lyrics-looking") { LyricsScreen(LyricsState(song, note = LyricsNote(LyricsRows.LOOKING)), nowPlaying(), LyricsActions()) }
+        shoot(device, "lyrics-none") { LyricsScreen(LyricsState(song, note = LyricsNote(LyricsRows.NONE)), nowPlaying(), LyricsActions()) }
+        shoot(device, "lyrics-failed") {
+            LyricsScreen(
+                LyricsState(song, note = LyricsRows.failed(LyricsException("Couldn't reach LRCLIB: Unable to resolve host \"lrclib.net\": No address associated with hostname"))),
+                nowPlaying(),
+                LyricsActions(),
+            )
+        }
+
         // Edit Tags (spec 5.4, no mockup): the song playing; scrolled to its end; and boxes
         // that can't be saved, with a detail cleared by its button.
         shoot(device, "edit-tags") { EditTagsScreen(remember { ThemeLabFixtures.editTags() }, EditTagsActions()) }
@@ -439,6 +461,8 @@ class ThemeLabTest {
         shoot(device, "font130-listening-history") { ListeningHistoryScreen(ThemeLabFixtures.history(), HistoryActions()) }
         // The header, the entries' right-hand notes and the credit column, to see them fit.
         shoot(device, "font130-genius") { GeniusScreen(ThemeLabFixtures.genius(), ThemeLabFixtures.nowPlayingAlbum, GeniusActions()) }
+        // The lines wrapping, and the line being sung grown inside the padding.
+        shoot(device, "font130-lyrics") { LyricsScreen(ThemeLabFixtures.lyrics(), nowPlaying(), LyricsActions()) }
         // The label column ("Album Artist" on two lines if it must) and the footer, to see them fit.
         shoot(device, "font130-edit-tags") { EditTagsScreen(remember { ThemeLabFixtures.editTags() }, EditTagsActions()) }
         shoot(device, "font130-edit-tags-problem") {

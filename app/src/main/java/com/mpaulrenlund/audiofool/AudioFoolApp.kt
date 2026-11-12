@@ -11,6 +11,9 @@ import com.mpaulrenlund.audiofool.core.genius.GeniusClient
 import com.mpaulrenlund.audiofool.core.genius.GeniusLookup
 import com.mpaulrenlund.audiofool.core.library.DriveChange
 import com.mpaulrenlund.audiofool.genius.Genius
+import com.mpaulrenlund.audiofool.core.lyrics.LrcLibClient
+import com.mpaulrenlund.audiofool.core.lyrics.OnlineLyrics
+import com.mpaulrenlund.audiofool.lyrics.SongLyrics
 import com.mpaulrenlund.audiofool.lastfm.LastFm
 import com.mpaulrenlund.audiofool.lastfm.ListeningHistory
 import com.mpaulrenlund.audiofool.library.LibraryRepository
@@ -106,6 +109,9 @@ class AudioFoolApp : Application() {
 
     /** The Genius screen (spec 5.2): what genius.com has on a song, each song's lookup kept for the run (nothing saved). */
     val genius: Genius by lazy { Genius(GeniusLookup(GeniusClient())) }
+
+    /** The Lyrics screen (spec 5.5): the song's own lyrics, else LRCLIB's, LRCLIB's kept for the run (nothing saved). */
+    val lyrics: SongLyrics by lazy { SongLyrics(OnlineLyrics(LrcLibClient())) }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */
     private val systemControlsLazy = lazy {

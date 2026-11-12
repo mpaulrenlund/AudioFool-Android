@@ -335,6 +335,50 @@ object ThemeLabFixtures {
         geniusHit(35, "Polygon Weather", "Second Sight Tribute Band"),
     )
 
+    /**
+     * Made-up lyrics for "Polygon Weather" (the Lyrics screen, spec 5.5), timed as an
+     * LRC file is: at [NOW_PLAYING_POSITION_MS] (2:18) "Let the gradients bleed" is sung.
+     */
+    private const val POLYGON_WEATHER_LRC = """[ar:Aphelion Drive]
+[ti:Polygon Weather]
+[00:14.20]Static on the window, numbers in the rain
+[00:19.80]Every cloud a polygon, folding into frame
+[00:25.40]I drew the sky in vectors when you said goodbye
+[00:31.00]Now the forecast's rendering a colder kind of light
+[00:36.60]
+[00:42.10]Oh, polygon weather
+[00:46.30]Sharp edges on the breeze
+[00:50.90]Oh, polygon weather
+[00:55.20]You're falling in degrees
+[01:01.00]
+[01:20.50]The city hums in wireframe, the streetlights flicker blue
+[01:26.10]I count the shapes between us, and every one is you
+[01:31.70]The pressure's dropping slowly, the satellites agree
+[01:37.30]There's a storm in low resolution coming after me
+[01:43.00]
+[01:48.40]Oh, polygon weather
+[01:52.60]Sharp edges on the breeze
+[01:57.20]Oh, polygon weather
+[02:01.50]You're falling in degrees
+[02:07.80]
+[02:12.00]Turn the angles soft again
+[02:16.40]Let the gradients bleed
+[02:21.00]Smooth the corners of the world
+[02:25.60]Till it's only you and me
+[02:31.00]
+[02:36.20]Oh, polygon weather
+[02:40.40]Sharp edges on the breeze
+[02:45.00]Oh, polygon weather
+[02:49.30]You're falling in degrees
+[02:55.00]"""
+
+    /** The Lyrics screen's state for the song playing: its made-up lyrics, timed (from LRCLIB) or plain (from its tags). */
+    fun lyrics(synced: Boolean = true): com.mpaulrenlund.audiofool.lyrics.LyricsState {
+        val text = if (synced) POLYGON_WEATHER_LRC else POLYGON_WEATHER_LRC.lines().joinToString("\n") { it.substringAfterLast(']') }
+        val source = if (synced) com.mpaulrenlund.audiofool.core.lyrics.LyricsSource.LrcLib else com.mpaulrenlund.audiofool.core.lyrics.LyricsSource.Tags
+        return com.mpaulrenlund.audiofool.lyrics.LyricsState(nowPlayingTrack, com.mpaulrenlund.audiofool.core.lyrics.Lrc.parse(text, source))
+    }
+
     /** The Album screen's album for the song playing, for the Genius screen's header. */
     val nowPlayingAlbum get() = library.albumHolding(nowPlayingTrack.filePath)
 

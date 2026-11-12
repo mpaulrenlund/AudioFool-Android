@@ -19,6 +19,10 @@
 #include <aiffproperties.h>
 #include <trueaudioproperties.h>
 #include <shortenproperties.h>
+#include <synchronizedlyricsframe.h>
+
+#include <cstdio>
+#include <vector>
 
 namespace {
 
@@ -117,6 +121,74 @@ Java_com_mpaulrenlund_audiofool_library_TagLibNative_read(JNIEnv *env, jobject, 
                 put(env, out, IS_ALAC, "1");
     }
 
+    return out;
+}
+
+// The lyrics the song's tags hold (spec 5.5), each as UTF-8, timed ones first:
+// an ID3v2 SYLT frame timed in milliseconds, written out as LRC lines
+// ("[01:02.345]text"); then LYRICS (ID3v2 USLT, Vorbis, MP4, APE, ASF, as TagLib
+// names them), any "LYRICS:<description>", SYNCEDLYRICS and UNSYNCEDLYRICS, as
+// they are (often LRC too). Empty when there are none; null when the file can't
+// be read. Kotlin picks timed over plain (core `Lrc.pick`).
+extern "C" JNIEXPORT jobjectArray JNICALL
+Java_com_mpaulrenlund_audiofool_library_TagLibNative_lyrics(JNIEnv *env, jobject, jbyteArray pathUtf8) {
+    const std::string path = pathOf(env, pathUtf8);
+    if (!canOpen(path))
+        return nullptr;
+
+    TagLib::FileRef ref(path.c_str(), false);
+    TagLib::File *file = ref.file();
+    if (ref.isNull() || file == nullptr || !file->isValid())
+        return nullptr;
+
+    std::vector<std::string> texts;
+    if (TagLib::ID3v2::Tag *id3 = id3v2Of(file)) {
+        for (TagLib::ID3v2::Frame *frame : id3->frameList("SYLT")) {
+            auto *sylt = dynamic_cast<TagLib::ID3v2::SynchronizedLyricsFrame *>(frame);
+            if (sylt == nullptr || sylt->timestampFormat() != TagLib::ID3v2::SynchronizedLyricsFrame::AbsoluteMilliseconds)
+                continue;
+            const auto kind = sylt->type();
+            if (kind != TagLib::ID3v2::SynchronizedLyricsFrame::Lyrics && kind != TagLib::ID3v2::SynchronizedLyricsFrame::Other)
+                continue;
+            std::string lrc;
+            for (const auto &item : sylt->synchedText()) {
+                std::string text = item.text.stripWhiteSpace().to8Bit(true);
+                for (char &c : text)
+                    if (c == '\n' || c == '\r') c = ' ';
+                const unsigned int ms = item.time;
+                char stamp[32];
+                std::snprintf(stamp, sizeof stamp, "[%02u:%02u.%03u]", ms / 60000, (ms / 1000) % 60, ms % 1000);
+                lrc += stamp;
+                lrc += text;
+                lrc += '\n';
+            }
+            if (!lrc.empty()) {
+                texts.push_back(lrc);
+                break;
+            }
+        }
+    }
+
+    const TagLib::PropertyMap map = file->properties();
+    auto add = [&](const TagLib::StringList &values) {
+        for (const auto &value : values) {
+            std::string text = value.to8Bit(true);
+            if (!text.empty()) texts.push_back(text);
+        }
+    };
+    if (auto it = map.find("LYRICS"); it != map.end()) add(it->second);
+    for (const auto &[key, values] : map)
+        if (key.startsWith("LYRICS:")) add(values);
+    if (auto it = map.find("SYNCEDLYRICS"); it != map.end()) add(it->second);
+    if (auto it = map.find("UNSYNCEDLYRICS"); it != map.end()) add(it->second);
+
+    jclass byteArrayClass = env->FindClass("[B");
+    jobjectArray out = env->NewObjectArray(static_cast<jsize>(texts.size()), byteArrayClass, nullptr);
+    for (size_t i = 0; i < texts.size(); i++) {
+        jbyteArray b = bytes(env, texts[i].data(), texts[i].size());
+        env->SetObjectArrayElement(out, static_cast<jsize>(i), b);
+        env->DeleteLocalRef(b);
+    }
     return out;
 }
 

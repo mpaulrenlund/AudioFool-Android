@@ -34,6 +34,7 @@ object TagLibNative : TagSource {
     /** UTF-8 byte arrays in, UTF-8 byte arrays out: JNI's own strings can't hold every character. */
     private external fun read(pathUtf8: ByteArray): Array<ByteArray?>
     private external fun pictures(pathUtf8: ByteArray): Array<ByteArray?>?
+    private external fun lyrics(pathUtf8: ByteArray): Array<ByteArray?>?
 
     override fun read(path: String): RawTags {
         val slots = read(path.toByteArray(Charsets.UTF_8))
@@ -69,6 +70,14 @@ object TagLibNative : TagSource {
 
     /** One embedded picture: TagLib's type name ("Front Cover", ...) and the image bytes. */
     class Picture(val type: String, val data: ByteArray)
+
+    /**
+     * The lyrics in the file's tags (spec 5.5), timed ones first: an ID3v2 SYLT
+     * frame as LRC lines, then LYRICS and its kin as they are. Empty when there are
+     * none; null when the file couldn't be read.
+     */
+    fun embeddedLyrics(path: String): List<String>? =
+        lyrics(path.toByteArray(Charsets.UTF_8))?.mapNotNull { it?.toString(Charsets.UTF_8)?.takeIf(String::isNotBlank) }
 
     /** Every embedded picture, or null when the file couldn't be read. */
     fun embeddedPictures(path: String): List<Picture>? {

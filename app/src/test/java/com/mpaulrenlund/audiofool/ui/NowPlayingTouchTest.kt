@@ -58,6 +58,7 @@ class NowPlayingTouchTest {
             openArtist = { pressed += "artist ${it.artist}" },
             openAlbum = { pressed += "album ${it.album}" },
             openCover = { pressed += "cover ${it.title}" },
+            lyrics = { pressed += "lyrics" },
         )
         compose.setContent {
             AudioFoolTheme(AppTheme(true, tokens)) {
@@ -163,8 +164,19 @@ class NowPlayingTouchTest {
         show()
         compose.onNodeWithContentDescription("Cover").performClick()
         compose.waitForIdle()
-        for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
+        for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Lyrics", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
         for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings")) compose.onNodeWithText(row).assertDoesNotExist()
+    }
+
+    /** 2026-11-11, the user's request: the menu's Lyrics row opens the Lyrics screen (spec 5.5), and the menu closes. */
+    @Test fun the_lyrics_row_opens_the_lyrics_screen() {
+        show()
+        compose.onNodeWithContentDescription("Cover").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Lyrics").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("lyrics"), pressed)
+        compose.onNodeWithText("Analyze").assertDoesNotExist()
     }
 
     /** 2026-11-10, the user's call: the resolution opens the cover full screen (spec 5.3); with no cover it is information only, as before. */
