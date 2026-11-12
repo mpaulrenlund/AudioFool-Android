@@ -10,17 +10,20 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.19.0** (versionCode 61; 58 to 60 went to emulator test builds), published
-  2026-11-12 as the pre-release
-  [`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0) (APK in
-  `dist/AudioFool-0.19.0.apk`, notes in `dist/notes-0.19.0.md`): **the update pop-up** (spec 9;
+- **Latest build: 0.19.1** (versionCode 62), published 2026-11-12 as the pre-release
+  [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1) (APK in
+  `dist/AudioFool-0.19.1.apk`, notes in `dist/notes-0.19.1.md`): **Now Playing's track count at
+  the quality's size** (13, was 15; the user's call; `design/progress.md`, its newest decision).
+  It is also the first build the update pop-up offers to a phone on 0.19.0: the notes ask the
+  S24 to try Update and the M21 Cancel.
+- **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9;
   the user's request). On opening, at most every six hours, it reads GitHub's releases; a newer
   build is offered ("AudioFool 0.19.1 is available. You have 0.19.0.", Update and Cancel).
   Update downloads, checks size and SHA-256, and hands the APK to Android's installer. Tested
   end to end on the emulator against a test server on this PC (how, and Android 17's
   local-network trap: `docs/build-and-emulator.md`, *Testing the update pop-up*). Not tested:
-  the real GitHub from the app, and the phones; it first shows there at the next build. The
-  emulator has it. My calls: `design/progress.md`, its second decision.
+  the real GitHub from the app, and the phones; 0.19.1 is its first offer there. The emulator
+  has 0.19.1. My calls: `design/progress.md`, its second decision.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
@@ -43,12 +46,10 @@ listed under *Other docs* at the end: read each only when the work touches it.
   the APK files of v0.9.0 to v0.18.0 (which carried it) were removed from GitHub on the user's
   yes (notes and tags stay, copies in `dist/`), and the user switched it. No secrets are in git
   history (checked that day). GitHub's releases list now reads without signing in.
-- **Next build:** 0.19.1 for fixes, 0.20.0 for new features (confirm the number with the user);
-  **versionCode 62**. No test 0.19.1 just for the pop-up: the user chose "Wait for real changes"
-  (2026-11-12), so the next real build is the pop-up's first phone test. Already on `main` for
-  it: Now Playing's track count at the quality's size (`design/progress.md`, newest decision). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **Next build:** 0.19.2 for fixes, 0.20.0 for new features (confirm the number with the user);
+  **versionCode 63**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.19.0 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.19.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

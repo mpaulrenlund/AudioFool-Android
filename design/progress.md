@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.19.1** (versionCode 62): Now Playing's track count at the quality's size (spec 5, item 4); the update pop-up's first offer on the phones — 2026-11-12, released as pre-release [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1)
 - [x] **0.19.0** (versionCode 61; 58 to 60 went to the emulator's test builds): the update pop-up (spec 9) — 2026-11-12, released as pre-release [`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0)
 - [x] **0.18.1**: no Last.fm key in the APK; Connect asks for the API key and shared secret while the phone has none saved (spec 7), so the repo can be public again — 2026-11-12, released as pre-release [`v0.18.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.1)
 - [x] **0.18.0**: Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11, released as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0)
@@ -78,7 +79,13 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-12, after 0.19.0 (unreleased, on `main` for the next build): **Now Playing's track count
+2026-11-12, 0.19.1 (versionCode 62; released the same day as pre-release
+[`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1), APK
+attached, `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256
+`8a5847c2…0be9652e` matching `dist/` and GitHub's own digest; checked on the emulator first:
+updated over 0.19.0 with the library kept, the count as tall as the quality's digits on one
+baseline, a gapless join with 0 underruns; the pop-up didn't show there, GitHub out of reach;
+the notes ask the S24 to try the pop-up's Update and the M21 its Cancel): **Now Playing's track count
 takes the quality's size** (the user: "On the Now Playing screen, can we make the \"3/12\" text
 the same size and font as the Track Quality information that is in the same row?"). The font was
 already the same (Selawik Regular, tabular digits); only the size differed, 15 against 13. The
@@ -1323,6 +1330,11 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The track count's size (from 0.19.1)
+
+- [ ] Now Playing: the "3 / 12" at the left of the quality line is the same size as the quality
+  text beside it, on one line. (0.19.1 is the pop-up's first offer: try its Update, below.)
+
 ### The update pop-up (from 0.19.0; shows first at the build after it)
 
 - [ ] When the build after it is out: opening AudioFool shows "Update Available", "AudioFool
@@ -1642,6 +1654,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The track count's size (from 0.19.1)
+
+- [ ] The same as the S24's, and a long count ("12,345 / 27,115", Artists' shuffle) still fits
+  beside a full quality line. (0.19.1's notes ask for the pop-up's Cancel here, below.)
 
 ### The update pop-up (from 0.19.0; shows first at the build after it)
 
