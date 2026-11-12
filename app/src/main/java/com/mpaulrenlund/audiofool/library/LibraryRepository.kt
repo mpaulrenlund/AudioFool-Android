@@ -225,6 +225,26 @@ class LibraryRepository(
         rescan()
     }
 
+    /**
+     * Edit Tags saved [track]'s file (spec 5.4): the library holds it as read again,
+     * the screens show it and the cache keeps it, with no rescan (the desktop's
+     * `ReplaceTracksInLibrary`). After a running scan, which may have read the file
+     * before the save: the scan's result is then corrected, as the desktop keeps the
+     * edits it made during one.
+     */
+    fun retagged(track: Track) {
+        scope.launch {
+            scanLock.withLock {
+                val key = Paths.key(track.filePath)
+                if (known.none { Paths.key(it.filePath) == key }) return@withLock
+                known = known.map { if (Paths.key(it.filePath) == key) track else it }
+                val library = LibraryScanner.build(shown(known))
+                _state.update { it.copy(library = library) }
+                LibraryCache.from(folders().map { it.path }, known, System.currentTimeMillis()).save(cachePath)
+            }
+        }
+    }
+
     /** Forgets the cache, so the next start reads every tag (the debug screen's way to time a full scan). */
     fun deleteCache() {
         File(cachePath).delete()

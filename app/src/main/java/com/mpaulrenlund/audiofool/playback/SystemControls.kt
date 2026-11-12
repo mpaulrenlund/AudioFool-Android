@@ -87,7 +87,8 @@ class SystemControls(private val context: Context, private val player: Player, p
 
     fun update() {
         val state = player.state
-        val track = state.track ?: return
+        // With the tags Edit Tags saved since it was queued (spec 5.4).
+        val track = state.shownTrack ?: return
         val playing = state.isPlaying
         session.setPlaybackState(
             PlaybackState.Builder()

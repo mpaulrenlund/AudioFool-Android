@@ -65,7 +65,7 @@ class PlaybackService : Service() {
 
     /** Brings the notification up to date with the player. */
     fun update(mustStartForeground: Boolean = false) {
-        val track = player.state.track
+        val track = player.state.shownTrack
         val manager = getSystemService(NotificationManager::class.java)
         if (track == null) {
             if (mustStartForeground) startForeground(NOTIFICATION_ID, Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_notification).build(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)

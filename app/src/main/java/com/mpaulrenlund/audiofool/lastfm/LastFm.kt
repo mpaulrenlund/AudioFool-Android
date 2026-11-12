@@ -151,6 +151,11 @@ class LastFm(context: Context, folder: File, private val appKey: String, private
         if (ready) scrobbler.stopped()
     }
 
+    /** The desktop's `TrackRetagged`: the old tags are never scrobbled, and "now playing" is sent again if it changed. */
+    override fun retagged(track: Track) {
+        if (ready) scrobbler.trackRetagged(track)
+    }
+
     // ---- inside ----
 
     private fun refresh() {

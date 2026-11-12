@@ -22,8 +22,12 @@ import com.mpaulrenlund.audiofool.genius.GeniusNote
 import com.mpaulrenlund.audiofool.genius.GeniusRows
 import com.mpaulrenlund.audiofool.genius.GeniusState
 import com.mpaulrenlund.audiofool.lastfm.historyTarget
+import com.mpaulrenlund.audiofool.library.TagEditing
 import com.mpaulrenlund.audiofool.playback.BassRuntime
 import com.mpaulrenlund.audiofool.storage.Storage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * The app's screens (spec 4, 5), wired to the library, the settings and the
@@ -112,6 +116,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 app.genius.show(track)
                 nav.open(Route.Genius(track.filePath))
             },
+            // Spec 5.4: the song's tags; not while its folder can't be reached (the SD card out).
+            editTags = { track -> nav.open(Route.EditTags(track.filePath)) },
+            canEditTags = { track -> !app.library.state.value.isUnavailable(track) },
             // Spec 5: the artist's and the album's names open them; back returns to Now Playing.
             openArtist = { track -> artistRouteFor(track, app.library.state.value.library)?.let(nav::open) },
             openAlbum = { track -> albumRouteFor(track, app.library.state.value.library)?.let(nav::open) },
@@ -180,6 +187,12 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
                 is Route.Analysis -> AnalysisScreen(remember(library, route.path) { trackAt(library, route.path, app) })
                 is Route.Cover -> CoverViewerScreen(remember(library, route.path) { trackAt(library, route.path, app) })
+                is Route.EditTags -> {
+                    // Kept while the screen is open, whatever a rescan does meanwhile; with the tags last saved.
+                    val edit = remember(route.path) { EditTagsState(app.nowPlaying.shown(trackAt(library, route.path, app)) ?: Track(filePath = route.path)) }
+                    LaunchedEffect(route.path) { edit.read(withContext(Dispatchers.IO) { TagEditing.readDetails(route.path) }) }
+                    EditTagsScreen(edit, remember(edit) { EditTagsActions(save = { saveTags(app, nav, edit, route) }, leave = nav::back) })
+                }
                 is Route.Genius -> {
                     val track = remember(library, route.path) { trackAt(library, route.path, app) }
                     LaunchedEffect(route.path) { app.genius.showing(track) }
@@ -226,6 +239,32 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                     Modifier.clickable { nav.replaceTop(Route.TokenSheet(SheetPage.entries[(route.page.ordinal + 1) % SheetPage.entries.size])) },
                 )
             }
+        }
+    }
+}
+
+/**
+ * Edit Tags' Save (spec 5.4): the file is saved off the main thread, in the app's
+ * scope so that leaving can't cut it short; then the library and what plays take
+ * the song as read back, and the screen goes back to Now Playing. A save that
+ * didn't happen stays on the screen, saying why.
+ */
+private fun saveTags(app: AudioFoolApp, nav: Navigator, state: EditTagsState, route: Route.EditTags) {
+    if (!state.canSave) return
+    val edit = state.edit()
+    state.saving = true
+    state.failure = null
+    app.scope.launch {
+        val result = withContext(Dispatchers.IO) { TagEditing.save(state.track, edit) }
+        withContext(Dispatchers.Main) {
+            state.saving = false
+            result
+                .onSuccess { saved ->
+                    app.library.retagged(saved)
+                    app.player.retagged(saved)
+                    if (nav.top == route) nav.back()
+                }
+                .onFailure { state.failure = "Couldn't save the tags: ${it.message}." }
         }
     }
 }

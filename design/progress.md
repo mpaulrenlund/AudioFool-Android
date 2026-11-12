@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **0.18.0** (on `main`, not built or released yet): Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4) — 2026-11-11
 - [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
 - [x] **0.17.1**: Now Playing's swipe made easier (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous button keeps its 3 s rule — 2026-11-11, released as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1)
 - [x] **0.16.0**: Repeat at the left of the transport and Shuffle at the right; the cover full screen from the cover menu's Resolution row (pinch, drag and double tap to zoom) — 2026-11-10, released as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
@@ -74,6 +75,52 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-11, for 0.18.0 (not built or released yet): **Edit Tags in the cover menu** (the user:
+"For the Now Playing Menu, can we add an "Edit Tags" button. Tapping this button would open a
+tag editor similar to the desktop version of audio fool?"; the plan, put first, "Yes, build
+it"). Spec §5.4 and §5 (*Cover menu*). The first thing in the app that writes to music files.
+The desktop's single-track Edit Track Tags window as a screen: its boxes and order, its × on
+the five details, its footer and messages, its Unsaved Changes question at system back (the
+desktop's Escape). Ported with tests: `TagEditRules` (the window's view model, which has no
+tests on the desktop), `TagDetails`/`NumberTexts`, `TagSaver` (`SaveTags`: the rehearsal
+against a stand-in, in place when the length stays and under 32 MB, else on a copy checked by
+`sameAudio` and swapped in, the file-changed check), `TagLayout` (`TagPadding.Read` and
+`AudioHash`), `FileSwap` (the leftovers rule); 24 tests (`TagEditTest` 10, `TagSaverTest` 14).
+TagLib's part is new C++ (`tagedit_jni.cpp`): the stand-in is a TagLib `IOStream` that stops a
+save at the first write that would change the file's length (`MovesAudio`), as the desktop's
+ends up deciding. **Which field each format keeps** was measured, not guessed: the desktop's
+own TagLibSharp 2.3, run on one file of each format (a throwaway probe in the scratchpad),
+showed Publisher in TPUB / ORGANIZATION / MP4 freeform "publisher", Conductor in TPE3 / MP4
+"cond", Comment in COMMENT (not DESCRIPTION), and that it reads no publisher from Ogg, Opus or
+APE tags; TagLib's own property names reach the same frames except MP4's two, set directly.
+**My calls** (open to change): Save goes back to Now Playing (the desktop's window stays
+open); one song only, the one playing (the phone can't pick several); numbers digits only from
+1 up, the grid's rule (the window's own let "-2" through, written as 4294967294: a desktop
+bug, not touched); no ID3v1 or APE tag added to an MP3 (TagLibSharp adds an ID3v1) and an
+ID3v2.3 tag kept v2.3 (as TagLibSharp) unless a whole date is written; in v2.3 several
+composers are joined "A/B" and genres "A;B", TagLibSharp's way, since TagLib's list reached the
+desktop as the first value only (found on the emulator); Ogg and Opus take ORGANIZATION and APE
+PUBLISHER for Publisher, which only the phone reads; leftover working copies are deleted at the
+next save on a copy in their folder (the desktop's scan does it); a total without a number is
+written "0/N" where one field holds both. **The playing song**: the queue keeps its own copies
+(playback and the output stage match songs by identity), and `NowPlaying.shown` lays the saved
+tags over them for the screens, the media session, the notification and Last.fm (which also
+gets the desktop's `TrackRetagged`); a save on a copy leaves the player reading the file it
+opened, so nothing reopens. Debug's opened/heard log keeps the queue's titles. The library takes
+the song as read back (`LibraryRepository.retagged`, after any running scan, cache saved), its
+date added kept. **Checked on the emulator** (release build, 15 songs of 60 s in every format,
+13 internal and 2 on the SD card, each saved while playing): every save worked, the music's MD5
+unchanged in all, no leftovers, no crash; the desktop's TagLibSharp read every field back as
+typed (bar the v2.3 lists, then fixed); playback kept time through every save (0:03 → 0:36 over
+33 s), and a song saved at 0:56 joined the next gaplessly; the edited artist showed in Artists
+without a rescan; the footer's checks, the × ("Will be cleared", the field gone from the file)
+and Unsaved Changes (Don't Save leaves the file byte for byte) all as specified. Most of those
+saves went on a copy: ffmpeg's MP3s have no padding, and TagLib cuts a FLAC's padding above 1%
+of the file (these were tiny tones); a real FLAC's 8 KB stays and saves in place. 16 new
+pictures and 8 at 130% font (`edit-tags*`, `edit-tags-prompt`, `font130-edit-tags*`); the 12
+cover-menu pictures gained the row; nothing else changed. Not checkable here: the real SD card
+and big files on the M21, the keyboard on the phones (lists below).
 
 2026-11-11, 0.17.2 (versionCode 55; released the same day as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `163bf510…ffd07f05` matching `dist/`; checked on the emulator first: updated over 0.17.1 with the library kept, and with the pretend Headphones route and BP on a 24-bit 48 kHz song read "3.5mm · 24-Bit · 48 kHz · Exclusive" on Now Playing, Settings and Debug, "Opened as" still "SourceRate · 48 kHz / 32-bit, 2 ch"; a 16-bit song at the system's rate isn't among the samples, so that is on the M21 list): **the output row shows the music's
 depth, not the slot's** (the user, on the M21's "4.4mm · 32-Bit · 48 kHz · Exclusive" for a
@@ -1131,6 +1178,21 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Edit Tags (for 0.18.0)
+
+- [ ] Cover menu: "Edit Tags" between Bit-Perfect and Genius; it opens the screen with the
+  song's tags filled in (Year as a whole date where the file has one; "09" where the file
+  spells it so).
+- [ ] Change a title and save while the song plays: no gap or click, Now Playing, the mini
+  player, the lock screen and the notification show the new title, and the song is under it in
+  Albums and Search without a rescan.
+- [ ] A long Comments text (the save made on a copy): it still plays on without a gap.
+- [ ] With Last.fm on, a song edited while playing scrobbles under its new tags.
+- [ ] The keyboard: the box being typed in stays in sight, Save stays above the keyboard.
+- [ ] System back with a change typed asks "Save your changes before closing?"; the
+  predictive back animation shows only when nothing was typed.
+- [ ] The edited files read the same on the desktop (copy one back to the PC).
+
 ### The output row's depth (from 0.17.2)
 
 - [ ] With the Shanling and BP on, nothing changed: a 24-bit song still reads "Shanling UA2
@@ -1401,6 +1463,16 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Edit Tags (for 0.18.0)
+
+- [ ] Edit a song on the SD card and save: it saves (all-files access writing to the card, which
+  the emulator's pretend card can't prove), and the song plays on.
+- [ ] A DSF on the card with a long Comments text (a save on a copy of a big file): how long
+  "Saving…" shows, and the song plays on.
+- [ ] The cover menu's Edit Tags is greyed out with the card taken out, for a song on it.
+- [ ] Take the card out on the Edit Tags screen and Save: "Couldn't save the tags: the file no
+  longer exists." (or similar), nothing else happens.
 
 ### The output row's depth (from 0.17.2)
 

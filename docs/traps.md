@@ -103,6 +103,18 @@ Traps worth not rediscovering: playback, the output stage, scanning, ThemeLab, J
 - **TagLib's ID3v2.3 dates** are not trusted beyond the year (the desktop's rule: TYER and
   TDAT merge with day and month swapped). **TagLib's APE tags** give no year for a full date;
   the reader takes it from the date, as TagLibSharp does.
+- **Anything that writes a music file goes through `TagSaver`** (Edit Tags, 0.18.0): the
+  rehearsal against a stand-in, then in place or on a copy swapped in. Never TagLib's own save
+  on the song: it moves the music in place, and a write cut short leaves the song half moved.
+- **TagLib on its own writes ID3v2.4, and a v2.3 list as TagLibSharp can't read it**: a save
+  keeps the file's version (`id3VersionFor`), and in v2.3 joins composers "A/B" and genres
+  "A;B" as TagLibSharp does. Check a write with the desktop's TagLibSharp, not by reasoning:
+  the probe used on 2026-11-11 was a 60-line console app referencing the desktop's
+  `TagLibSharp.dll` (`progress.md`, Edit Tags).
+- **The queue's songs keep the tags they were queued with** after Edit Tags saves one: show a
+  playing song through `NowPlaying.shown` / `shownTrack`, never `track`, wherever its tags are
+  drawn or sent (the screens, the media session, Last.fm). `track` stays the identity playback
+  matches by.
 - **Paths compare ignoring case** (the desktop's OrdinalIgnoreCase): Android's shared storage
   and SD cards are case-insensitive. `Paths.key()` for maps.
 - **Name sorting** uses a root-locale collator (case ignored, accents not), cached per string.

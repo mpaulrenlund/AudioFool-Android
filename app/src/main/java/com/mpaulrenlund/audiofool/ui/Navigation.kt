@@ -51,6 +51,8 @@ sealed interface Route {
     @Serializable data class Genius(val path: String) : Route
     /** The cover full screen, to zoom (spec 5.3), from the cover menu's Resolution row: the song by its path, as Genius. */
     @Serializable data class Cover(val path: String) : Route
+    /** Edit Tags (spec 5.4), from the cover menu: the song by its path, as Genius. */
+    @Serializable data class EditTags(val path: String) : Route
     @Serializable data class TokenSheet(val page: SheetPage) : Route
 }
 

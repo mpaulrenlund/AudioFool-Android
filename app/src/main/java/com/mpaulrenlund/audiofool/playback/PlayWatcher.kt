@@ -15,4 +15,7 @@ interface PlayWatcher {
 
     /** The queue ran out: the play is over. Pausing is not stopping. */
     fun stopped()
+
+    /** Edit Tags saved new tags into [track]'s file while it plays (spec 5.4): the play carries on under them. */
+    fun retagged(track: Track) {}
 }

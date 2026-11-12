@@ -3,6 +3,7 @@ package com.mpaulrenlund.audiofool.theme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -12,6 +13,7 @@ import com.mpaulrenlund.audiofool.core.library.LibraryScanner
 import com.mpaulrenlund.audiofool.core.library.MusicLibrary
 import com.mpaulrenlund.audiofool.core.library.RescanOutcome
 import com.mpaulrenlund.audiofool.core.library.ScanProgress
+import com.mpaulrenlund.audiofool.core.library.TagField
 import com.mpaulrenlund.audiofool.library.LibraryState
 import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.settings.MusicFolder
@@ -54,6 +56,8 @@ import com.mpaulrenlund.audiofool.core.scrobbling.ListeningPeriod
 import com.mpaulrenlund.audiofool.ui.HistoryActions
 import com.mpaulrenlund.audiofool.ui.GeniusActions
 import com.mpaulrenlund.audiofool.ui.GeniusScreen
+import com.mpaulrenlund.audiofool.ui.EditTagsActions
+import com.mpaulrenlund.audiofool.ui.EditTagsScreen
 import com.mpaulrenlund.audiofool.genius.GeniusNote
 import com.mpaulrenlund.audiofool.genius.GeniusRows
 import com.mpaulrenlund.audiofool.genius.GeniusState
@@ -346,6 +350,20 @@ class ThemeLabTest {
         }
         // A page without the comments Genius didn't send.
         shoot(device, "genius-missing") { GeniusScreen(ThemeLabFixtures.genius(missing = listOf("comments")), album, GeniusActions()) }
+
+        // Edit Tags (spec 5.4, no mockup): the song playing; scrolled to its end; and boxes
+        // that can't be saved, with a detail cleared by its button.
+        shoot(device, "edit-tags") { EditTagsScreen(remember { ThemeLabFixtures.editTags() }, EditTagsActions()) }
+        shoot(device, "edit-tags-end") { EditTagsScreen(remember { ThemeLabFixtures.editTags() }, EditTagsActions(), rememberScrollState(Int.MAX_VALUE)) }
+        shoot(device, "edit-tags-problem") {
+            val state = remember {
+                ThemeLabFixtures.editTags().apply {
+                    type(TagField.TrackNumber, "-3")
+                    clear(TagField.Publisher)
+                }
+            }
+            EditTagsScreen(state, EditTagsActions())
+        }
     }
 
     /**
@@ -421,6 +439,11 @@ class ThemeLabTest {
         shoot(device, "font130-listening-history") { ListeningHistoryScreen(ThemeLabFixtures.history(), HistoryActions()) }
         // The header, the entries' right-hand notes and the credit column, to see them fit.
         shoot(device, "font130-genius") { GeniusScreen(ThemeLabFixtures.genius(), ThemeLabFixtures.nowPlayingAlbum, GeniusActions()) }
+        // The label column ("Album Artist" on two lines if it must) and the footer, to see them fit.
+        shoot(device, "font130-edit-tags") { EditTagsScreen(remember { ThemeLabFixtures.editTags() }, EditTagsActions()) }
+        shoot(device, "font130-edit-tags-problem") {
+            EditTagsScreen(remember { ThemeLabFixtures.editTags().apply { type(TagField.DiscCount, "two") } }, EditTagsActions(), rememberScrollState(Int.MAX_VALUE))
+        }
     }
 
     /** Now Playing's mockup state: third of ten, 2:18 in, its waveform and the readout the shared output gives. */

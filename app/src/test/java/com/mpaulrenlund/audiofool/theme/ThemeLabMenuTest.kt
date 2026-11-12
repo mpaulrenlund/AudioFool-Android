@@ -90,6 +90,25 @@ class ThemeLabMenuTest {
     @Test @Config(qualifiers = ThemeLabTest.M21) fun art_menu_bp_on_m21_dark() = artMenu("m21", dark = true, name = "art-menu-bp-on", bitPerfect = true)
     @Test @Config(qualifiers = ThemeLabTest.M21) fun art_menu_bp_on_m21_light() = artMenu("m21", dark = false, name = "art-menu-bp-on", bitPerfect = true)
 
+    /** Edit Tags' question at system back with something typed (spec 5.4): a dialog, a window of its own. */
+    private fun unsavedPrompt(device: String, dark: Boolean) {
+        val state = ThemeLabFixtures.editTags().apply { type(com.mpaulrenlund.audiofool.core.library.TagField.Title, "Polygon Weather (Live)") }
+        compose.setContent {
+            AudioFoolTheme(AppTheme(dark, tokens)) {
+                CompositionLocalProvider(LocalBarInsets provides WindowInsets(top = 28.dp, bottom = 20.dp)) {
+                    com.mpaulrenlund.audiofool.ui.EditTagsScreen(state, com.mpaulrenlund.audiofool.ui.EditTagsActions(), promptForPictures = true)
+                }
+            }
+        }
+        compose.waitForIdle()
+        captureScreenRoboImage("screenshots/$device-${if (dark) "dark" else "light"}-edit-tags-prompt.png")
+    }
+
+    @Test @Config(qualifiers = ThemeLabTest.S24) fun edit_tags_prompt_s24_dark() = unsavedPrompt("s24", dark = true)
+    @Test @Config(qualifiers = ThemeLabTest.S24) fun edit_tags_prompt_s24_light() = unsavedPrompt("s24", dark = false)
+    @Test @Config(qualifiers = ThemeLabTest.M21) fun edit_tags_prompt_m21_dark() = unsavedPrompt("m21", dark = true)
+    @Test @Config(qualifiers = ThemeLabTest.M21) fun edit_tags_prompt_m21_light() = unsavedPrompt("m21", dark = false)
+
     @Test @Config(qualifiers = ThemeLabTest.S24) fun art_menu_bp_greyed_s24_dark() = artMenu("s24", dark = true, name = "art-menu-bp-greyed", bitPerfect = true, greyed = true)
     @Test @Config(qualifiers = ThemeLabTest.S24) fun art_menu_bp_greyed_s24_light() = artMenu("s24", dark = false, name = "art-menu-bp-greyed", bitPerfect = true, greyed = true)
     @Test @Config(qualifiers = ThemeLabTest.M21) fun art_menu_bp_greyed_m21_dark() = artMenu("m21", dark = true, name = "art-menu-bp-greyed", bitPerfect = true, greyed = true)

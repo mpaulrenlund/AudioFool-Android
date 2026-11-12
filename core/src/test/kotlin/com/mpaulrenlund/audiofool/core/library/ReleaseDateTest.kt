@@ -8,9 +8,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 // Ported from the desktop's ReleaseDateTests.cs and ReleaseDateSortTests.cs.
-// The desktop tests that write tags with TagLib and read them back belong to
-// tag writing, which the Android app doesn't do; reading is covered on the
-// emulator with real files (HANDOFF.md).
+// The desktop tests that write tags with TagLib and read them back need TagLib,
+// which runs only on Android: Edit Tags' own logic is in TagEditTest and
+// TagSaverTest, and TagLib's reading and writing are checked on the emulator
+// with real files (HANDOFF.md).
 
 class ReleaseDateTest {
     @Test fun accepts_year_month_and_full_date() {

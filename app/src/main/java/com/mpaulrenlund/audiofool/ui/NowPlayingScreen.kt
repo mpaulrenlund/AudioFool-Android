@@ -112,6 +112,10 @@ class NowPlayingActions(
     val openCover: (Track) -> Unit = {},
     /** The cover menu's Genius (spec 5.2): opens the Genius screen on the song, looked up afresh. */
     val genius: (Track) -> Unit = {},
+    /** The cover menu's Edit Tags (spec 5.4): opens the Edit Tags screen on the song. */
+    val editTags: (Track) -> Unit = {},
+    /** Whether Edit Tags can open: not while the song's folder can't be reached. */
+    val canEditTags: (Track) -> Boolean = { true },
     /** A tap on the artist's name (spec 5): opens that artist's albums. */
     val openArtist: (Track) -> Unit = {},
     /** A tap on the album's name (spec 5): opens the album, the song chosen. */
@@ -166,7 +170,7 @@ fun NowPlayingScreen(
     scrubForPictures: Float? = null,
 ) {
     val t = LocalAppTheme.current
-    val track = nowPlaying.track
+    val track = nowPlaying.shownTrack
 
     // The whole screen, bars included: the spec's sizes are fractions of it.
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -321,7 +325,7 @@ private fun shownCover(track: Track?, side: Dp, forPictures: Bitmap?): BigCover?
 @Composable
 private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: NowPlayingActions, appActions: AppActions, version: String, menuForPictures: String?) {
     val t = LocalAppTheme.current
-    val track = nowPlaying.track
+    val track = nowPlaying.shownTrack
     val density = LocalDensity.current
     val px = with(density) { side.roundToPx() }
     val bitmap = cover?.image
@@ -386,6 +390,13 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
                     menuAt = null
                     actions.analyze(track)
                 },
+                // Not while the song's folder can't be reached (the SD card out).
+                editTags = if (actions.canEditTags(track)) {
+                    {
+                        menuAt = null
+                        actions.editTags(track)
+                    }
+                } else null,
                 genius = {
                     menuAt = null
                     actions.genius(track)
@@ -427,7 +438,9 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int,
  * full screen ([openCover], spec 5.3; 2026-11-10, the user's call; information only
  * until then, and still where there is no cover); then Analyze, which opens the Analysis screen; Bit-Perfect (spec 6.4, 2026-11-10, the
  * user's call: the BP button moved here), checked while on, which switches it and
- * keeps the menu open; and Genius, which opens the Genius screen (spec 5.2); then
+ * keeps the menu open; Edit Tags, which opens the Edit Tags screen (spec 5.4,
+ * 2026-11-11, the user's call; information only while the song's folder can't be
+ * reached); and Genius, which opens the Genius screen (spec 5.2); then
  * the logo menu's Theme and version (0.7.4, the user's call; Listening History,
  * Rescan Library, Settings and Statistics are the logo menu's only since 2026-11-10,
  * the user's call), so all but the resolution are in alphabetical order with the
@@ -444,6 +457,7 @@ private fun ArtMenu(
     toggleBitPerfect: () -> Unit,
     openCover: (() -> Unit)?,
     analyze: () -> Unit,
+    editTags: (() -> Unit)?,
     genius: () -> Unit,
 ) {
     val t = LocalAppTheme.current
@@ -457,6 +471,7 @@ private fun ArtMenu(
             MenuRow("Analyze", onClick = analyze)
             // The check in Bit-Perfect's own "on" colour, as Settings' dot (spec 4.5); greyed out where it can't work (spec 6.2).
             MenuCheckRow("Bit-Perfect", nowPlaying.bitPerfect, "color.status.bitPerfectOn", toggleBitPerfect, greyed = nowPlaying.bitPerfectGreyed)
+            MenuRow("Edit Tags", onClick = editTags)
             MenuRow("Genius", onClick = genius)
             AppMenuRows(onClose, appActions, version, allRows = false)
         }

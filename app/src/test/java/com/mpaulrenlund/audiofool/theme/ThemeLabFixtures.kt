@@ -338,6 +338,19 @@ object ThemeLabFixtures {
     /** The Album screen's album for the song playing, for the Genius screen's header. */
     val nowPlayingAlbum get() = library.albumHolding(nowPlayingTrack.filePath)
 
+    /** Edit Tags (spec 5.4) on the song playing, with made-up details as if read from its file. */
+    fun editTags() = com.mpaulrenlund.audiofool.ui.EditTagsState(nowPlayingTrack).apply {
+        read(
+            com.mpaulrenlund.audiofool.core.library.TagDetails(
+                publisher = "Hollow Signal Records",
+                composer = "M. Okafor; J. Lindqvist",
+                genre = "Synthwave; Electronic",
+                comment = "Ripped from the 2024 vinyl. Side B starts here.",
+                numbers = com.mpaulrenlund.audiofool.core.library.NumberTexts("03", "10", "1", "1"),
+            ),
+        )
+    }
+
     // ---- Now Playing's cover colour (2026-11-09): made-up covers, since ThemeLab can't read one ----
 
     private const val COVER_SIDE = 600f

@@ -29,7 +29,7 @@ import com.mpaulrenlund.audiofool.theme.toCompose
  */
 @Composable
 fun MiniPlayerBar(browse: Browse, actions: AppActions) {
-    val track = browse.nowPlaying.track ?: return
+    val track = browse.nowPlaying.shownTrack ?: return
     val t = LocalAppTheme.current
     val shape = RoundedCornerShape(t.radius("radius.surface"))
     val main = rememberCoverColor(track)

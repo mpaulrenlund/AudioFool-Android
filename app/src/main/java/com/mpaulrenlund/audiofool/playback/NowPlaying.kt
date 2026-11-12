@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.mpaulrenlund.audiofool.core.library.Paths
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.RepeatMode
 
@@ -65,6 +66,28 @@ class NowPlaying {
 
     /** The track's length as Now Playing shows it. */
     val durationMs: Long get() = track?.durationMs ?: 0
+
+    /**
+     * Songs whose tags Edit Tags saved (spec 5.4), by path, as read back. The
+     * queue keeps the copies it was given, matched by identity, so playback and
+     * the output stage never see a song change under them; the screens and the
+     * system's controls show the saved tags through [shown] instead.
+     */
+    private var retags: Map<String, Track> by mutableStateOf(emptyMap())
+
+    /** [track] with the tags Edit Tags saved since it was queued: what the screens show. */
+    val shownTrack: Track? get() = shown(track)
+
+    /** [of] as the screens show it: the copy Edit Tags saved, when that is newer than [of]. */
+    fun shown(of: Track?): Track? {
+        if (of == null) return null
+        val saved = retags[Paths.key(of.filePath)] ?: return of
+        return if (saved.modifiedUtc >= of.modifiedUtc) saved else of
+    }
+
+    internal fun retagged(track: Track) {
+        retags = retags + (Paths.key(track.filePath) to track)
+    }
 
     /** For the debug panel: how each track's output was opened, newest first. */
     var openedLog: List<String> by mutableStateOf(emptyList())

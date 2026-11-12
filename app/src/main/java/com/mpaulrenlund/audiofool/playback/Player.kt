@@ -13,6 +13,7 @@ import android.os.Looper
 import android.os.SystemClock
 import com.mpaulrenlund.audiofool.core.format.Display
 import com.mpaulrenlund.audiofool.core.library.LibraryRelocator
+import com.mpaulrenlund.audiofool.core.library.Paths
 import com.mpaulrenlund.audiofool.core.library.SafeFile
 import com.mpaulrenlund.audiofool.core.model.Track
 import com.mpaulrenlund.audiofool.core.playback.HeardPoint
@@ -288,6 +289,20 @@ class Player(
         } else {
             engine.setUpcoming(upcomingAfter(decodingIndex).filterNot(on))
         }
+    }
+
+    /**
+     * Edit Tags saved [track]'s file (spec 5.4): the screens and the system's
+     * controls show its new tags at once, and a play of it carries on, scrobbled
+     * under them (the desktop's `TrackRetagged`). The queue keeps its own copies:
+     * playback matches songs by identity, and a song saved on a copy keeps playing
+     * from the file it opened.
+     */
+    fun retagged(track: Track) {
+        state.retagged(track)
+        val playing = state.track
+        if (playing != null && Paths.same(playing.filePath, track.filePath)) watchers.forEach { it.retagged(track) }
+        onChange()
     }
 
     /** Where in the heard track the speakers are. */
@@ -636,12 +651,14 @@ class Player(
             if (!state.isPlaying) return
             val track = state.track
             if (track != null) {
+                // With the tags Edit Tags saved since it was queued (spec 5.4).
+                val shown = state.shown(track) ?: track
                 if (track !== watchedTrack) {
                     watchedTrack = track
-                    watchers.forEach { it.started(track) }
+                    watchers.forEach { it.started(shown) }
                 }
                 val position = positionMs()
-                watchers.forEach { it.position(track, position) }
+                watchers.forEach { it.position(shown, position) }
             }
             main.postDelayed(this, TICK_MS)
         }

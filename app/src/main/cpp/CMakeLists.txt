@@ -11,7 +11,7 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(VISIBILITY_HIDDEN ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../../../third_party/taglib taglib)
 
-add_library(audiofooltags SHARED tagreader_jni.cpp)
+add_library(audiofooltags SHARED tagreader_jni.cpp tagedit_jni.cpp)
 target_link_libraries(audiofooltags PRIVATE tag log)
 
 # TagLib's headers include one another by bare name, so every folder that holds
