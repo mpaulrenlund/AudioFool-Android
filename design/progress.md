@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **0.18.0** (on `main`, not built or released yet): Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11
+- [x] **0.18.0**: Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11, released as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0)
 - [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
 - [x] **0.17.1**: Now Playing's swipe made easier (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous button keeps its 3 s rule — 2026-11-11, released as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1)
 - [x] **0.16.0**: Repeat at the left of the transport and Shuffle at the right; the cover full screen from the cover menu's Resolution row (pinch, drag and double tap to zoom) — 2026-11-10, released as pre-release [`v0.16.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.16.0)
@@ -76,7 +76,7 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-11, for 0.18.0 (not built or released yet): **Lyrics in the cover menu** (the user: "in
+2026-11-11, 0.18.0 (versionCode 56; released the same day as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `730353b9…4ec41cf0` matching `dist/`; checked on the emulator first: updated over 0.17.2 with the library kept, the cover menu's two new rows, Lyrics lit from the `.lrc` and then from the tags across a gapless join, an Edit Tags title change saved, shown and put back; the three lyrics FLACs are in `/sdcard/Music/Lyrics Test/` there): **Lyrics in the cover menu** (the user: "in
 the Now Playing menu, can we add a Lyrics button? This lyrics button would ideally open a new
 screen and highlight the lyrics as they are being sang while the music is playing"). Spec §5.5
 and §5 (*Cover menu*). No mockup, and nothing to port: the desktop has no lyrics. Asked first,
@@ -125,7 +125,7 @@ the theme's heading colour); and the plan as described, "Yes, build it".
   with nothing pressed; three more whole plays and 3 minutes of watching didn't repeat it, and
   logcat showed no cause. On the S24's list to watch for.
 
-2026-11-11, for 0.18.0 (not built or released yet): **Edit Tags in the cover menu** (the user:
+2026-11-11, 0.18.0 (released with Lyrics, above): **Edit Tags in the cover menu** (the user:
 "For the Now Playing Menu, can we add an "Edit Tags" button. Tapping this button would open a
 tag editor similar to the desktop version of audio fool?"; the plan, put first, "Yes, build
 it"). Spec §5.4 and §5 (*Cover menu*). The first thing in the app that writes to music files.
@@ -1227,7 +1227,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Lyrics (for 0.18.0)
+### Lyrics (from 0.18.0)
 
 - [ ] Cover menu: "Lyrics" after Genius; it opens the screen on the song playing.
 - [ ] A song with no `.lrc` file or lyrics in its tags: LRCLIB's lyrics come up (the emulator
@@ -1243,7 +1243,7 @@ its own section at the top, as before. (From …) says which build first asked.
 - [ ] A song with lyrics in its tags (or an `.lrc` beside it), if you have one: those are the
   ones shown, named under them.
 
-### Edit Tags (for 0.18.0)
+### Edit Tags (from 0.18.0)
 
 - [ ] Cover menu: "Edit Tags" between Bit-Perfect and Genius; it opens the screen with the
   song's tags filled in (Year as a whole date where the file has one; "09" where the file
@@ -1529,7 +1529,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Lyrics (for 0.18.0)
+### Lyrics (from 0.18.0)
 
 - [ ] The Lyrics screen on a song through the USB DAC with Bit-Perfect on: the lit line keeps
   in step (the driver's own play head).
@@ -1537,7 +1537,7 @@ Sorted on 2026-10-30, as the S24's list above.
   card out on the screen: nothing breaks, and the next song's come from LRCLIB or say none.
 - [ ] The cover menu with its extra row fits the M21's screen.
 
-### Edit Tags (for 0.18.0)
+### Edit Tags (from 0.18.0)
 
 - [ ] Edit a song on the SD card and save: it saves (all-files access writing to the card, which
   the emulator's pretend card can't prove), and the song plays on.
