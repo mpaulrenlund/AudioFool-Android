@@ -122,7 +122,7 @@ fun SettingsScreen(
 /** What the Last.fm panel can ask for (spec 7). */
 class LastFmActions(
     val startConnecting: () -> Unit = {},
-    val connect: (userName: String, password: String) -> Unit = { _, _ -> },
+    val connect: (apiKey: String, secret: String, userName: String, password: String) -> Unit = { _, _, _, _ -> },
     val cancel: () -> Unit = {},
     val disconnect: () -> Unit = {},
 )
@@ -130,8 +130,9 @@ class LastFmActions(
 /**
  * Last.fm (spec 4.5, 7): the dot and "Last.fm: not connected" with Connect, or
  * "connected as <user>" with Disconnect. Connect opens a form in the panel for the
- * Last.fm username and password (the user's call, after 0.8.0). A failing send or
- * an error adds a line under the status.
+ * Last.fm username and password (the user's call, after 0.8.0), and the API key and
+ * shared secret while the phone has none saved (2026-11-12). A failing send or an
+ * error adds a line under the status.
  */
 @Composable
 private fun LastFmPanel(status: LastFm.Status, actions: LastFmActions) {
@@ -173,14 +174,21 @@ private fun LastFmPanel(status: LastFm.Status, actions: LastFmActions) {
  * phone apps; AudioFool keeps only the session. The name starts as the last one
  * connected ("connect again"). The password is held only while the form shows (not
  * in saved state), drawn as dots, and offered to the phone's password manager.
+ *
+ * While the phone has no API key saved ([LastFm.Status.needsKey]), the API key and
+ * shared secret come first, labelled and shown in plain text as in the desktop's
+ * Last.fm window and 0.8.x's form; they are saved with the session.
  */
 @Composable
 private fun ConnectForm(status: LastFm.Status, actions: LastFmActions) {
     val t = LocalAppTheme.current
+    var apiKey by rememberSaveable { mutableStateOf("") }
+    var secret by rememberSaveable { mutableStateOf("") }
     var userName by rememberSaveable(status.userName) { mutableStateOf(status.userName.orEmpty()) }
     var password by remember { mutableStateOf("") }
-    val canSend = userName.isNotBlank() && password.isNotEmpty() && !status.sending
-    val send = { actions.connect(userName, password) }
+    val keysReady = !status.needsKey || (apiKey.isNotBlank() && secret.isNotBlank())
+    val canSend = keysReady && userName.isNotBlank() && password.isNotEmpty() && !status.sending
+    val send = { actions.connect(apiKey, secret, userName, password) }
     Column(
         Modifier
             .fillMaxWidth()
@@ -188,8 +196,13 @@ private fun ConnectForm(status: LastFm.Status, actions: LastFmActions) {
         verticalArrangement = Arrangement.spacedBy(t.dp("lastFm.formGap")),
     ) {
         val message = t.text("lastFm.messageSize", "color.text.secondary")
+        if (status.needsKey) Line("The API key and shared secret from your Last.fm API account (the desktop's work here too).", message, maxLines = 4)
         Line("Sign in with your Last.fm username and password. AudioFool keeps the session Last.fm gives back, never the password.", message, maxLines = 4)
         if (status.error != null) Line(status.error, t.text("lastFm.messageSize", "color.text.primary"), maxLines = 4)
+        if (status.needsKey) {
+            FormField("API key", apiKey, null, KeyboardType.Ascii, ImeAction.Next) { apiKey = it.trim() }
+            FormField("Shared secret", secret, null, KeyboardType.Ascii, ImeAction.Next) { secret = it.trim() }
+        }
         FormField("Username", userName, ContentType.Username, KeyboardType.Email, ImeAction.Next) { userName = it.trim() }
         FormField("Password", password, ContentType.Password, KeyboardType.Password, ImeAction.Done, hidden = true, onDone = send.takeIf { canSend }) { password = it }
         ButtonRow {
@@ -220,7 +233,7 @@ private fun ButtonRow(content: @Composable RowScope.() -> Unit) {
 private fun FormField(
     label: String,
     value: String,
-    contentType: ContentType,
+    contentType: ContentType?,
     keyboardType: KeyboardType,
     imeAction: ImeAction,
     hidden: Boolean = false,
@@ -234,7 +247,8 @@ private fun FormField(
         BasicTextField(
             value = value,
             onValueChange = onValue,
-            modifier = Modifier.fillMaxWidth().height(t.dp("lastFm.fieldHeight")).semantics { this.contentType = contentType },
+            modifier = Modifier.fillMaxWidth().height(t.dp("lastFm.fieldHeight"))
+                .then(if (contentType != null) Modifier.semantics { this.contentType = contentType } else Modifier),
             singleLine = true,
             textStyle = t.text("lastFm.fieldTextSize", "color.text.primary"),
             cursorBrush = SolidColor(t.color("color.accent.playback")),

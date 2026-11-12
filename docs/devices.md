@@ -52,7 +52,7 @@ What the S24 and the M21 turned out to do, and how to reach them (and the emulat
   USB the S24 works** (2026-11-05, the user turned debugging on and allowed this PC): adb serial
   `R5CWC28ETAW`, `model:SM_S928U`; 0.8.1 went on with `adb -s R5CWC28ETAW install -r`. Pick it
   with `-s` when the emulator is up too. 0.8.1 reached it this way; since 0.9.0 builds come
-  from the private repo's releases, and USB is for when the user asks.
+  from the repo's releases, and USB is for when the user asks.
 - **The emulator** holds the sample music: `/sdcard/Music` (with `Long/`: 200 artists × 2
   albums of silent MP3s; `Gapless Live/`: three songs of exactly 12.000 s; `Waveform Test/`: a
   60 s pink-noise FLAC with swells and a near-silent dip at 24–27 s, for the seekbar's shape)
@@ -63,12 +63,11 @@ What the S24 and the M21 turned out to do, and how to reach them (and the emulat
   not connected. The AVD sometimes exits on its own (exit code 4): start it again. The app's
   uid there is 10236 (for `dumpsys audio`).
 - `dist/` (ignored by git) holds every build's APK, its notes (`notes-<v>.md`, since 0.8.1) and
-  the M21's captured reports (`m21-*.txt`). An APK there carries AudioFool's Last.fm key: it
-  goes only to this PC, the phones and the private repo's releases, never anywhere public.
-- **Last.fm signs in with the user's own username and password** (after 0.8.0), which only
-  the user types, on the phones: never sign in for them, on the emulator either. The emulator
-  shows the form, the not-connected Listening History screen, and nothing past that. Without
-  AudioFool's key in `gradle.properties` (see *Where everything lives* in `HANDOFF.md`), a throwaway release for the emulator can take
-  a dummy one on the command line:
-  `-Paudiofool.lastfm.apiKey=<32 zeros> -Paudiofool.lastfm.secret=<32 zeros>`; never copy
-  that build to `dist/` or give it to the user.
+  the M21's captured reports (`m21-*.txt`). The APKs of 0.8.1 to 0.18.0 there carry AudioFool's
+  Last.fm key: they stay on this PC and the phones, never anywhere public. Later ones carry none.
+- **Last.fm signs in with the user's own username and password** (after 0.8.0), and since
+  2026-11-12 with the API key and secret the user types on each phone: only the user types
+  them, on the phones. Never sign in for them, and never type the key, on the emulator either.
+  The emulator shows the form (with the key fields), the not-connected Listening History
+  screen, and nothing past that; a made-up key and name there get Last.fm's "invalid API key"
+  back, if Last.fm can be reached through Zscaler.

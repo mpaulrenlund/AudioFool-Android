@@ -7,7 +7,7 @@ description: Build and publish a test build of AudioFool for Android as a GitHub
 
 The user tries every build on a Galaxy S24 Ultra and a FiiO M21, installing it from the
 release page. It happens in two parts with a stop between them, because the upload
-publishes a tag and the APK carries AudioFool's Last.fm key and secret:
+publishes a tag and an APK anyone may download:
 
 - **Build** (the user says "build 0.x.y" or "prepare 0.x.y"): steps 1 to 6, ending with
   the notes shown in chat.
@@ -43,8 +43,10 @@ both sizes.
 - **signer**: the APK is signed with the release key. A build signed with any other key
   won't install as an update, and the user would have to uninstall, which wipes the
   library cache and settings.
-- **last.fm**: the APK carries the real Last.fm key and secret, not the emulator's dummy.
-  The script compares them without printing either. Never print them yourself.
+- **last.fm**: the APK carries **no** Last.fm key or secret (since 2026-11-12: the user types
+  them on each phone, spec 7, so the repo and its releases can be public). The script looks
+  for the values kept in `~/.gradle/gradle.properties` in every file inside the APK, without
+  printing them. Never print them yourself, and never upload an APK this check hasn't passed.
 
 ## 4. Where the APK went
 
@@ -68,14 +70,8 @@ note the full commit SHA. Then stop and wait for "publish it".
 
 ## 7. Publish
 
-Right before the upload, every time:
-
-```bash
-gh repo view mpaulrenlund/AudioFool-Android --json visibility -q .visibility
-```
-
-It must print `PRIVATE`. If it prints anything else, do not upload; tell the user (over
-USB with `adb install -r` is the fallback, only if they ask).
+Upload only the APK in `dist/` that `tools/build.sh` passed in step 2 (its **last.fm** line
+said no key). Over USB with `adb install -r` is the fallback, only if the user asks.
 
 ```bash
 gh release create v<v> dist/AudioFool-<v>.apk -R mpaulrenlund/AudioFool-Android --target <full SHA of the bump commit> --prerelease --title "AudioFool <v>" --notes-file dist/notes-<v>.md
@@ -89,5 +85,5 @@ gh release create v<v> dist/AudioFool-<v>.apk -R mpaulrenlund/AudioFool-Android 
 - `design/progress.md`: the session, the decisions, and the new items under *To test on
   the S24* / *To test on the M21*. `HANDOFF.md`: the latest build and what it changed, in
   a few lines. Commit and push.
-- Report in a few lines: version and versionCode, the release link, that the repo was
-  private and the hashes matched, and the list of what to try on each phone.
+- Report in a few lines: version and versionCode, the release link, that the APK
+  carries no Last.fm key and the hashes matched, and the list of what to try on each phone.

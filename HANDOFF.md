@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-11. This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-12. This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -28,6 +28,23 @@ listed under *Other docs* at the end: read each only when the work touches it.
   emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
   lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
   LRCLIB): `design/progress.md`, its newest decision.
+- **On `main`, not yet released: no Last.fm key in the APK** (2026-11-12, the user's call, so
+  the repo can be public again). Connect asks for the API key and shared secret while the phone
+  has none saved; a phone that signed in before keeps its key. `tools/build.sh` fails an APK that
+  holds the key. Tested: all tests, the new picture, the emulator. Details: `design/progress.md`,
+  its newest decision.
+- **Going public, in order** (the user asked; each step waits on them): (1) release the
+  key-free build (number to confirm); (2) remove the APK files of the 14 releases v0.9.0 to
+  v0.18.0, which carry the key (`gh release delete-asset`; notes stay, copies are in `dist/`),
+  only after the user confirms; (3) the user makes the repo public (owner account
+  `mpaulrenlund`: Settings > General > Danger Zone > Change visibility); (4) mark it public in
+  `CLAUDE.md` and `design/progress.md`. No secrets are in git history (checked 2026-11-12).
+- **Then the update pop-up** (the user's idea, 2026-11-12, not started): on opening, if a newer
+  release exists, "AudioFool 0.x.y is available. You have 0.x.y." with Update (download the APK
+  in the app, hand it to Android's installer; first time, Android asks to allow "Install unknown
+  apps") and Cancel. Proposed, not yet confirmed: check at most every few hours, and Cancel
+  means not again for that version. With the repo public, no GitHub token is needed. It can
+  only first show at the build after the one that adds it.
 - **Next build:** 0.18.1 for fixes, 0.19.0 for new features (confirm the number with the user);
   **versionCode 57**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
@@ -48,14 +65,14 @@ listed under *Other docs* at the end: read each only when the work touches it.
     changing the rule (core `CoverColor`; how to measure a change on the desktop's art cache is
     in `design/progress.md`).
   - Bit-Perfect items still open but not asked for (don't start them unasked): `docs/background.md`.
-- **Publishing:** builds go out as GitHub pre-releases with the APK attached. Every APK carries
-  AudioFool's Last.fm key, so check the repo says `PRIVATE` right before every upload, and never
-  upload if it doesn't.
+- **Publishing:** builds go out as GitHub pre-releases with the APK attached. No APK may carry
+  AudioFool's Last.fm key (since 2026-11-12): upload only one `tools/build.sh` passed. The APKs
+  of 0.8.1 to 0.18.0 carry it: never anywhere public.
 
 ## Build and release
 
 - `tools/build.sh` sets the Java environment, runs all tests and the signed release build, and
-  checks the signer and the Last.fm key. It never uploads.
+  checks the signer and that no Last.fm key is in the APK. It never uploads.
 - Publishing a build: the `/release` skill, `.claude/skills/release/SKILL.md`.
 - Details (this PC's quirks, each Gradle task, the emulator and driving it, comparing with the
   mockups): `docs/build-and-emulator.md`.
@@ -106,7 +123,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
 | The library | `library/LibraryRepository`: the cache first, then a background rescan; the scan reuses tags for files whose size and date haven't changed, and carries over every track of a folder it can't reach |
 | Covers | `art/Thumbnails` (one per size: the lists' 64 dp, the album header's 72 dp) keeps small copies on disk and decoded ones in memory; `AudioFoolApp.prefillCovers` makes the list copies after each scan. Now Playing, the media session and Statistics' cover check read the full cover with `CoverArt.read` |
 | Each part's code (playback, the screens, the cover colour, Now Playing's ideas, the USB DAC and driver, Last.fm, Listening History, Genius, Analyze, Edit Tags, Lyrics, Statistics, what is heard) | `docs/code-map.md` |
-| **AudioFool's Last.fm key** | `~/.gradle/gradle.properties`: `audiofool.lastfm.apiKey=` and `audiofool.lastfm.secret=` (32 hex characters each, the user's own API account at last.fm/api/accounts). **Outside the repo**, put there by the user. `app/build.gradle.kts` makes them `BuildConfig.LASTFM_API_KEY` / `LASTFM_SECRET`; `preReleaseBuild` stops a release without them. Check they're set with `grep -c '^audiofool.lastfm.apiKey=..*'`, never by printing them |
+| **AudioFool's Last.fm key** | `~/.gradle/gradle.properties`: `audiofool.lastfm.apiKey=` and `audiofool.lastfm.secret=` (32 hex characters each, the user's own API account at last.fm/api/accounts). **Outside the repo**, put there by the user. Since 2026-11-12 no build reads them: they're kept only so `tools/build.sh` can check no APK carries them. Check they're set with `grep -c '^audiofool.lastfm.apiKey=..*'`, never by printing them |
 | BASS 2.4 for Android (vendored unchanged) | `third_party/bass/`: `libs/arm64-v8a`, `libs/x86_64`, `java/com/un4seen/bass` (added to the app's source sets in `app/build.gradle.kts`), licence texts. Where each zip comes from: README |
 | Launcher icon | `res/mipmap-anydpi/ic_launcher.xml`; the foreground PNG is the desktop's `icon_preview.png` scaled with ffmpeg (228 px in a 432 px canvas) |
 | TagLib 2.3.2 (C++, vendored unchanged) | `third_party/taglib/`; the JNI bridge is `app/src/main/cpp/tagreader_jni.cpp` |
@@ -117,7 +134,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
 | On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`, `fiioJack`: the last jack a FiiO named, since 0.2.5) |
-| On the phone: Last.fm | SharedPreferences `lastfm` (API key, secret, user, session: each AES-GCM encrypted with the Keystore key `audiofool.lastfm`); `no_backup/scrobbles.json` (+ `.bak`): the queue |
+| On the phone: Last.fm | SharedPreferences `lastfm` (API key, secret, user, session: each AES-GCM encrypted with the Keystore key `audiofool.lastfm`; the key and secret as typed on the phone, or built in by 0.9.0 to 0.18.0); `no_backup/scrobbles.json` (+ `.bak`): the queue |
 | On the phone: listening time | `no_backup/listening.json` (+ `.bak`): total ms and since when |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |
 | On the phone: resume point | `no_backup/resume.json` (+ `.bak`): the queue, song, place, shuffle, repeat |

@@ -14,8 +14,13 @@ class LastFmSignInTest {
     }
 
     @Test
-    fun `a refused or suspended app key says a new build is needed`() {
-        for (code in listOf(10, 26)) assertTrue("new build" in LastFm.signInError(LastFmException(code, "Suspended API key")))
+    fun `a wrong, mistyped or suspended key points at the key and secret`() {
+        assertEquals(
+            "Last.fm didn't accept that API key and shared secret (Invalid API key - You must be granted a valid key by last.fm).",
+            LastFm.signInError(LastFmException(10, "Invalid API key - You must be granted a valid key by last.fm")),
+        )
+        // 13: a wrong secret makes the signature wrong; 26: the key suspended.
+        for (code in listOf(13, 26)) assertTrue("API key and shared secret" in LastFm.signInError(LastFmException(code, "Invalid method signature supplied")))
     }
 
     @Test

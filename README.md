@@ -79,9 +79,10 @@ every decision and what is still to be checked on the phones.
   that waits out a lost network, sent in batches. Settings > Last.fm > Connect asks for
   your Last.fm username and password, sends them once to Last.fm's sign-in for phone apps
   and keeps only the session it gives back, encrypted with a key held in the Android
-  Keystore; the password is never saved. That sign-in needs AudioFool's own Last.fm API key
-  and secret, built into the app from `~/.gradle/gradle.properties` on the build PC
-  (`audiofool.lastfm.apiKey`, `audiofool.lastfm.secret`); a release build stops without them.
+  Keystore; the password is never saved. That sign-in needs an app's own Last.fm API key
+  and secret: the first time on each phone, the form asks for the ones from your Last.fm API
+  account (last.fm/api/accounts) and keeps them, encrypted, with the session. No build
+  carries a key (`tools/build.sh` checks), so the repo and its releases can be public.
 - **Analyze.** Hold Now Playing's cover for its menu: the cover's resolution, and Analyze,
   which decodes the whole song in the background and shows its spectrogram and AudioFool's
   opinion of whether the audio matches the file's format (a lossy source in a lossless file,

@@ -105,8 +105,9 @@ Then, with `MSYS_NO_PATHCONV=1`:
 ### Shipping a test build
 
 The routine is the `/release` skill (`.claude/skills/release/SKILL.md`); the numbered routine it came from is in `design/progress-archive.md` (*HANDOFF.md as of 2026-11-11*). A build goes out as a GitHub pre-release
-with the APK (`gh release create … --prerelease`), **only after checking the repo is
-`PRIVATE`**: the APK carries AudioFool's Last.fm key. 0.8.1 alone went over USB (`adb -s
+with the APK (`gh release create … --prerelease`), **only after `tools/build.sh` has said the
+APK carries no Last.fm key** (since 2026-11-12; before that every APK carried it, and uploads
+were allowed only while the repo was private). 0.8.1 alone went over USB (`adb -s
 <serial> install -r dist/AudioFool-<version>.apk`), while the repo was public. Keep the notes
 beside it (`dist/notes-<version>.md`), then add what only the phones can show to *To test on the
 S24* / *To test on the M21* in `design/progress.md`.

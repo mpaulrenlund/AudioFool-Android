@@ -19,7 +19,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 | What | Where |
 |---|---|
-| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (**private** since 2026-11-05, the user's call), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
+| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (**private** since 2026-11-05, the user's call; going public again, the user's call of 2026-11-12, once no release on GitHub carries the Last.fm key: see `HANDOFF.md`), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
 | The desktop app | `C:\MusicPlayer` (C# / WPF). Read-only from here. Its `src/AudioFool.Core` holds the logic to port; its `tests/` hold the tests to port with it |
 | Colour tokens | `design/theme-tokens.json` (PS1 Light) and `design/theme-tokens.dark.json` (PS2 Dark), the desktop's files copied unchanged |
 | Mobile sizes | `design/mobile-tokens.json` |
@@ -42,7 +42,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 The phones are plugged into this PC only when the user does it. Check `adb devices` rather than plan on it.
 
-- **Builds go out as GitHub pre-releases** with the APK attached (since 0.9.0, the user's call: they prefer it to installing over USB). Every build carries AudioFool's Last.fm key and secret, so **this is only allowed while the repo is private**: check `gh repo view --json visibility` says `PRIVATE` right before every upload, and never upload if it doesn't. 0.8.1 went over USB (`adb install -r`) because the repo was public then; that still works if the user asks for it. The user tries it on the S24 or the M21 and reports back. End each session with a short list of what to try on each device.
+- **Builds go out as GitHub pre-releases** with the APK attached (since 0.9.0, the user's call: they prefer it to installing over USB). **No APK may carry AudioFool's Last.fm key and secret** (since 2026-11-12, the user's call, so the repo and its releases can be public): the user types them on each phone, and `tools/build.sh` fails a build whose APK holds them; never upload one it hasn't passed. The APKs of 0.8.1 to 0.18.0 do carry the key: never put them anywhere public. Over USB (`adb install -r`) still works if the user asks for it. The user tries it on the S24 or the M21 and reports back. End each session with a short list of what to try on each device.
 - **One signing key from the start.** Every APK the user gets, test builds included, is signed with the same release keystore, kept outside the repo. A build signed with a different key won't install as an update; the user would have to uninstall, which wipes the library cache and settings.
 - **The emulator covers what it can**: scanning sample music, navigation, playback, gapless, the media session, lock screen and notification, resume. Verify there before handing over a build.
 - **Only the real devices** can check the full ~26,000-track library and its start times, SD card removal, Bluetooth and headset buttons, unplug pausing, and anything through a USB DAC (Bit-Perfect, DoP, the readout). Those go on the device lists in `design/progress.md`: *To test on the S24* and *To test on the M21*.
@@ -56,4 +56,4 @@ The phones are plugged into this PC only when the user does it. Check `adb devic
 - When done: list what changed and anything that differs from the spec, update the spec if the user changed what it says, add the decisions to `design/progress.md`, and update `HANDOFF.md`.
 - **`HANDOFF.md` stays under 15 KB.** It holds only the latest build, what is open, what waits on the user, the next steps and where things live. Per-build history goes to `design/progress.md` (Sessions), and anything older or no longer current moves to `design/progress-archive.md` in the same session.
 - Work on `main`. Commit with clear messages and push.
-- Releases: confirm the version number and the notes with the user before installing a build on a phone. Middle number for new features, last for fixes. The signing keystore and AudioFool's Last.fm key live outside the repo.
+- Releases: confirm the version number and the notes with the user before installing a build on a phone. Middle number for new features, last for fixes. The signing keystore and AudioFool's Last.fm key live outside the repo (the key only so `tools/build.sh` can check no APK carries it).

@@ -28,21 +28,27 @@ import java.io.File
  *
  * Connecting is the phone's own (the user's call, after 0.8.0): the user types
  * their Last.fm username and password once, and Last.fm's sign-in for phone apps
- * (auth.getMobileSession) trades them for a session key, signed with AudioFool's
- * own API key and secret, [appKey] and [appSecret], built in from outside the repo.
- * The password is sent that once and kept nowhere; the session is stored encrypted
- * ([LastFmStore]). The desktop connects through the browser instead.
+ * (auth.getMobileSession) trades them for a session key, signed with the API key and
+ * secret of the user's own Last.fm API account. The password is sent that once and
+ * kept nowhere; the session is stored encrypted ([LastFmStore]). The desktop connects
+ * through the browser instead.
  *
- * A session made earlier with another key (the desktop's, typed in before) keeps
- * that key: [LastFmStore] holds each session with the key it was made with.
+ * No build carries a key (2026-11-12, the user's call, so the repo and its releases can
+ * be public): the form asks for the key and secret while the phone has none saved, or
+ * after Last.fm turns them down ([Status.needsKey]). [LastFmStore] holds each session
+ * with the key it was made with, so a phone that signed in with an older build (whose
+ * built-in key was saved then) keeps it and is never asked.
  *
  * Main thread only.
  */
 @Stable
-class LastFm(context: Context, folder: File, private val appKey: String, private val appSecret: String) : PlayWatcher {
+class LastFm(context: Context, folder: File) : PlayWatcher {
     private val scope: CoroutineScope = MainScope()
     private val store = LastFmStore(context)
     private lateinit var scrobbler: LastFmScrobbler
+
+    /** The API key and secret saved on this phone by the last sign-in that worked. */
+    private var keys: Pair<String, String>? = null
 
     /** What Settings draws. */
     var status: Status by mutableStateOf(Status())
@@ -58,6 +64,8 @@ class LastFm(context: Context, folder: File, private val appKey: String, private
         val error: String? = null,
         /** The queue and the last send, in a line ("2 scrobbles waiting to send."). */
         val queue: String = "",
+        /** No API key and secret saved on this phone, or Last.fm turned them down: the form asks for them. */
+        val needsKey: Boolean = false,
     )
 
     private var connectJob: Job? = null
@@ -70,7 +78,9 @@ class LastFm(context: Context, folder: File, private val appKey: String, private
             scrobbler = LastFmScrobbler(queue, scope)
             scrobbler.onStatusChanged = ::refresh
             scrobbler.onAuthFailed = { message -> status = copy(error = message) }
+            keys = saved?.let { it.apiKey to it.secret }
             if (saved?.sessionKey != null) scrobbler.connect(saved.apiKey, saved.secret, LastFmSession(saved.userName ?: "", saved.sessionKey))
+            status = copy(needsKey = keys == null)
             refresh()
         }
     }
@@ -90,15 +100,16 @@ class LastFm(context: Context, folder: File, private val appKey: String, private
         status = copy(signingIn = false, sending = false, error = null)
     }
 
-    /** Signs in with the user's Last.fm [userName] (or email) and [password]. */
-    fun connect(userName: String, password: String) {
+    /**
+     * Signs in with the user's Last.fm [userName] (or email) and [password], signed with the
+     * key and secret saved on this phone, or with [apiKey] and [secret] while the form asks
+     * for them ([Status.needsKey]). They are saved once Last.fm accepts the sign-in.
+     */
+    fun connect(apiKey: String, secret: String, userName: String, password: String) {
         val name = userName.trim()
-        if (name.isEmpty() || password.isEmpty() || !ready) return
-        if (appKey.isBlank() || appSecret.isBlank()) {
-            status = copy(error = "This build of AudioFool has no Last.fm key, so it can't sign in.")
-            return
-        }
-        val api = LastFmApi(appKey, appSecret)
+        val (key, sharedSecret) = (if (status.needsKey) apiKey.trim() to secret.trim() else keys) ?: return
+        if (name.isEmpty() || password.isEmpty() || key.isEmpty() || sharedSecret.isEmpty() || !ready) return
+        val api = LastFmApi(key, sharedSecret)
 
         connectJob?.cancel()
         status = copy(sending = true, error = null)
@@ -106,13 +117,14 @@ class LastFm(context: Context, folder: File, private val appKey: String, private
             try {
                 val session = api.getMobileSession(name, password)
                 withContext(Dispatchers.IO) {
-                    store.saveKeys(appKey, appSecret)
+                    store.saveKeys(key, sharedSecret)
                     store.saveSession(session.userName, session.key)
                 }
-                scrobbler.connect(appKey, appSecret, session)
-                status = copy(signingIn = false, error = null)
+                keys = key to sharedSecret
+                scrobbler.connect(key, sharedSecret, session)
+                status = copy(signingIn = false, needsKey = false, error = null)
             } catch (e: LastFmException) {
-                status = copy(error = signInError(e))
+                status = copy(error = signInError(e), needsKey = status.needsKey || e.code in KEY_ERRORS)
             } finally {
                 status = copy(sending = false)
             }
@@ -181,13 +193,17 @@ class LastFm(context: Context, folder: File, private val appKey: String, private
         sending: Boolean = status.sending,
         error: String? = status.error,
         queue: String = status.queue,
-    ) = Status(state, userName, signingIn, sending, error, queue)
+        needsKey: Boolean = status.needsKey,
+    ) = Status(state, userName, signingIn, sending, error, queue, needsKey)
 
     companion object {
+        /** Last.fm's answers that mean the key or secret is wrong: invalid key (10), invalid signature (13), suspended key (26). */
+        private val KEY_ERRORS = setOf(10, 13, 26)
+
         /** What the form says when Last.fm turns the sign-in down. */
         fun signInError(e: LastFmException): String = when (e.code) {
             4 -> "Last.fm didn't accept that username and password."
-            10, 26 -> "Last.fm didn't accept AudioFool's own key (${e.message?.trimEnd('.')}). A new build with a new key is needed."
+            in KEY_ERRORS -> "Last.fm didn't accept that API key and shared secret (${e.message?.trimEnd('.')})."
             0 -> e.message ?: "Couldn't reach Last.fm."
             else -> e.message ?: "Last.fm error ${e.code}."
         }

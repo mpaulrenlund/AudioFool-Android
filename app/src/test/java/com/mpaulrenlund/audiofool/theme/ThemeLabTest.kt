@@ -301,6 +301,15 @@ class ThemeLabTest {
                 lastFm = LastFm.Status(signingIn = true),
             )
         }
+        // No API key saved on the phone (2026-11-12, no build carries one): the key and secret first.
+        shoot(device, "settings-lastfm-connect-key") {
+            SettingsScreen(
+                folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                actions = SettingsActions(),
+                lastFm = LastFm.Status(signingIn = true, needsKey = true),
+                scroll = rememberScrollState(Int.MAX_VALUE),
+            )
+        }
         // The sign-in turned down, connecting again: the name filled in, the reason over the fields.
         shoot(device, "settings-lastfm-signin-failed") {
             SettingsScreen(

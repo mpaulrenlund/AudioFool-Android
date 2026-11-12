@@ -15,17 +15,6 @@ val signingProperties: Properties? =
         file(path).takeIf { it.exists() }?.let { f -> Properties().apply { f.inputStream().use(::load) } }
     }
 
-// AudioFool's own Last.fm API key and shared secret (spec 7: the user signs in with a
-// username and password, which Last.fm only allows with an app's key). Like the
-// keystore, they live outside the repo, in ~/.gradle/gradle.properties:
-//   audiofool.lastfm.apiKey=<32 hex characters>
-//   audiofool.lastfm.secret=<32 hex characters>
-// They end up inside the APK, where anyone with the APK could read them; they can't
-// reach anyone's account without that person's password. A release build stops without them.
-val lastFmApiKey = (findProperty("audiofool.lastfm.apiKey") as String?)?.trim().orEmpty()
-val lastFmSecret = (findProperty("audiofool.lastfm.secret") as String?)?.trim().orEmpty()
-val lastFmKeysValid = listOf(lastFmApiKey, lastFmSecret).all { Regex("[0-9a-fA-F]{32}").matches(it) }
-
 // The three token files and the PlayStation logo are copied into the app's
 // assets at build time, so design/ and the repo's logo stay the only copies
 // (CLAUDE.md: the desktop colour files are kept identical to the desktop's, and
@@ -63,9 +52,8 @@ android {
         versionCode = 56
         versionName = "0.18.0"
 
-        // Empty when not set; Settings then says the build has no Last.fm key.
-        buildConfigField("String", "LASTFM_API_KEY", "\"${lastFmApiKey.takeIf { lastFmKeysValid }.orEmpty()}\"")
-        buildConfigField("String", "LASTFM_SECRET", "\"${lastFmSecret.takeIf { lastFmKeysValid }.orEmpty()}\"")
+        // No Last.fm key is built in (2026-11-12, spec 7): the user types it on each phone,
+        // so the repo and its releases can be public. tools/build.sh checks the APK has none.
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         externalNativeBuild {
@@ -177,14 +165,4 @@ dependencies {
 // ThemeLab's pictures live in the repo, so a later session can verify against them.
 roborazzi {
     outputDir.set(file("screenshots"))
-}
-
-// A release without AudioFool's Last.fm key couldn't sign anyone in (spec 7): stop before building it.
-tasks.configureEach {
-    if (name == "preReleaseBuild") doFirst {
-        if (!lastFmKeysValid) throw GradleException(
-            "A release needs AudioFool's Last.fm key: add audiofool.lastfm.apiKey and audiofool.lastfm.secret " +
-                "(32 hex characters each, from last.fm/api/accounts) to ~/.gradle/gradle.properties.",
-        )
-    }
 }

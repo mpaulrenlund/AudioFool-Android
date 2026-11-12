@@ -2,7 +2,7 @@
 # Build AudioFool for Android the way a release needs it, and print a few lines.
 #
 #   tools/build.sh               all tests, the screenshot tests, the signed release build,
-#                                the signer and Last.fm key checks, then copy to dist/
+#                                the signer check and the no-Last.fm-key check, then copy to dist/
 #   tools/build.sh --no-copy     the same, but leave dist/ alone
 #   tools/build.sh --skip-tests  the release build and its checks only
 #
@@ -37,7 +37,6 @@ export JAVA_TOOL_OPTIONS="-Djdk.net.unixdomain.tmpdir=$HOME_WIN/.audiofool-tmp -
 LOG=build/ship.log
 mkdir -p build
 APK=app/build/outputs/apk/release/app-release.apk
-BUILD_CONFIG=app/build/generated/source/buildConfig/release/com/mpaulrenlund/audiofool/BuildConfig.java
 GRADLE_PROPS="${GRADLE_USER_HOME:-$HOME_UNIX/.gradle}/gradle.properties"
 RELEASE_KEY=1fdefe0a0ec5f4b6636139b35bf39db89eea2c689a3aa17abc12d8cec5be2c21
 
@@ -87,20 +86,22 @@ if [ "$SIGNER" != "$RELEASE_KEY" ]; then
 fi
 echo "signer   ok, the release key"
 
-# The Last.fm key and secret: the APK must carry the real ones, not the emulator's
-# dummy. The values stay in shell variables and are never printed.
-same_value() {
-  local prop built
-  prop=$(grep -E "^$1=" "$GRADLE_PROPS" 2>/dev/null | head -1 | cut -d= -f2- | tr -d ' \r')
-  built=$(grep -E "$2 *=" "$BUILD_CONFIG" 2>/dev/null | head -1 | sed -E 's/.*"(.*)".*/\1/')
-  [ -n "$prop" ] && [ "$prop" = "$built" ]
-}
-if same_value 'audiofool\.lastfm\.apiKey' LASTFM_API_KEY && same_value 'audiofool\.lastfm\.secret' LASTFM_SECRET; then
-  echo "last.fm  ok, the real key and secret are in the APK"
-else
-  echo "last.fm  FAILED: the APK's key or secret does not match gradle.properties"
+# The Last.fm key and secret must NOT be in the APK (2026-11-12, spec 7): the user types
+# them on each phone, so the repo and its releases can be public. gradle.properties keeps
+# them only so this check knows what to look for, in every file inside the APK. The values
+# stay in shell variables and are never printed.
+prop_value() { grep -E "^$1=" "$GRADLE_PROPS" 2>/dev/null | head -1 | cut -d= -f2- | tr -d ' \r'; }
+LASTFM_KEY=$(prop_value 'audiofool\.lastfm\.apiKey')
+LASTFM_SECRET=$(prop_value 'audiofool\.lastfm\.secret')
+if [ -z "$LASTFM_KEY" ] || [ -z "$LASTFM_SECRET" ]; then
+  echo "last.fm  FAILED: keep audiofool.lastfm.apiKey and .secret in gradle.properties, so the APK can be checked for them"
   exit 1
 fi
+if unzip -p "$APK" 2>/dev/null | grep -a -q -i -F -e "$LASTFM_KEY" -e "$LASTFM_SECRET"; then
+  echo "last.fm  FAILED: the APK carries the Last.fm key or secret"
+  exit 1
+fi
+echo "last.fm  ok, no Last.fm key or secret in the APK"
 
 DEST="dist/AudioFool-$VERSION.apk"
 SHA=$(sha256sum "$APK" | cut -d' ' -f1)

@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Next build (number to confirm)**: no Last.fm key in the APK; Connect asks for the API key and shared secret while the phone has none saved (spec 7), so the repo can be public again — built and tested 2026-11-12, not yet released
 - [x] **0.18.0**: Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11, released as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0)
 - [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
 - [x] **0.17.1**: Now Playing's swipe made easier (56 dp, 500 dp/s) and a swipe right always going back a song (`Player.stepBack`); the Previous button keeps its 3 s rule — 2026-11-11, released as pre-release [`v0.17.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.1)
@@ -75,6 +76,39 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-12, not yet released (next build; its number to confirm): **no Last.fm key in the
+APK, so the repo can be public again** (the user: "Let's work on making the app public again.
+Then we can work on this feature", the feature being an update pop-up, which needs no GitHub
+token once the releases are public). Asked as a choice: "Type key on phone" (over keeping the
+key built in and accepting that anyone could read it out of a public APK). Spec §7.
+- **Found before deciding**: no key, secret, signing password or keystore anywhere in git
+  history or the tracked files, and no APK ever committed. Exactly 14 releases carry the key,
+  v0.9.0 to v0.18.0 (every release APK matched by SHA-256 to its copy in `dist/` and searched);
+  the 38 older ones don't. 0.8.1 carries it too but never went on GitHub (USB). All 218 commits
+  show the user's work email domain, already public before 2026-11-05: left as it is, the
+  user's to raise.
+- **The form** (my calls, open to change): while the phone has no key saved, or after Last.fm
+  turns it down (codes 10, 13 or 26: invalid key, invalid signature, suspended), Connect's form
+  adds 0.8.x's line "The API key and shared secret from your Last.fm API account (the
+  desktop's work here too)." and two fields, **API key** and **Shared secret**, above
+  Username, in plain text like the desktop's Last.fm window. Connect waits for all four. Saved
+  with the session once Last.fm accepts it; Disconnect keeps them. A phone with a key saved
+  (every phone that signed in with 0.9.0 to 0.18.0) sees the form exactly as before: the
+  saved key and session are read the way they always were. New ThemeLab picture
+  `settings-lastfm-connect-key` (both phones, both themes); every other picture unchanged.
+- **The build**: `app/build.gradle.kts` no longer reads `audiofool.lastfm.*` (no
+  `BuildConfig.LASTFM_*`, and a release no longer stops without them). `tools/build.sh`'s
+  **last.fm** line now fails when any file inside the APK holds the key or secret; it reads
+  them from `gradle.properties`, which keeps them for that alone. Checked on 0.18.0's APK
+  (found) before trusting it. The release skill drops its `PRIVATE` check for this one.
+- **Checked**: 583 Core and 126 app tests, all 376 pictures; on the emulator, updated over
+  0.18.0 with the library kept, the form's four fields in order, Connect waiting for all four,
+  Cancel closing it, no crash. Made-up values got "Couldn't reach Last.fm" (Zscaler), so
+  Last.fm's own answer to a wrong key is checked only by `LastFmSignInTest`.
+- **Still to do before the switch** (HANDOFF): release this build; remove the APK files of
+  v0.9.0 to v0.18.0 from GitHub (their notes stay; copies stay in `dist/`), after the user
+  confirms; then the user makes the repo public (only the owner account can).
 
 2026-11-11, 0.18.0 (versionCode 56; released the same day as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `730353b9…4ec41cf0` matching `dist/`; checked on the emulator first: updated over 0.17.2 with the library kept, the cover menu's two new rows, Lyrics lit from the `.lrc` and then from the tags across a gapless join, an Edit Tags title change saved, shown and put back; the three lyrics FLACs are in `/sdcard/Music/Lyrics Test/` there): **Lyrics in the cover menu** (the user: "in
 the Now Playing menu, can we add a Lyrics button? This lyrics button would ideally open a new
@@ -1219,13 +1253,21 @@ Decisions for 0.2.6 and older (0.2.x, 0.1.x and sessions 2–5) are in
 - **No USB connection to either device** (the user's call, 2026-10-24). Both the S24 and the M21 are tested through GitHub pre-release APKs that the user installs and reports back on. The emulator covers what it can before each hand-over; what only a real device can show goes on the lists below.
 - **One signing key from the start** (2026-10-24): every APK the user gets, test builds included, is signed with the same release keystore, kept outside the repo, so each build installs over the last without wiping the cache or settings.
 - Ask before big choices only (new dependencies, spec changes, stored data, releases).
-- **The repo is public** (the user's call, 2026-10-24; **private since 2026-11-05**, see 0.9.0 above). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
+- **The repo is public** (the user's call, 2026-10-24; **private since 2026-11-05**, see 0.9.0 above; going public again, the user's call of 2026-11-12, once no APK on GitHub carries the Last.fm key: see the newest decision). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
 
 Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-version lists with
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
+
+### Last.fm with no key built in (from the next build)
+
+- [ ] If Last.fm was connected before the update: still "connected as" you after it, and songs
+  still scrobble (the key saved at sign-in is kept).
+- [ ] Disconnect, then Connect: only the username and password are asked for (the key stays saved).
+- [ ] If Last.fm was never connected on this phone: Connect asks for the API key and shared
+  secret first; paste them from your API account (last.fm/api/accounts), sign in, and it connects.
 
 ### Lyrics (from 0.18.0)
 
@@ -1528,6 +1570,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Last.fm with no key built in (from the next build)
+
+- [ ] The same three checks as the S24's: still connected after the update; Disconnect and
+  Connect asks only for the name and password; a never-connected phone asks for the key first.
 
 ### Lyrics (from 0.18.0)
 
