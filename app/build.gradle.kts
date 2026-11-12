@@ -60,8 +60,8 @@ android {
         applicationId = "com.mpaulrenlund.audiofool"
         minSdk = 33
         targetSdk = 37
-        versionCode = 55
-        versionName = "0.17.2"
+        versionCode = 56
+        versionName = "0.18.0"
 
         // Empty when not set; Settings then says the build has no Last.fm key.
         buildConfigField("String", "LASTFM_API_KEY", "\"${lastFmApiKey.takeIf { lastFmKeysValid }.orEmpty()}\"")
