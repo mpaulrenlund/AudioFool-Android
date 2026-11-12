@@ -79,6 +79,42 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-12, after 0.19.1 (on `main` for 0.20.0, not built yet): **a tap on Version checks for
+updates; the app no longer looks by itself** (the user, after 0.19.1's pop-up showed on neither
+phone: "I think instead of a notification. We should update tapping on the Version row in the app
+menu should check if there are new updates. (This would make it so it doesn't open github
+anymore) If there is a new update: show the new version number, an update button, and a cancel
+button. If there isn't a new version: a quick pop up says no new version available pops up and
+disappears after 2 seconds."). Spec §9 rewritten, and §4.1's Version row. Why the pop-up didn't
+show (not confirmed: no phone on USB): most likely the six-hour wait, as a phone that opened
+0.19.0 this morning read GitHub then and 0.19.1 came out about an hour later; or the phones
+weren't on 0.19.0 yet; a failed look said nothing. `Updates.checkNow` reads GitHub on the tap;
+`Updates.Note` (Checking, UpToDate, CheckFailed) is drawn by `UpdateNote`, centred over the
+screens in `AppRoot`'s own window: the pop-up's panel with one line. (First built in a
+non-focusable popup window: the emulator showed it swallowed a tap on its box and slid 16 to
+32 px sideways when its text changed width; in the app's window it does neither, and
+`VersionRowTest` checks a tap goes through.) New tokens `update.noteMs` (2000), `notePaddingX`,
+`notePaddingY`. Agreed in the plan ("Yes, build it"): the look on opening goes, with the six-hour
+rule and "Cancel means never again" (Cancel only closes; the next tap offers the same build);
+"Checking for updates…" while it reads; "Couldn't check for updates" for 2 s when GitHub can't be
+read; the note in the app's own look, not Android's toast; 0.20.0. **My calls:** a failure's
+reason goes to logcat (`AudioFoolUpdate`), not the note (two seconds is too short to read it);
+the note doesn't dim the screen or take its taps or back; "Checking…" has no time limit of its
+own (it goes when the answer comes, at worst GitHub's 20 s timeouts); the cover menu's Version
+row does the same, as it shares the row. `AppSettings.updateCheckedAt` / `updateSkipped` are gone
+from the code, their values left on the phone unread; `OpenInBrowser.kt`, its two tests and the
+manifest's `<queries>` for browsers went with the browser path (in git history if a link is wanted
+again). Tests: `UpdateCheckTest` (the offer, offered again after Cancel, nothing newer, GitHub out
+of reach, an old note not taking a newer one away), `VersionRowTest` (a tap checks and the menu
+closes; a tap on the note reaches the screen under it), core `UpdatesTest` without the six-hour
+and turned-down rules; 12 new pictures (`update-checking`, `update-none`, `update-check-failed`),
+no other picture changed. Checked on the emulator with a test build (0.19.9, versionCode 63)
+against a test server: no look at GitHub on opening (0 requests in 10 s); one request per tap;
+the offer, offered again after Cancel; "No new version available" and "Couldn't check for
+updates" (logcat: HTTP 404) each up 2.0 s, centred to the pixel and not sliding when the text
+changes; a tap on the note opened the artist under it; the cover menu's Version the same; back
+still leaves the screen while "Checking…" is up.
+
 2026-11-12, 0.19.1 (versionCode 62; released the same day as pre-release
 [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1), APK
 attached, `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256

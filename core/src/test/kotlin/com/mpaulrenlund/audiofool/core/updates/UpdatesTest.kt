@@ -76,32 +76,17 @@ class UpdatesTest {
         assertFailsWith<UpdateException> { runBlocking { nonsense.list() } }
     }
 
-    // ---- when to look, what to offer ----
-
-    @Test
-    fun `GitHub is looked at again after six hours, and after the clock goes back`() {
-        val hour = 60 * 60 * 1000L
-        assertTrue(UpdateRules.isDue(null, 0))
-        assertFalse(UpdateRules.isDue(100 * hour, 105 * hour))
-        assertTrue(UpdateRules.isDue(100 * hour, 106 * hour))
-        assertTrue(UpdateRules.isDue(100 * hour, 99 * hour))
-    }
+    // ---- what to offer ----
 
     private fun r(version: String) = AppRelease(v(version), "https://example.invalid/$version.apk", 1, null)
 
     @Test
     fun `the newest release is offered when it is newer than this build`() {
         val list = listOf(r("0.18.1"), r("0.19.0"), r("0.18.0"))
-        assertEquals(v("0.19.0"), UpdateRules.offer(list, v("0.18.1"), skipped = null)?.version)
-        assertNull(UpdateRules.offer(list, v("0.19.0"), skipped = null))
-        assertNull(UpdateRules.offer(list, v("0.20.0"), skipped = null))
-        assertNull(UpdateRules.offer(emptyList(), v("0.18.1"), skipped = null))
-    }
-
-    @Test
-    fun `a version turned down is not offered again, a newer one is`() {
-        assertNull(UpdateRules.offer(listOf(r("0.19.0")), v("0.18.1"), skipped = v("0.19.0")))
-        assertEquals(v("0.19.1"), UpdateRules.offer(listOf(r("0.19.0"), r("0.19.1")), v("0.18.1"), skipped = v("0.19.0"))?.version)
+        assertEquals(v("0.19.0"), UpdateRules.offer(list, v("0.18.1"))?.version)
+        assertNull(UpdateRules.offer(list, v("0.19.0")))
+        assertNull(UpdateRules.offer(list, v("0.20.0")))
+        assertNull(UpdateRules.offer(emptyList(), v("0.18.1")))
     }
 
     @Test

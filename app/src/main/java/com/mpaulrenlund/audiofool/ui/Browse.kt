@@ -79,8 +79,8 @@ class AppActions(
     val shuffleLibrary: () -> Unit = {},
     /** Albums' shuffle button (spec 4.2, 2026-11-10): that artist's songs, shuffled, from a random one. */
     val shuffleArtist: (String) -> Unit = {},
-    /** The menus' Version row (spec 4.1, 2026-11-10): AudioFool's releases page, in the default browser. */
-    val openReleases: () -> Unit = {},
+    /** The menus' Version row (spec 4.1, 9; 2026-11-12): looks for a newer build on GitHub. */
+    val checkForUpdates: () -> Unit = {},
 )
 
 /**

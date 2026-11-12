@@ -4,11 +4,14 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -77,8 +80,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 val started = now.library?.let { player.shuffleAll(LibraryShuffle.queue(it, now::isUnavailable)) } == true
                 if (started) nav.open(Route.NowPlaying)
             },
-            // Spec 4.1 (2026-11-10): the menus' Version row, in the default browser rather than GitHub's app.
-            openReleases = { openInBrowser(context, RELEASES_URL) },
+            // Spec 4.1, 9 (2026-11-12, the user's call): the menus' Version row looks for a newer build.
+            checkForUpdates = app.updates::checkNow,
             // Spec 4.2 (2026-11-10): the same for one artist, from Albums; back returns there.
             shuffleArtist = { name ->
                 val now = app.library.state.value
@@ -187,78 +190,82 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
     }
 
     CompositionLocalProvider(LocalArt provides app.art, LocalCoverColors provides app.coverColors) {
-        NavHost(nav) { route ->
-            when (route) {
-                Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME)
-                is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
-                is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions, chosenSong = route.song)
-                Route.Search -> SearchScreen(browse, actions)
-                Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
-                is Route.Analysis -> AnalysisScreen(remember(library, route.path) { trackAt(library, route.path, app) })
-                is Route.Cover -> CoverViewerScreen(remember(library, route.path) { trackAt(library, route.path, app) })
-                is Route.EditTags -> {
-                    // Kept while the screen is open, whatever a rescan does meanwhile; with the tags last saved.
-                    val edit = remember(route.path) { EditTagsState(app.nowPlaying.shown(trackAt(library, route.path, app)) ?: Track(filePath = route.path)) }
-                    LaunchedEffect(route.path) { edit.read(withContext(Dispatchers.IO) { TagEditing.readDetails(route.path) }) }
-                    EditTagsScreen(edit, remember(edit) { EditTagsActions(save = { saveTags(app, nav, edit, route) }, leave = nav::back) })
-                }
-                is Route.Genius -> {
-                    val track = remember(library, route.path) { trackAt(library, route.path, app) }
-                    LaunchedEffect(route.path) { app.genius.showing(track) }
-                    // Until the model is on this song (a frame, after Android restored the screen), the header and "Looking up…".
-                    val shown = app.genius.state.takeIf { it.track?.filePath == route.path }
-                        ?: GeniusState(track = track, note = GeniusNote(GeniusRows.LOOKING_UP))
-                    GeniusScreen(shown, remember(library, route.path) { library.albumHolding(route.path) }, geniusActions)
-                }
-                Route.Lyrics -> {
-                    // The song playing, as the screens show it (Edit Tags' saved tags); the next one when it changes.
-                    val playing = app.nowPlaying.shownTrack
-                    LaunchedEffect(playing) { app.lyrics.showing(playing) }
-                    // Until the model is on this song (a frame), the header and "Looking for lyrics…".
-                    val shown = app.lyrics.state.takeIf { it.track == playing }
-                        ?: LyricsState(playing, note = LyricsNote(LyricsRows.LOOKING))
-                    LyricsScreen(shown, app.nowPlaying, lyricsActions)
-                }
-                Route.Settings -> SettingsScreen(
-                    folders = folders.map { f ->
-                        FolderLine(f, Storage.describe(context, f.path), state.unavailableFolders.any { it.equals(f.path, ignoreCase = true) })
-                    },
-                    actions = SettingsActions(
-                        toggleTheme = actions.toggleTheme,
-                        rescan = { app.library.rescan(asked = true) },
-                        addFolder = pickFolder,
-                        setIncluded = { path, included ->
-                            app.settings.setIncluded(path, included)
-                            app.library.foldersChanged()
+        Box(Modifier.fillMaxSize()) {
+            NavHost(nav) { route ->
+                when (route) {
+                    Route.Artists -> ArtistsScreen(browse, actions, scanning = state.scanning, scanText = scanHeaderText(state), version = BuildConfig.VERSION_NAME)
+                    is Route.Albums -> AlbumsScreen(route.artist, browse, actions)
+                    is Route.Album -> AlbumScreen(route.artist, route.title, browse, actions, chosenSong = route.song)
+                    Route.Search -> SearchScreen(browse, actions)
+                    Route.NowPlaying -> NowPlayingScreen(app.nowPlaying, nowPlayingActions, actions, BuildConfig.VERSION_NAME)
+                    is Route.Analysis -> AnalysisScreen(remember(library, route.path) { trackAt(library, route.path, app) })
+                    is Route.Cover -> CoverViewerScreen(remember(library, route.path) { trackAt(library, route.path, app) })
+                    is Route.EditTags -> {
+                        // Kept while the screen is open, whatever a rescan does meanwhile; with the tags last saved.
+                        val edit = remember(route.path) { EditTagsState(app.nowPlaying.shown(trackAt(library, route.path, app)) ?: Track(filePath = route.path)) }
+                        LaunchedEffect(route.path) { edit.read(withContext(Dispatchers.IO) { TagEditing.readDetails(route.path) }) }
+                        EditTagsScreen(edit, remember(edit) { EditTagsActions(save = { saveTags(app, nav, edit, route) }, leave = nav::back) })
+                    }
+                    is Route.Genius -> {
+                        val track = remember(library, route.path) { trackAt(library, route.path, app) }
+                        LaunchedEffect(route.path) { app.genius.showing(track) }
+                        // Until the model is on this song (a frame, after Android restored the screen), the header and "Looking up…".
+                        val shown = app.genius.state.takeIf { it.track?.filePath == route.path }
+                            ?: GeniusState(track = track, note = GeniusNote(GeniusRows.LOOKING_UP))
+                        GeniusScreen(shown, remember(library, route.path) { library.albumHolding(route.path) }, geniusActions)
+                    }
+                    Route.Lyrics -> {
+                        // The song playing, as the screens show it (Edit Tags' saved tags); the next one when it changes.
+                        val playing = app.nowPlaying.shownTrack
+                        LaunchedEffect(playing) { app.lyrics.showing(playing) }
+                        // Until the model is on this song (a frame), the header and "Looking for lyrics…".
+                        val shown = app.lyrics.state.takeIf { it.track == playing }
+                            ?: LyricsState(playing, note = LyricsNote(LyricsRows.LOOKING))
+                        LyricsScreen(shown, app.nowPlaying, lyricsActions)
+                    }
+                    Route.Settings -> SettingsScreen(
+                        folders = folders.map { f ->
+                            FolderLine(f, Storage.describe(context, f.path), state.unavailableFolders.any { it.equals(f.path, ignoreCase = true) })
                         },
-                        toggleBitPerfect = player::toggleBitPerfect,
-                    ),
-                    readout = app.nowPlaying.readout,
-                    bitPerfect = app.nowPlaying.bitPerfect,
-                    bitPerfectGreyed = app.nowPlaying.bitPerfectGreyed,
-                    lastFm = app.lastFm.status,
-                    lastFmActions = lastFmActions,
-                    scanText = scanHeaderText(state),
-                )
-                Route.Statistics -> StatisticsScreen(
-                    state = state,
-                    stats = remember(library) { LibraryStatistics.compute(library) },
-                    listening = app.listening.time,
-                    numbers = debugNumbers,
-                    actions = debugActions,
-                )
-                Route.ListeningHistory -> {
-                    LaunchedEffect(Unit) { app.history.showing() }
-                    ListeningHistoryScreen(app.history.state, historyActions)
+                        actions = SettingsActions(
+                            toggleTheme = actions.toggleTheme,
+                            rescan = { app.library.rescan(asked = true) },
+                            addFolder = pickFolder,
+                            setIncluded = { path, included ->
+                                app.settings.setIncluded(path, included)
+                                app.library.foldersChanged()
+                            },
+                            toggleBitPerfect = player::toggleBitPerfect,
+                        ),
+                        readout = app.nowPlaying.readout,
+                        bitPerfect = app.nowPlaying.bitPerfect,
+                        bitPerfectGreyed = app.nowPlaying.bitPerfectGreyed,
+                        lastFm = app.lastFm.status,
+                        lastFmActions = lastFmActions,
+                        scanText = scanHeaderText(state),
+                    )
+                    Route.Statistics -> StatisticsScreen(
+                        state = state,
+                        stats = remember(library) { LibraryStatistics.compute(library) },
+                        listening = app.listening.time,
+                        numbers = debugNumbers,
+                        actions = debugActions,
+                    )
+                    Route.ListeningHistory -> {
+                        LaunchedEffect(Unit) { app.history.showing() }
+                        ListeningHistoryScreen(app.history.state, historyActions)
+                    }
+                    Route.Debug -> DebugScreen(state, debugNumbers, debugActions)
+                    is Route.TokenSheet -> TokenSheet(
+                        route.page,
+                        Modifier.clickable { nav.replaceTop(Route.TokenSheet(SheetPage.entries[(route.page.ordinal + 1) % SheetPage.entries.size])) },
+                    )
                 }
-                Route.Debug -> DebugScreen(state, debugNumbers, debugActions)
-                is Route.TokenSheet -> TokenSheet(
-                    route.page,
-                    Modifier.clickable { nav.replaceTop(Route.TokenSheet(SheetPage.entries[(route.page.ordinal + 1) % SheetPage.entries.size])) },
-                )
             }
+            // Spec 9: the note over whatever screen is showing, in the same window, so taps go through it.
+            app.updates.note?.let { UpdateNote(it, app.updates::noteGone, Modifier.align(Alignment.Center)) }
         }
-        // Spec 9: over whatever screen is showing.
+        // Spec 9: the pop-up, over whatever screen is showing.
         app.updates.prompt?.let { UpdatePrompt(it, updateActions) }
     }
 }

@@ -117,11 +117,11 @@ class AudioFoolApp : Application() {
     val lyrics: SongLyrics by lazy { SongLyrics(OnlineLyrics(LrcLibClient())) }
 
     /**
-     * The update pop-up (spec 9): the repo's releases on GitHub, read when the app comes into
-     * sight. A throwaway emulator build can point it elsewhere (`-Paudiofool.updates.url`).
+     * The update check (spec 9): the repo's releases on GitHub, read when the menus' Version
+     * row is tapped. A throwaway emulator build can point it elsewhere (`-Paudiofool.updates.url`).
      */
     val updates: Updates by lazy {
-        Updates(this, settings, GitHubReleases(BuildConfig.UPDATES_URL.ifEmpty { GitHubReleases.RELEASES_API }), ApkDownload(), BuildConfig.VERSION_NAME)
+        Updates(this, GitHubReleases(BuildConfig.UPDATES_URL.ifEmpty { GitHubReleases.RELEASES_API }), ApkDownload(), BuildConfig.VERSION_NAME)
     }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */

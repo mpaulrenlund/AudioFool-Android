@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.provider.Settings
+import android.util.Log
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +16,6 @@ import com.mpaulrenlund.audiofool.core.updates.AppVersion
 import com.mpaulrenlund.audiofool.core.updates.GitHubReleases
 import com.mpaulrenlund.audiofool.core.updates.UpdateException
 import com.mpaulrenlund.audiofool.core.updates.UpdateRules
-import com.mpaulrenlund.audiofool.settings.AppSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,21 +25,22 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * The update pop-up (spec 9; 2026-11-12, the user's request). When the app comes into
- * sight, at most every six hours, it reads the repo's releases on GitHub; a build newer
- * than this one, and than the one last turned down, is offered: "AudioFool 0.19.0 is
- * available. You have 0.18.1." with Update and Cancel. Update downloads the APK into the
- * app's cache, checks it against GitHub's size and SHA-256, and hands it to Android's
- * installer, which asks the user to confirm (and, the first time, to let AudioFool install
- * apps). Cancel on the offer means that version isn't offered again; anywhere else it
- * only stops and closes. Nothing to port: the desktop has no update check.
+ * The update check (spec 9; 2026-11-12, the user's requests). A tap on the menus' Version
+ * row reads the repo's releases on GitHub ([checkNow]); a build newer than this one is
+ * offered: "AudioFool 0.20.1 is available. You have 0.20.0." with Update and Cancel.
+ * Otherwise a short [note] says there is none, or that GitHub couldn't be read. (Until
+ * 0.20.0 the app looked by itself when it came into sight, at most every six hours, and
+ * the Version row opened the releases page; the user swapped both for the tap.) Update
+ * downloads the APK into the app's cache, checks it against GitHub's size and SHA-256, and
+ * hands it to Android's installer, which asks the user to confirm (and, the first time, to
+ * let AudioFool install apps). Cancel stops and closes. Nothing to port: the desktop has
+ * no update check.
  *
  * Main thread only.
  */
 @Stable
 class Updates(
     private val context: Context,
-    private val settings: AppSettings,
     private val releases: GitHubReleases,
     private val download: ApkDownload,
     /** This build's version name. */
@@ -61,6 +62,20 @@ class Updates(
     var prompt: Prompt? by mutableStateOf(null)
         private set
 
+    /**
+     * The short message a check shows instead of the pop-up (spec 9): while GitHub is
+     * read, then that there's nothing newer or that it couldn't be read. The screen takes
+     * the last two away after `update.noteMs` ([noteGone]).
+     */
+    sealed interface Note {
+        data object Checking : Note
+        data object UpToDate : Note
+        data class CheckFailed(val reason: String) : Note
+    }
+
+    var note: Note? by mutableStateOf(null)
+        private set
+
     private var checking = false
     private var job: Job? = null
 
@@ -80,37 +95,57 @@ class Updates(
 
     // ---- the app's lifecycle (MainActivity) ----
 
-    /** In sight: looks at GitHub if it is due, and shows Android's confirmation if one is waiting. */
+    /** In sight: shows Android's confirmation if one is waiting, and goes on once installing apps is allowed. */
     fun inSight() {
         inSight = true
         confirmation?.let { showConfirmation(it) }
         (prompt as? Prompt.NeedsPermission)?.let { p ->
             if (context.packageManager.canRequestPackageInstalls() && apkFile.isFile) scope.launch { install(p.release) }
         }
-        checkIfDue()
     }
 
     fun outOfSight() {
         inSight = false
     }
 
-    private fun checkIfDue() {
+    // ---- the menus' Version row ----
+
+    /** Reads GitHub now: a newer build is offered, else a note says there's none or why it couldn't look. */
+    fun checkNow() {
         if (checking || prompt != null) return
-        if (!UpdateRules.isDue(settings.updateCheckedAt, System.currentTimeMillis())) return
-        val currentVersion = AppVersion.parse(current) ?: return
+        val currentVersion = AppVersion.parse(current)
+        if (currentVersion == null) {
+            failed("this build's version \"$current\" isn't a release number")
+            return
+        }
         checking = true
+        note = Note.Checking
         scope.launch {
             try {
-                val list = releases.list()
-                settings.updateCheckedAt = System.currentTimeMillis()
-                val offer = UpdateRules.offer(list, currentVersion, settings.updateSkipped?.let(AppVersion::parse))
-                if (offer != null && prompt == null) prompt = Prompt.Offer(offer, current)
-            } catch (_: UpdateException) {
-                // Quietly: GitHub is read again the next time the app comes into sight.
+                val offer = UpdateRules.offer(releases.list(), currentVersion)
+                if (offer != null) {
+                    note = null
+                    prompt = Prompt.Offer(offer, current)
+                } else {
+                    note = Note.UpToDate
+                }
+            } catch (e: UpdateException) {
+                failed(e.message ?: "unknown")
             } finally {
                 checking = false
             }
         }
+    }
+
+    /** The screen's `update.noteMs` is up: the note goes, unless another has taken its place. */
+    fun noteGone(gone: Note) {
+        if (note == gone) note = null
+    }
+
+    private fun failed(reason: String) {
+        // Not on the note, which is up for two seconds: in logcat, for a phone over USB.
+        Log.w(TAG, "update check failed: $reason")
+        note = Note.CheckFailed(reason)
     }
 
     // ---- the pop-up's buttons ----
@@ -138,10 +173,9 @@ class Updates(
         }
     }
 
-    /** Cancel (or system back): on the offer, that version isn't offered again; elsewhere it stops and closes. */
+    /** Cancel (or system back): stops and closes. The next tap on Version offers the same build again. */
     fun cancel() {
         val shown = prompt ?: return
-        if (shown is Prompt.Offer) settings.updateSkipped = shown.release.version.text
         job?.cancel()
         job = null
         confirmation = null
@@ -198,6 +232,14 @@ class Updates(
 
     companion object {
         const val TITLE = "Update Available"
+        private const val TAG = "AudioFoolUpdate"
+
+        /** The note's one line (the user's words, 2026-11-12: "no new version available"). */
+        fun noteText(note: Note): String = when (note) {
+            Note.Checking -> "Checking for updates…"
+            Note.UpToDate -> "No new version available"
+            is Note.CheckFailed -> "Couldn't check for updates"
+        }
 
         /** The pop-up's text for each step. */
         fun message(prompt: Prompt): String = when (prompt) {

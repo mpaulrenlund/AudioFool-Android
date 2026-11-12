@@ -40,8 +40,8 @@ const val LOGO_ASSET = "brand/PlayStation-Logo-1994.png"
 /**
  * The logo, which is the menu button (spec 4.1): 36 x 28 in a 48 dp touch area.
  * Its menu holds Library Statistics, Listening History, Rescan Library (0.5.0), Settings and
- * Theme (switches at once), in that order, then the app's [version], which opens
- * its releases page.
+ * Theme (switches at once), in that order, then the app's [version], a tap on which
+ * looks for a newer build (spec 9).
  */
 @Composable
 fun LogoMenuButton(menuOpen: Boolean, onOpen: () -> Unit, onClose: () -> Unit, actions: AppActions, version: String) {
@@ -85,8 +85,8 @@ private fun LogoMenu(onClose: () -> Unit, actions: AppActions, version: String) 
 
 /**
  * The logo menu's rows: Library Statistics (spec 4.6; "Statistics" until 2026-11-11),
- * Listening History (spec 4.7), Rescan Library, Settings, Theme, then the version, a tap on which opens the releases page
- * ([RELEASES_URL]) in the default browser (2026-11-10, the user's call).
+ * Listening History (spec 4.7), Rescan Library, Settings, Theme, then the version, a tap on which looks for a newer
+ * build on GitHub (spec 9; 2026-11-12, the user's call; it opened the releases page in the browser from 2026-11-10).
  *
  * Now Playing's cover menu ends with them too (0.7.4, the user's call), but with
  * [allRows] false it keeps only Theme and the version: Listening History, Rescan
@@ -118,7 +118,7 @@ fun AppMenuRows(onClose: () -> Unit, actions: AppActions, version: String, allRo
     MenuRow("Theme", value = t.name, onClick = actions.toggleTheme)
     MenuRow("Version", value = version) {
         onClose()
-        actions.openReleases()
+        actions.checkForUpdates()
     }
 }
 

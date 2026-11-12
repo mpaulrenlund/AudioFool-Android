@@ -9,6 +9,7 @@ import com.mpaulrenlund.audiofool.core.updates.AppRelease
 import com.mpaulrenlund.audiofool.core.updates.AppVersion
 import com.mpaulrenlund.audiofool.ui.UpdateActions
 import com.mpaulrenlund.audiofool.ui.UpdateBox
+import com.mpaulrenlund.audiofool.ui.UpdateNoteBox
 import com.mpaulrenlund.audiofool.updates.Updates
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -346,6 +347,21 @@ class ThemeLabTest {
                         actions = SettingsActions(),
                     )
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { UpdateBox(prompt, UpdateActions()) }
+                }
+            }
+        }
+        // The note a tap on Version shows (spec 9, 2026-11-12, no mockup), over Artists, where the
+        // logo menu is: looking, nothing newer, and GitHub out of reach. The box only (the app's is
+        // in a popup window); nothing behind it is dimmed.
+        for ((name, note) in listOf(
+            "update-checking" to Updates.Note.Checking,
+            "update-none" to Updates.Note.UpToDate,
+            "update-check-failed" to Updates.Note.CheckFailed("Couldn't reach GitHub: no route"),
+        )) {
+            shoot(device, name) {
+                Box(Modifier.fillMaxSize()) {
+                    ArtistsScreen(browse(), actions)
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { UpdateNoteBox(note) }
                 }
             }
         }

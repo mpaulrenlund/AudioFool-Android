@@ -308,7 +308,11 @@
     "promptGap": 16,
     "titleSize": 17,
     "textSize": 15,
-    "buttonGap": 8
+    "buttonGap": 8,
+    "$noteNote": "The note a tap on the menus' Version row shows instead of the pop-up (2026-11-12, the user's call): \"Checking for updates…\", then \"No new version available\" or \"Couldn't check for updates\", gone after noteMs (the user: \"disappears after 2 seconds\"). The pop-up's panel, centred, no dimming and no buttons; one line of textSize, notePaddingX at the sides and notePaddingY above and below, at most promptWidth wide.",
+    "notePaddingX": 20,
+    "notePaddingY": 14,
+    "noteMs": 2000
   },
   "lyrics": {
     "$note": "The Lyrics screen (spec 5.5; 2026-11-11, the user's request), from the cover menu. No mockup; the header is Analyze's (analysis.header*, titleSize, titleWeight, subtitleSize). Each line lineSize at lineWeight, paddingX each side and linePaddingY above and below (its tap area); the line being sung grows to currentScale from its left edge, every line laid out narrow enough to grow inside the padding; a break between verses (or a timed pause) is breakHeight. The list keeps the line being sung anchor of its height down; a finger's scroll stops that until followAgainMs after it lets go. Colour and size change over changeMs; the line is read every tickMs while playing. Under the lyrics, where they came from: sourceSize, sourceTop above it.",

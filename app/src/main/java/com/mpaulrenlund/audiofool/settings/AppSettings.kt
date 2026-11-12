@@ -50,16 +50,6 @@ class AppSettings(context: Context) {
         get() = prefs.getInt(KEY_FIIO_JACK, -1)
         set(value) = prefs.edit().putInt(KEY_FIIO_JACK, value).apply()
 
-    /** The update pop-up (spec 9): when GitHub was last read (ms since 1970), or null if never. */
-    var updateCheckedAt: Long?
-        get() = prefs.getLong(KEY_UPDATE_CHECKED, -1).takeIf { it >= 0 }
-        set(value) = prefs.edit().putLong(KEY_UPDATE_CHECKED, value ?: -1).apply()
-
-    /** The version last turned down with the pop-up's Cancel: not offered again (a newer one is). */
-    var updateSkipped: String?
-        get() = prefs.getString(KEY_UPDATE_SKIPPED, null)
-        set(value) = prefs.edit().putString(KEY_UPDATE_SKIPPED, value).apply()
-
     private val _folders = MutableStateFlow(readFolders())
 
     /** The music folders, in the order they were added. */
@@ -93,8 +83,6 @@ class AppSettings(context: Context) {
         private const val KEY_FOLDERS = "musicFolders"
         private const val KEY_BIT_PERFECT = "bitPerfect"
         private const val KEY_FIIO_JACK = "fiioJack"
-        private const val KEY_UPDATE_CHECKED = "updateCheckedAt"
-        private const val KEY_UPDATE_SKIPPED = "updateSkipped"
         private const val THEME_DARK = "dark"
         private const val THEME_LIGHT = "light"
     }

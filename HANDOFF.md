@@ -10,24 +10,28 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
+- **On `main`, not built yet (for 0.20.0): a tap on Version checks for updates** (spec 9, 4.1;
+  the user's call after 0.19.1's pop-up showed on neither phone). The app no longer looks by
+  itself; the tap shows "Checking for updates…", then the pop-up, or "No new version available" /
+  "Couldn't check for updates" for 2 s. Cancel only closes. The Version row no longer opens the
+  releases page. Tests, pictures and the emulator (a test server) pass; details and my calls: `design/progress.md`, its newest
+  decision.
 - **Latest build: 0.19.1** (versionCode 62), published 2026-11-12 as the pre-release
   [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1) (APK in
   `dist/AudioFool-0.19.1.apk`, notes in `dist/notes-0.19.1.md`): **Now Playing's track count at
-  the quality's size** (13, was 15; the user's call; `design/progress.md`, its newest decision).
+  the quality's size** (13, was 15; the user's call; `design/progress.md`, its second decision).
   It is also the first build the update pop-up offers to a phone on 0.19.0: the notes ask the
   S24 to try Update and the M21 Cancel.
-- **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9;
-  the user's request). On opening, at most every six hours, it reads GitHub's releases; a newer
-  build is offered ("AudioFool 0.19.1 is available. You have 0.19.0.", Update and Cancel).
-  Update downloads, checks size and SHA-256, and hands the APK to Android's installer. Tested
-  end to end on the emulator against a test server on this PC (how, and Android 17's
-  local-network trap: `docs/build-and-emulator.md`, *Testing the update pop-up*). Not tested:
-  the real GitHub from the app, and the phones; 0.19.1 is its first offer there. The emulator
-  has 0.19.1. My calls: `design/progress.md`, its second decision.
+- **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9), which
+  looked by itself on opening, at most every six hours. Update downloads, checks size and
+  SHA-256, and hands the APK to Android's installer; tested end to end on the emulator against a
+  test server on this PC (`docs/build-and-emulator.md`, *Testing the update pop-up*). It didn't
+  show 0.19.1 on either phone, hence the change above. My calls: `design/progress.md`, its third
+  decision.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
-  Details: `design/progress.md`, its third decision. Before it, 0.18.0 (56: Edit Tags and
+  Details: `design/progress.md`, its fourth decision. Before it, 0.18.0 (56: Edit Tags and
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Edit Tags** (0.18.0, spec 5.4): a cover-menu row opening the
@@ -35,19 +39,18 @@ listed under *Other docs* at the end: read each only when the work touches it.
   made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
   in). Checked on the emulator in every format, the files read back with the desktop's own
   TagLibSharp; what only the phones can show is on both test lists. Details and my calls:
-  `design/progress.md`, its fifth decision.
+  `design/progress.md`, its sixth decision.
 - **Lyrics** (0.18.0, spec 5.5): a cover-menu row opening the song
   playing's lyrics, the line being sung lit in the cover's colour and kept in view; from the
   song's `.lrc` file or tags, else LRCLIB (the user's calls). The screen follows the song. The
   emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
   lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
-  LRCLIB): `design/progress.md`, its fourth decision.
-- **The repo is public again** (2026-11-12, the user's call): 0.18.1 went out without the key,
-  the APK files of v0.9.0 to v0.18.0 (which carried it) were removed from GitHub on the user's
-  yes (notes and tags stay, copies in `dist/`), and the user switched it. No secrets are in git
-  history (checked that day). GitHub's releases list now reads without signing in.
-- **Next build:** 0.19.2 for fixes, 0.20.0 for new features (confirm the number with the user);
-  **versionCode 63**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  LRCLIB): `design/progress.md`, its fifth decision.
+- **The repo is public again** (2026-11-12, the user's call), once 0.18.1 went out without the
+  key and the APK files of v0.9.0 to v0.18.0 were removed from GitHub (copies in `dist/`).
+- **Next build:** 0.20.0 (agreed with the plan; confirm the notes with the user) for the Version
+  row's check; **versionCode 64**, since 63 went to the emulator's test build 0.19.9 (the
+  emulator is on it). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.19.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user

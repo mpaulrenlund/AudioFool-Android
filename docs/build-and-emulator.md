@@ -114,17 +114,19 @@ S24* / *To test on the M21* in `design/progress.md`.
 
 ### Testing the update pop-up on the emulator
 
-The emulator can't reach GitHub (Zscaler), so a real update is tested against a server on this
-PC (2026-11-12, spec 9): two throwaway release builds, signed with the release key, with
+Since 0.20.0 the check runs when the menus' Version row is tapped (spec 9), not when the app
+opens: tap Version to start each look. The emulator can't reach GitHub (Zscaler), so a real
+update is tested against a server on this PC (2026-11-12, spec 9): two throwaway release builds, signed with the release key, with
 `-Paudiofool.updates.url=http://127.0.0.1:8765/releases.json` (which also allows plain http in
 that build only), one versionCode apart; a `releases.json` in GitHub's shape offering the second
 (its size, `sha256:` digest and a `http://127.0.0.1:8765/…` link); `python -I -m http.server 8765
 --bind 127.0.0.1 --directory <that folder>`, with the sandbox off; and `adb -s <emulator> reverse
 tcp:8765 tcp:8765`. **Not `10.0.2.2`**: Android 17 counts it as local network and drops an app's
 packets to it without the `ACCESS_LOCAL_NETWORK` permission (the check timed out quietly). Install
-the first, open the app, and go through Update. The script used on 2026-11-12 set the version
-lines with `sed`, built both, restored `app/build.gradle.kts`, and wrote the list. **Each test
-build uses up a versionCode** (58 to 60 went to test builds of 0.18.8 and 0.18.9 then), so the
+the first, open the app, tap Version, and go through Update. The script used on 2026-11-12 set the version
+lines with `sed`, built both, restored `app/build.gradle.kts`, and wrote the list. A later test build can reuse the code the emulator
+already has (Android reinstalls an equal versionCode; 0.20.0's two test builds were both 63).
+**Each new test build code uses up a versionCode** (58 to 60 went to test builds of 0.18.8 and 0.18.9 then), so the
 emulator ends on a higher code than the last release: the next real build must be higher still. Never copy a test build to `dist/`:
 `tools/build.sh` fails any build whose `UPDATES_URL` isn't empty.
 
@@ -145,8 +147,8 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - With the logo menu open (alphabetical since 0.7.0's follow-up; at the right since the logo
   moved there, 2026-11-10): Library Statistics at about (650, 282), then each row 126 px lower:
   Listening History (650, 408), Rescan Library (650, 534), Settings (650, 660), Theme (650, 786),
-  Version (650, 912), which opens the releases page in Chrome (its first-run screen, the first
-  time: leave it). A tap at x = 320 misses the menu and closes it. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
+  Version (650, 912), which looks for a newer build (spec 9; from 0.20.0: the note "Checking for
+  updates…", then the pop-up or a 2-second note; it opened the releases page in Chrome before). A tap at x = 320 misses the menu and closes it. **BACK on Artists leaves the app**: later taps land on the home screen. Release builds log no `AudioFoolScan` lines, so Statistics' track and format
   counts are the quick check that a rescan ran.
 - A long list: generate tagged MP3s with ffmpeg (`-metadata artist=...`, `-c copy` from one
   silent file) and a `cover.jpg` per folder, then `adb push` them under `/sdcard/Music/`.

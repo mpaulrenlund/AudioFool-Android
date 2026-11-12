@@ -22,15 +22,6 @@
          the user once to let AudioFool install apps ("Install unknown apps"). -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- The menus' Version row (2026-11-10) opens its page in the default browser: this lets the app see which that is. -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="https" />
-        </intent>
-    </queries>
-
     <application
         android:name=".AudioFoolApp"
         android:allowBackup="false"
