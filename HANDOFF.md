@@ -44,7 +44,8 @@ listed under *Other docs* at the end: read each only when the work touches it.
   yes (notes and tags stay, copies in `dist/`), and the user switched it. No secrets are in git
   history (checked that day). GitHub's releases list now reads without signing in.
 - **Next build:** 0.19.1 for fixes, 0.20.0 for new features (confirm the number with the user);
-  **versionCode 62**. Offered: a small 0.19.1 soon, so the phones can show the pop-up. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  **versionCode 62**. No test 0.19.1 just for the pop-up: the user chose "Wait for real changes"
+  (2026-11-12), so the next real build is the pop-up's first phone test. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.19.0 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
