@@ -10,23 +10,22 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **On `main`, not built yet (for 0.20.0): a tap on Version checks for updates** (spec 9, 4.1;
-  the user's call after 0.19.1's pop-up showed on neither phone). The app no longer looks by
-  itself; the tap shows "Checking for updates…", then the pop-up, or "No new version available" /
-  "Couldn't check for updates" for 2 s. Cancel only closes. The Version row no longer opens the
-  releases page. Tests, pictures and the emulator (a test server) pass; details and my calls: `design/progress.md`, its newest
-  decision.
-- **Latest build: 0.19.1** (versionCode 62), published 2026-11-12 as the pre-release
-  [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1) (APK in
-  `dist/AudioFool-0.19.1.apk`, notes in `dist/notes-0.19.1.md`): **Now Playing's track count at
-  the quality's size** (13, was 15; the user's call; `design/progress.md`, its second decision).
-  It is also the first build the update pop-up offers to a phone on 0.19.0: the notes ask the
-  S24 to try Update and the M21 Cancel.
+- **Latest build: 0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9),
+  published 2026-11-12 as the pre-release
+  [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0) (APK in
+  `dist/AudioFool-0.20.0.apk`, notes in `dist/notes-0.20.0.md`): **a tap on Version checks for
+  updates** (spec 9, 4.1; the user's call after 0.19.1's pop-up showed on neither phone). The app
+  no longer looks by itself; the tap shows "Checking for updates…", then the pop-up, or "No new
+  version available" / "Couldn't check for updates" for 2 s. Cancel only closes. The row no
+  longer opens the releases page. On the emulator it reached the real GitHub for the first time.
+  Details and my calls: `design/progress.md`, its newest decision.
+- **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its
+  second decision).
 - **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9), which
   looked by itself on opening, at most every six hours. Update downloads, checks size and
   SHA-256, and hands the APK to Android's installer; tested end to end on the emulator against a
   test server on this PC (`docs/build-and-emulator.md`, *Testing the update pop-up*). It didn't
-  show 0.19.1 on either phone, hence the change above. My calls: `design/progress.md`, its third
+  show 0.19.1 on either phone, hence 0.20.0. Phones on 0.19.x still look by themselves. My calls: `design/progress.md`, its third
   decision.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
@@ -48,11 +47,10 @@ listed under *Other docs* at the end: read each only when the work touches it.
   LRCLIB): `design/progress.md`, its fifth decision.
 - **The repo is public again** (2026-11-12, the user's call), once 0.18.1 went out without the
   key and the APK files of v0.9.0 to v0.18.0 were removed from GitHub (copies in `dist/`).
-- **Next build:** 0.20.0 (agreed with the plan; confirm the notes with the user) for the Version
-  row's check; **versionCode 64**, since 63 went to the emulator's test build 0.19.9 (the
-  emulator is on it). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **Next build:** 0.20.1 for fixes, 0.21.0 for new features (confirm the number with the user);
+  **versionCode 65**. The emulator has 0.20.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.19.1 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.20.0 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

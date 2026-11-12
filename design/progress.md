@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9): a tap on Version checks for updates; the app no longer looks by itself (spec 9, 4.1) — 2026-11-12, released as pre-release [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0)
 - [x] **0.19.1** (versionCode 62): Now Playing's track count at the quality's size (spec 5, item 4); the update pop-up's first offer on the phones — 2026-11-12, released as pre-release [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1)
 - [x] **0.19.0** (versionCode 61; 58 to 60 went to the emulator's test builds): the update pop-up (spec 9) — 2026-11-12, released as pre-release [`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0)
 - [x] **0.18.1**: no Last.fm key in the APK; Connect asks for the API key and shared secret while the phone has none saved (spec 7), so the repo can be public again — 2026-11-12, released as pre-release [`v0.18.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.1)
@@ -79,7 +80,14 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-12, after 0.19.1 (on `main` for 0.20.0, not built yet): **a tap on Version checks for
+2026-11-12, 0.20.0 (versionCode 64, as 63 went to the emulator's test builds 0.19.9; released the
+same day as pre-release
+[`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0), APK
+attached, `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256
+`e029e18a…686212d8a` matching `dist/` and GitHub's own digest; checked on the emulator first:
+updated over 0.19.9 with the library kept, no look on opening, Version in both menus reaching the
+real GitHub for the first time ("No new version available", up about 2 s, as v0.19.1 was the
+newest), a gapless join with 0 underruns): **a tap on Version checks for
 updates; the app no longer looks by itself** (the user, after 0.19.1's pop-up showed on neither
 phone: "I think instead of a notification. We should update tapping on the Version row in the app
 menu should check if there are new updates. (This would make it so it doesn't open github
@@ -1366,6 +1374,17 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The Version row's update check (from 0.20.0)
+
+- [ ] Getting 0.20.0 through 0.19.x's own pop-up, if it shows on opening: Update, Android's OK
+  the first time, Update on "Update this app?"; AudioFool back on 0.20.0 with the library kept.
+- [ ] Logo > Version (reads 0.20.0): "Checking for updates…", then "No new version available",
+  gone after about 2 s.
+- [ ] A tap on the note opens the artist under it.
+- [ ] Airplane mode, Version: "Couldn't check for updates", gone after about 2 s.
+- [ ] Now Playing's cover menu > Version: the same check.
+- [ ] When 0.20.1 or later is out: Version offers it; Update installs it.
+
 ### The track count's size (from 0.19.1)
 
 - [ ] Now Playing: the "3 / 12" at the left of the quality line is the same size as the quality
@@ -1690,6 +1709,13 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The Version row's update check (from 0.20.0)
+
+- [ ] Logo > Version (reads 0.20.0): "No new version available", gone after about 2 s; Wi-Fi off:
+  "Couldn't check for updates".
+- [ ] When 0.20.1 or later is out: Version > Update. Android 13 here: does Open Settings bring up
+  its "Install unknown apps" page, and does AudioFool reopen by itself after the update?
 
 ### The track count's size (from 0.19.1)
 
