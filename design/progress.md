@@ -110,9 +110,11 @@ key built in and accepting that anyone could read it out of a public APK). Spec 
   0.18.0 with the library kept, the form's four fields in order, Connect waiting for all four,
   Cancel closing it, no crash. Made-up values got "Couldn't reach Last.fm" (Zscaler), so
   Last.fm's own answer to a wrong key is checked only by `LastFmSignInTest`.
-- **Still to do before the switch** (HANDOFF): this build released as 0.18.1 (done); remove
-  the APK files of v0.9.0 to v0.18.0 from GitHub (their notes stay; copies stay in `dist/`), after the user
-  confirms; then the user makes the repo public (only the owner account can).
+- **Before the switch** (HANDOFF): this build released as 0.18.1 (done); the APK files of
+  v0.9.0 to v0.18.0 removed from GitHub on the user's "Yes, remove them" (done, 14 files; notes
+  and tags stay, copies in `dist/`; afterwards all 39 APKs left on GitHub were matched to
+  `dist/` and searched: none has the key); then the user makes the repo public (only the owner
+  account can).
 
 2026-11-11, 0.18.0 (versionCode 56; released the same day as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `730353b9…4ec41cf0` matching `dist/`; checked on the emulator first: updated over 0.17.2 with the library kept, the cover menu's two new rows, Lyrics lit from the `.lrc` and then from the tags across a gapless join, an Edit Tags title change saved, shown and put back; the three lyrics FLACs are in `/sdcard/Music/Lyrics Test/` there): **Lyrics in the cover menu** (the user: "in
 the Now Playing menu, can we add a Lyrics button? This lyrics button would ideally open a new

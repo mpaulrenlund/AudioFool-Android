@@ -5,8 +5,8 @@ Traps worth not rediscovering: playback, the output stage, scanning, ThemeLab, J
 - **No APK may carry AudioFool's Last.fm key** (since 2026-11-12, the user's call, so the repo
   and its releases can be public): the user types it on each phone (spec 7). `tools/build.sh`
   fails a build whose APK holds the key or secret, looking for the values kept in
-  `gradle.properties` for that. The APKs of 0.8.1 to 0.18.0 (in `dist/`, and v0.9.0 to v0.18.0
-  on GitHub until removed) do carry it: never put them anywhere public. While the repo was
+  `gradle.properties` for that. The APKs of 0.8.1 to 0.18.0 in `dist/` do carry it: never put
+  them anywhere public (their GitHub copies, v0.9.0 to v0.18.0, were removed on 2026-11-12). While the repo was
   public, Claude's safety check blocked 0.8.1's upload as a credential leak; if an upload is
   ever blocked that way, don't look for a way round it: tell the user.
 - **`MSYS_NO_PATHCONV=1` stops Git Bash converting `/c/...` paths too**: a Windows program

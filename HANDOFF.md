@@ -33,8 +33,8 @@ listed under *Other docs* at the end: read each only when the work touches it.
   LRCLIB): `design/progress.md`, its second decision.
 - **Going public, in order** (the user asked; each step waits on them): (1) release the
   key-free build: done, 0.18.1; (2) remove the APK files of the 14 releases v0.9.0 to
-  v0.18.0, which carry the key (`gh release delete-asset`; notes stay, copies are in `dist/`),
-  only after the user confirms; (3) the user makes the repo public (owner account
+  v0.18.0, which carried the key: done 2026-11-12 on the user's yes (notes and tags stay, copies
+  are in `dist/`; every APK left on GitHub checked, none has the key); (3) the user makes the repo public (owner account
   `mpaulrenlund`: Settings > General > Danger Zone > Change visibility); (4) mark it public in
   `CLAUDE.md` and `design/progress.md`. No secrets are in git history (checked 2026-11-12).
 - **Then the update pop-up** (the user's idea, 2026-11-12, not started): on opening, if a newer

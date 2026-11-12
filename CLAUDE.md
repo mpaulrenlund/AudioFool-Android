@@ -19,7 +19,7 @@ A personal Android music player, the mobile version of the desktop AudioFool. **
 
 | What | Where |
 |---|---|
-| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (**private** since 2026-11-05, the user's call; going public again, the user's call of 2026-11-12, once no release on GitHub carries the Last.fm key: see `HANDOFF.md`), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
+| This repo | `C:\AudioFool-Android`, GitHub `mpaulrenlund/AudioFool-Android` (**private** since 2026-11-05, the user's call; going public again, the user's call of 2026-11-12: no release on GitHub carries the Last.fm key since that day, and the owner account makes the switch; see `HANDOFF.md`), branch `main`. Pushed from this PC as `marcusrenlund`, a collaborator with write access |
 | The desktop app | `C:\MusicPlayer` (C# / WPF). Read-only from here. Its `src/AudioFool.Core` holds the logic to port; its `tests/` hold the tests to port with it |
 | Colour tokens | `design/theme-tokens.json` (PS1 Light) and `design/theme-tokens.dark.json` (PS2 Dark), the desktop's files copied unchanged |
 | Mobile sizes | `design/mobile-tokens.json` |
