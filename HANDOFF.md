@@ -10,31 +10,29 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.18.0** (versionCode 56), published 2026-11-11 as the pre-release
-  [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0) (APK in
-  `dist/AudioFool-0.18.0.apk`, notes in `dist/notes-0.18.0.md`): two new cover-menu rows, Edit
-  Tags and Lyrics (below). The emulator has it. Before it, 0.17.2 (55), 0.17.1 (54), 0.17.0
-  (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50) and 0.14.0 (48); 49 went to the unpublished
-  0.14.1. What each build did, build by build, is in `design/progress.md` (Sessions).
+- **Latest build: 0.18.1** (versionCode 57), published 2026-11-12 as the pre-release
+  [`v0.18.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.1) (APK in
+  `dist/AudioFool-0.18.1.apk`, notes in `dist/notes-0.18.1.md`): **no Last.fm key in the APK**
+  (the user's call, so the repo can be public again). Connect asks for the API key and shared
+  secret while the phone has none saved; a phone that signed in before keeps its key.
+  `tools/build.sh` fails an APK that holds the key. The emulator has it. Details:
+  `design/progress.md`, its newest decision. Before it, 0.18.0 (56: Edit Tags and Lyrics,
+  below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50) and
+  0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Edit Tags** (0.18.0, spec 5.4): a cover-menu row opening the
   desktop's Edit Track Tags window for the song playing; the app's first writes to music files,
   made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
   in). Checked on the emulator in every format, the files read back with the desktop's own
   TagLibSharp; what only the phones can show is on both test lists. Details and my calls:
-  `design/progress.md`, its second decision.
+  `design/progress.md`, its third decision.
 - **Lyrics** (0.18.0, spec 5.5): a cover-menu row opening the song
   playing's lyrics, the line being sung lit in the cover's colour and kept in view; from the
   song's `.lrc` file or tags, else LRCLIB (the user's calls). The screen follows the song. The
   emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
   lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
-  LRCLIB): `design/progress.md`, its newest decision.
-- **On `main`, not yet released: no Last.fm key in the APK** (2026-11-12, the user's call, so
-  the repo can be public again). Connect asks for the API key and shared secret while the phone
-  has none saved; a phone that signed in before keeps its key. `tools/build.sh` fails an APK that
-  holds the key. Tested: all tests, the new picture, the emulator. Details: `design/progress.md`,
-  its newest decision.
+  LRCLIB): `design/progress.md`, its second decision.
 - **Going public, in order** (the user asked; each step waits on them): (1) release the
-  key-free build (number to confirm); (2) remove the APK files of the 14 releases v0.9.0 to
+  key-free build: done, 0.18.1; (2) remove the APK files of the 14 releases v0.9.0 to
   v0.18.0, which carry the key (`gh release delete-asset`; notes stay, copies are in `dist/`),
   only after the user confirms; (3) the user makes the repo public (owner account
   `mpaulrenlund`: Settings > General > Danger Zone > Change visibility); (4) mark it public in
@@ -45,10 +43,10 @@ listed under *Other docs* at the end: read each only when the work touches it.
   apps") and Cancel. Proposed, not yet confirmed: check at most every few hours, and Cancel
   means not again for that version. With the repo public, no GitHub token is needed. It can
   only first show at the build after the one that adds it.
-- **Next build:** 0.18.1 for fixes, 0.19.0 for new features (confirm the number with the user);
-  **versionCode 57**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **Next build:** 0.18.2 for fixes, 0.19.0 for new features (confirm the number with the user);
+  **versionCode 58**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.18.0 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.18.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:
