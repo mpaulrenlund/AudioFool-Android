@@ -31,13 +31,11 @@ listed under *Other docs* at the end: read each only when the work touches it.
   emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
   lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
   LRCLIB): `design/progress.md`, its second decision.
-- **Going public, in order** (the user asked; each step waits on them): (1) release the
-  key-free build: done, 0.18.1; (2) remove the APK files of the 14 releases v0.9.0 to
-  v0.18.0, which carried the key: done 2026-11-12 on the user's yes (notes and tags stay, copies
-  are in `dist/`; every APK left on GitHub checked, none has the key); (3) the user makes the repo public (owner account
-  `mpaulrenlund`: Settings > General > Danger Zone > Change visibility); (4) mark it public in
-  `CLAUDE.md` and `design/progress.md`. No secrets are in git history (checked 2026-11-12).
-- **Then the update pop-up** (the user's idea, 2026-11-12, not started): on opening, if a newer
+- **The repo is public again** (2026-11-12, the user's call): 0.18.1 went out without the key,
+  the APK files of v0.9.0 to v0.18.0 (which carried it) were removed from GitHub on the user's
+  yes (notes and tags stay, copies in `dist/`), and the user switched it. No secrets are in git
+  history (checked that day). GitHub's releases list now reads without signing in.
+- **Next: the update pop-up** (the user's idea, 2026-11-12, not started): on opening, if a newer
   release exists, "AudioFool 0.x.y is available. You have 0.x.y." with Update (download the APK
   in the app, hand it to Android's installer; first time, Android asks to allow "Install unknown
   apps") and Cancel. Proposed, not yet confirmed: check at most every few hours, and Cancel

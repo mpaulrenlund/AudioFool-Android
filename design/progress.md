@@ -113,8 +113,9 @@ key built in and accepting that anyone could read it out of a public APK). Spec 
 - **Before the switch** (HANDOFF): this build released as 0.18.1 (done); the APK files of
   v0.9.0 to v0.18.0 removed from GitHub on the user's "Yes, remove them" (done, 14 files; notes
   and tags stay, copies in `dist/`; afterwards all 39 APKs left on GitHub were matched to
-  `dist/` and searched: none has the key); then the user makes the repo public (only the owner
-  account can).
+  `dist/` and searched: none has the key); then the user made the repo public the same day
+  ("It's public now"; `gh repo view` said `PUBLIC`, and GitHub's releases list read without
+  signing in).
 
 2026-11-11, 0.18.0 (versionCode 56; released the same day as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0), APK attached, the repo checked `PRIVATE` first, the downloaded APK's SHA-256 `730353b9…4ec41cf0` matching `dist/`; checked on the emulator first: updated over 0.17.2 with the library kept, the cover menu's two new rows, Lyrics lit from the `.lrc` and then from the tags across a gapless join, an Edit Tags title change saved, shown and put back; the three lyrics FLACs are in `/sdcard/Music/Lyrics Test/` there): **Lyrics in the cover menu** (the user: "in
 the Now Playing menu, can we add a Lyrics button? This lyrics button would ideally open a new
@@ -1259,7 +1260,7 @@ Decisions for 0.2.6 and older (0.2.x, 0.1.x and sessions 2–5) are in
 - **No USB connection to either device** (the user's call, 2026-10-24). Both the S24 and the M21 are tested through GitHub pre-release APKs that the user installs and reports back on. The emulator covers what it can before each hand-over; what only a real device can show goes on the lists below.
 - **One signing key from the start** (2026-10-24): every APK the user gets, test builds included, is signed with the same release keystore, kept outside the repo, so each build installs over the last without wiping the cache or settings.
 - Ask before big choices only (new dependencies, spec changes, stored data, releases).
-- **The repo is public** (the user's call, 2026-10-24; **private since 2026-11-05**, see 0.9.0 above; going public again, the user's call of 2026-11-12, once no APK on GitHub carries the Last.fm key: see the newest decision). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
+- **The repo is public** (the user's call, 2026-10-24; private from 2026-11-05, see 0.9.0 above; **public again since 2026-11-12**, the user's call, once no APK on GitHub carried the Last.fm key: see 0.18.1's decision; the releases list then read without signing in). This PC pushes and releases as `marcusrenlund`, a collaborator with write access. Session 3 checks BASS's terms for shipping its libraries in a public repo.
 
 ## To test on the S24
 
