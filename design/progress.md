@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.21.0** (versionCode 65): Playlists (the ARTISTS / PLAYLISTS tabs, Liked and Recently Added, a playlist's screen) and a heart in place of Repeat on Now Playing (spec 4.1, 4.8, 5) — 2026-11-12, released as pre-release [`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0)
 - [x] **0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9): a tap on Version checks for updates; the app no longer looks by itself (spec 9, 4.1) — 2026-11-12, released as pre-release [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0)
 - [x] **0.19.1** (versionCode 62): Now Playing's track count at the quality's size (spec 5, item 4); the update pop-up's first offer on the phones — 2026-11-12, released as pre-release [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1)
 - [x] **0.19.0** (versionCode 61; 58 to 60 went to the emulator's test builds): the update pop-up (spec 9) — 2026-11-12, released as pre-release [`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0)
@@ -80,7 +81,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-12, not yet built as a release (the next is 0.21.0 if the user agrees: new features):
+2026-11-12, 0.21.0 (versionCode 65; released the same day as pre-release
+[`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `e9283a10…0f189a3a58ba`
+matching `dist/` and GitHub's own digest; on the emulator it updated over the test build with the
+library and Liked kept, Version read 0.21.0, and Liked played):
 **Playlists, Liked and Recently Added, and the heart in Repeat's place** (the user: "The desktop
 version of AudioFool has Playlists. On the Artists screen, could we add a button to the right of
 "Artists" called "Playlists" … I'd like to mimic/copy the playlist logic for 2 default playlists
@@ -1417,7 +1422,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Playlists and the heart (next build)
+### Playlists and the heart (from 0.21.0)
 
 - [ ] Artists: PLAYLISTS to the right of ARTISTS; a tap shows Liked and Recently Added, a tap on
   ARTISTS or system back shows the artists again; the shuffle button only on Artists.
@@ -1764,7 +1769,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Playlists and the heart (next build)
+### Playlists and the heart (from 0.21.0)
 
 - [ ] Artists' header: ARTISTS and PLAYLISTS fit on the M21 beside a scan's note; PLAYLISTS
   switches, back returns to Artists.

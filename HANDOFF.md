@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-12 (Playlists). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-12 (0.21.0 released). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -10,42 +10,38 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9),
-  published 2026-11-12 as the pre-release
-  [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0) (APK in
-  `dist/AudioFool-0.20.0.apk`, notes in `dist/notes-0.20.0.md`): **a tap on Version checks for
-  updates** (spec 9, 4.1; the user's call after 0.19.1's pop-up showed on neither phone). The app
-  no longer looks by itself; the tap shows "Checking for updates…", then the pop-up, or "No new
-  version available" / "Couldn't check for updates" for 2 s. Cancel only closes. The row no
-  longer opens the releases page. On the emulator it reached the real GitHub for the first time.
-  Details and my calls: `design/progress.md`, its newest decision.
+- **Latest build: 0.21.0** (versionCode 65), published 2026-11-12 as the pre-release
+  [`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0) (APK in
+  `dist/AudioFool-0.21.0.apk`, SHA-256 `e9283a10…0f189a3a58ba`, notes in `dist/notes-0.21.0.md`):
+  **Playlists and the heart** (the user's request; spec 4.1, 4.8, 5). Artists' header holds
+  ARTISTS and PLAYLISTS tabs; the Playlists tab lists the desktop's Liked and Recently Added
+  (ported from `AudioFool.Core/Playlists` with its tests); a playlist opens as Album's screen
+  with two-line song rows, and a tap plays the playlist from that song. Now Playing's Repeat is
+  gone (always off, a saved one dropped): a heart in its place likes the song (filled
+  `accent.like`). Saved in `no_backup/playlists.json`, the desktop's format. Making other
+  playlists is for later (the user's words). My calls and what the emulator showed:
+  `design/progress.md`, its newest decision. Recently Added goes by the date the scan took for a
+  file (on Android its modified time): on the S24's test list.
+- **0.20.0** (64): a tap on Version checks for updates (spec 9, 4.1); the app no longer looks by
+  itself. Details: `design/progress.md`, its second decision.
+- **Next build:** 0.21.1 for fixes, 0.22.0 for new features (confirm the number with the user);
+  **versionCode 66**. The emulator has 0.21.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its
-  second decision).
+  third decision).
 - **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9), which
   looked by itself on opening, at most every six hours. Update downloads, checks size and
   SHA-256, and hands the APK to Android's installer; tested end to end on the emulator against a
   test server on this PC (`docs/build-and-emulator.md`, *Testing the update pop-up*). It didn't
-  show 0.19.1 on either phone, hence 0.20.0. Phones on 0.19.x still look by themselves. My calls: `design/progress.md`, its third
+  show 0.19.1 on either phone, hence 0.20.0. Phones on 0.19.x still look by themselves. My calls: `design/progress.md`, its fourth
   decision.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
-  Details: `design/progress.md`, its fourth decision. Before it, 0.18.0 (56: Edit Tags and
+  Details: `design/progress.md`, its fifth decision. Before it, 0.18.0 (56: Edit Tags and
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
-- **Built and pushed, not released: Playlists and the heart** (2026-11-12, the user's request;
-  spec 4.1, 4.8, 5): Artists' header holds ARTISTS and PLAYLISTS tabs; the Playlists tab lists
-  the desktop's Liked and Recently Added (ported from `AudioFool.Core/Playlists` with its tests);
-  a playlist opens as Album's screen with two-line song rows, and a tap plays the playlist from
-  that song. Now Playing's Repeat is gone (always off, a saved one dropped): a heart in its place
-  likes the song (filled `accent.like`). Saved in `no_backup/playlists.json`, the desktop's
-  format. Making other playlists is for later (the user's words). My calls and what the
-  emulator showed: `design/progress.md`, its newest decision. Recently Added goes by the date the
-  scan took for a file (on Android its modified time): on the S24's test list.
-- **Next build:** 0.21.0 (new features: Playlists below; confirm the number with the user);
-  **versionCode 65**. The emulator has 0.20.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.20.0 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.21.0 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

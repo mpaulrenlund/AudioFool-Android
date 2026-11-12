@@ -13,6 +13,15 @@ both test lists as they stood at 0.5.1, with every result the user reported.
 
 ### Moved out of HANDOFF.md on 2026-11-12 (Playlists)
 
+- **Latest build: 0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9),
+  published 2026-11-12 as the pre-release
+  [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0) (APK in
+  `dist/AudioFool-0.20.0.apk`, notes in `dist/notes-0.20.0.md`): **a tap on Version checks for
+  updates** (spec 9, 4.1; the user's call after 0.19.1's pop-up showed on neither phone). The app
+  no longer looks by itself; the tap shows "Checking for updates…", then the pop-up, or "No new
+  version available" / "Couldn't check for updates" for 2 s. Cancel only closes. The row no
+  longer opens the releases page. On the emulator it reached the real GitHub for the first time.
+  Details and my calls: `design/progress.md`, its newest decision.
 - **Edit Tags** (0.18.0, spec 5.4): a cover-menu row opening the
   desktop's Edit Track Tags window for the song playing; the app's first writes to music files,
   made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
