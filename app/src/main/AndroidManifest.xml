@@ -18,6 +18,10 @@
     <!-- 0.3.0: reading a USB DAC directly (design/usb-bit-perfect.md). Not required: the M21 needs no USB host. -->
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
+    <!-- The update pop-up (spec 9): hands a downloaded build to Android's installer. Android asks
+         the user once to let AudioFool install apps ("Install unknown apps"). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
     <!-- The menus' Version row (2026-11-10) opens its page in the default browser: this lets the app see which that is. -->
     <queries>
         <intent>
@@ -35,12 +39,18 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="false"
-        android:theme="@style/Theme.AudioFool">
+        android:theme="@style/Theme.AudioFool"
+        android:usesCleartextTraffic="${usesCleartextTraffic}">
 
         <service
             android:name=".playback.PlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <!-- The update pop-up (spec 9): Android's installer answers here. -->
+        <receiver
+            android:name=".updates.UpdateInstallReceiver"
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"

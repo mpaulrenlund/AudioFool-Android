@@ -35,6 +35,9 @@ import com.mpaulrenlund.audiofool.playback.UsbDac
 import com.mpaulrenlund.audiofool.playback.UsbDriver
 import com.mpaulrenlund.audiofool.playback.WaveformReader
 import com.mpaulrenlund.audiofool.ui.ArtSources
+import com.mpaulrenlund.audiofool.core.updates.ApkDownload
+import com.mpaulrenlund.audiofool.core.updates.GitHubReleases
+import com.mpaulrenlund.audiofool.updates.Updates
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -112,6 +115,14 @@ class AudioFoolApp : Application() {
 
     /** The Lyrics screen (spec 5.5): the song's own lyrics, else LRCLIB's, LRCLIB's kept for the run (nothing saved). */
     val lyrics: SongLyrics by lazy { SongLyrics(OnlineLyrics(LrcLibClient())) }
+
+    /**
+     * The update pop-up (spec 9): the repo's releases on GitHub, read when the app comes into
+     * sight. A throwaway emulator build can point it elsewhere (`-Paudiofool.updates.url`).
+     */
+    val updates: Updates by lazy {
+        Updates(this, settings, GitHubReleases(BuildConfig.UPDATES_URL.ifEmpty { GitHubReleases.RELEASES_API }), ApkDownload(), BuildConfig.VERSION_NAME)
+    }
 
     /** The media session (lock screen, notification, headset buttons), made with the first queue. */
     private val systemControlsLazy = lazy {

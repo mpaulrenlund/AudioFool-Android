@@ -112,6 +112,22 @@ were allowed only while the repo was private). 0.8.1 alone went over USB (`adb -
 beside it (`dist/notes-<version>.md`), then add what only the phones can show to *To test on the
 S24* / *To test on the M21* in `design/progress.md`.
 
+### Testing the update pop-up on the emulator
+
+The emulator can't reach GitHub (Zscaler), so a real update is tested against a server on this
+PC (2026-11-12, spec 9): two throwaway release builds, signed with the release key, with
+`-Paudiofool.updates.url=http://127.0.0.1:8765/releases.json` (which also allows plain http in
+that build only), one versionCode apart; a `releases.json` in GitHub's shape offering the second
+(its size, `sha256:` digest and a `http://127.0.0.1:8765/…` link); `python -I -m http.server 8765
+--bind 127.0.0.1 --directory <that folder>`, with the sandbox off; and `adb -s <emulator> reverse
+tcp:8765 tcp:8765`. **Not `10.0.2.2`**: Android 17 counts it as local network and drops an app's
+packets to it without the `ACCESS_LOCAL_NETWORK` permission (the check timed out quietly). Install
+the first, open the app, and go through Update. The script used on 2026-11-12 set the version
+lines with `sed`, built both, restored `app/build.gradle.kts`, and wrote the list. **Each test
+build uses up a versionCode** (58 to 60 went to test builds of 0.18.8 and 0.18.9 then), so the
+emulator ends on a higher code than the last release: the next real build must be higher still. Never copy a test build to `dist/`:
+`tools/build.sh` fails any build whose `UPDATES_URL` isn't empty.
+
 ### Checking a screen against the mockups
 
 ```bash

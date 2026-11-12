@@ -1,6 +1,15 @@
 package com.mpaulrenlund.audiofool.theme
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.mpaulrenlund.audiofool.core.updates.AppRelease
+import com.mpaulrenlund.audiofool.core.updates.AppVersion
+import com.mpaulrenlund.audiofool.ui.UpdateActions
+import com.mpaulrenlund.audiofool.ui.UpdateBox
+import com.mpaulrenlund.audiofool.updates.Updates
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -321,6 +330,24 @@ class ThemeLabTest {
                 ),
                 scroll = rememberScrollState(Int.MAX_VALUE),
             )
+        }
+        // The update pop-up (spec 9, no mockup), over Settings: the offer, the download under way,
+        // and Android wanting the user's OK. The box only; Android dims the screen behind it.
+        val release = AppRelease(AppVersion.parse("0.19.0")!!, "https://example.invalid/AudioFool-0.19.0.apk", 27_123_325, null)
+        for ((name, prompt) in listOf(
+            "update-offer" to Updates.Prompt.Offer(release, "0.18.1"),
+            "update-downloading" to Updates.Prompt.Downloading(release, 12_400_000),
+            "update-permission" to Updates.Prompt.NeedsPermission(release),
+        )) {
+            shoot(device, name) {
+                Box(Modifier.fillMaxSize()) {
+                    SettingsScreen(
+                        folders = listOf(FolderLine(MusicFolder(ThemeLabFixtures.INTERNAL), "Internal storage · Music", unavailable = false)),
+                        actions = SettingsActions(),
+                    )
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { UpdateBox(prompt, UpdateActions()) }
+                }
+            }
         }
         // Listening History (spec 4.7, no mockup): made-up Last.fm answers over the sample
         // library; the top, then scrolled to the end (TOP TRACKS, RECENTLY PLAYED).

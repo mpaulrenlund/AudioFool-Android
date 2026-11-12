@@ -182,6 +182,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
     LaunchedEffect(openNowPlaying) {
         if (openNowPlaying > 0 && app.nowPlaying.track != null) nav.open(Route.NowPlaying)
     }
+    val updateActions = remember {
+        UpdateActions(update = app.updates::update, cancel = app.updates::cancel, openSettings = app.updates::openPermission)
+    }
 
     CompositionLocalProvider(LocalArt provides app.art, LocalCoverColors provides app.coverColors) {
         NavHost(nav) { route ->
@@ -255,6 +258,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
                 )
             }
         }
+        // Spec 9: over whatever screen is showing.
+        app.updates.prompt?.let { UpdatePrompt(it, updateActions) }
     }
 }
 

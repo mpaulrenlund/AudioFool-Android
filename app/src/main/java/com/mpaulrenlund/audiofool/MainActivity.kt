@@ -100,5 +100,12 @@ class MainActivity : ComponentActivity() {
             app.startTimes.noColdStart()
             app.startLibrary()
         }
+        // The update pop-up (spec 9): a look at GitHub when due, and Android's confirmation if one waits.
+        if (hasAccess) app.updates.inSight()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        app.updates.outOfSight()
     }
 }

@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [ ] **Next build (0.19.0 to confirm, versionCode 61)**: the update pop-up (spec 9) — built and tested 2026-11-12, not yet released
 - [x] **0.18.1**: no Last.fm key in the APK; Connect asks for the API key and shared secret while the phone has none saved (spec 7), so the repo can be public again — 2026-11-12, released as pre-release [`v0.18.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.1)
 - [x] **0.18.0**: Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11, released as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0)
 - [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
@@ -76,6 +77,43 @@ The user made these while the mockups were designed (October 2026). The spec alr
 - **Theme** defaults to Dark and switches by hand.
 
 ## Decisions made for the build
+
+2026-11-12, not yet released (next build, 0.19.0 to confirm; **versionCode 61**, since 58 to 60
+went to the emulator's test builds): **the update pop-up** (the user: "I wonder if we can add a
+pop up that will state if a new version is available, stating what the version is. The pop-up
+would have 2 options, "Update" which would download the new version and update AudioFool with
+it, and "Cancel" which would close the window."). Spec §9, new. Asked first: the repo had to be
+public so the app could read the releases without a token (done the same day, 0.18.1's
+decision); then "Yes, build it" to the plan: a look when the app opens, at most every few hours;
+Cancel means that version isn't offered again; Update downloads in the app and hands the APK to
+Android's installer, which asks the user to confirm.
+- **My calls** (open to change): six hours between looks, and a look that fails says nothing
+  and is tried at the next opening; the box drawn as Edit Tags' "Unsaved Changes" (title
+  "Update Available"; new `update.*` tokens with the same sizes); the download's line in whole
+  MB ("12 of 27 MB") with Cancel alone; Cancel after Update (downloading, installing, or after
+  a failure) only stops, it doesn't skip the version; system back is Cancel; the APK checked
+  against GitHub's size and SHA-256 before Android sees it; Android's "Install unknown apps"
+  asked for as a step of the pop-up (Open Settings), going on by itself on coming back with it
+  allowed; Android's own confirmation always asked for (no silent update).
+- **How**: core `updates/` (`AppVersion`, `GitHubReleases`, `UpdateRules`, `ApkDownload`);
+  app `updates/` (`Updates`, `UpdateInstaller` with a PackageInstaller session and
+  `UpdateInstallReceiver`), `ui/UpdatePrompt.kt`; `REQUEST_INSTALL_PACKAGES`; two settings
+  (`updateCheckedAt`, `updateSkipped`). `BuildConfig.UPDATES_URL` is empty in a shipped build
+  (GitHub); a throwaway emulator build sets `-Paudiofool.updates.url`, which also allows plain
+  http, and `tools/build.sh` fails any build that has it set.
+- **Checked**: 597 Core tests (14 new) and 129 app tests (3 new); 12 new pictures (`update-offer`,
+  `-downloading`, `-permission`, both phones, both themes; reviewed, all pass), every other
+  picture unchanged. On the emulator, end to end against a test server on this PC: test 0.18.8
+  offered 0.18.9 within 3 s of opening, downloaded it ("4 of 27 MB", "22 of 27 MB"), asked for
+  Android's OK, Open Settings showed "Install unknown apps" with "Allow from this source" (the
+  process survived the switch), and coming back went straight to Android's "Update this app?";
+  Update installed it in about 2 s, with the first install date and the library kept, Version
+  0.18.9. Android 17 reopened the app by itself afterwards, so the Installing line no longer says
+  to open it again. **Trap found**: Android 17 blocks an app from `10.0.2.2` (local network)
+  without `ACCESS_LOCAL_NETWORK`, so the first try timed out quietly; loopback over `adb reverse`
+  works (`docs/build-and-emulator.md`). GitHub itself is not local network.
+- **Not checked**: the real GitHub from the app (the emulator can't reach it through Zscaler),
+  and the phones (the M21 on Android 13 especially). On both test lists.
 
 2026-11-12, 0.18.1 (versionCode 57; released the same day as pre-release
 [`v0.18.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.1), APK
@@ -1268,6 +1306,16 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The update pop-up (from the next build; shows first at the build after it)
+
+- [ ] When the build after it is out: opening AudioFool shows "Update Available", "AudioFool
+  0.x.y is available. You have …" with Update and Cancel (straight away the first time; after
+  that GitHub is read at most every six hours).
+- [ ] Update: "Downloading … of … MB" counts up; the first time, "Android needs your OK…", Open
+  Settings, allow, come back; Android's "Update this app?", Update; AudioFool comes back on the
+  new version with the library and settings kept (open it yourself if it doesn't reopen).
+- [ ] On a later build, Cancel instead: that version isn't offered again.
+
 ### Last.fm with no key built in (from 0.18.1)
 
 - [ ] If Last.fm was connected before the update: still "connected as" you after it, and songs
@@ -1577,6 +1625,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The update pop-up (from the next build; shows first at the build after it)
+
+- [ ] The same three checks as the S24's. Android 13 here: does its "Install unknown apps" page
+  come up from Open Settings, and does AudioFool reopen by itself after the update?
 
 ### Last.fm with no key built in (from 0.18.1)
 

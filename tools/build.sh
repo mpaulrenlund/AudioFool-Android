@@ -103,6 +103,15 @@ if unzip -p "$APK" 2>/dev/null | grep -a -q -i -F -e "$LASTFM_KEY" -e "$LASTFM_S
 fi
 echo "last.fm  ok, no Last.fm key or secret in the APK"
 
+# The update pop-up (spec 9) must read GitHub's releases, not a test server's: a throwaway
+# emulator build sets audiofool.updates.url, a shipped one never does.
+BUILD_CONFIG=app/build/generated/source/buildConfig/release/com/mpaulrenlund/audiofool/BuildConfig.java
+if ! grep -qE 'UPDATES_URL = "";' "$BUILD_CONFIG" 2>/dev/null; then
+  echo "updates  FAILED: this build reads its updates from a test server (audiofool.updates.url is set)"
+  exit 1
+fi
+echo "updates  ok, GitHub's releases"
+
 DEST="dist/AudioFool-$VERSION.apk"
 SHA=$(sha256sum "$APK" | cut -d' ' -f1)
 if [ "$NO_COPY" -eq 1 ]; then

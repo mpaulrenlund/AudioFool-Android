@@ -16,7 +16,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
   (the user's call, so the repo can be public again). Connect asks for the API key and shared
   secret while the phone has none saved; a phone that signed in before keeps its key.
   `tools/build.sh` fails an APK that holds the key. The emulator has it. Details:
-  `design/progress.md`, its newest decision. Before it, 0.18.0 (56: Edit Tags and Lyrics,
+  `design/progress.md`, its second decision. Before it, 0.18.0 (56: Edit Tags and Lyrics,
   below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50) and
   0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Edit Tags** (0.18.0, spec 5.4): a cover-menu row opening the
@@ -24,25 +24,27 @@ listed under *Other docs* at the end: read each only when the work touches it.
   made the desktop's safe way (in place when the tags fit, else on a copy checked and swapped
   in). Checked on the emulator in every format, the files read back with the desktop's own
   TagLibSharp; what only the phones can show is on both test lists. Details and my calls:
-  `design/progress.md`, its third decision.
+  `design/progress.md`, its fourth decision.
 - **Lyrics** (0.18.0, spec 5.5): a cover-menu row opening the song
   playing's lyrics, the line being sung lit in the cover's colour and kept in view; from the
   song's `.lrc` file or tags, else LRCLIB (the user's calls). The screen follows the song. The
   emulator can't reach LRCLIB (Zscaler): the live lookup and Bluetooth timing are on the test
   lists. My calls (tap a line to seek, the screen kept on, plain file lyrics not upgraded from
-  LRCLIB): `design/progress.md`, its second decision.
+  LRCLIB): `design/progress.md`, its third decision.
 - **The repo is public again** (2026-11-12, the user's call): 0.18.1 went out without the key,
   the APK files of v0.9.0 to v0.18.0 (which carried it) were removed from GitHub on the user's
   yes (notes and tags stay, copies in `dist/`), and the user switched it. No secrets are in git
   history (checked that day). GitHub's releases list now reads without signing in.
-- **Next: the update pop-up** (the user's idea, 2026-11-12, not started): on opening, if a newer
-  release exists, "AudioFool 0.x.y is available. You have 0.x.y." with Update (download the APK
-  in the app, hand it to Android's installer; first time, Android asks to allow "Install unknown
-  apps") and Cancel. Proposed, not yet confirmed: check at most every few hours, and Cancel
-  means not again for that version. With the repo public, no GitHub token is needed. It can
-  only first show at the build after the one that adds it.
-- **Next build:** 0.18.2 for fixes, 0.19.0 for new features (confirm the number with the user);
-  **versionCode 58**. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **On `main`, not yet released: the update pop-up** (spec 9; the user's request, 2026-11-12,
+  "Yes, build it" to the plan). On opening, at most every six hours, it reads GitHub's releases;
+  a newer build is offered ("AudioFool 0.19.1 is available. You have 0.19.0.", Update and
+  Cancel). Update downloads, checks size and SHA-256, and hands the APK to Android's installer.
+  Tested end to end on the emulator against a test server on this PC (how, and Android 17's
+  local-network trap: `docs/build-and-emulator.md`, *Testing the update pop-up*). Not tested:
+  the real GitHub from the app, and the phones. It first shows on the phones at the build
+  after the one that adds it. My calls: `design/progress.md`, its newest decision.
+- **Next build:** 0.19.0 for this (confirm the number with the user); **versionCode 61**: 58 to
+  60 went to the emulator's test builds, and the emulator has the test 0.18.9 (60). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
   on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.18.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
@@ -129,7 +131,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
 | **Release keystore** | `C:\Users\MarcusRenlund\AndroidKeys\audiofool-release.jks`, passwords in `audiofool-release.properties` beside it. **Outside the repo.** Back up both files together |
 | Signing pointer | `~/.gradle/gradle.properties`: `audiofool.signing=<path to the .properties>` |
 | On the phone: library cache | `/data/data/com.mpaulrenlund.audiofool/no_backup/library.bin` (+ `.bak`) |
-| On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`, `fiioJack`: the last jack a FiiO named, since 0.2.5) |
+| On the phone: settings | SharedPreferences `settings` (theme, music folders, `bitPerfect`, `fiioJack`: the last jack a FiiO named, since 0.2.5; `updateCheckedAt`, `updateSkipped`: the update pop-up, spec 9) |
 | On the phone: Last.fm | SharedPreferences `lastfm` (API key, secret, user, session: each AES-GCM encrypted with the Keystore key `audiofool.lastfm`; the key and secret as typed on the phone, or built in by 0.9.0 to 0.18.0); `no_backup/scrobbles.json` (+ `.bak`): the queue |
 | On the phone: listening time | `no_backup/listening.json` (+ `.bak`): total ms and since when |
 | On the phone: cover copies | `/data/data/com.mpaulrenlund.audiofool/no_backup/art/*.art` (ArtDiskCache; empty file = no cover) |

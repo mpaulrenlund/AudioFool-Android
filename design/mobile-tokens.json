@@ -301,6 +301,15 @@
     "promptTitleSize": 17,
     "promptTextSize": 15
   },
+  "update": {
+    "$note": "The update pop-up (spec 9; 2026-11-12, the user's request), over whatever screen is showing. No mockup: drawn as Edit Tags' prompt (tagEdit.prompt*). promptWidth wide, promptPadding inside, promptGap between the title (titleSize, the desktop's dialog.emphasisWeight), the text (textSize) and the row of buttons, buttonGap apart at the right.",
+    "promptWidth": 300,
+    "promptPadding": 20,
+    "promptGap": 16,
+    "titleSize": 17,
+    "textSize": 15,
+    "buttonGap": 8
+  },
   "lyrics": {
     "$note": "The Lyrics screen (spec 5.5; 2026-11-11, the user's request), from the cover menu. No mockup; the header is Analyze's (analysis.header*, titleSize, titleWeight, subtitleSize). Each line lineSize at lineWeight, paddingX each side and linePaddingY above and below (its tap area); the line being sung grows to currentScale from its left edge, every line laid out narrow enough to grow inside the padding; a break between verses (or a timed pause) is breakHeight. The list keeps the line being sung anchor of its height down; a finger's scroll stops that until followAgainMs after it lets go. Colour and size change over changeMs; the line is read every tickMs while playing. Under the lyrics, where they came from: sourceSize, sourceTop above it.",
     "paddingTop": 8,
