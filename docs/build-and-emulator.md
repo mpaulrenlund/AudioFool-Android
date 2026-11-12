@@ -157,7 +157,7 @@ mockups' 28 dp status row and 20 dp handle as insets, so the two line up.
 - Artists' letter strip sits near x = 1012 px; the mini player at about (300, 2210); the logo
   (at the right since 2026-11-10) at (1006, 137), and the ARTISTS / ALBUMS shuffle buttons at
   (996, 256). On Now Playing (the emulator's tall screen, from 2026-11-10) the heart (Like, in Repeat's place since 2026-11-12) is near
-  (111, 1917), Shuffle (111, 2054), Play (540, 1986), and a tap on the cover (540, 560) opens
+  (111, 1986; found by content-desc "Like", whose state a uiautomator dump doesn't show), Shuffle (969, 1986), Play (540, 1986), and a tap on the cover (540, 560) opens
   its menu, Bit-Perfect at about (715, 891). The sample songs are 2 s long and the menu closes
   at a song change: pause first.
 - **`uiautomator dump` drops a text that holds quote marks** (the Route row's `speaker "…"`):
