@@ -78,6 +78,17 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-12, after 0.19.0 (unreleased, on `main` for the next build): **Now Playing's track count
+takes the quality's size** (the user: "On the Now Playing screen, can we make the \"3/12\" text
+the same size and font as the Track Quality information that is in the same row?"). The font was
+already the same (Selawik Regular, tabular digits); only the size differed, 15 against 13. The
+count now uses `nowPlaying.qualitySize`, and `nowPlaying.trackCountSize` is gone from
+`mobile-tokens.json`, so the two can't drift apart. Spec §5, item 4. Asked first whether to match
+the colour too: "Size only", so the count keeps `text.muted`, a shade lighter than the quality's
+`text.secondary`. 56 Now Playing pictures changed (art-menu's included), nothing else. The
+row is a touch shorter now that the 15 sp count no longer sets its height, so the quality line,
+waveform and times sit 1 dp higher on the S24 and 0.5 dp on the M21; left as it is.
+
 2026-11-12, 0.19.0 (**versionCode 61**, since 58 to 60 went to the emulator's test builds;
 released the same day as pre-release
 [`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0), APK

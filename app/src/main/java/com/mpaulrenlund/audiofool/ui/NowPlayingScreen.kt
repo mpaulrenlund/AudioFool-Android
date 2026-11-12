@@ -546,7 +546,8 @@ private fun Quality(nowPlaying: NowPlaying, track: Track) {
             Line(
                 // With thousands separators: the whole library shuffled is 27,115 on the M21 (0.9.0).
                 "${Display.count(nowPlaying.queueIndex + 1)} / ${Display.count(nowPlaying.queueSize)}",
-                t.text("nowPlaying.trackCountSize", "color.text.muted"),
+                // The quality's size (2026-11-12, the user's call; 15 before), in its own grey.
+                t.text("nowPlaying.qualitySize", "color.text.muted"),
                 Modifier.alignByBaseline(),
             )
         }

@@ -360,7 +360,6 @@
     "artistWeight": 600,
     "albumSize": 15,
     "lineGap": 3,
-    "trackCountSize": 15,
     "trackCountGap": 8,
     "spaceAboveQualityWeight": 3,
     "spaceBelowTimesWeight": 1,
