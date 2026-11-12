@@ -14,7 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
-- [ ] **Next build (0.19.0 to confirm, versionCode 61)**: the update pop-up (spec 9) — built and tested 2026-11-12, not yet released
+- [x] **0.19.0** (versionCode 61; 58 to 60 went to the emulator's test builds): the update pop-up (spec 9) — 2026-11-12, released as pre-release [`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0)
 - [x] **0.18.1**: no Last.fm key in the APK; Connect asks for the API key and shared secret while the phone has none saved (spec 7), so the repo can be public again — 2026-11-12, released as pre-release [`v0.18.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.1)
 - [x] **0.18.0**: Edit Tags from the cover menu, the desktop's Edit Track Tags window for the song playing (spec 5.4); Lyrics from the cover menu, the line being sung lit as it plays, from the song's files or LRCLIB (spec 5.5) — 2026-11-11, released as pre-release [`v0.18.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.18.0)
 - [x] **0.17.2**: the output row shows the music's depth, not the slot's (a 24-bit song on the M21 reads "24-Bit", not "32-Bit"; `OutputReadout.shownBits`) — 2026-11-11, released as pre-release [`v0.17.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.17.2)
@@ -78,8 +78,14 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-12, not yet released (next build, 0.19.0 to confirm; **versionCode 61**, since 58 to 60
-went to the emulator's test builds): **the update pop-up** (the user: "I wonder if we can add a
+2026-11-12, 0.19.0 (**versionCode 61**, since 58 to 60 went to the emulator's test builds;
+released the same day as pre-release
+[`v0.19.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.0), APK
+attached, checked right before the upload for the Last.fm key and the test server's address
+(neither), the downloaded APK's SHA-256 `4477831a…bc041e6e` matching `dist/` and GitHub's own
+digest; checked on the emulator first: updated over the test 0.18.9 with the library kept,
+Version 0.19.0, playback and a gapless join, Settings, no pop-up or error with GitHub out of
+reach): **the update pop-up** (the user: "I wonder if we can add a
 pop up that will state if a new version is available, stating what the version is. The pop-up
 would have 2 options, "Update" which would download the new version and update AudioFool with
 it, and "Cancel" which would close the window."). Spec §9, new. Asked first: the repo had to be
@@ -1306,7 +1312,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### The update pop-up (from the next build; shows first at the build after it)
+### The update pop-up (from 0.19.0; shows first at the build after it)
 
 - [ ] When the build after it is out: opening AudioFool shows "Update Available", "AudioFool
   0.x.y is available. You have …" with Update and Cancel (straight away the first time; after
@@ -1626,7 +1632,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### The update pop-up (from the next build; shows first at the build after it)
+### The update pop-up (from 0.19.0; shows first at the build after it)
 
 - [ ] The same three checks as the S24's. Android 13 here: does its "Install unknown apps" page
   come up from Open Settings, and does AudioFool reopen by itself after the update?
