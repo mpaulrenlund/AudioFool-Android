@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.22.0** (versionCode 66): a long-press on Now Playing's heart opens Liked Songs; Liked renamed "Liked Songs" (spec 4.8, 5) — 2026-11-16, released as pre-release [`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0)
 - [x] **0.21.0** (versionCode 65): Playlists (the ARTISTS / PLAYLISTS tabs, Liked and Recently Added, a playlist's screen) and a heart in place of Repeat on Now Playing (spec 4.1, 4.8, 5) — 2026-11-12, released as pre-release [`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0)
 - [x] **0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9): a tap on Version checks for updates; the app no longer looks by itself (spec 9, 4.1) — 2026-11-12, released as pre-release [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0)
 - [x] **0.19.1** (versionCode 62): Now Playing's track count at the quality's size (spec 5, item 4); the update pop-up's first offer on the phones — 2026-11-12, released as pre-release [`v0.19.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.19.1)
@@ -81,7 +82,12 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-16, not built yet (for 0.22.0): **a long-press on the heart opens Liked Songs, and Liked
+2026-11-16, 0.22.0 (versionCode 66; released the same day as pre-release
+[`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `f90535ba…29b47499`
+matching `dist/` and GitHub's own digest; on the emulator it updated over 0.21.0 with the library
+kept, Liked became "Liked Songs" with its song, the long-press opened it, and Version read 0.22.0):
+**a long-press on the heart opens Liked Songs, and Liked
 is renamed "Liked Songs"** (the user: "Now playing screen, could we make it so long pressing the
 Heart icon takes you to the "Liked" playlist? Can we rename the "Liked" default playlist to "Liked
 Songs""). Spec §4.8, §5. The plan was shown first and the user said "Yes, do both", including
@@ -1438,7 +1444,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Long-press the heart; Liked Songs (from the next build)
+### Long-press the heart; Liked Songs (from 0.22.0)
 
 - [ ] Now Playing: a long-press on the heart buzzes and opens Liked Songs; the heart doesn't
   change. Back returns to Now Playing. A tap still likes and unlikes.
@@ -1791,7 +1797,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Long-press the heart; Liked Songs (from the next build)
+### Long-press the heart; Liked Songs (from 0.22.0)
 
 - [ ] Now Playing: a long-press on the heart opens Liked Songs (the name fits the row and the
   header); the heart doesn't change; back returns to Now Playing.
