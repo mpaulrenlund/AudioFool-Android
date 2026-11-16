@@ -58,6 +58,7 @@ class NowPlayingTouchTest {
             seek = { seeks += it },
             toggleLike = { pressed += "like ${it.title}" },
             isLiked = { liked },
+            openLiked = { pressed += "open liked" },
             toggleShuffle = { pressed += "shuffle" },
             toggleBitPerfect = { pressed += "bp" },
             openArtist = { pressed += "artist ${it.artist}" },
@@ -135,6 +136,14 @@ class NowPlayingTouchTest {
         compose.waitForIdle()
         compose.onNodeWithContentDescription("Like").assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Liked")).performClick()
         assertEquals(listOf("like ${song.title}"), pressed)
+    }
+
+    /** 2026-11-16, the user's request: a long-press on the heart opens Liked Songs and doesn't like or unlike the song. */
+    @Test fun a_long_press_on_the_heart_opens_liked_songs() {
+        show()
+        compose.onNodeWithContentDescription("Like").performTouchInput { longClick() }
+        compose.waitForIdle()
+        assertEquals(listOf("open liked"), pressed)
     }
 
     // ---- the controls row (2026-11-10): the heart (Repeat until 2026-11-12) at the left, the transport centred, Shuffle at the right ----

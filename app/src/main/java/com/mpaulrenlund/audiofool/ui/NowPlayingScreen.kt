@@ -102,6 +102,8 @@ class NowPlayingActions(
     val toggleLike: (Track) -> Unit = {},
     /** Whether the song is in Liked; read while drawing, so the heart follows a change at once. */
     val isLiked: (Track) -> Boolean = { false },
+    /** A long-press on the heart (2026-11-16, the user's request): opens Liked Songs; back returns to Now Playing. */
+    val openLiked: () -> Unit = {},
     val toggleShuffle: () -> Unit = {},
     /** The cover menu's Bit-Perfect row (spec 6.4; the BP button until 2026-11-10); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
@@ -744,10 +746,14 @@ private fun Controls(nowPlaying: NowPlaying, actions: NowPlayingActions, screenH
         // The heart in Repeat's place (2026-11-12, the user's request: "I never use the Repeat
         // Song button"): the desktop's Like heart, outlined in `control.iconOff`, filled in
         // `accent.like` (the desktop's like colour, the user's call) while the song is in Liked.
+        // A long-press opens Liked Songs (2026-11-16, the user's request).
         val track = nowPlaying.shownTrack
         val liked = track != null && actions.isLiked(track)
         Box(Modifier.align(Alignment.CenterStart).padding(start = padX)) {
-            RoundButton(mode, mode, mode, "Like", track?.let { { actions.toggleLike(it) } }, state = if (liked) "Liked" else "Not liked") {
+            RoundButton(
+                mode, mode, mode, "Like", track?.let { { actions.toggleLike(it) } }, state = if (liked) "Liked" else "Not liked",
+                onLongClick = actions.openLiked, longClickLabel = "Open Liked Songs",
+            ) {
                 if (liked) Icon(AppIcons.HEART_FILLED, modeIcon, t.color("color.accent.like"))
                 else Icon(AppIcons.HEART, modeIcon, off)
             }

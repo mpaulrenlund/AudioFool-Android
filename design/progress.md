@@ -81,6 +81,22 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-16, not built yet (for 0.22.0): **a long-press on the heart opens Liked Songs, and Liked
+is renamed "Liked Songs"** (the user: "Now playing screen, could we make it so long pressing the
+Heart icon takes you to the "Liked" playlist? Can we rename the "Liked" default playlist to "Liked
+Songs""). Spec §4.8, §5. The plan was shown first and the user said "Yes, do both", including
+changing the saved file. My calls: the long-press goes through `combinedClickable` (the system's
+long-press buzz; screen-reader label "Open Liked Songs"), only on the heart (`RoundButton` gained
+an optional `onLongClick`; the other buttons keep plain `clickable`); it opens `Route.Playlist`
+with Liked's id (`Playlists.likedId`), so back returns to Now Playing, as the artist and album
+lines do; a long-press doesn't like or unlike. The rename: `PlaylistStore.LIKED_NAME` is "Liked
+Songs"; a file whose Liked (found by `IsLiked`) has another name is renamed when it is read and
+saved at once, its id, songs and date unchanged. So the phone's file now differs from the
+desktop's in that one name; nothing copies files between them. "No liked songs yet" stays. Tests:
+`PlaylistTest` (the desktop's "Liked" renamed and kept), `PlaylistsTest` (`likedId` is the first
+row), `NowPlayingTouchTest` (a long-press opens it, no like); the playlist pictures re-recorded
+for the new name.
+
 2026-11-12, 0.21.0 (versionCode 65; released the same day as pre-release
 [`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `e9283a10…0f189a3a58ba`
@@ -1422,6 +1438,12 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Long-press the heart; Liked Songs (from the next build)
+
+- [ ] Now Playing: a long-press on the heart buzzes and opens Liked Songs; the heart doesn't
+  change. Back returns to Now Playing. A tap still likes and unlikes.
+- [ ] The Playlists tab and the playlist's screen say "Liked Songs", with the songs liked before.
+
 ### Playlists and the heart (from 0.21.0)
 
 - [ ] Artists: PLAYLISTS to the right of ARTISTS; a tap shows Liked and Recently Added, a tap on
@@ -1768,6 +1790,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Long-press the heart; Liked Songs (from the next build)
+
+- [ ] Now Playing: a long-press on the heart opens Liked Songs (the name fits the row and the
+  header); the heart doesn't change; back returns to Now Playing.
 
 ### Playlists and the heart (from 0.21.0)
 

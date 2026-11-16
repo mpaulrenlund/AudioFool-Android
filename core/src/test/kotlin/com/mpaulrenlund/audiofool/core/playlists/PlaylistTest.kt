@@ -45,7 +45,7 @@ class PlaylistTest {
 
         val liked = store.playlists.single()
         assertTrue(liked.isLiked)
-        assertEquals("Liked", liked.name)
+        assertEquals("Liked Songs", liked.name)
         assertSame(liked, store.liked)
         assertTrue(File(path).exists())
     }
@@ -111,6 +111,26 @@ class PlaylistTest {
         assertEquals("8d3c1f0e-1111-2222-3333-444455556666", mix.id)
     }
 
+    @Test fun the_desktops_Liked_is_renamed_Liked_Songs_and_keeps_its_songs_and_date() {
+        val path = newPath()
+        File(path).writeText(
+            """
+            [ { "Id": "7d3c1f0e-1111-2222-3333-444455556666", "Name": "Liked", "IsLiked": true,
+                "ModifiedUtc": "2026-10-06T08:00:00Z", "Picture": null,
+                "Entries": [ { "FilePath": "/music/a.flac", "Artist": "Jingoro", "Album": "Back" } ] } ]
+            """.trimIndent(),
+        )
+        val before = PlaylistStore.load(path, monday).liked.modifiedUtc
+
+        val again = PlaylistStore.load(path, wednesday)
+
+        assertEquals("Liked Songs", again.liked.name)
+        assertEquals("7d3c1f0e-1111-2222-3333-444455556666", again.liked.id)
+        assertEquals(listOf("/music/a.flac"), again.liked.entries.map { it.filePath })
+        assertEquals(before, again.liked.modifiedUtc)
+        assertTrue("\"Name\": \"Liked Songs\"" in File(path).readText(), "saved at once")
+    }
+
     @Test fun a_song_already_there_is_not_added_twice_and_the_date_stays() {
         val store = PlaylistStore.load(newPath(), monday)
         store.add(store.liked, listOf(t("/music/a.flac")), tuesday)
@@ -152,7 +172,7 @@ class PlaylistTest {
         val mix = store.create("Mix", monday)
 
         assertNotNull(store.nameProblem("   "))
-        assertNotNull(store.nameProblem("liked"))
+        assertNotNull(store.nameProblem("liked songs"))
         assertNotNull(store.nameProblem(" MIX "))
         assertNull(store.nameProblem("Mix", renaming = mix))
         assertNull(store.nameProblem("Other"))

@@ -57,24 +57,24 @@ class PlaylistsTabTest {
         compose.onNodeWithText("ARTISTS").assertIsSelected()
         compose.onNodeWithText("PLAYLISTS").assertIsNotSelected().performClick()
         compose.onNodeWithText("PLAYLISTS").assertIsSelected()
-        compose.onNodeWithText("Liked").assertIsDisplayed()
+        compose.onNodeWithText("Liked Songs").assertIsDisplayed()
         compose.onNodeWithText("Recently Added").assertIsDisplayed()
         // The shuffle button is the Artists tab's.
         compose.onNodeWithContentDescription("Shuffle library").assertDoesNotExist()
 
         compose.onNodeWithText("ARTISTS").performClick()
-        compose.onNodeWithText("Liked").assertDoesNotExist()
+        compose.onNodeWithText("Liked Songs").assertDoesNotExist()
         compose.onNodeWithContentDescription("Shuffle library").assertIsDisplayed()
     }
 
     @Test fun system_back_on_playlists_goes_back_to_artists() {
         showArtists()
         compose.onNodeWithText("PLAYLISTS").performClick()
-        compose.onNodeWithText("Liked").assertIsDisplayed()
+        compose.onNodeWithText("Liked Songs").assertIsDisplayed()
         compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
         compose.waitForIdle()
         compose.onNodeWithText("ARTISTS").assertIsSelected()
-        compose.onNodeWithText("Liked").assertDoesNotExist()
+        compose.onNodeWithText("Liked Songs").assertDoesNotExist()
     }
 
     @Test fun a_playlist_row_opens_it() {

@@ -149,7 +149,8 @@ class PlaylistStore private constructor(private val path: String, private val li
     }
 
     companion object {
-        const val LIKED_NAME = "Liked"
+        /** The desktop's is "Liked"; "Liked Songs" on the phone (2026-11-16, the user's call). */
+        const val LIKED_NAME = "Liked Songs"
 
         /**
          * Never throws. A missing file is no playlists but Liked. A damaged or missing
@@ -165,8 +166,13 @@ class PlaylistStore private constructor(private val path: String, private val li
             val addLiked = store.list.none { it.isLiked }
             if (addLiked) store.list.add(Playlist(name = LIKED_NAME, isLiked = true, modifiedUtc = nowUtc))
 
+            // "Liked Songs" on the phone (2026-11-16, the user's call): a file that still says
+            // the desktop's "Liked" is renamed, found by IsLiked, its songs and date untouched.
+            val renameLiked = store.liked.name != LIKED_NAME
+            if (renameLiked) store.liked.name = LIKED_NAME
+
             // From the backup: a file of its own again, so the next start reads it.
-            if (addLiked || how == SafeFile.Load.FromBackup) store.save()
+            if (addLiked || renameLiked || how == SafeFile.Load.FromBackup) store.save()
             return store
         }
 

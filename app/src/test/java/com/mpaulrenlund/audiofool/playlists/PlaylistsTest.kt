@@ -44,9 +44,16 @@ class PlaylistsTest {
         assertEquals("2 tracks", liked.trackCount)
 
         val again = Playlists(path, scope) { now }
-        assertEquals(listOf("Liked", "Recently Added"), again.rows(library).map { it.name })
+        assertEquals(listOf("Liked Songs", "Recently Added"), again.rows(library).map { it.name })
         assertTrue(again.isLiked(old2))
         assertFalse(again.isLiked(old1))
+    }
+
+    @Test fun likedId_is_the_Liked_Songs_row_for_the_hearts_long_press() = runBlocking {
+        val playlists = Playlists(path(), scope) { now }
+        val first = playlists.rows(library).first()
+        assertEquals("Liked Songs", first.name)
+        assertEquals(first.id, playlists.likedId)
     }
 
     @Test fun a_second_tap_unlikes() = runBlocking {

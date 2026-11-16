@@ -276,13 +276,13 @@ object ThemeLabFixtures {
     }
 
     fun playlistRows(): List<PlaylistRow> = listOf(
-        PlaylistRow("liked", "Liked", PlaylistText.trackCount(likedSongs.size), albumOf(likedSongs.first())),
+        PlaylistRow("liked", "Liked Songs", PlaylistText.trackCount(likedSongs.size), albumOf(likedSongs.first())),
         PlaylistRow(Playlists.RECENT_ID, RecentlyAdded.NAME, PlaylistText.trackCount(recentAlbums.sumOf { it.tracks.size }), recentAlbums.first()),
     )
 
     /** Liked as its screen shows it, modified 2026-11-12, with one song the library no longer has. */
     fun likedPlaylist() = ShownPlaylist(
-        "liked", "Liked", "Modified 2026-11-12", PlaylistText.headerTrackCount(likedSongs.size, 1),
+        "liked", "Liked Songs", "Modified 2026-11-12", PlaylistText.headerTrackCount(likedSongs.size, 1),
         likedSongs.sumOf { it.durationMs }, likedSongs, albumOf(likedSongs.first()), numbered = true,
     )
 
@@ -299,7 +299,7 @@ object ThemeLabFixtures {
 
     /** Liked before any song is liked. */
     fun emptyLikedPlaylist() = ShownPlaylist(
-        "liked", "Liked", "Modified 2026-11-12", PlaylistText.headerTrackCount(0, 0), 0, emptyList(), null, numbered = true,
+        "liked", "Liked Songs", "Modified 2026-11-12", PlaylistText.headerTrackCount(0, 0), 0, emptyList(), null, numbered = true,
         empty = PlaylistText.empty(isLiked = true, missing = 0),
     )
 

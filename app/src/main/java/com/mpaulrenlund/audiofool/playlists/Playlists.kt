@@ -42,6 +42,10 @@ class Playlists(private val path: String, private val scope: CoroutineScope, pri
     var likedKeys: Set<String> by mutableStateOf(emptySet())
         private set
 
+    /** Liked Songs' id, for the heart's long-press (2026-11-16); null until the store is read. */
+    var likedId: String? by mutableStateOf(null)
+        private set
+
     /** Moves whenever a playlist changes, or the songs are found again in a new library. */
     var version: Int by mutableIntStateOf(0)
         private set
@@ -60,6 +64,7 @@ class Playlists(private val path: String, private val scope: CoroutineScope, pri
 
     private fun publish(store: PlaylistStore) {
         likedKeys = store.liked.entries.mapTo(HashSet()) { Paths.key(it.filePath) }
+        likedId = store.liked.id
         version++
     }
 

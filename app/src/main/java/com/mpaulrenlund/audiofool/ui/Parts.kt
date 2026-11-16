@@ -2,6 +2,7 @@ package com.mpaulrenlund.audiofool.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -371,6 +372,9 @@ fun AlbumArt(
  * ring is clear (Light), the ring is `nowPlaying.coverAccent.ring` instead, and
  * there is still no glow. [playGlow] false leaves the glow out: on Now Playing
  * the glow means playing.
+ *
+ * [onLongClick], when given, is a long-press (with the system's long-press buzz);
+ * [longClickLabel] is what a screen reader says it does. Only the heart has one.
  */
 @Composable
 fun RoundButton(
@@ -383,6 +387,8 @@ fun RoundButton(
     playTint: ThemeColor? = null,
     playGlow: Boolean = true,
     state: String? = null,
+    onLongClick: (() -> Unit)? = null,
+    longClickLabel: String? = null,
     content: @Composable () -> Unit,
 ) {
     val t = LocalAppTheme.current
@@ -411,7 +417,13 @@ fun RoundButton(
                 contentDescription = label
                 if (state != null) stateDescription = state
             }
-            .clickable(interactionSource = source, indication = null, enabled = onClick != null, role = Role.Button, onClick = onClick ?: {}),
+            .then(
+                if (onLongClick == null) Modifier.clickable(interactionSource = source, indication = null, enabled = onClick != null, role = Role.Button, onClick = onClick ?: {})
+                else Modifier.combinedClickable(
+                    interactionSource = source, indication = null, enabled = onClick != null, role = Role.Button,
+                    onLongClickLabel = longClickLabel, onLongClick = onLongClick, onClick = onClick ?: {},
+                ),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Box(

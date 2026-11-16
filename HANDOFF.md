@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-12 (0.21.0 released). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-16 (0.21.0 released; the heart's long-press and Liked Songs not built yet). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -24,7 +24,10 @@ listed under *Other docs* at the end: read each only when the work touches it.
   file (on Android its modified time): on the S24's test list.
 - **0.20.0** (64): a tap on Version checks for updates (spec 9, 4.1); the app no longer looks by
   itself. Details: `design/progress.md`, its second decision.
-- **Next build:** 0.21.1 for fixes, 0.22.0 for new features (confirm the number with the user);
+- **Unreleased, on `main` (2026-11-16):** a long-press on Now Playing's heart opens Liked
+  Songs, and Liked is renamed "Liked Songs" (a saved "Liked" is renamed when the file is read).
+  Spec 4.8, 5; `design/progress.md`, its newest decision. Goes out in the next build.
+- **Next build:** 0.22.0 (the long-press is a new feature; confirm the number with the user);
   **versionCode 66**. The emulator has 0.21.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its
   third decision).

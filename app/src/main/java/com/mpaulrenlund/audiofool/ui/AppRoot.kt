@@ -123,6 +123,8 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
             // The heart (2026-11-12, in Repeat's place): the song as the screens show it (Edit Tags' saved tags).
             toggleLike = { track -> app.playlists.toggleLike(app.nowPlaying.shown(track) ?: track) },
             isLiked = app.playlists::isLiked,
+            // Long-press on the heart (2026-11-16): Liked Songs' screen; back returns to Now Playing.
+            openLiked = { app.playlists.likedId?.let { nav.open(Route.Playlist(it)) } },
             toggleShuffle = player::toggleShuffle,
             toggleBitPerfect = player::toggleBitPerfect,
             analyze = { track -> nav.open(Route.Analysis(track.filePath)) },
