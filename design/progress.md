@@ -91,7 +91,7 @@ the rates differ: "Speaker · 48 kHz", "4.4mm · 48 kHz". Exclusive and Rate Mat
 so a line without either still tells a resampled path. The desktop's `describe` by mode keeps its
 "(resampled)". `BitPerfectTest`'s three readouts changed with it. **Checked:** `:core:test`;
 `:app:testDebugUnitTest` and `:app:verifyRoborazziDebug` after re-recording. 56 ThemeLab pictures
-changed (every Now Playing variant, the cover menu, Settings' greyed Bit-Perfect row; both themes,
+changed (every Now Playing variant, the cover menu's pictures (the line shows behind it), Settings' greyed Bit-Perfect row; both themes,
 both sizes), each only in the readout line by a pixel comparison with the old ones.
 
 2026-11-16, 0.22.0 (versionCode 66; released the same day as pre-release
