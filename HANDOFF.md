@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-16 (0.22.0 released). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-18 (0.22.0 released; "Resampled" removed on `main`). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -27,6 +27,8 @@ listed under *Other docs* at the end: read each only when the work touches it.
   file (on Android its modified time): on the S24's test list.
 - **0.20.0** (64): a tap on Version checks for updates (spec 9, 4.1); the app no longer looks by
   itself. Details: `design/progress.md`, its third decision.
+- **On `main`, not yet in a build (2026-11-18):** the output row (Now Playing and Settings) no
+  longer says "Resampled" ("Speaker · 48 kHz"). `design/progress.md`, its newest decision.
 - **Next build:** 0.22.1 for fixes, 0.23.0 for new features (confirm the number with the user);
   **versionCode 67**. The emulator has 0.22.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its

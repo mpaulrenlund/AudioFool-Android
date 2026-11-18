@@ -70,8 +70,8 @@ every decision and what is still to be checked on the phones.
     goes to the DAC as DSD inside 24-bit PCM (the desktop's `DopRule`); otherwise it is
     converted to PCM.
   A change of route or of the setting reopens the output where the song was. The readout
-  under Now Playing's controls says what reaches the output, route first: "USB · 96 kHz /
-  24-Bit (Bit-Perfect)", "Speaker · 48 kHz (Resampled)".
+  under Now Playing's controls says what reaches the output, its name first: "Shanling UA2
+  Plus · 24-Bit · 96 kHz · Exclusive", "Speaker · 48 kHz".
 - **The system's controls.** A foreground media service and a media session: the lock
   screen, the notification (with the cover), headset and Bluetooth buttons. Another
   app's sound pauses or ducks it (audio focus; on a bit-perfect path it pauses instead of

@@ -118,7 +118,7 @@ class BitPerfectTest {
 
     @Test fun the_source_rate_way_is_exclusive_only_when_the_system_runs_at_the_tracks_rate() {
         assertEquals("4.4mm · 24-Bit · 96 kHz · Exclusive", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 96000, 24, 96000, false))
-        assertEquals("4.4mm · 48 kHz · Resampled", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 48000, 24, 96000, false))
+        assertEquals("4.4mm · 48 kHz", OutputReadout.describe("4.4mm", OutputPath.SourceRate, 48000, 24, 96000, false))
     }
 
     // The M21 (0.1.5): FiiO reports its DAC's rate; Android's system output always says 48 kHz.
@@ -134,13 +134,13 @@ class BitPerfectTest {
             OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 44100), 16, 44100, false),
         )
 
-    @Test fun the_m21_says_resampled_when_fiio_reports_another_rate_or_none_yet() {
+    @Test fun the_m21_says_no_more_than_the_rate_when_fiio_reports_another_rate_or_none_yet() {
         assertEquals(
-            "3.5mm · 48 kHz · Resampled",
+            "3.5mm · 48 kHz",
             OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), 24, 96000, false),
         )
         assertEquals(
-            "3.5mm · 48 kHz · Resampled",
+            "3.5mm · 48 kHz",
             OutputReadout.describe("3.5mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 0), 16, 44100, false),
         )
     }
@@ -170,9 +170,9 @@ class BitPerfectTest {
             OutputReadout.describe("4.4mm", OutputPath.SourceRate, OutputReadout.hardwareRate(48000, 48000), OutputReadout.shownBits(24, 32), 48000, false),
         )
 
-    // 0.2.2: no "Shared", and the words capitalised (the user's call).
+    // 0.2.2: no "Shared", and the words capitalised (the user's call). 2026-11-18: no "Resampled" either.
     @Test fun shared_readout_names_the_output_and_not_shared() {
-        assertEquals("Speaker · 48 kHz · Resampled", OutputReadout.describe("Speaker", OutputPath.Shared, 48000, 24, 44100, false))
+        assertEquals("Speaker · 48 kHz", OutputReadout.describe("Speaker", OutputPath.Shared, 48000, 24, 44100, false))
         assertEquals("Bluetooth · 48 kHz", OutputReadout.describe("Bluetooth", OutputPath.Shared, 48000, 16, 48000, false))
     }
 

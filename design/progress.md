@@ -82,6 +82,18 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-18, on `main`, not yet in a build: **no "Resampled" on the output row** (the user: "In
+the Now Playing screen, could we removed the text "Resampled" from the output row? It's not
+necessary."). Spec §5 (item 9), §6.2, §6.3. The plan was shown first; the same line is Settings'
+Output row, and the user said "Yes, both". `OutputReadout.describe` (the phone's, by
+`OutputPath`) drops " · Resampled" from the shared output and from the M21's source-rate way when
+the rates differ: "Speaker · 48 kHz", "4.4mm · 48 kHz". Exclusive and Rate Matched are unchanged,
+so a line without either still tells a resampled path. The desktop's `describe` by mode keeps its
+"(resampled)". `BitPerfectTest`'s three readouts changed with it. **Checked:** `:core:test`;
+`:app:testDebugUnitTest` and `:app:verifyRoborazziDebug` after re-recording. 56 ThemeLab pictures
+changed (every Now Playing variant, the cover menu, Settings' greyed Bit-Perfect row; both themes,
+both sizes), each only in the readout line by a pixel comparison with the old ones.
+
 2026-11-16, 0.22.0 (versionCode 66; released the same day as pre-release
 [`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `f90535ba…29b47499`
