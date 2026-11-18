@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-18 (0.22.0 released; "Resampled" removed on `main`). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-18 (0.22.1 released). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -10,12 +10,17 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.22.0** (versionCode 66), published 2026-11-16 as the pre-release
+- **Latest build: 0.22.1** (versionCode 67), published 2026-11-18 as the pre-release
+  [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1) (APK in
+  `dist/AudioFool-0.22.1.apk`, SHA-256 `0b56f47a…dbdec9bc`, notes in `dist/notes-0.22.1.md`):
+  the output row (Now Playing, Settings' Bit-Perfect row) no longer says "Resampled"
+  ("Speaker · 48 kHz"). Spec 5, 6.2, 6.3; `design/progress.md`, its newest decision.
+- **0.22.0** (66), published 2026-11-16 as the pre-release
   [`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0) (APK in
   `dist/AudioFool-0.22.0.apk`, SHA-256 `f90535ba…29b47499`, notes in `dist/notes-0.22.0.md`):
   a long-press on Now Playing's heart opens Liked Songs (back returns to Now Playing), and Liked
   is renamed "Liked Songs" (a saved "Liked" is renamed when the file is read; songs and date
-  kept). Spec 4.8, 5; `design/progress.md`, its newest decision.
+  kept). Spec 4.8, 5; `design/progress.md`, its second decision.
 - **0.21.0** (65): **Playlists and the heart** (the user's request; spec 4.1, 4.8, 5). Artists' header holds
   ARTISTS and PLAYLISTS tabs; the Playlists tab lists the desktop's Liked and Recently Added
   (ported from `AudioFool.Core/Playlists` with its tests); a playlist opens as Album's screen
@@ -23,30 +28,28 @@ listed under *Other docs* at the end: read each only when the work touches it.
   gone (always off, a saved one dropped): a heart in its place likes the song (filled
   `accent.like`). Saved in `no_backup/playlists.json`, the desktop's format. Making other
   playlists is for later (the user's words). My calls and what the emulator showed:
-  `design/progress.md`, its second decision. Recently Added goes by the date the scan took for a
+  `design/progress.md`, its third decision. Recently Added goes by the date the scan took for a
   file (on Android its modified time): on the S24's test list.
 - **0.20.0** (64): a tap on Version checks for updates (spec 9, 4.1); the app no longer looks by
-  itself. Details: `design/progress.md`, its third decision.
-- **On `main`, not yet in a build (2026-11-18):** the output row (Now Playing and Settings) no
-  longer says "Resampled" ("Speaker · 48 kHz"). `design/progress.md`, its newest decision.
-- **Next build:** 0.22.1 for fixes, 0.23.0 for new features (confirm the number with the user);
-  **versionCode 67**. The emulator has 0.22.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  itself. Details: `design/progress.md`, its fourth decision.
+- **Next build:** 0.22.2 for fixes, 0.23.0 for new features (confirm the number with the user);
+  **versionCode 68**. The emulator has 0.22.1. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its
-  fourth decision).
+  fifth decision).
 - **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9), which
   looked by itself on opening, at most every six hours. Update downloads, checks size and
   SHA-256, and hands the APK to Android's installer; tested end to end on the emulator against a
   test server on this PC (`docs/build-and-emulator.md`, *Testing the update pop-up*). It didn't
-  show 0.19.1 on either phone, hence 0.20.0. Phones on 0.19.x still look by themselves. My calls: `design/progress.md`, its fifth
+  show 0.19.1 on either phone, hence 0.20.0. Phones on 0.19.x still look by themselves. My calls: `design/progress.md`, its sixth
   decision.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
-  Details: `design/progress.md`, its sixth decision. Before it, 0.18.0 (56: Edit Tags and
+  Details: `design/progress.md`, its seventh decision. Before it, 0.18.0 (56: Edit Tags and
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.22.0 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.22.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

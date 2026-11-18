@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.22.1** (versionCode 67): the output row no longer says "Resampled" ("Speaker · 48 kHz"; spec 5, 6.2, 6.3) — 2026-11-18, released as pre-release [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1)
 - [x] **0.22.0** (versionCode 66): a long-press on Now Playing's heart opens Liked Songs; Liked renamed "Liked Songs" (spec 4.8, 5) — 2026-11-16, released as pre-release [`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0)
 - [x] **0.21.0** (versionCode 65): Playlists (the ARTISTS / PLAYLISTS tabs, Liked and Recently Added, a playlist's screen) and a heart in place of Repeat on Now Playing (spec 4.1, 4.8, 5) — 2026-11-12, released as pre-release [`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0)
 - [x] **0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9): a tap on Version checks for updates; the app no longer looks by itself (spec 9, 4.1) — 2026-11-12, released as pre-release [`v0.20.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.20.0)
@@ -82,7 +83,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-18, on `main`, not yet in a build: **no "Resampled" on the output row** (the user: "In
+2026-11-18, 0.22.1 (versionCode 67; released the same day as pre-release
+[`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `0b56f47a…dbdec9bc`
+matching `dist/` and GitHub's own digest; on the emulator it updated over 0.22.0 with the library
+kept and Now Playing read "Speaker · 48 kHz" for a 44.1 kHz song): **no "Resampled" on the output row** (the user: "In
 the Now Playing screen, could we removed the text "Resampled" from the output row? It's not
 necessary."). Spec §5 (item 9), §6.2, §6.3. The plan was shown first; the same line is Settings'
 Output row, and the user said "Yes, both". `OutputReadout.describe` (the phone's, by
@@ -1456,6 +1461,11 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### No "Resampled" (from 0.22.1)
+
+- [ ] The speaker or Bluetooth: the row under Now Playing's controls ends at the rate
+  ("Speaker · 48 kHz"), no "Resampled". With the DAC and Bit-Perfect on it still ends in "Exclusive".
+
 ### Long-press the heart; Liked Songs (from 0.22.0)
 
 - [ ] Now Playing: a long-press on the heart buzzes and opens Liked Songs; the heart doesn't
@@ -1808,6 +1818,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### No "Resampled" (from 0.22.1)
+
+- [ ] A song FiiO doesn't play at its own rate: the row ends at the rate ("4.4mm · 48 kHz"), no
+  "Resampled". One it plays at its own rate still ends in "Exclusive".
 
 ### Long-press the heart; Liked Songs (from 0.22.0)
 
