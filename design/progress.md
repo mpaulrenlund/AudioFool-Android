@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.23.0** (versionCode 68): Analyze, Genius and Lyrics as buttons above Now Playing's quality line, out of the cover menu (spec 5) — 2026-11-20, released as pre-release [`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0)
 - [x] **0.22.1** (versionCode 67): the output row no longer says "Resampled" ("Speaker · 48 kHz"; spec 5, 6.2, 6.3) — 2026-11-18, released as pre-release [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1)
 - [x] **0.22.0** (versionCode 66): a long-press on Now Playing's heart opens Liked Songs; Liked renamed "Liked Songs" (spec 4.8, 5) — 2026-11-16, released as pre-release [`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0)
 - [x] **0.21.0** (versionCode 65): Playlists (the ARTISTS / PLAYLISTS tabs, Liked and Recently Added, a playlist's screen) and a heart in place of Repeat on Now Playing (spec 4.1, 4.8, 5) — 2026-11-12, released as pre-release [`v0.21.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.21.0)
@@ -83,7 +84,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-20, 0.23.0 (versionCode 68; built, not published yet): **Analyze, Genius and Lyrics are
+2026-11-20, 0.23.0 (versionCode 68; released the same day as pre-release
+[`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `30acabfb…9234ce16`
+matching `dist/` and GitHub's own digest; on the emulator it updated over 0.22.1 with the library
+kept, the three buttons opened their screens and the cover menu had none of them): **Analyze, Genius and Lyrics are
 buttons above the quality line**, out of the cover menu (the user: "take the Analyze, Genius, and Lyrics
 options out of the Album Art menu. And add them as buttons above the Track Quality row. These buttons
 should be right aligned … Analyze first. Genius Second. Lyrics third … the same size as each other. They
