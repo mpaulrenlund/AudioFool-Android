@@ -85,6 +85,15 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-20, after 0.23.1 (not built yet):
+**Now Playing's title 18 instead of 22** (the user: "I think we can lower the text size of the Song
+Title? It's a little too big right now and long song names are getting cut off often"; offered 19,
+the user chose 18). `nowPlaying.titleSize` only: still 600, `text.heading`, one line ending in "…",
+the full width; about a fifth more characters fit. The cover's reserve (`artHeightReserve`) is
+unchanged, so the cover keeps its size; the artist, album, buttons, quality line, waveform and times
+move up by the few dp freed, and the controls stay where they were (the space above them grows).
+The 56 Now Playing and cover-menu screenshots re-recorded; no other screen changed.
+
 2026-11-20, 0.23.1 (versionCode 69; released the same day as pre-release
 [`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `b3d90f4f…2459b4e0`
