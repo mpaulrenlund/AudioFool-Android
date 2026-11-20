@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-20 (0.23.1 built, not published yet). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-20 (0.23.1 released). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -10,17 +10,14 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **0.23.1** (versionCode 69), built 2026-11-20, **not published yet** (APK in
+- **Latest build: 0.23.1** (versionCode 69), published 2026-11-20 as the pre-release
+  [`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1) (APK in
   `dist/AudioFool-0.23.1.apk`, SHA-256 `b3d90f4f…2459b4e0`, notes in `dist/notes-0.23.1.md`):
-  **the buttons beside the artist and album, and only the cover moves on a swipe** (the user's calls): the M21's cover and the S24's lower half are back as before
-  0.23.0. Spec 5; `design/progress.md`, its newest decision.
-- **Latest build: 0.23.0** (versionCode 68), published 2026-11-20 as the pre-release
-  [`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0) (APK in
-  `dist/AudioFool-0.23.0.apk`, SHA-256 `30acabfb…9234ce16`, notes in `dist/notes-0.23.0.md`):
-  **Analyze, Genius and Lyrics are buttons** above Now Playing's quality
-  line, right-aligned, out of the cover menu (the user's request). The M21's cover is 32 dp smaller
-  to make room; the S24's layout is unchanged but for the quality line and seekbar, 16 dp lower. The
-  brain icon was redrawn once at the user's request. Spec 5; `design/progress.md`, its second decision.
+  **the buttons beside the artist and album, and only the cover moves on a swipe** (the user's calls):
+  the M21's cover and the S24's lower half are back as before 0.23.0. Spec 5; `design/progress.md`, its newest decision.
+- **0.23.0** (68), published 2026-11-20: Analyze, Genius and Lyrics out of the cover menu, as
+  buttons in a row above the quality line (which cost the M21 32 dp of cover; 0.23.1 moved them).
+  The brain icon was redrawn once at the user's request. `design/progress.md`, its second decision.
 - **0.22.1** (versionCode 67), published 2026-11-18 as the pre-release
   [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1) (APK in
   `dist/AudioFool-0.22.1.apk`, SHA-256 `0b56f47a…dbdec9bc`, notes in `dist/notes-0.22.1.md`):
@@ -42,7 +39,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
   `design/progress.md`, its fifth decision. Recently Added goes by the date the scan took for a
   file (on Android its modified time): on the S24's test list.
 - **Next build:** 0.23.2 for fixes, 0.24.0 for new features (confirm the number with the user);
-  **versionCode 70**. The emulator has 0.23.0. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  **versionCode 70**. The emulator has 0.23.1. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
@@ -50,7 +47,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.23.0 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.23.1 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

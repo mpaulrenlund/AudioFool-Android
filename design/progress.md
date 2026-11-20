@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.23.1** (versionCode 69): Analyze, Genius and Lyrics beside the artist and album; only the cover moves on a swipe (spec 5) — 2026-11-20, released as pre-release [`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1)
 - [x] **0.23.0** (versionCode 68): Analyze, Genius and Lyrics as buttons above Now Playing's quality line, out of the cover menu (spec 5) — 2026-11-20, released as pre-release [`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0)
 - [x] **0.22.1** (versionCode 67): the output row no longer says "Resampled" ("Speaker · 48 kHz"; spec 5, 6.2, 6.3) — 2026-11-18, released as pre-release [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1)
 - [x] **0.22.0** (versionCode 66): a long-press on Now Playing's heart opens Liked Songs; Liked renamed "Liked Songs" (spec 4.8, 5) — 2026-11-16, released as pre-release [`v0.22.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.0)
@@ -84,7 +85,12 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-20, 0.23.1 (versionCode 69; built, not published yet):
+2026-11-20, 0.23.1 (versionCode 69; released the same day as pre-release
+[`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `b3d90f4f…2459b4e0`
+matching `dist/` and GitHub's own digest; on the emulator it updated over 0.23.0, the buttons opened
+their screens, a drag started on the artist moved and faded only the cover, and quick swipes from
+the cover and from the artist skipped):
 **Analyze, Genius and Lyrics beside the artist and album, and only the cover moves on a swipe**
 (the user: "To save vertical screen space, I was more envisioning that these buttons sit in the
 same row vertically as the Artist and Album names. And the Track title could still span the full
