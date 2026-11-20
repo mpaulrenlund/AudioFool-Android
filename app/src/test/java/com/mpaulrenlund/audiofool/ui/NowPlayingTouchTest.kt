@@ -195,7 +195,7 @@ class NowPlayingTouchTest {
         for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings", "Analyze", "Genius", "Lyrics")) compose.onNodeWithText(row).assertDoesNotExist()
     }
 
-    // ---- Analyze, Genius and Lyrics (2026-11-20): buttons above the quality line, out of the cover menu ----
+    // ---- Analyze, Genius and Lyrics (2026-11-20): buttons beside the artist and album, out of the cover menu ----
 
     /** Each opens its screen on the song playing (Lyrics follows the song, so it is told none). */
     @Test fun analyze_genius_and_lyrics_are_buttons_that_open_their_screens() {
@@ -205,43 +205,62 @@ class NowPlayingTouchTest {
         assertEquals(listOf("analyze ${song.title}", "genius ${song.title}", "lyrics"), pressed)
     }
 
-    /** The user's words: right-aligned, Analyze then Genius then Lyrics, the same size as each other, not large, above the quality line. */
+    private fun textBounds(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().boundsInRoot
+
+    /**
+     * The user's words: Analyze then Genius then Lyrics, the same size as each other, not large; in
+     * the same rows as the artist and album names, the title still the full width (2026-11-20).
+     */
     private fun checkToolButtons() {
         show()
         val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
         val analyze = bounds("Analyze")
         val genius = bounds("Genius")
         val lyrics = bounds("Lyrics")
-        val count = compose.onNodeWithText("3 / 10").fetchSemanticsNode().boundsInRoot
+        val title = textBounds(song.title)
+        val artist = textBounds(song.artist)
+        val album = textBounds(song.album)
         for (button in listOf(analyze, genius, lyrics)) {
             assertEquals(32f, dp(button.width), 0.5f)
             assertEquals(32f, dp(button.height), 0.5f)
             assertEquals(analyze.center.y, button.center.y, 0.5f, "on one line")
-            assertTrue(button.bottom <= count.top, "above the quality line")
         }
+        assertEquals((artist.top + album.bottom) / 2, analyze.center.y, with(compose.density) { 1.dp.toPx() }, "centred against the artist and album lines")
+        assertTrue(analyze.top >= title.bottom, "under the title, which keeps the full width")
+        assertTrue(dp(analyze.left - maxOf(artist.right, album.right)) >= 11.5f, "clear of the names")
         assertTrue(analyze.right < genius.left && genius.right < lyrics.left, "Analyze, Genius, Lyrics from the left")
         assertEquals(8f, dp(genius.left - analyze.right), 0.5f)
         assertEquals(8f, dp(lyrics.left - genius.right), 0.5f)
         assertEquals(20f, dp(screen.right - lyrics.right), 0.5f, "Lyrics level with the cover's and the seekbar's right")
     }
 
-    @Test fun the_three_buttons_sit_right_aligned_over_the_quality_line() = checkToolButtons()
+    @Test fun the_three_buttons_sit_beside_the_artist_and_album() = checkToolButtons()
 
     @Test @Config(qualifiers = ThemeLabTest.M21)
-    fun the_three_buttons_sit_right_aligned_over_the_quality_line_on_the_m21() = checkToolButtons()
+    fun the_three_buttons_sit_beside_the_artist_and_album_on_the_m21() = checkToolButtons()
 
-    /** The M21 has no height to spare: the new row mustn't push the readout under the navigation bar. */
+    /** Long names stop short of the buttons, with "…", rather than running under them. */
+    @Test fun a_long_album_name_stops_short_of_the_buttons() {
+        val long = song.copy(album = "A Very Long Album Name (Deluxe Remastered Anniversary Edition)")
+        nowPlaying.showForPictures(long, index = 2, size = 10)
+        show()
+        assertTrue(dp(bounds("Analyze").left - textBounds(long.album).right) >= 11.5f)
+    }
+
+    /**
+     * The M21 has no height to spare: the readout stays on the screen, and the cover keeps the
+     * 301 dp it had before the buttons (0.23.0's row above the quality line took 32 dp of it).
+     */
     @Test @Config(qualifiers = ThemeLabTest.M21)
     fun the_readout_still_fits_on_the_m21() {
         nowPlaying.showForPictures(song, index = 2, size = 10, readout = "Speaker · 48 kHz")
         show()
         val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
-        val readout = compose.onNodeWithText("Speaker · 48 kHz").fetchSemanticsNode().boundsInRoot
+        val readout = textBounds("Speaker · 48 kHz")
         assertTrue(dp(screen.bottom - readout.bottom) >= 20f, "the readout above the 20 dp navigation bar")
         // A column out of room squeezes its last child to nothing rather than pushing it off the screen.
         assertTrue(dp(readout.height) >= 15f, "the readout drawn whole, not squeezed (${dp(readout.height)} dp)")
-        val album = compose.onNodeWithText(song.album).fetchSemanticsNode().boundsInRoot
-        assertTrue(bounds("Analyze").top >= album.bottom, "the buttons under the album's name, not over it")
+        assertEquals(301f, dp(bounds("Cover").width), 0.5f, "the M21's cover as before the buttons")
     }
 
     /** 2026-11-10, the user's call: the resolution opens the cover full screen (spec 5.3); with no cover it is information only, as before. */

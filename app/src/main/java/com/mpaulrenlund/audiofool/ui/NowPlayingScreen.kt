@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -145,7 +146,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * Now Playing (spec 5), opened from the mini player. No buttons at the top:
  * system back closes it. A sideways swipe on the art or the title block skips:
  * left for Next, right for the song before. From the top: the art, the title block
- * with the track count, the Analyze, Genius and Lyrics buttons (2026-11-20), the quality lines, the waveform seekbar with the times,
+ * (Analyze, Genius and Lyrics at the right of the artist and album; 2026-11-20) with the track count, the quality lines, the waveform seekbar with the times,
  * the controls row (the heart at the left, Repeat's place until 2026-11-12, the transport
  * centred, Shuffle at the right; 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
  * press until 2026-11-10), which holds Bit-Perfect and ends with the logo menu's rows
@@ -184,18 +185,11 @@ fun NowPlayingScreen(
         // M21 lost the readout off the bottom).
         val textGrowth = t.dp("nowPlaying.artReserveText") * (LocalDensity.current.fontScale - 1f).coerceAtLeast(0f)
         val heightForArt = screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth
-        // Analyze, Genius and Lyrics' row (2026-11-20): where the height limits the cover (the M21) the cover
-        // gives the row its height; where the width does (the S24) the spare height holds it.
-        val tools = t.dp("nowPlaying.toolButton")
-        val art = minOf(maxWidth - padX * 2, heightForArt - tools)
+        val art = minOf(maxWidth - padX * 2, heightForArt)
         // Spare height (0.2.3, the user's call): where the width limits the cover (the S24), the height it
         // can't use. The waveform takes a share and the space below the times grows toward the space above,
         // so it isn't one gap over the quality line. None on the M21, which stays as it was.
-        // With the row: the height left once the row is in ([room]), plus up to the row's own height again, so
-        // the S24's spare (room ≥ the row, at font size 1 and 1.3) is what it was before the row, and it falls
-        // smoothly to none where the height limits the cover.
-        val room = (heightForArt - tools - art).coerceAtLeast(Dp(0f))
-        val spare = room + minOf(room, tools)
+        val spare = (heightForArt - art).coerceAtLeast(Dp(0f))
         val waveformGrowth = minOf(spare * t.number("nowPlaying.waveformGrowth.ofSpare").toFloat(), t.dp("nowPlaying.waveformGrowth.max"))
         val aboveWeight = t.number("nowPlaying.spaceAboveQualityWeight").toFloat()
         val belowWeight = t.number("nowPlaying.spaceBelowTimesWeight").toFloat()
@@ -212,15 +206,14 @@ fun NowPlayingScreen(
 
         WindowBackground(t, Modifier.fillMaxSize()) {
             Column(Modifier.fillMaxSize().windowInsetsPadding(barInsets().only(WindowInsetsSides.Vertical))) {
-                SwipeToSkip(track, art, actions) {
-                    Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")), contentAlignment = Alignment.Center) {
+                SwipeToSkip(track, art, actions) { moving ->
+                    Box(Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.artTop")).then(moving), contentAlignment = Alignment.Center) {
                         BigArt(nowPlaying, art, cover, actions, appActions, version, artMenuForPictures)
                     }
                     TitleBlock(track, accent, actions)
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
-                    ToolButtons(track, actions)
                     track?.let { Quality(nowPlaying, it) }
                     Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent, scrubForPictures)
                 }
@@ -252,9 +245,13 @@ fun NowPlayingScreen(
  * Now a skip involves no animation at all, the finger's place is set as it moves
  * (not by a coroutine per move, which could land after the spring had started and
  * stop it), and any song change puts them back in place.
+ *
+ * 2026-11-20 (the user's call): only the cover moves and fades. The swipe still
+ * starts anywhere on the cover or the title block, but the title, the names and
+ * Analyze, Genius and Lyrics stay put. [content] gets the moving part's modifier.
  */
 @Composable
-private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, content: @Composable ColumnScope.() -> Unit) {
+private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, content: @Composable ColumnScope.(moving: Modifier) -> Unit) {
     val t = LocalAppTheme.current
     val scope = rememberCoroutineScope()
     var offset by remember { mutableFloatStateOf(0f) }
@@ -297,13 +294,15 @@ private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, cont
                         springBack = scope.launch { animate(from, 0f) { value, _ -> offset = value } }
                     }
                 },
-            )
-            .graphicsLayer {
+            ),
+    ) {
+        content(
+            Modifier.graphicsLayer {
                 translationX = offset
                 alpha = 1f - (1f - fadeTo) * (abs(offset) / artPx).coerceAtMost(1f)
             },
-        content = content,
-    )
+        )
+    }
 }
 
 /**
@@ -510,22 +509,31 @@ private fun TitleBlock(track: Track?, accent: ThemeColor?, actions: NowPlayingAc
             track?.displayTitle ?: "",
             t.text("nowPlaying.titleSize", "color.text.heading", weight = t.number("nowPlaying.titleWeight").toInt(), lineHeight = t.number("nowPlaying.titleLineHeight")),
         )
-        val artistStyle = t.text("nowPlaying.artistSize", "color.accent.playback", weight = t.number("nowPlaying.artistWeight").toInt())
-        Line(
-            track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "",
-            if (accent != null) artistStyle.copy(color = accent.toCompose()) else artistStyle,
-            Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
-        )
-        Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
+        // The names at the left, Analyze, Genius and Lyrics at the right, centred against the two lines
+        // (2026-11-20, the user's call: above the quality line until then, which cost the M21 32 dp of cover).
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.lineGap"))) {
+                val artistStyle = t.text("nowPlaying.artistSize", "color.accent.playback", weight = t.number("nowPlaying.artistWeight").toInt())
+                Line(
+                    track?.let { it.artist.ifBlank { it.groupingArtist } } ?: "",
+                    if (accent != null) artistStyle.copy(color = accent.toCompose()) else artistStyle,
+                    Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
+                )
+                Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
+            }
+            Spacer(Modifier.width(t.dp("nowPlaying.namesToTools")))
+            ToolButtons(track, actions)
+        }
     }
 }
 
 /**
  * Analyze, Genius and Lyrics (spec 5; 2026-11-20, the user's request: out of the cover
- * menu, as buttons above the quality line, right-aligned, Analyze first, the same size
- * as each other and not large): `toolButton` round buttons, `toolGap` apart, the icons
- * in `control.iconNeutral`. Compose widens each touch area to 48 dp itself. With no
- * song they are drawn but can't be pressed, so the screen doesn't jump.
+ * menu, Analyze first, the same size as each other and not large): `toolButton` round
+ * buttons, `toolGap` apart, the icons in `control.iconNeutral`, at the right of the
+ * artist and album lines ([TitleBlock]; above the quality line in 0.23.0). Compose
+ * widens each touch area to 48 dp itself. With no song they are drawn but can't be
+ * pressed, so the screen doesn't jump.
  */
 @Composable
 private fun ToolButtons(track: Track?, actions: NowPlayingActions) {
@@ -533,7 +541,7 @@ private fun ToolButtons(track: Track?, actions: NowPlayingActions) {
     val size = t.dp("nowPlaying.toolButton")
     val icon = size * t.number("nowPlaying.toolIconOfButton").toFloat()
     val color = t.color("color.control.iconNeutral")
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.toolGap"), Alignment.End)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.toolGap"))) {
         RoundButton(size, size, size, "Analyze", track?.let { { actions.analyze(it) } }) { Icon(AppIcons.ANALYZE, icon, color) }
         RoundButton(size, size, size, "Genius", track?.let { { actions.genius(it) } }) { Icon(AppIcons.GENIUS, icon, color) }
         RoundButton(size, size, size, "Lyrics", track?.let { actions.lyrics }) { Icon(AppIcons.LYRICS, icon, color) }

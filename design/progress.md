@@ -84,6 +84,29 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-20, 0.23.1 (versionCode 69; built, not published yet):
+**Analyze, Genius and Lyrics beside the artist and album, and only the cover moves on a swipe**
+(the user: "To save vertical screen space, I was more envisioning that these buttons sit in the
+same row vertically as the Artist and Album names. And the Track title could still span the full
+width"; then "only the album art transitions visually during a swipe … cleaner"). Spec §5 (items
+1 to 9 as before 0.23.0; the swipe, 1, 2, 3). The plan was shown first, with the trade-off. My calls:
+
+- **The buttons at the right of the two name lines**, centred up and down against them,
+  `namesToTools` (12 dp) clear of the names; same size, gap and icons as 0.23.0. The title keeps
+  the full width. The names lose about 124 dp: about 220 dp for them on the S24, 211 on the M21,
+  ending in "…" (they were one line with "…" already). The row above the quality line is gone, and
+  with it 0.23.0's cover rule: the M21's cover is 301 dp again (259 at font size 1.3), and the S24's
+  quality line and seekbar are back where they were before 0.23.0 (checked to the pixel against
+  5f54041).
+- **Only the cover moves and fades** under a swipe. The swipe still starts anywhere on the cover
+  or the title block; the title, names and buttons stay put and change when the song does. So the
+  buttons, which act on whatever plays, don't look like part of the song leaving.
+- Tests: `NowPlayingTouchTest` (the buttons beside the names, centred, clear of them, under the
+  title; a long album name stopping short of them; the M21's cover 301 dp and readout whole),
+  `SwipeToSkipTest` (now follows the cover; only the cover moves under a drag; a swipe started on
+  the cover skips). App 149 tests, 0 failures; 56 Now Playing and cover-menu pictures re-recorded
+  and looked at in both themes at both sizes.
+
 2026-11-20, 0.23.0 (versionCode 68; released the same day as pre-release
 [`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `30acabfb…9234ce16`
@@ -1495,6 +1518,14 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The buttons beside the names; only the cover moves (from 0.23.1)
+
+- [ ] Now Playing: Analyze, Genius and Lyrics sit at the right of the artist and album names, the
+  title above still the full width. A long artist or album name ends in "…" before the buttons.
+- [ ] Swipe the cover or the names sideways: only the cover slides and fades; the title, names and
+  buttons stay still and change when the song does. A short swipe springs the cover back.
+- [ ] The quality line and seekbar are back where they were before 0.23.0.
+
 ### Analyze, Genius and Lyrics as buttons (from 0.23.0)
 
 - [ ] Now Playing: three small round buttons right above the quality line, at the right, Analyze
@@ -1860,6 +1891,12 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The buttons beside the names; only the cover moves (from 0.23.1)
+
+- [ ] Now Playing: the cover is as big as before 0.23.0, the three buttons beside the artist and
+  album names, and everything down to the output line fits (also at a larger font size).
+- [ ] Swipe to skip: only the cover moves.
 
 ### Analyze, Genius and Lyrics as buttons (from 0.23.0)
 

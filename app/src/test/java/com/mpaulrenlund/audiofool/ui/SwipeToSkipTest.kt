@@ -6,6 +6,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
@@ -22,10 +23,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
- * Now Playing's swipe to skip (0.2.0): whatever the swipe, the art and title end
- * up back in place. 0.2.0 left them stuck part-way off the screen on the S24,
+ * Now Playing's swipe to skip (0.2.0): whatever the swipe, the cover ends up back
+ * in place (the title block moved with it until 2026-11-20; now only the cover does). 0.2.0 left them stuck part-way off the screen on the S24,
  * whose touch screen sends a move every 8 ms or so; the emulator's injected
  * swipes are too slow to show it, so the swipes here are a phone's.
  */
@@ -60,7 +62,10 @@ class SwipeToSkipTest {
         compose.waitForIdle()
     }
 
-    /** The artist line, inside the swiped block, and the same on both songs. */
+    /** The cover, the only part that moves with the finger (2026-11-20; the title block moved too until then). */
+    private fun coverLeft() = compose.onNodeWithContentDescription("Cover").getBoundsInRoot().left
+
+    /** The artist line, where the swipes start: it stays put. */
     private fun artistLeft() = compose.onNodeWithText("Aphelion Drive").getBoundsInRoot().left
 
     /**
@@ -84,32 +89,32 @@ class SwipeToSkipTest {
 
     @Test fun a_quick_swipe_left_skips_and_comes_back() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         swipe(-30f, 20)
         settle()
         assertEquals(1, nexts)
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
     }
 
     /** 0.2.1: a skip involves no animation, so nothing can leave the art off the screen. */
     @Test fun a_skip_is_back_in_place_at_once() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         compose.mainClock.autoAdvance = false
         swipe(-30f, 20)
         compose.mainClock.advanceTimeByFrame()
         assertEquals(1, nexts)
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
         compose.mainClock.autoAdvance = true
     }
 
     @Test fun a_quick_swipe_right_goes_back_and_comes_back() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         swipe(30f, 20)
         settle()
         assertEquals(1, stepBacks)
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
     }
 
     /** 2026-11-11: right is the song before however far in, so not the button's Previous (which restarts after 3 s). */
@@ -155,7 +160,7 @@ class SwipeToSkipTest {
 
     @Test fun a_short_swipe_springs_back_without_skipping() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         compose.onNodeWithText("Aphelion Drive").performTouchInput {
             down(center)
             repeat(10) { moveBy(Offset(-4f, 0f), delayMillis = 40) }
@@ -163,12 +168,12 @@ class SwipeToSkipTest {
         }
         settle()
         assertEquals(0, nexts)
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
     }
 
     @Test fun a_swipe_inside_one_frame_comes_back() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         // No frame runs during the swipe: every move is still queued when the finger lifts.
         compose.mainClock.autoAdvance = false
         compose.onNodeWithText("Aphelion Drive").performTouchInput {
@@ -179,13 +184,13 @@ class SwipeToSkipTest {
         compose.mainClock.autoAdvance = true
         settle()
         assertEquals(1, nexts)
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
     }
 
     /** Android takes a swipe from the screen's edge for its back gesture: the app's touch is cancelled part-way. */
     @Test fun a_swipe_taken_by_the_system_comes_back() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         compose.onNodeWithText("Aphelion Drive").performTouchInput {
             down(center)
             repeat(10) { moveBy(Offset(30f, 0f), delayMillis = 8) }
@@ -193,14 +198,48 @@ class SwipeToSkipTest {
         }
         settle()
         assertEquals(0, previouses)
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
+    }
+
+    /**
+     * 2026-11-20, the user's call: a drag started on the names moves and fades the cover only;
+     * the names (and Analyze, Genius and Lyrics beside them) stay where they are.
+     */
+    @Test fun only_the_cover_moves_with_the_finger() {
+        show()
+        val cover = coverLeft()
+        val artist = artistLeft()
+        val analyze = compose.onNodeWithContentDescription("Analyze").getBoundsInRoot().left
+        compose.onNodeWithText("Aphelion Drive").performTouchInput {
+            down(center)
+            repeat(10) { moveBy(Offset(-8f, 0f), delayMillis = 40) }
+        }
+        compose.waitForIdle()
+        assertTrue(coverLeft() < cover, "the cover follows the finger")
+        assertEquals(artist, artistLeft())
+        assertEquals(analyze, compose.onNodeWithContentDescription("Analyze").getBoundsInRoot().left)
+        compose.onNodeWithText("Aphelion Drive").performTouchInput { up() }
+        settle()
+        assertEquals(cover, coverLeft())
+    }
+
+    /** A swipe that starts on the cover skips too. */
+    @Test fun a_swipe_on_the_cover_skips() {
+        show()
+        compose.onNodeWithContentDescription("Cover").performTouchInput {
+            down(center)
+            repeat(20) { moveBy(Offset(-30f, 0f), delayMillis = 8) }
+            up()
+        }
+        settle()
+        assertEquals(1, nexts)
     }
 
     @Test fun swipes_one_after_another_all_come_back() {
         show()
-        val home = artistLeft()
+        val home = coverLeft()
         repeat(4) { swipe(if (it % 2 == 0) -30f else 30f, 15) }
         settle()
-        assertEquals(home, artistLeft())
+        assertEquals(home, coverLeft())
     }
 }

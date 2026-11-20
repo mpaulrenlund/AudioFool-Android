@@ -13,6 +13,8 @@ both test lists as they stood at 0.5.1, with every result the user reported.
 
 ### Moved out of HANDOFF.md on 2026-11-20 (0.19.x)
 
+- **0.20.0** (64): a tap on Version checks for updates (spec 9, 4.1); the app no longer looks by
+  itself. Details: `design/progress.md`, its fifth decision.
 - **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its
   fifth decision).
 - **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9), which
