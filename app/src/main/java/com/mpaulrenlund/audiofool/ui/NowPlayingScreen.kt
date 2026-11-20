@@ -107,17 +107,17 @@ class NowPlayingActions(
     val toggleShuffle: () -> Unit = {},
     /** The cover menu's Bit-Perfect row (spec 6.4; the BP button until 2026-11-10); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
-    /** The cover menu's Analyze (0.6.0): opens the Analysis screen on the song. */
+    /** The Analyze button (0.6.0; the cover menu's until 2026-11-20): opens the Analysis screen on the song. */
     val analyze: (Track) -> Unit = {},
     /** The cover menu's Resolution row (spec 5.3): opens the cover full screen, to zoom. */
     val openCover: (Track) -> Unit = {},
-    /** The cover menu's Genius (spec 5.2): opens the Genius screen on the song, looked up afresh. */
+    /** The Genius button (spec 5.2; the cover menu's until 2026-11-20): opens the Genius screen on the song, looked up afresh. */
     val genius: (Track) -> Unit = {},
     /** The cover menu's Edit Tags (spec 5.4): opens the Edit Tags screen on the song. */
     val editTags: (Track) -> Unit = {},
     /** Whether Edit Tags can open: not while the song's folder can't be reached. */
     val canEditTags: (Track) -> Boolean = { true },
-    /** The cover menu's Lyrics (spec 5.5): opens the Lyrics screen, which follows the song playing. */
+    /** The Lyrics button (spec 5.5; the cover menu's until 2026-11-20): opens the Lyrics screen, which follows the song playing. */
     val lyrics: () -> Unit = {},
     /** A tap on the artist's name (spec 5): opens that artist's albums. */
     val openArtist: (Track) -> Unit = {},
@@ -145,7 +145,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * Now Playing (spec 5), opened from the mini player. No buttons at the top:
  * system back closes it. A sideways swipe on the art or the title block skips:
  * left for Next, right for the song before. From the top: the art, the title block
- * with the track count, the quality lines, the waveform seekbar with the times,
+ * with the track count, the Analyze, Genius and Lyrics buttons (2026-11-20), the quality lines, the waveform seekbar with the times,
  * the controls row (the heart at the left, Repeat's place until 2026-11-12, the transport
  * centred, Shuffle at the right; 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
  * press until 2026-11-10), which holds Bit-Perfect and ends with the logo menu's rows
@@ -184,11 +184,18 @@ fun NowPlayingScreen(
         // M21 lost the readout off the bottom).
         val textGrowth = t.dp("nowPlaying.artReserveText") * (LocalDensity.current.fontScale - 1f).coerceAtLeast(0f)
         val heightForArt = screenHeight - t.dp("nowPlaying.artHeightReserve") - textGrowth
-        val art = minOf(maxWidth - padX * 2, heightForArt)
+        // Analyze, Genius and Lyrics' row (2026-11-20): where the height limits the cover (the M21) the cover
+        // gives the row its height; where the width does (the S24) the spare height holds it.
+        val tools = t.dp("nowPlaying.toolButton")
+        val art = minOf(maxWidth - padX * 2, heightForArt - tools)
         // Spare height (0.2.3, the user's call): where the width limits the cover (the S24), the height it
         // can't use. The waveform takes a share and the space below the times grows toward the space above,
         // so it isn't one gap over the quality line. None on the M21, which stays as it was.
-        val spare = (heightForArt - art).coerceAtLeast(Dp(0f))
+        // With the row: the height left once the row is in ([room]), plus up to the row's own height again, so
+        // the S24's spare (room ≥ the row, at font size 1 and 1.3) is what it was before the row, and it falls
+        // smoothly to none where the height limits the cover.
+        val room = (heightForArt - tools - art).coerceAtLeast(Dp(0f))
+        val spare = room + minOf(room, tools)
         val waveformGrowth = minOf(spare * t.number("nowPlaying.waveformGrowth.ofSpare").toFloat(), t.dp("nowPlaying.waveformGrowth.max"))
         val aboveWeight = t.number("nowPlaying.spaceAboveQualityWeight").toFloat()
         val belowWeight = t.number("nowPlaying.spaceBelowTimesWeight").toFloat()
@@ -213,6 +220,7 @@ fun NowPlayingScreen(
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
+                    ToolButtons(track, actions)
                     track?.let { Quality(nowPlaying, it) }
                     Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent, scrubForPictures)
                 }
@@ -389,10 +397,6 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
                         actions.openCover(track)
                     }
                 } else null,
-                analyze = {
-                    menuAt = null
-                    actions.analyze(track)
-                },
                 // Not while the song's folder can't be reached (the SD card out).
                 editTags = if (actions.canEditTags(track)) {
                     {
@@ -400,14 +404,6 @@ private fun BigArt(nowPlaying: NowPlaying, side: Dp, cover: BigCover?, actions: 
                         actions.editTags(track)
                     }
                 } else null,
-                genius = {
-                    menuAt = null
-                    actions.genius(track)
-                },
-                lyrics = {
-                    menuAt = null
-                    actions.lyrics()
-                },
             )
         }
     }
@@ -443,12 +439,12 @@ private class BigCover(val image: ImageBitmap?, val width: Int, val height: Int,
  * (a long press until 2026-11-10), kept `artMenu.edgeMargin` inside the screen. The
  * logo menu's look. The first row is the cover's resolution, which opens the cover
  * full screen ([openCover], spec 5.3; 2026-11-10, the user's call; information only
- * until then, and still where there is no cover); then Analyze, which opens the Analysis screen; Bit-Perfect (spec 6.4, 2026-11-10, the
+ * until then, and still where there is no cover); then Bit-Perfect (spec 6.4, 2026-11-10, the
  * user's call: the BP button moved here), checked while on, which switches it and
- * keeps the menu open; Edit Tags, which opens the Edit Tags screen (spec 5.4,
+ * keeps the menu open; and Edit Tags, which opens the Edit Tags screen (spec 5.4,
  * 2026-11-11, the user's call; information only while the song's folder can't be
- * reached); Genius, which opens the Genius screen (spec 5.2); and Lyrics, which
- * opens the Lyrics screen (spec 5.5, 2026-11-11, the user's call); then
+ * reached). Analyze, Genius and Lyrics were rows here until 2026-11-20 (the user's
+ * request), when they became [ToolButtons]. Then
  * the logo menu's Theme and version (0.7.4, the user's call; Listening History,
  * Rescan Library, Settings and Statistics are the logo menu's only since 2026-11-10,
  * the user's call), so all but the resolution are in alphabetical order with the
@@ -464,10 +460,7 @@ private fun ArtMenu(
     nowPlaying: NowPlaying,
     toggleBitPerfect: () -> Unit,
     openCover: (() -> Unit)?,
-    analyze: () -> Unit,
     editTags: (() -> Unit)?,
-    genius: () -> Unit,
-    lyrics: () -> Unit,
 ) {
     val t = LocalAppTheme.current
     val density = LocalDensity.current
@@ -477,12 +470,9 @@ private fun ArtMenu(
     Popup(popupPositionProvider = position, onDismissRequest = onClose, properties = PopupProperties(focusable = true)) {
         MenuSurface(t.dp("artMenu.width")) {
             MenuRow("Resolution", value = resolution, onClick = openCover)
-            MenuRow("Analyze", onClick = analyze)
             // The check in Bit-Perfect's own "on" colour, as Settings' dot (spec 4.5); greyed out where it can't work (spec 6.2).
             MenuCheckRow("Bit-Perfect", nowPlaying.bitPerfect, "color.status.bitPerfectOn", toggleBitPerfect, greyed = nowPlaying.bitPerfectGreyed)
             MenuRow("Edit Tags", onClick = editTags)
-            MenuRow("Genius", onClick = genius)
-            MenuRow("Lyrics", onClick = lyrics)
             AppMenuRows(onClose, appActions, version, allRows = false)
         }
     }
@@ -527,6 +517,26 @@ private fun TitleBlock(track: Track?, accent: ThemeColor?, actions: NowPlayingAc
             Modifier.tappable(lineShape, track?.let { { actions.openArtist(it) } }),
         )
         Line(track?.album ?: "", t.text("nowPlaying.albumSize", "color.text.secondary"), Modifier.tappable(lineShape, track?.let { { actions.openAlbum(it) } }))
+    }
+}
+
+/**
+ * Analyze, Genius and Lyrics (spec 5; 2026-11-20, the user's request: out of the cover
+ * menu, as buttons above the quality line, right-aligned, Analyze first, the same size
+ * as each other and not large): `toolButton` round buttons, `toolGap` apart, the icons
+ * in `control.iconNeutral`. Compose widens each touch area to 48 dp itself. With no
+ * song they are drawn but can't be pressed, so the screen doesn't jump.
+ */
+@Composable
+private fun ToolButtons(track: Track?, actions: NowPlayingActions) {
+    val t = LocalAppTheme.current
+    val size = t.dp("nowPlaying.toolButton")
+    val icon = size * t.number("nowPlaying.toolIconOfButton").toFloat()
+    val color = t.color("color.control.iconNeutral")
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.toolGap"), Alignment.End)) {
+        RoundButton(size, size, size, "Analyze", track?.let { { actions.analyze(it) } }) { Icon(AppIcons.ANALYZE, icon, color) }
+        RoundButton(size, size, size, "Genius", track?.let { { actions.genius(it) } }) { Icon(AppIcons.GENIUS, icon, color) }
+        RoundButton(size, size, size, "Lyrics", track?.let { actions.lyrics }) { Icon(AppIcons.LYRICS, icon, color) }
     }
 }
 

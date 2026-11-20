@@ -103,6 +103,39 @@ object AppIcons {
     val TRIANGLE = AppIcon(listOf(AppIcon.Part("M0.9 1.3v7.4L7.2 5z", filled = true)), viewportWidth = 8f, viewportHeight = 10f)
 
     /**
+     * Now Playing's Analyze button (2026-11-20, the user's picture): a magnifier with a
+     * pulse line across its glass.
+     */
+    val ANALYZE = stroked(
+        "M3.5 10a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0M14.6 14.6L20 20" +
+            "M6.5 10.5h1.6l1.4-3 2 5.5 1.5-2.5h1",
+    )
+
+    /**
+     * Now Playing's Genius button (2026-11-20, the user's picture): a brain, two
+     * mirrored halves of four lobes either side of a middle line, each with a fold
+     * curling in from its side and one hanging from its top, none touching the line. Redrawn the same day (the user's call):
+     * folds from the middle line, one each side at different heights, read as a "$".
+     */
+    val GENIUS = stroked(
+        "M12 4.8C10.8 3.6 8.3 3.6 7.6 5.6C5 5.6 3.4 7.8 4.2 10.2C2.6 11.6 2.8 14.6 5 15.4C5.4 18.4 9.6 20 12 18.6" +
+            "M12 4.8C13.2 3.6 15.7 3.6 16.4 5.6C19 5.6 20.6 7.8 19.8 10.2C21.4 11.6 21.2 14.6 19 15.4C18.6 18.4 14.4 20 12 18.6" +
+            "M12 4.8V18.6" +
+            "M4.2 10.2C5.8 10.6 7.4 11.6 8 13M19.8 10.2C18.2 10.6 16.6 11.6 16 13" +
+            "M7.6 5.6C7.4 7 8 8 9.2 8.4M16.4 5.6C16.6 7 16 8 14.8 8.4",
+    )
+
+    /**
+     * Now Playing's Lyrics button (2026-11-20, the user's picture): two beamed notes
+     * over the top-left corner of a page of lines.
+     */
+    val LYRICS = AppIcon(
+        AppIcon.Part("M5.2 10V4.2l5-1.2V9M13 6H19a1 1 0 0 1 1 1v13a1 1 0 0 1 -1 1H9a1 1 0 0 1 -1 -1v-6M14 10h3M14 13.5h3M11 17h6"),
+        // The heads filled only: stroked too, they ran into the page at the M21's size.
+        AppIcon.Part("M1.7 10a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0M6.7 9a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0", stroked = false, filled = true),
+    )
+
+    /**
      * The no-art placeholder (spec 2: the desktop's music note, `albums.placeholderIconSize`).
      * The desktop draws Fluent's MusicNote2 outline; this is the same two beamed
      * notes in this app's stroked style.

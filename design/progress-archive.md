@@ -11,6 +11,17 @@ both test lists as they stood at 0.5.1, with every result the user reported.
 
 ## From HANDOFF.md
 
+### Moved out of HANDOFF.md on 2026-11-20 (0.19.x)
+
+- **0.19.1** (62): Now Playing's track count at the quality's size (`design/progress.md`, its
+  fifth decision).
+- **0.19.0** (61; 58 to 60 went to emulator test builds): **the update pop-up** (spec 9), which
+  looked by itself on opening, at most every six hours. Update downloads, checks size and
+  SHA-256, and hands the APK to Android's installer; tested end to end on the emulator against a
+  test server on this PC (`docs/build-and-emulator.md`, *Testing the update pop-up*). It didn't
+  show 0.19.1 on either phone, hence 0.20.0. Phones on 0.19.x still look by themselves. My calls: `design/progress.md`, its sixth
+  decision.
+
 ### Moved out of HANDOFF.md on 2026-11-12 (Playlists)
 
 - **Latest build: 0.20.0** (versionCode 64; 63 went to the emulator's test build 0.19.9),

@@ -65,6 +65,8 @@ class NowPlayingTouchTest {
             openAlbum = { pressed += "album ${it.album}" },
             openCover = { pressed += "cover ${it.title}" },
             lyrics = { pressed += "lyrics" },
+            analyze = { pressed += "analyze ${it.title}" },
+            genius = { pressed += "genius ${it.title}" },
         )
         compose.setContent {
             AudioFoolTheme(AppTheme(true, tokens)) {
@@ -177,10 +179,10 @@ class NowPlayingTouchTest {
 
     @Test fun a_tap_on_the_cover_opens_its_menu() {
         show()
-        compose.onNodeWithText("Analyze").assertDoesNotExist()
+        compose.onNodeWithText("Edit Tags").assertDoesNotExist()
         compose.onNodeWithContentDescription("Cover").performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("Analyze").assertExists()
+        compose.onNodeWithText("Edit Tags").assertExists()
         compose.onNodeWithText("Bit-Perfect").assertExists()
     }
 
@@ -189,19 +191,57 @@ class NowPlayingTouchTest {
         show()
         compose.onNodeWithContentDescription("Cover").performClick()
         compose.waitForIdle()
-        for (row in listOf("Resolution", "Analyze", "Bit-Perfect", "Genius", "Lyrics", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
-        for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings")) compose.onNodeWithText(row).assertDoesNotExist()
+        for (row in listOf("Resolution", "Bit-Perfect", "Edit Tags", "Theme", "Version")) compose.onNodeWithText(row).assertExists()
+        for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings", "Analyze", "Genius", "Lyrics")) compose.onNodeWithText(row).assertDoesNotExist()
     }
 
-    /** 2026-11-11, the user's request: the menu's Lyrics row opens the Lyrics screen (spec 5.5), and the menu closes. */
-    @Test fun the_lyrics_row_opens_the_lyrics_screen() {
+    // ---- Analyze, Genius and Lyrics (2026-11-20): buttons above the quality line, out of the cover menu ----
+
+    /** Each opens its screen on the song playing (Lyrics follows the song, so it is told none). */
+    @Test fun analyze_genius_and_lyrics_are_buttons_that_open_their_screens() {
         show()
-        compose.onNodeWithContentDescription("Cover").performClick()
+        for (name in listOf("Analyze", "Genius", "Lyrics")) compose.onNodeWithContentDescription(name).performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("Lyrics").performClick()
-        compose.waitForIdle()
-        assertEquals(listOf("lyrics"), pressed)
-        compose.onNodeWithText("Analyze").assertDoesNotExist()
+        assertEquals(listOf("analyze ${song.title}", "genius ${song.title}", "lyrics"), pressed)
+    }
+
+    /** The user's words: right-aligned, Analyze then Genius then Lyrics, the same size as each other, not large, above the quality line. */
+    private fun checkToolButtons() {
+        show()
+        val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
+        val analyze = bounds("Analyze")
+        val genius = bounds("Genius")
+        val lyrics = bounds("Lyrics")
+        val count = compose.onNodeWithText("3 / 10").fetchSemanticsNode().boundsInRoot
+        for (button in listOf(analyze, genius, lyrics)) {
+            assertEquals(32f, dp(button.width), 0.5f)
+            assertEquals(32f, dp(button.height), 0.5f)
+            assertEquals(analyze.center.y, button.center.y, 0.5f, "on one line")
+            assertTrue(button.bottom <= count.top, "above the quality line")
+        }
+        assertTrue(analyze.right < genius.left && genius.right < lyrics.left, "Analyze, Genius, Lyrics from the left")
+        assertEquals(8f, dp(genius.left - analyze.right), 0.5f)
+        assertEquals(8f, dp(lyrics.left - genius.right), 0.5f)
+        assertEquals(20f, dp(screen.right - lyrics.right), 0.5f, "Lyrics level with the cover's and the seekbar's right")
+    }
+
+    @Test fun the_three_buttons_sit_right_aligned_over_the_quality_line() = checkToolButtons()
+
+    @Test @Config(qualifiers = ThemeLabTest.M21)
+    fun the_three_buttons_sit_right_aligned_over_the_quality_line_on_the_m21() = checkToolButtons()
+
+    /** The M21 has no height to spare: the new row mustn't push the readout under the navigation bar. */
+    @Test @Config(qualifiers = ThemeLabTest.M21)
+    fun the_readout_still_fits_on_the_m21() {
+        nowPlaying.showForPictures(song, index = 2, size = 10, readout = "Speaker · 48 kHz")
+        show()
+        val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
+        val readout = compose.onNodeWithText("Speaker · 48 kHz").fetchSemanticsNode().boundsInRoot
+        assertTrue(dp(screen.bottom - readout.bottom) >= 20f, "the readout above the 20 dp navigation bar")
+        // A column out of room squeezes its last child to nothing rather than pushing it off the screen.
+        assertTrue(dp(readout.height) >= 15f, "the readout drawn whole, not squeezed (${dp(readout.height)} dp)")
+        val album = compose.onNodeWithText(song.album).fetchSemanticsNode().boundsInRoot
+        assertTrue(bounds("Analyze").top >= album.bottom, "the buttons under the album's name, not over it")
     }
 
     /** 2026-11-10, the user's call: the resolution opens the cover full screen (spec 5.3); with no cover it is information only, as before. */
@@ -212,7 +252,7 @@ class NowPlayingTouchTest {
         compose.onNodeWithText("Resolution").performClick()
         compose.waitForIdle()
         assertEquals(listOf("cover ${song.title}"), pressed)
-        compose.onNodeWithText("Analyze").assertDoesNotExist()
+        compose.onNodeWithText("Edit Tags").assertDoesNotExist()
     }
 
     @Test fun without_a_cover_the_resolution_does_nothing() {
@@ -222,7 +262,7 @@ class NowPlayingTouchTest {
         compose.onNodeWithText("Resolution").performClick()
         compose.waitForIdle()
         assertEquals(emptyList(), pressed)
-        compose.onNodeWithText("Analyze").assertExists()
+        compose.onNodeWithText("Edit Tags").assertExists()
     }
 
     @Test fun a_long_press_on_the_cover_still_opens_it() {

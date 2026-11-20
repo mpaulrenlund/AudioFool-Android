@@ -83,6 +83,35 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-20, 0.23.0 (versionCode 68; built, not published yet): **Analyze, Genius and Lyrics are
+buttons above the quality line**, out of the cover menu (the user: "take the Analyze, Genius, and Lyrics
+options out of the Album Art menu. And add them as buttons above the Track Quality row. These buttons
+should be right aligned … Analyze first. Genius Second. Lyrics third … the same size as each other. They
+shouldn't be large buttons", with three pictures for the icons). Spec §5 (items 1, 3, 4; the list is
+renumbered: quality 5 … readout 10), §5.1, §5.2, §5.5, §6.4. The plan was shown first. My calls:
+
+- **Three 32 dp round buttons** (`nowPlaying.toolButton`), the heart's and Shuffle's face, `toolGap` 8 dp
+  apart, Lyrics' right edge level with the seekbar's (`paddingX`). Icons `control.iconNeutral` (the
+  colour of Previous and Next: these are actions, not on/off), 18 dp (`toolIconOfButton` 0.56: at 0.5
+  the brain read as a blob on the M21). Drawn from the user's pictures in the app's stroked style
+  (`AppIcons.ANALYZE`, `GENIUS`, `LYRICS`); the notes' heads are
+  filled only, so they don't run into the page. With no song they can't be pressed.
+- **The M21 has no room to spare**: with the row added as is, the output readout went off the bottom
+  (the first screenshot check). The cover now gives the row its height where the height limits it:
+  301 → 269 dp on the M21 (259 → 227 at font size 1.3); everything from the quality line down is where
+  it was. The S24's cover, controls and readout haven't moved (its spare height is worked out so it is
+  what it was); its quality line and seekbar sit 16 dp lower, the row taking half its height from the
+  gap above the quality line and half from the gap above the controls.
+- `NowPlayingTouchTest`: the buttons open their screens; their size, order, gaps and right edge on both
+  phones; and the M21's readout drawn whole (a column out of room squeezes its last child to 0 dp, so
+  the old "is it above the bar" check passed while the readout was gone: checked by undoing the fix).
+- Verified: app 146 tests and `:core:test` 628, 0 failures; 56 Now Playing and cover-menu pictures
+  re-recorded and looked at in both themes at both sizes.
+- **The brain, redrawn the same day** (the user's call, "Redraw the brain"): the first one's folds
+  came off the middle line at different heights and read as a "$" in a scalloped circle. Now two
+  mirrored halves of four lobes, each with a fold curling in from its side and one hanging from its
+  top, none touching the middle line; picked from three drawings compared at the phones' own pixel sizes.
+
 2026-11-18, 0.22.1 (versionCode 67; released the same day as pre-release
 [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `0b56f47a…dbdec9bc`
@@ -1461,6 +1490,14 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Analyze, Genius and Lyrics as buttons (from 0.23.0)
+
+- [ ] Now Playing: three small round buttons right above the quality line, at the right, Analyze
+  (magnifier), Genius (brain), Lyrics (notes and page). Each opens its screen; back returns. The
+  icons read as what they are, in Light and Dark. Easy to hit with a thumb without pressing the
+  one next to it.
+- [ ] A tap on the cover: the menu has Resolution, Bit-Perfect, Edit Tags, Theme and the version.
+
 ### No "Resampled" (from 0.22.1)
 
 - [ ] The speaker or Bluetooth: the row under Now Playing's controls ends at the rate
@@ -1818,6 +1855,12 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Analyze, Genius and Lyrics as buttons (from 0.23.0)
+
+- [ ] Now Playing: the three buttons above the quality line fit with the cover, the title block,
+  the controls and the output row all on screen (also at a larger font size). Each opens its
+  screen; the buttons are easy to hit apart.
 
 ### No "Resampled" (from 0.22.1)
 
