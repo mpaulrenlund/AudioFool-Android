@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.23.2** (versionCode 70): Now Playing's title 18 instead of 22 (spec 5) — 2026-11-20, released as pre-release [`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2)
 - [x] **0.23.1** (versionCode 69): Analyze, Genius and Lyrics beside the artist and album; only the cover moves on a swipe (spec 5) — 2026-11-20, released as pre-release [`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1)
 - [x] **0.23.0** (versionCode 68): Analyze, Genius and Lyrics as buttons above Now Playing's quality line, out of the cover menu (spec 5) — 2026-11-20, released as pre-release [`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0)
 - [x] **0.22.1** (versionCode 67): the output row no longer says "Resampled" ("Speaker · 48 kHz"; spec 5, 6.2, 6.3) — 2026-11-18, released as pre-release [`v0.22.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.22.1)
@@ -85,7 +86,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-20, after 0.23.1 (not built yet):
+2026-11-20, 0.23.2 (versionCode 70; released the same day as pre-release
+[`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `023109ae…947fcf67`
+matching `dist/` and GitHub's own digest; on the emulator it updated over 0.23.1 keeping the
+library, the title smaller and on one line, playback and the notification as before):
 **Now Playing's title 18 instead of 22** (the user: "I think we can lower the text size of the Song
 Title? It's a little too big right now and long song names are getting cut off often"; offered 19,
 the user chose 18). `nowPlaying.titleSize` only: still 600, `text.heading`, one line ending in "…",
@@ -1533,6 +1538,12 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### The smaller title (from 0.23.2)
+
+- [ ] Now Playing: the title is smaller (18), one line, and a long one shows more before the "…";
+  it still reads comfortably. Nothing overlaps; the names, buttons, quality line and seekbar sit a
+  little higher, the controls where they were.
+
 ### The buttons beside the names; only the cover moves (from 0.23.1)
 
 - [ ] Now Playing: Analyze, Genius and Lyrics sit at the right of the artist and album names, the
@@ -1906,6 +1917,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### The smaller title (from 0.23.2)
+
+- [ ] Now Playing: the title is smaller and shows more of a long name; the cover is as big as in
+  0.23.1 and everything down to the output line still fits (also at a larger font size).
 
 ### The buttons beside the names; only the cover moves (from 0.23.1)
 
