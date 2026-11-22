@@ -30,6 +30,9 @@ listed under *Other docs* at the end: read each only when the work touches it.
   file (on Android its modified time): on the S24's test list.
 - **Next build:** 0.23.3 for fixes, 0.24.0 for new features (confirm the number with the user);
   **versionCode 71**. The emulator has 0.23.2. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **UI/UX review (2026-11-22): `design/ux-review-2026-11-22.md`**, 16 findings with a roadmap and
+  screenshots beside it. Nothing built yet: the user picks which findings to implement (quick wins
+  suggested: 1, 2, 6, 7, 8). Mark each one built there with its version.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
