@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.23.3** (versionCode 71): the UI/UX review's quick wins: network errors in plain words, Bit-Perfect "On"/"Off" in Settings, "Loading the library…", a faded Connect and the Last.fm field clear of the keyboard, Search's "No matches" (spec 2, 4.1, 4.4, 4.5) — 2026-11-22, released as pre-release [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3)
 - [x] **0.23.2** (versionCode 70): Now Playing's title 18 instead of 22 (spec 5) — 2026-11-20, released as pre-release [`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2)
 - [x] **0.23.1** (versionCode 69): Analyze, Genius and Lyrics beside the artist and album; only the cover moves on a swipe (spec 5) — 2026-11-20, released as pre-release [`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1)
 - [x] **0.23.0** (versionCode 68): Analyze, Genius and Lyrics as buttons above Now Playing's quality line, out of the cover menu (spec 5) — 2026-11-20, released as pre-release [`v0.23.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.0)
@@ -86,7 +87,12 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-22, for the next build (not released yet): **Search says "No matches"; its Search key and ×
+2026-11-22, 0.23.3 (versionCode 71; released the same day as pre-release
+[`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3), with the four decisions below, APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `083fd8ea…032e09a1`
+matching `dist/` and GitHub's own digest; on the emulator it updated over the test build keeping the
+library, Version read 0.23.3, and each of the five showed as below, playback and the notification as
+before): **Search says "No matches"; its Search key and ×
 behave** (the UI/UX review's finding 6; offered the desktop's wording or the review's "Nothing matches
 "xyz"", the user chose the desktop's). (1) A query with terms that finds nothing shows the desktop's
 `EmptyStateText` words for a narrowed list with no artists, **"No matches" / "Nothing in the library
@@ -101,7 +107,7 @@ away). Whether Samsung's keyboard on the S24 did put it away is on its test list
 needed and finding 5 lists. Spec 4.4. Tests: `SearchNoMatchesTest` (4); the four `edge-search-empty`
 pictures re-recorded (the note); no other picture changed.
 
-2026-11-22, for the next build (not released yet): **a chip button with nothing to do is faded; the
+2026-11-22, 0.23.3: **a chip button with nothing to do is faded; the
 focused Last.fm field clears the keyboard** (the UI/UX review's finding 7; the plan, both parts, the
 user: "Yes, build it"). (1) `ChipButton` with no `onClick` draws itself at `disabledOpacity`. Of its
 14 uses only two ever have nothing to do: Last.fm's Connect (until every field shown is filled in, and
@@ -119,7 +125,7 @@ form ends below the M21's screen, so the test scrolls to it). 10 Last.fm form pi
 (Connect faded; `m21-*-settings-lastfm-connect` unchanged, Connect being below its screen); no other
 picture changed.
 
-2026-11-22, for the next build (not released yet): **"Loading the library…" before the library is
+2026-11-22, 0.23.3: **"Loading the library…" before the library is
 read** (the UI/UX review's finding 8; offered an empty panel or a note, the user: "Show "Loading…""). At
 a cold start Artists is drawn before `LibraryRepository.start` has read the cache, and `AppRoot` drew
 the missing library as `MusicLibrary.Empty`, so the panel said "No music yet" / "Add a folder in
@@ -137,7 +143,7 @@ starts (three before, three after) showed the artists already listed when the ap
 the system splash's exit animation, which covers the ~80 ms. Only the phones, with the full library,
 can show whether it was ever visible (on both test lists).
 
-2026-11-22, for the next build (not released yet): **Settings' Bit-Perfect chip says "On" or "Off"**
+2026-11-22, 0.23.3: **Settings' Bit-Perfect chip says "On" or "Off"**
 (the UI/UX review's finding 1; offered "On"/"Off" or "Bit-Perfect: On", the user: "Yes, On/Off").
 The chip said "Bit-Perfect" whatever the setting, as in the mockups, so only the dot's colour told on
 from off (in Light the yellow "off" dot is 1.28:1 on the chip; in Dark green against red). Now the
@@ -154,7 +160,7 @@ chip is narrower, leaving the readout a little more room). Spec 4.5. Tests: `Set
 re-recorded (every one shows the chip, the three update pop-ups too, drawn over Settings); no other
 picture changed.
 
-2026-11-22, for the next build (not released yet): **network errors in plain words** (the UI/UX
+2026-11-22, 0.23.3: **network errors in plain words** (the UI/UX
 review's finding 2, `design/ux-review-2026-11-22.md`; the user: "Yes, start #2"). The screens
 showed Java's own text after "Couldn't reach Genius:" (on the emulator: "…CertPathValidatorException:
 Trust anchor for certification path not found."). One helper, core `net/NetworkError.sentence`,
@@ -1625,7 +1631,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### The UI/UX review's quick wins: #1, #2, #6, #7, #8 (from the next build)
+### The UI/UX review's quick wins: #1, #2, #6, #7, #8 (from 0.23.3)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "Off", then "On" after a tap (and the cover
   menu's tick agrees); the chip doesn't change size. With a USB DAC the readout under the label
@@ -2022,7 +2028,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Bit-Perfect On/Off; "Loading the library…" (from the next build)
+### Bit-Perfect On/Off; "Loading the library…" (from 0.23.3)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "On" or "Off" as set, a tap switches it, and
   the chip keeps its size; at a larger font size the word isn't cut off.

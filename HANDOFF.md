@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-22 (0.23.2 released; the review's five quick wins built, not released). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-22 (0.23.3 released: the review's five quick wins). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -10,12 +10,16 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.23.2** (versionCode 70), published 2026-11-20 as the pre-release
-  [`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2) (APK in
-  `dist/AudioFool-0.23.2.apk`, SHA-256 `023109ae…947fcf67`, notes in `dist/notes-0.23.2.md`):
-  **Now Playing's title 18 instead of 22** (the user's call: long titles were cut off too often).
-  The cover keeps its size; the lines under the title move up. Spec 5; `design/progress.md`, its newest decision.
-- **0.23.1** (69), 2026-11-20: the buttons beside the artist and album, and only the cover moves on a swipe.
+- **Latest build: 0.23.3** (versionCode 71), published 2026-11-22 as the pre-release
+  [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3) (APK in
+  `dist/AudioFool-0.23.3.apk`, SHA-256 `083fd8ea…032e09a1`, notes in `dist/notes-0.23.3.md`):
+  **the UI/UX review's five quick wins**: network errors in plain words (#2; spec 2, *Shared
+  parts*), Settings' Bit-Perfect chip saying "On" / "Off" and a switch for a screen reader (#1;
+  spec 4.5), "Loading the library…" until the cache is read (#8; spec 4.1), a faded Connect until
+  Last.fm's form is filled in and its focused field clear of the keyboard (#7; spec 4.5), and
+  Search's "No matches", Search key and × (#6; spec 4.4). `design/progress.md`, its five newest decisions.
+- **0.23.2** (70), 2026-11-20: Now Playing's title 18 instead of 22.
+  **0.23.1** (69), 2026-11-20: the buttons beside the artist and album, and only the cover moves on a swipe.
   **0.23.0** (68), 2026-11-20: Analyze, Genius and Lyrics out of the cover menu, as buttons.
   **0.22.1** (67), 2026-11-18: the output row no longer says "Resampled". **0.22.0** (66),
   2026-11-16: a long-press on the heart opens Liked Songs. Each in `design/progress.md`, newest first.
@@ -23,19 +27,12 @@ listed under *Other docs* at the end: read each only when the work touches it.
   the desktop's Liked and Recently Added, the heart in Repeat's place, saved in
   `no_backup/playlists.json`. Making other playlists is for later (the user's words). Details:
   `design/progress.md`, under 0.21.0.
-- **Next build:** 0.23.3 for fixes, 0.24.0 for new features (confirm the number with the user);
-  **versionCode 71**. It carries the review's **#2, network errors in plain words** ("No
-  internet connection." and the like instead of Java's text; spec 2, *Shared parts*) and **#1,
-  Settings' Bit-Perfect chip saying "On" / "Off"**, a switch for a screen reader (spec 4.5), and
-  **#8, "Loading the library…"** in place of "No music yet" until the cache is read (spec 4.1), and
-  **#7, a faded Connect** until Last.fm's form is filled in, its focused field clear of the keyboard
-  (spec 4.5), and **#6, Search's "No matches"**, its Search key and × (spec 4.4); all built
-  2026-11-22, in `design/progress.md`'s five newest decisions. At the release, put its number in the
-  review where they say "next build". The emulator has 0.23.2 with all five (an unreleased build,
-  code 70). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+- **Next build:** 0.23.4 for fixes, 0.24.0 for new features (confirm the number with the user);
+  **versionCode 72**. The emulator has 0.23.3. ThemeLab's menu pictures use a fixed "0.7.0", so a
+  bump changes no picture.
 - **UI/UX review (2026-11-22): `design/ux-review-2026-11-22.md`**, 16 findings with a roadmap and
   screenshots beside it. The user picks which findings to build: the quick wins (1, 2, 6, 7, 8)
-  are built; next on its roadmap: 3, 4, 5 (and 9, 10, 11). Mark each one built there with its version.
+  went out in 0.23.3; next on its roadmap: 3, 4, 5 (and 9, 10, 11). Mark each one built there with its version.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.
@@ -43,7 +40,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.23.2 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.23.3 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:
