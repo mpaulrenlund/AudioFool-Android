@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-22 (0.23.2 released; the review's #1 and #2 built, not released). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-22 (0.23.2 released; the review's #1, #2 and #8 built, not released). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -26,13 +26,14 @@ listed under *Other docs* at the end: read each only when the work touches it.
 - **Next build:** 0.23.3 for fixes, 0.24.0 for new features (confirm the number with the user);
   **versionCode 71**. It carries the review's **#2, network errors in plain words** ("No
   internet connection." and the like instead of Java's text; spec 2, *Shared parts*) and **#1,
-  Settings' Bit-Perfect chip saying "On" / "Off"**, a switch for a screen reader (spec 4.5); both
-  built 2026-11-22, in `design/progress.md`'s two newest decisions. At the release, put its number
-  in the review where #1 and #2 say "next build". The emulator has 0.23.2 with #2 (an unreleased
-  build, code 70), not #1. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  Settings' Bit-Perfect chip saying "On" / "Off"**, a switch for a screen reader (spec 4.5), and
+  **#8, "Loading the library…"** in place of "No music yet" until the cache is read (spec 4.1); all
+  built 2026-11-22, in `design/progress.md`'s three newest decisions. At the release, put its number
+  in the review where they say "next build". The emulator has 0.23.2 with #1, #2 and #8 (an
+  unreleased build, code 70). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **UI/UX review (2026-11-22): `design/ux-review-2026-11-22.md`**, 16 findings with a roadmap and
-  screenshots beside it. The user picks which findings to build: #1 and #2 are built; the other
-  quick wins are 6, 7, 8. Mark each one built there with its version.
+  screenshots beside it. The user picks which findings to build: #1, #2 and #8 are built; the
+  other quick wins are 6 and 7. Mark each one built there with its version.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.

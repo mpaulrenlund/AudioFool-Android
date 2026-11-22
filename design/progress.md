@@ -86,6 +86,24 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-22, for the next build (not released yet): **"Loading the library…" before the library is
+read** (the UI/UX review's finding 8; offered an empty panel or a note, the user: "Show "Loading…""). At
+a cold start Artists is drawn before `LibraryRepository.start` has read the cache, and `AppRoot` drew
+the missing library as `MusicLibrary.Empty`, so the panel said "No music yet" / "Add a folder in
+Settings…" for as long as the cache took (78 ms on the emulator; on the M21 with 27,000 songs perhaps
+longer); the same after all-files access is given, until the first scan starts. Now `Browse.loaded`
+(`state.library != null`, also a key of `AppRoot`'s `remember`, since an empty library read can be the
+same object as the placeholder) makes `EmptyNote` say **"Loading the library…"** (`LIBRARY_LOADING`),
+one line where the other notes' titles sit, no second line; once read, the notes are as before
+("Scanning the library", "Every folder is unticked", "No music yet"). The desktop has no such state
+(its `EmptyStateText` has none); the wording follows the app's "Loading…" (Listening History). The
+Playlists tab was already empty until its rows are read: unchanged. Spec 4.1, *Nothing to list* (the
+notes weren't in the spec before). Tests: `ArtistsLoadingTest` (2); ThemeLab's new `artists-loading`
+(4 pictures); no other picture changed. **On the emulator neither note can be seen**: six recorded cold
+starts (three before, three after) showed the artists already listed when the app first shows through
+the system splash's exit animation, which covers the ~80 ms. Only the phones, with the full library,
+can show whether it was ever visible (on both test lists).
+
 2026-11-22, for the next build (not released yet): **Settings' Bit-Perfect chip says "On" or "Off"**
 (the UI/UX review's finding 1; offered "On"/"Off" or "Bit-Perfect: On", the user: "Yes, On/Off").
 The chip said "Bit-Perfect" whatever the setting, as in the mockups, so only the dot's colour told on
@@ -1574,11 +1592,13 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Plain error messages; Bit-Perfect On/Off (from the next build)
+### Plain error messages; Bit-Perfect On/Off; "Loading the library…" (from the next build)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "Off", then "On" after a tap (and the cover
   menu's tick agrees); the chip doesn't change size. With a USB DAC the readout under the label
   still reads in full.
+- [ ] Cold start three times (swipe AudioFool away from recents, then open it): Artists never says
+  "No music yet" on the way in; "Loading the library…" may show for a moment.
 - [ ] With airplane mode on, Genius and Lyrics say "No internet connection. Tap to try again.",
   not Java's text; with it off again, a tap loads them. On a Wi-Fi that wants a sign-in page first
   (a hotel, a café): "Couldn't make a secure connection to Genius." or similar.
@@ -1963,10 +1983,14 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Bit-Perfect On/Off (from the next build)
+### Bit-Perfect On/Off; "Loading the library…" (from the next build)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "On" or "Off" as set, a tap switches it, and
   the chip keeps its size; at a larger font size the word isn't cut off.
+- [ ] Cold start three times (swipe AudioFool away from recents, then open it): Artists never says
+  "No music yet" on the way in. "Loading the library…" may show for a moment before the artists
+  appear; if it stays long enough to read, say roughly how long (Statistics > Debug shows the
+  cache's load time).
 
 ### The smaller title (from 0.23.2)
 

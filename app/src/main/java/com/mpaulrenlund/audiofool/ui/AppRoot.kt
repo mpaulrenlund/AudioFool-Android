@@ -52,8 +52,9 @@ fun AppRoot(app: AudioFoolApp, dark: Boolean, openNowPlaying: Int = 0, pickFolde
     val player = app.player
 
     val library = state.library ?: MusicLibrary.Empty
-    val browse = remember(library, state.unavailableFolders, folders) {
-        Browse(library, state.unavailableFolders, app.nowPlaying, anyFolderIncluded = folders.any { it.included })
+    val loaded = state.library != null
+    val browse = remember(library, loaded, state.unavailableFolders, folders) {
+        Browse(library, state.unavailableFolders, app.nowPlaying, anyFolderIncluded = folders.any { it.included }, loaded = loaded)
     }
     val actions = remember(nav) {
         AppActions(

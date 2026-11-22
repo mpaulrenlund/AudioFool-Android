@@ -166,6 +166,8 @@ class ThemeLabTest {
                 scanText = scanHeaderText(LibraryState(scanning = true, progress = ScanProgress(filesFound = 27115, filesRead = 0))),
             )
         }
+        // Before the library is read at a cold start (2026-11-22, the UI/UX review's finding 8; no mockup).
+        shoot(device, "artists-loading") { ArtistsScreen(Browse(MusicLibrary.Empty, emptyList(), NowPlaying(), loaded = false), actions) }
         // A rescan the user asked for (0.7.0, no mockup): checking, then how it ended (a long one, to see it fit).
         shoot(device, "artists-rescan-checking") {
             ArtistsScreen(browse(), actions, scanning = true, scanText = scanHeaderText(LibraryState(scanning = true, asked = true)))

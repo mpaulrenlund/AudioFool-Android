@@ -32,6 +32,11 @@ class Browse(
     val nowPlaying: NowPlaying,
     /** Whether any folder is ticked (the empty Artists list says which is wrong). */
     val anyFolderIncluded: Boolean = true,
+    /**
+     * False until the library has been read (the cache, at a cold start): the empty Artists
+     * list then says it is loading, not that there is no music (the UI/UX review's finding 8).
+     */
+    val loaded: Boolean = true,
 ) {
     private val unavailable: MutableMap<Any, Boolean> = Collections.synchronizedMap(IdentityHashMap())
 
@@ -94,6 +99,8 @@ class AppActions(
 fun EmptyNote(browse: Browse, scanning: Boolean, modifier: Modifier = Modifier) {
     val t = LocalAppTheme.current
     val (title, detail) = when {
+        // Before the cache is read (2026-11-22, the user's call over an empty panel); one line, where the others' titles sit.
+        !browse.loaded -> LIBRARY_LOADING to null
         browse.library.allTracks.isEmpty() && scanning -> "Scanning the library" to "Music appears here as it's found."
         !browse.anyFolderIncluded -> "Every folder is unticked" to "Tick one in Settings, from the logo menu."
         else -> "No music yet" to "Add a folder in Settings, from the logo menu."
@@ -104,6 +111,9 @@ fun EmptyNote(browse: Browse, scanning: Boolean, modifier: Modifier = Modifier) 
         verticalArrangement = Arrangement.spacedBy(t.dp("artists.lineGap")),
     ) {
         Line(title, t.text("artists.nameSize", "color.text.primary").copy(textAlign = TextAlign.Center))
-        Line(detail, t.text("artists.countSize", "color.text.muted").copy(textAlign = TextAlign.Center), maxLines = 2)
+        if (detail != null) Line(detail, t.text("artists.countSize", "color.text.muted").copy(textAlign = TextAlign.Center), maxLines = 2)
     }
 }
+
+/** The empty Artists list's note while the library is still being read. */
+const val LIBRARY_LOADING = "Loading the library…"
