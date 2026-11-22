@@ -49,8 +49,8 @@ android {
         applicationId = "com.mpaulrenlund.audiofool"
         minSdk = 33
         targetSdk = 37
-        versionCode = 70
-        versionName = "0.23.2"
+        versionCode = 71
+        versionName = "0.23.3"
 
         // No Last.fm key is built in (2026-11-12, spec 7): the user types it on each phone,
         // so the repo and its releases can be public. tools/build.sh checks the APK has none.
