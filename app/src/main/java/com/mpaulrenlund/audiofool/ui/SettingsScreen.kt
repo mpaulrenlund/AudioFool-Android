@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,10 +32,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -87,13 +92,18 @@ fun SettingsScreen(
         }
         Panel("Playback") {
             val toggle = actions.toggleBitPerfect.takeUnless { bitPerfectGreyed }
-            SettingRow("Bit-Perfect", readout.ifEmpty { "Shared" }, onClick = toggle) {
-                Chip(
-                    Modifier.alpha(if (bitPerfectGreyed) t.number("disabledOpacity").toFloat() else 1f),
-                    onClick = toggle,
-                ) {
-                    StatusDot(if (bitPerfect) "color.status.bitPerfectOn" else "color.status.bitPerfectOff")
-                    ChipText("Bit-Perfect")
+            SettingRow("Bit-Perfect", readout.ifEmpty { "Shared" }, onClick = toggle, switchedOn = bitPerfect) {
+                // The state in words beside the dot (the UI/UX review of 2026-11-22, finding 1; the user's
+                // OK: "Yes, On/Off"; the word "Bit-Perfect" until then), as wide as the wider of the two
+                // so the chip keeps its size at a tap. The row is the switch a screen reader finds.
+                Box(Modifier.clearAndSetSemantics {}) {
+                    Chip(
+                        Modifier.alpha(if (bitPerfectGreyed) t.number("disabledOpacity").toFloat() else 1f),
+                        onClick = toggle,
+                    ) {
+                        StatusDot(if (bitPerfect) "color.status.bitPerfectOn" else "color.status.bitPerfectOff")
+                        ChipText(if (bitPerfect) "On" else "Off", Modifier.widthIn(min = chipTextWidth("On", "Off")))
+                    }
                 }
             }
         }
@@ -335,4 +345,15 @@ fun TitledScreen(title: String, scroll: ScrollState = rememberScrollState(), con
             Spacer(Modifier)
         }
     }
+}
+
+/** The widest of [texts] in a chip's text style, at the phone's font size: Bit-Perfect's "On" / "Off". */
+@Composable
+private fun chipTextWidth(vararg texts: String): Dp {
+    val t = LocalAppTheme.current
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val style = t.text("settings.chipTextSize", "color.text.status")
+    val widest = remember(texts.toList(), style, density) { texts.maxOf { measurer.measure(it, style, maxLines = 1).size.width } }
+    return with(density) { widest.toDp() }
 }

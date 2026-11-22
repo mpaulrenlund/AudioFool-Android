@@ -86,6 +86,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-22, for the next build (not released yet): **Settings' Bit-Perfect chip says "On" or "Off"**
+(the UI/UX review's finding 1; offered "On"/"Off" or "Bit-Perfect: On", the user: "Yes, On/Off").
+The chip said "Bit-Perfect" whatever the setting, as in the mockups, so only the dot's colour told on
+from off (in Light the yellow "off" dot is 1.28:1 on the chip; in Dark green against red). Now the
+dot is followed by "On" or "Off" in the same style (`settings.chipTextSize`, `text.status`), in a box
+as wide as the wider of the two, measured at the phone's font size (`chipTextWidth` in
+`SettingsScreen.kt`), so the chip doesn't change size and the dot stays put at a tap. No new
+tokens or colours. Greyed out it still says how it is set, as the cover menu's check does. For a
+screen reader the row is one switch: `SettingRow(switchedOn = …)` gives it `Role.Switch`, its
+toggleable state, "On"/"Off" (the cover menu's words) and `disabled()` while it can't be tapped,
+merging the label and the readout; the chip is cleared from the tree so it isn't read twice. Tapping
+the chip or the row switches it, as before. **Differs from the mockups** (the chip's word, and the
+chip is narrower, leaving the readout a little more room). Spec 4.5. Tests: `SettingsBitPerfectTest`
+(2: the switch and its state before and after a tap, and greyed). The 48 Settings pictures
+re-recorded (every one shows the chip, the three update pop-ups too, drawn over Settings); no other
+picture changed.
+
 2026-11-22, for the next build (not released yet): **network errors in plain words** (the UI/UX
 review's finding 2, `design/ux-review-2026-11-22.md`; the user: "Yes, start #2"). The screens
 showed Java's own text after "Couldn't reach Genius:" (on the emulator: "…CertPathValidatorException:
@@ -1557,8 +1574,11 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Network errors in plain words (from the next build)
+### Plain error messages; Bit-Perfect On/Off (from the next build)
 
+- [ ] Settings → Playback: the Bit-Perfect chip says "Off", then "On" after a tap (and the cover
+  menu's tick agrees); the chip doesn't change size. With a USB DAC the readout under the label
+  still reads in full.
 - [ ] With airplane mode on, Genius and Lyrics say "No internet connection. Tap to try again.",
   not Java's text; with it off again, a tap loads them. On a Wi-Fi that wants a sign-in page first
   (a hotel, a café): "Couldn't make a secure connection to Genius." or similar.
@@ -1942,6 +1962,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Bit-Perfect On/Off (from the next build)
+
+- [ ] Settings → Playback: the Bit-Perfect chip says "On" or "Off" as set, a tap switches it, and
+  the chip keeps its size; at a larger font size the word isn't cut off.
 
 ### The smaller title (from 0.23.2)
 

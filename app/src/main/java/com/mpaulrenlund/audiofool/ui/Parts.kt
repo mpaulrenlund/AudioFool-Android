@@ -51,8 +51,12 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -465,12 +469,17 @@ fun SearchFieldButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
     }
 }
 
-/** A settings-style row (spec 4.5): a label with an optional line under it, and something on the right. */
+/**
+ * A settings-style row (spec 4.5): a label with an optional line under it, and something on the right.
+ * [switchedOn]: the row is an on/off setting (Bit-Perfect), one switch for a screen reader that
+ * says "On" or "Off", disabled while [onClick] is null.
+ */
 @Composable
 fun SettingRow(
     label: String,
     value: String? = null,
     onClick: (() -> Unit)? = null,
+    switchedOn: Boolean? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val t = LocalAppTheme.current
@@ -478,6 +487,7 @@ fun SettingRow(
     Row(
         Modifier
             .fillMaxWidth()
+            .let { if (switchedOn != null) it.switchSemantics(switchedOn, enabled = onClick != null) else it }
             .tappable(RoundedCornerShape(t.radius("radius.row")), onClick)
             .padding(horizontal = t.dp("settings.rowPaddingX"), vertical = t.dp("settings.rowPaddingY"))
             .heightIn(min = t.dp("settings.rowMinHeight")),
@@ -492,6 +502,17 @@ fun SettingRow(
         }
         trailing?.invoke()
     }
+}
+
+/**
+ * One switch for a screen reader, its label and line read with it (the UI/UX review of
+ * 2026-11-22, finding 1), in the cover menu's words for the state ("On", "Off").
+ */
+private fun Modifier.switchSemantics(on: Boolean, enabled: Boolean): Modifier = semantics(mergeDescendants = true) {
+    role = Role.Switch
+    toggleableState = ToggleableState(on)
+    stateDescription = if (on) "On" else "Off"
+    if (!enabled) disabled()
 }
 
 /** A chip (spec 2): `settings.chipHeight`, `color.status.chipBg`, a 1 dp `chipBorder`, `radius.chip`. */
@@ -519,9 +540,9 @@ fun Chip(
 }
 
 @Composable
-fun ChipText(text: String) {
+fun ChipText(text: String, modifier: Modifier = Modifier) {
     val t = LocalAppTheme.current
-    Line(text, t.text("settings.chipTextSize", "color.text.status"))
+    Line(text, t.text("settings.chipTextSize", "color.text.status"), modifier)
 }
 
 /** A status dot (spec 4.5): `settings.dot` across in [colorPath], ringed 1 dp in `status.dotRing`. */
