@@ -602,11 +602,17 @@ fun FolderCheckbox(checked: Boolean) {
     }
 }
 
-/** A text button in a chip, as "Add Folder…" and "Connect" are drawn (spec 4.5). */
+/**
+ * A text button in a chip, as "Add Folder…" and "Connect" are drawn (spec 4.5). With no
+ * [onClick] it can't be pressed and says so, drawn at `disabledOpacity` (the UI/UX review of
+ * 2026-11-22, finding 7: Last.fm's Connect looked pressable before the form was filled in;
+ * Edit Tags' Save greyed itself until then).
+ */
 @Composable
 fun ChipButton(text: String, modifier: Modifier = Modifier, onClick: (() -> Unit)?) {
     val t = LocalAppTheme.current
-    Chip(modifier, paddingX = t.dp("settings.buttonPaddingX"), onClick = onClick) {
+    val shown = if (onClick == null) modifier.alpha(t.number("disabledOpacity").toFloat()) else modifier
+    Chip(shown, paddingX = t.dp("settings.buttonPaddingX"), onClick = onClick) {
         Line(text, t.text("settings.buttonTextSize", "color.text.status"))
     }
 }

@@ -7,14 +7,18 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -22,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalDensity
@@ -40,6 +48,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -252,12 +261,27 @@ private fun FormField(
 ) {
     val t = LocalAppTheme.current
     val shape = RoundedCornerShape(t.radius("radius.surface"))
+    // Focused, the whole box and `lastFm.formGap` under it stay above the keyboard (the UI/UX review
+    // of 2026-11-22, finding 7): Android shows only the line being typed, and settled with the
+    // box's foot under the keyboard. Asked again at each step of the keyboard sliding up.
+    val density = LocalDensity.current
+    val requester = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val keyboard = WindowInsets.ime.getBottom(density)
+    val clearance = with(density) { t.dp("lastFm.formGap").toPx() }
+    LaunchedEffect(focused, keyboard, size) {
+        if (focused && size != IntSize.Zero) requester.bringIntoView(Rect(0f, 0f, size.width.toFloat(), size.height + clearance))
+    }
     Column(verticalArrangement = Arrangement.spacedBy(t.dp("lastFm.fieldLabelGap"))) {
         Line(label, t.text("lastFm.fieldLabelSize", "color.text.muted"))
         BasicTextField(
             value = value,
             onValueChange = onValue,
             modifier = Modifier.fillMaxWidth().height(t.dp("lastFm.fieldHeight"))
+                .bringIntoViewRequester(requester)
+                .onSizeChanged { size = it }
+                .onFocusChanged { focused = it.isFocused }
                 .then(if (contentType != null) Modifier.semantics { this.contentType = contentType } else Modifier),
             singleLine = true,
             textStyle = t.text("lastFm.fieldTextSize", "color.text.primary"),

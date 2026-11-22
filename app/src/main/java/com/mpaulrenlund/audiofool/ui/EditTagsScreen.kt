@@ -304,11 +304,8 @@ private fun Footer(state: EditTagsState, save: () -> Unit) {
             Modifier.weight(1f),
             t.text("tagEdit.footerTextSize", "color.text.heading", weight = t.desktopNumber("dialog.emphasisWeight").toInt()),
         )
-        ChipButton(
-            "Save",
-            Modifier.let { if (state.canSave) it else it.alpha(t.number("disabledOpacity").toFloat()) },
-            onClick = if (state.canSave) save else null,
-        )
+        // Greyed by ChipButton itself while there is nothing to save.
+        ChipButton("Save", onClick = if (state.canSave) save else null)
     }
 }
 

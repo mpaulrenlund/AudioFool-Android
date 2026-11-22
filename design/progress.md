@@ -86,6 +86,24 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-22, for the next build (not released yet): **a chip button with nothing to do is faded; the
+focused Last.fm field clears the keyboard** (the UI/UX review's finding 7; the plan, both parts, the
+user: "Yes, build it"). (1) `ChipButton` with no `onClick` draws itself at `disabledOpacity`. Of its
+14 uses only two ever have nothing to do: Last.fm's Connect (until every field shown is filled in, and
+while "Signing in…"), which looked pressable until now, and Edit Tags' Save, which faded itself by hand
+(that fade moved into `ChipButton`; its pictures came out pixel-identical). (2) Last.fm's `FormField`:
+while focused, a `BringIntoViewRequester` asks for the whole box plus `lastFm.formGap` (8 dp) under
+it, again at each step of the keyboard sliding up (`WindowInsets.ime`'s bottom is a key of the
+effect). Compose's own request shows only the line being typed: on the emulator the drawn box's foot
+touched the keyboard (its touch bounds, 4 dp larger, went under it: the review's "4 dp hidden"). After,
+measured on the emulator for all four fields (API key, secret, username, password): the drawn box
+8.0 dp (21 px) clear of the keyboard; Connect faded until all four were filled, then full. Edit Tags' fields are unchanged. A screen reader still
+isn't told the faded button is disabled: that is finding 5's pass. Spec 4.5 (Last.fm). Tests:
+`LastFmConnectButtonTest` (2: Connect only once both fields are filled; not while signing in; the
+form ends below the M21's screen, so the test scrolls to it). 10 Last.fm form pictures re-recorded
+(Connect faded; `m21-*-settings-lastfm-connect` unchanged, Connect being below its screen); no other
+picture changed.
+
 2026-11-22, for the next build (not released yet): **"Loading the library…" before the library is
 read** (the UI/UX review's finding 8; offered an empty panel or a note, the user: "Show "Loading…""). At
 a cold start Artists is drawn before `LibraryRepository.start` has read the cache, and `AppRoot` drew
@@ -1592,13 +1610,16 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Plain error messages; Bit-Perfect On/Off; "Loading the library…" (from the next build)
+### Plain error messages; Bit-Perfect On/Off; "Loading the library…"; faded Connect (from the next build)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "Off", then "On" after a tap (and the cover
   menu's tick agrees); the chip doesn't change size. With a USB DAC the readout under the label
   still reads in full.
 - [ ] Cold start three times (swipe AudioFool away from recents, then open it): Artists never says
   "No music yet" on the way in; "Loading the library…" may show for a moment.
+- [ ] Settings → Last.fm (only if you're willing to sign in again, or while not connected): Connect's
+  form shows its Connect faded until the fields are filled in; a tap into a field shows the whole box
+  with a little space above the keyboard.
 - [ ] With airplane mode on, Genius and Lyrics say "No internet connection. Tap to try again.",
   not Java's text; with it off again, a tap loads them. On a Wi-Fi that wants a sign-in page first
   (a hotel, a café): "Couldn't make a secure connection to Genius." or similar.
