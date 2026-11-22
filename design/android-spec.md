@@ -97,7 +97,8 @@ On every library screen, under the panel. Shows the cover, title (600, `text.pri
 
 ### 4.4 Search
 
-- Top bar: the field in its focused state (`state.searchFocusBg`, a 2 dp `state.searchFocusRing` ring), the query, and a clear (×) button. Results update as you type; the matching follows the desktop's `LibrarySearch`.
+- Top bar: the field in its focused state (`state.searchFocusBg`, a 2 dp `state.searchFocusRing` ring), the query, and a clear (×) button. Results update as you type; the matching follows the desktop's `LibrarySearch`. **The keyboard's Search key** puts the keyboard away and takes the cursor out of the field; the results stay (2026-11-22, the UI/UX review's finding 6: it did nothing). **The ×** clears the query and keeps the cursor in the field with the keyboard up, ready for the next search, also after the Search key put the keyboard away (same day; the review saw it put the keyboard away, which the emulator's keyboard didn't do); a screen reader calls it "Clear".
+- **Nothing found**: when something is typed and nothing matches, the panel says the desktop's **"No matches"** / "Nothing in the library matches." (`EmptyStateText`, narrowed), drawn as Artists' notes (§4.1, *Nothing to list*), once the search of what's typed has finished and the library has been read (2026-11-22, finding 6, the user's call over "Nothing matches "…"" with the query; the panel was blank). An empty field leaves it blank.
 - Three groups, each with a panel header, shown only when they have results: **ARTISTS** (name and album count), **ALBUMS** (thumbnail, title, "Artist · 2003 · 11 tracks"), **SONGS** (title, "Artist · Album", time). The song playing gets the now-playing row style.
 
 ### 4.5 Settings

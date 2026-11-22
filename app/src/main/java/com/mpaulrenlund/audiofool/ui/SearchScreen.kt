@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import com.mpaulrenlund.audiofool.core.format.Display
@@ -56,12 +60,20 @@ fun SearchScreen(browse: Browse, actions: AppActions, initialQuery: String = "")
     var focusedOnce by rememberSaveable { mutableStateOf(false) }
     val focus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
-    // Opened with a query (ThemeLab), the first results are there for the first frame.
-    val first = remember { if (initialQuery.isEmpty()) SearchResults.None else search(browse, initialQuery) }
-    val results by produceState(first, browse, query) {
-        value = withContext(Dispatchers.Default) { search(browse, query) }
+    // Opened with a query (ThemeLab), the first results are there for the first frame. Each
+    // result keeps the query it is for, so "No matches" waits for the search of what's typed.
+    val first = remember { Searched(initialQuery, if (initialQuery.isEmpty()) SearchResults.None else search(browse, initialQuery)) }
+    val searched by produceState(first, browse, query) {
+        value = Searched(query, withContext(Dispatchers.Default) { search(browse, query) })
     }
+    val results = searched.results
+    // The desktop's words for a search that finds nothing (`EmptyStateText`, narrowed with no
+    // artists; the UI/UX review of 2026-11-22, finding 6; the user's call over "Nothing matches"
+    // with the query): only for something typed, searched, in a library that has been read.
+    val noMatches = searched.query == query && browse.loaded && LibrarySearch.terms(query).isNotEmpty() &&
+        results.artists.isEmpty() && results.albums.isEmpty() && results.songs.isEmpty()
 
     fun open(route: Route) {
         keyboard?.hide()
@@ -71,14 +83,31 @@ fun SearchScreen(browse: Browse, actions: AppActions, initialQuery: String = "")
     ScreenFrame(
         topBar = {
             TopBar(t.dp("topBar.searchBarPaddingX"), t.dp("topBar.searchBarPaddingX"), t.dp("topBar.gap")) {
-                SearchBox(query, { query = it }, Modifier.weight(1f).focusRequester(focus))
+                SearchBox(
+                    query, { query = it }, Modifier.weight(1f).focusRequester(focus),
+                    // The keyboard's Search key: the keyboard and the cursor go, the results stay (finding 6).
+                    onSearch = {
+                        keyboard?.hide()
+                        focusManager.clearFocus()
+                    },
+                    // The ×: cleared, and the next search can be typed at once (finding 6; it closed the keyboard).
+                    onClear = {
+                        query = ""
+                        focus.requestFocus()
+                        keyboard?.show()
+                    },
+                )
             }
         },
         bottom = { MiniPlayerBar(browse, actions) },
     ) {
         PanelSurface(Modifier.weight(1f)) {
-            LazyColumn {
-                resultGroups(results, browse, actions, ::open)
+            if (noMatches) {
+                PanelNote("No matches", "Nothing in the library matches.")
+            } else {
+                LazyColumn {
+                    resultGroups(results, browse, actions, ::open)
+                }
             }
         }
     }
@@ -90,6 +119,9 @@ fun SearchScreen(browse: Browse, actions: AppActions, initialQuery: String = "")
         }
     }
 }
+
+/** [results] of the search for [query]. */
+private class Searched(val query: String, val results: SearchResults)
 
 private fun search(browse: Browse, query: String): SearchResults {
     val index = browse.searchIndex ?: LibrarySearch.Index(browse.library.allTracks).also { browse.searchIndex = it }
@@ -197,10 +229,17 @@ private fun SearchSongRow(track: Track, browse: Browse, onClick: () -> Unit) {
 
 /**
  * The field in its focused state (spec 4.4): `state.searchFocusBg`, a 2 dp
- * `state.searchFocusRing` ring, the query, and a clear (x) button.
+ * `state.searchFocusRing` ring, the query, and a clear (x) button. [onSearch] is the
+ * keyboard's Search key; [onClear] the ×, named "Clear" for a screen reader.
  */
 @Composable
-fun SearchBox(query: String, onQuery: (String) -> Unit, modifier: Modifier = Modifier) {
+fun SearchBox(
+    query: String,
+    onQuery: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onSearch: () -> Unit = {},
+    onClear: () -> Unit = { onQuery("") },
+) {
     val t = LocalAppTheme.current
     val shape = RoundedCornerShape(t.radius("radius.surface"))
     val ring = ShadowLayer(
@@ -215,6 +254,7 @@ fun SearchBox(query: String, onQuery: (String) -> Unit, modifier: Modifier = Mod
         textStyle = t.text("searchField.textSize", "color.text.primary"),
         cursorBrush = SolidColor(t.color("color.accent.playback")),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
         decorationBox = { field ->
             Row(
                 Modifier
@@ -229,7 +269,7 @@ fun SearchBox(query: String, onQuery: (String) -> Unit, modifier: Modifier = Mod
                     field()
                 }
                 Box(
-                    Modifier.size(t.dp("searchField.clearButton")).tappable(CircleShape) { onQuery("") },
+                    Modifier.size(t.dp("searchField.clearButton")).semantics { contentDescription = "Clear" }.tappable(CircleShape, onClear),
                     contentAlignment = Alignment.Center,
                 ) { Icon(AppIcons.CLEAR, t.dp("searchField.clearIcon"), "color.text.muted") }
             }

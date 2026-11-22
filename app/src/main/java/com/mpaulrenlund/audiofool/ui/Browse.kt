@@ -105,6 +105,16 @@ fun EmptyNote(browse: Browse, scanning: Boolean, modifier: Modifier = Modifier) 
         !browse.anyFolderIncluded -> "Every folder is unticked" to "Tick one in Settings, from the logo menu."
         else -> "No music yet" to "Add a folder in Settings, from the logo menu."
     }
+    PanelNote(title, detail, modifier)
+}
+
+/**
+ * A note in place of a panel's list, centred at its top: a title and a muted line under it
+ * (none for "Loading the library…"). Artists' empty notes, and Search's "No matches" (2026-11-22).
+ */
+@Composable
+fun PanelNote(title: String, detail: String?, modifier: Modifier = Modifier) {
+    val t = LocalAppTheme.current
     Column(
         modifier.fillMaxWidth().padding(t.dp("settings.rowPaddingX")),
         horizontalAlignment = Alignment.CenterHorizontally,

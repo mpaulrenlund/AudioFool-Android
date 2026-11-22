@@ -86,6 +86,21 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-22, for the next build (not released yet): **Search says "No matches"; its Search key and ×
+behave** (the UI/UX review's finding 6; offered the desktop's wording or the review's "Nothing matches
+"xyz"", the user chose the desktop's). (1) A query with terms that finds nothing shows the desktop's
+`EmptyStateText` words for a narrowed list with no artists, **"No matches" / "Nothing in the library
+matches."**, in `PanelNote` (Artists' note drawing, shared now; Artists' pictures unchanged). Each
+search result keeps the query it is for (`Searched`), so the note waits for the search of what's
+typed and doesn't flash while typing; and it waits for the library (`Browse.loaded`, finding 8). An
+empty field stays blank. (2) The keyboard's Search key (`ImeAction.Search`, which did nothing) hides
+the keyboard and clears focus; the results stay. (3) The × clears the query, requests focus and shows
+the keyboard. The review saw it put the keyboard away; on the emulator's Gboard it didn't, so the
+change shows there after the Search key: × now brings the keyboard and the cursor back (it left them
+away). Whether Samsung's keyboard on the S24 did put it away is on its test list. The × is named "Clear" for a screen reader, which the test
+needed and finding 5 lists. Spec 4.4. Tests: `SearchNoMatchesTest` (4); the four `edge-search-empty`
+pictures re-recorded (the note); no other picture changed.
+
 2026-11-22, for the next build (not released yet): **a chip button with nothing to do is faded; the
 focused Last.fm field clears the keyboard** (the UI/UX review's finding 7; the plan, both parts, the
 user: "Yes, build it"). (1) `ChipButton` with no `onClick` draws itself at `disabledOpacity`. Of its
@@ -1610,13 +1625,16 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Plain error messages; Bit-Perfect On/Off; "Loading the library…"; faded Connect (from the next build)
+### The UI/UX review's quick wins: #1, #2, #6, #7, #8 (from the next build)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "Off", then "On" after a tap (and the cover
   menu's tick agrees); the chip doesn't change size. With a USB DAC the readout under the label
   still reads in full.
 - [ ] Cold start three times (swipe AudioFool away from recents, then open it): Artists never says
   "No music yet" on the way in; "Loading the library…" may show for a moment.
+- [ ] Search for something that isn't there: "No matches" / "Nothing in the library matches.". The
+  keyboard's Search key puts the keyboard away; the × empties the field and keeps (or brings back)
+  the keyboard, ready to type.
 - [ ] Settings → Last.fm (only if you're willing to sign in again, or while not connected): Connect's
   form shows its Connect faded until the fields are filled in; a tap into a field shows the whole box
   with a little space above the keyboard.
