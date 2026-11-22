@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.core.lyrics
 
+import com.mpaulrenlund.audiofool.core.net.NetworkError
 import com.mpaulrenlund.audiofool.core.scrobbling.HttpAnswer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,7 +15,6 @@ import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.longOrNull
 import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.URLEncoder
 
@@ -64,10 +64,8 @@ class LrcLibClient(private val transport: LrcLibTransport = HttpTransport) {
     private suspend fun <T> request(path: String, notFoundIsNull: Boolean, read: (JsonElement) -> T?): T? = withContext(Dispatchers.IO) {
         val answer = try {
             transport.get(BASE_URL + path)
-        } catch (e: SocketTimeoutException) {
-            throw LyricsException("LRCLIB didn't answer in time.")
         } catch (e: IOException) {
-            throw LyricsException("Couldn't reach LRCLIB: ${e.message ?: e.javaClass.simpleName}")
+            throw LyricsException(NetworkError.sentence("LRCLIB", e))
         }
         if (answer.status == 404 && notFoundIsNull) return@withContext null
 

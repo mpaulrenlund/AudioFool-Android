@@ -13,8 +13,8 @@ import com.mpaulrenlund.audiofool.core.scrobbling.HttpAnswer
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Shadows.shadowOf
-import java.io.IOException
 import java.net.URI
+import java.net.UnknownHostException
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.Collections
@@ -128,7 +128,7 @@ class GeniusTest {
             val uri = URI(url)
             val path = uri.rawPath + (uri.rawQuery?.let { "?$it" } ?: "")
             asked.add(path)
-            if (offline) throw IOException("Unable to resolve host \"genius.com\"")
+            if (offline) throw UnknownHostException("Unable to resolve host \"genius.com\"")
             return HttpAnswer(200, answer(path))
         }
     }
@@ -216,7 +216,7 @@ class GeniusTest {
         g.show(track)
         waitFor { g.state.note?.retry == true }
         assertEquals("Couldn't load the Genius page.", g.state.note?.text)
-        assertEquals("Couldn't reach Genius: Unable to resolve host \"genius.com\". Tap to try again.", g.state.note?.detail)
+        assertEquals("No internet connection. Tap to try again.", g.state.note?.detail)
 
         fake.offline = false
         g.retry()

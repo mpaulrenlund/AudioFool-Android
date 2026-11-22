@@ -69,7 +69,7 @@ class UpdatesTest {
     @Test
     fun `GitHub unreachable, refusing or answering nonsense says so`() {
         val unreachable = GitHubReleases(transport = { throw IOException("no route") })
-        assertEquals("Couldn't reach GitHub: no route", assertFailsWith<UpdateException> { runBlocking { unreachable.list() } }.message)
+        assertEquals("Couldn't reach GitHub.", assertFailsWith<UpdateException> { runBlocking { unreachable.list() } }.message)
         val limited = GitHubReleases(transport = { HttpAnswer(403, """{"message": "API rate limit exceeded"}""") })
         assertEquals("GitHub answered HTTP 403.", assertFailsWith<UpdateException> { runBlocking { limited.list() } }.message)
         val nonsense = GitHubReleases(transport = { HttpAnswer(200, "<html>") })
@@ -152,7 +152,7 @@ class UpdatesTest {
             })
         }
         val e = assertFailsWith<UpdateException> { runBlocking { failing.fetch(releaseOf(), file) { _, _ -> } } }
-        assertEquals("Couldn't download the update: connection reset", e.message)
+        assertEquals("Couldn't download the update.", e.message)
         assertFalse(file.exists())
     }
 }

@@ -62,6 +62,7 @@ The striped squares in the mockups stand for album art. Where an album has no ar
 - Album titles wrap to two lines, then "…". Everything else is one line with "…".
 - No visible scrollbars. Lists scroll by touch. Artists' letter strip (§4.1) and Albums' year strip (§4.2) are the only things drawn at a list's edge (the user's calls, 0.2.0 and 0.11.0).
 - A tap on a song plays it, with the rest of its album queued after it, and opens Now Playing on it (the user's call, 0.1.1). A tap on an artist or album opens it.
+- **A request that gets no answer** (Genius, LRCLIB, Last.fm, GitHub) gives its reason in plain words, never Java's text: "Genius didn't answer in time.", "No internet connection.", "Couldn't make a secure connection to Genius." (a Wi-Fi sign-in page, a wrong clock), or else "Couldn't reach Genius."; the update's download says "Couldn't download the update." Java's own text goes to logcat (`AudioFoolNet`). An answer that did come (an HTTP error, a page AudioFool can't read) says what it was, as before. (2026-11-22, the UI/UX review's finding 2, the user's OK.)
 
 ## 3. Mini player
 

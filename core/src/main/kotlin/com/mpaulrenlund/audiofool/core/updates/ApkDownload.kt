@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.core.updates
 
+import com.mpaulrenlund.audiofool.core.net.NetworkError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -8,7 +9,6 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.SocketTimeoutException
 import java.net.URI
 import java.security.MessageDigest
 
@@ -66,8 +66,7 @@ class ApkDownload(private val transport: DownloadTransport = HttpTransport) {
         } catch (e: Throwable) {
             file.delete()
             throw when (e) {
-                is SocketTimeoutException -> UpdateException("GitHub didn't answer in time.")
-                is IOException -> UpdateException("Couldn't download the update: ${e.message ?: e.javaClass.simpleName}")
+                is IOException -> UpdateException(NetworkError.sentence("GitHub", e, otherwise = "Couldn't download the update."))
                 else -> e
             }
         }

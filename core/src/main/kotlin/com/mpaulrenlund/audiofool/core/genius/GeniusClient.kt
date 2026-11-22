@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.core.genius
 
+import com.mpaulrenlund.audiofool.core.net.NetworkError
 import com.mpaulrenlund.audiofool.core.scrobbling.HttpAnswer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,7 +11,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.URLEncoder
 
@@ -54,10 +54,8 @@ class GeniusClient(private val transport: GeniusTransport = HttpTransport) {
     private suspend fun <T> get(path: String, read: (JsonElement) -> T): T = withContext(Dispatchers.IO) {
         val answer = try {
             transport.get(BASE_URL + path)
-        } catch (e: SocketTimeoutException) {
-            throw GeniusException("Genius didn't answer in time.")
         } catch (e: IOException) {
-            throw GeniusException("Couldn't reach Genius: ${e.message ?: e.javaClass.simpleName}")
+            throw GeniusException(NetworkError.sentence("Genius", e))
         }
 
         // Every answer of Genius's is an object. kotlinx reads a bare word such as

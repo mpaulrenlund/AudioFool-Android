@@ -360,7 +360,7 @@ class ThemeLabTest {
         for ((name, note) in listOf(
             "update-checking" to Updates.Note.Checking,
             "update-none" to Updates.Note.UpToDate,
-            "update-check-failed" to Updates.Note.CheckFailed("Couldn't reach GitHub: no route"),
+            "update-check-failed" to Updates.Note.CheckFailed("No internet connection."),
         )) {
             shoot(device, name) {
                 Box(Modifier.fillMaxSize()) {
@@ -386,7 +386,7 @@ class ThemeLabTest {
         shoot(device, "listening-history-not-connected") { ListeningHistoryScreen(HistoryState.NotConnected, HistoryActions()) }
         shoot(device, "listening-history-failed") {
             ListeningHistoryScreen(
-                HistoryState(user = "questinnn", phase = HistoryState.Phase.Failed, error = "Couldn't reach Last.fm: Unable to resolve host \"ws.audioscrobbler.com\"."),
+                HistoryState(user = "questinnn", phase = HistoryState.Phase.Failed, error = "No internet connection."),
                 HistoryActions(),
             )
         }
@@ -405,7 +405,7 @@ class ThemeLabTest {
         }
         shoot(device, "genius-failed") {
             GeniusScreen(
-                GeniusState(song, GeniusRows.failed(GeniusException("Couldn't reach Genius: Unable to resolve host \"genius.com\": No address associated with hostname"))),
+                GeniusState(song, GeniusRows.failed(GeniusException("Couldn't make a secure connection to Genius."))),
                 album,
                 GeniusActions(),
             )
@@ -423,7 +423,7 @@ class ThemeLabTest {
         shoot(device, "lyrics-none") { LyricsScreen(LyricsState(song, note = LyricsNote(LyricsRows.NONE)), nowPlaying(), LyricsActions()) }
         shoot(device, "lyrics-failed") {
             LyricsScreen(
-                LyricsState(song, note = LyricsRows.failed(LyricsException("Couldn't reach LRCLIB: Unable to resolve host \"lrclib.net\": No address associated with hostname"))),
+                LyricsState(song, note = LyricsRows.failed(LyricsException("No internet connection."))),
                 nowPlaying(),
                 LyricsActions(),
             )

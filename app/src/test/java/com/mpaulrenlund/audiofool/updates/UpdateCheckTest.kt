@@ -77,7 +77,7 @@ class UpdateCheckTest {
         u.checkNow()
         waitFor { u.note != Updates.Note.Checking }
         val failed = assertIs<Updates.Note.CheckFailed>(u.note)
-        assertEquals("Couldn't reach GitHub: no route", failed.reason)
+        assertEquals("Couldn't reach GitHub.", failed.reason)
         assertEquals("Couldn't check for updates", Updates.noteText(failed))
     }
 

@@ -3,6 +3,7 @@ package com.mpaulrenlund.audiofool
 import android.app.Application
 import android.os.Build
 import android.os.SystemClock
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +11,7 @@ import androidx.compose.runtime.setValue
 import com.mpaulrenlund.audiofool.core.genius.GeniusClient
 import com.mpaulrenlund.audiofool.core.genius.GeniusLookup
 import com.mpaulrenlund.audiofool.core.library.DriveChange
+import com.mpaulrenlund.audiofool.core.net.NetworkError
 import com.mpaulrenlund.audiofool.genius.Genius
 import com.mpaulrenlund.audiofool.core.lyrics.LrcLibClient
 import com.mpaulrenlund.audiofool.core.lyrics.OnlineLyrics
@@ -156,6 +158,8 @@ class AudioFoolApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Java's own text for a failed request (the screens say it in plain words): logcat only.
+        NetworkError.log = { Log.w(NET_TAG, it) }
         settings = AppSettings(this)
         library = LibraryRepository(
             cachePath = File(noBackupFilesDir, "library.bin").path,
@@ -235,6 +239,9 @@ class AudioFoolApp : Application() {
 
         /** The 96-bar ones before 0.2.4, deleted at start. */
         const val OLD_WAVEFORMS = "waveforms"
+
+        /** Logcat's tag for requests that failed: `adb logcat -s AudioFoolNet:W`. */
+        const val NET_TAG = "AudioFoolNet"
     }
 }
 

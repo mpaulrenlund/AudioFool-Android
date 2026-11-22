@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-20 (0.23.2 released). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-22 (0.23.2 released; the review's #2 built, not released). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -19,20 +19,18 @@ listed under *Other docs* at the end: read each only when the work touches it.
   **0.23.0** (68), 2026-11-20: Analyze, Genius and Lyrics out of the cover menu, as buttons.
   **0.22.1** (67), 2026-11-18: the output row no longer says "Resampled". **0.22.0** (66),
   2026-11-16: a long-press on the heart opens Liked Songs. Each in `design/progress.md`, newest first.
-- **0.21.0** (65): **Playlists and the heart** (the user's request; spec 4.1, 4.8, 5). Artists' header holds
-  ARTISTS and PLAYLISTS tabs; the Playlists tab lists the desktop's Liked and Recently Added
-  (ported from `AudioFool.Core/Playlists` with its tests); a playlist opens as Album's screen
-  with two-line song rows, and a tap plays the playlist from that song. Now Playing's Repeat is
-  gone (always off, a saved one dropped): a heart in its place likes the song (filled
-  `accent.like`). Saved in `no_backup/playlists.json`, the desktop's format. Making other
-  playlists is for later (the user's words). My calls and what the emulator showed:
-  `design/progress.md`, its sixth decision. Recently Added goes by the date the scan took for a
-  file (on Android its modified time): on the S24's test list.
+- **0.21.0** (65): **Playlists and the heart** (spec 4.1, 4.8, 5): ARTISTS and PLAYLISTS tabs,
+  the desktop's Liked and Recently Added, the heart in Repeat's place, saved in
+  `no_backup/playlists.json`. Making other playlists is for later (the user's words). Details:
+  `design/progress.md`, under 0.21.0.
 - **Next build:** 0.23.3 for fixes, 0.24.0 for new features (confirm the number with the user);
-  **versionCode 71**. The emulator has 0.23.2. ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
+  **versionCode 71**. It carries **network errors in plain words** (the review's #2, built
+  2026-11-22: "No internet connection." and the like instead of Java's text; spec 2, *Shared
+  parts*; `design/progress.md`, its newest decision). At the release, put its number in the
+  review where #2 says "next build". The emulator has 0.23.2 with #2 (an unreleased build, code 70). ThemeLab's menu pictures use a fixed "0.7.0", so a bump changes no picture.
 - **UI/UX review (2026-11-22): `design/ux-review-2026-11-22.md`**, 16 findings with a roadmap and
-  screenshots beside it. Nothing built yet: the user picks which findings to implement (quick wins
-  suggested: 1, 2, 6, 7, 8). Mark each one built there with its version.
+  screenshots beside it. The user picks which findings to build: #2 is built; the other quick wins
+  are 1, 6, 7, 8. Mark each one built there with its version.
 - **0.18.1** (57): **no Last.fm key in the APK** (the user's call, so the repo can be public
   again). Connect asks for the API key and shared secret while the phone has none saved; a
   phone that signed in before keeps its key. `tools/build.sh` fails an APK that holds the key.

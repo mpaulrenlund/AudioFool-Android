@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.core.scrobbling
 
+import com.mpaulrenlund.audiofool.core.net.NetworkError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -11,7 +12,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -204,10 +204,8 @@ class LastFmApi(apiKey: String, secret: String, private val transport: LastFmTra
     private suspend fun send(request: () -> HttpAnswer): JsonObject {
         val answer = try {
             withContext(Dispatchers.IO) { request() }
-        } catch (e: SocketTimeoutException) {
-            throw LastFmException(0, "Last.fm didn't answer in time.")
         } catch (e: IOException) {
-            throw LastFmException(0, "Couldn't reach Last.fm: ${e.message}")
+            throw LastFmException(0, NetworkError.sentence("Last.fm", e))
         }
 
         val root = try {

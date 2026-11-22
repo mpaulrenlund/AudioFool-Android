@@ -1,5 +1,6 @@
 package com.mpaulrenlund.audiofool.core.updates
 
+import com.mpaulrenlund.audiofool.core.net.NetworkError
 import com.mpaulrenlund.audiofool.core.scrobbling.HttpAnswer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,7 +14,6 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.longOrNull
 import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.SocketTimeoutException
 import java.net.URI
 
 /** Why an update couldn't be looked up or downloaded, in words the pop-up shows. */
@@ -39,10 +39,8 @@ class GitHubReleases(private val url: String = RELEASES_API, private val transpo
     suspend fun list(): List<AppRelease> = withContext(Dispatchers.IO) {
         val answer = try {
             transport.get(url)
-        } catch (e: SocketTimeoutException) {
-            throw UpdateException("GitHub didn't answer in time.")
         } catch (e: IOException) {
-            throw UpdateException("Couldn't reach GitHub: ${e.message ?: e.javaClass.simpleName}")
+            throw UpdateException(NetworkError.sentence("GitHub", e))
         }
         if (answer.status !in 200..299) throw UpdateException("GitHub answered HTTP ${answer.status}.")
         val doc = try {

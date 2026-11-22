@@ -6,6 +6,7 @@ import org.junit.Test
 import java.io.File
 import java.io.IOException
 import java.net.URI
+import java.net.UnknownHostException
 import java.net.URLDecoder
 import java.nio.file.Files
 import kotlin.test.assertEquals
@@ -281,13 +282,13 @@ class LyricsTest {
         var fail = true
         val fake = object : LrcLibTransport {
             override fun get(url: String): HttpAnswer {
-                if (fail) throw IOException("Unable to resolve host \"lrclib.net\"")
+                if (fail) throw UnknownHostException("Unable to resolve host \"lrclib.net\"")
                 return HttpAnswer(200, json(1, "Band", "Song", 200.0, "[00:01.00]One", null))
             }
         }
         val online = OnlineLyrics(LrcLibClient(fake))
         val e = assertFailsWith<LyricsException> { online.find("Band", null, "Song", "Album", 200_000) }
-        assertEquals("Couldn't reach LRCLIB: Unable to resolve host \"lrclib.net\"", e.message)
+        assertEquals("No internet connection.", e.message)
         fail = false
         assertTrue(online.find("Band", null, "Song", "Album", 200_000).lyrics!!.synced)
 

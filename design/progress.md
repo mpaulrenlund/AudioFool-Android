@@ -86,6 +86,25 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-22, for the next build (not released yet): **network errors in plain words** (the UI/UX
+review's finding 2, `design/ux-review-2026-11-22.md`; the user: "Yes, start #2"). The screens
+showed Java's own text after "Couldn't reach Genius:" (on the emulator: "…CertPathValidatorException:
+Trust anchor for certification path not found."). One helper, core `net/NetworkError.sentence`,
+now words every request that got no answer, for Genius, LRCLIB, Last.fm, GitHub's release list and
+the update's download: a timeout anywhere in the causes is "<Service> didn't answer in time." (as
+before), a name that didn't resolve "No internet connection.", an `SSLException` "Couldn't make a
+secure connection to <Service>.", anything else "Couldn't reach <Service>." (the download:
+"Couldn't download the update."). Java's text, causes and all, goes to logcat under `AudioFoolNet`
+(`AudioFoolApp.onCreate` points `NetworkError.log` at it); Android drops a stack trace that holds an
+`UnknownHostException`, so the line is written out, not passed as a throwable. **Differs from the
+desktop on purpose:** its `GeniusClient.cs` and `LastFmApi.cs` append .NET's message, which reads as
+a sentence; Java's doesn't. Answers that did come (HTTP errors, pages it can't read, Last.fm's own
+error messages) are worded as before. Spec §2, *Shared parts*. Tests: `NetworkErrorTest` (6), the
+Genius, Lyrics and update tests moved to the new wording. ThemeLab's failure fixtures now say "No
+internet connection." (Lyrics, Listening History, the update note) and "Couldn't make a secure
+connection to Genius."; the 12 `*-genius-failed`, `*-lyrics-failed` and
+`*-listening-history-failed` pictures re-recorded, no other picture changed.
+
 2026-11-20, 0.23.2 (versionCode 70; released the same day as pre-release
 [`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `023109ae…947fcf67`
@@ -1537,6 +1556,12 @@ Decisions for 0.2.6 and older (0.2.x, 0.1.x and sessions 2–5) are in
 Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-version lists with
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
+
+### Network errors in plain words (from the next build)
+
+- [ ] With airplane mode on, Genius and Lyrics say "No internet connection. Tap to try again.",
+  not Java's text; with it off again, a tap loads them. On a Wi-Fi that wants a sign-in page first
+  (a hotel, a café): "Couldn't make a secure connection to Genius." or similar.
 
 ### The smaller title (from 0.23.2)
 
