@@ -104,7 +104,9 @@ Genius and Lyrics keep their size and place, Lyrics level with the cover's right
 and album get the 40 dp Analyze had (about 260 dp on the S24, 251 on the M21). `AppIcons.ANALYZE`
 (the magnifier) is deleted with the button. Tests: `NowPlayingTouchTest`'s button checks are for
 two buttons, a new one taps the count (nothing) and the quality (Analyze); `SwipeToSkipTest`
-measures Genius instead.
+measures Genius instead. The user's calls: 0.23.4 as a fix-level number (0.24.0 offered as the
+recommendation, for a change in behaviour, and turned down); the whole line as the target was offered
+and not taken.
 
 2026-11-22, 0.23.3 (versionCode 71; released the same day as pre-release
 [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3), with the four decisions below, APK attached,

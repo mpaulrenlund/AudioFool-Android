@@ -14,7 +14,8 @@ listed under *Other docs* at the end: read each only when the work touches it.
   [`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4) (APK in
   `dist/AudioFool-0.23.4.apk`, SHA-256 `0c7637bd…7bfabd8a`, notes in `dist/notes-0.23.4.md`):
   **a tap on Now Playing's quality line opens Analyze; the Analyze button is gone** (spec 5, 5.1;
-  `design/progress.md`, its newest decision).
+  `design/progress.md`, its newest decision). Built, published, on the emulator, committed
+  (`8432214`, bump `43400a2`); not yet seen by the user on either phone.
 - **0.23.3** (71), 2026-11-22: the UI/UX review's five quick wins (#1, #2, #6, #7, #8).
 - **0.23.2** (70), 2026-11-20: Now Playing's title 18 instead of 22.
   **0.23.1** (69), 2026-11-20: the buttons beside the artist and album, and only the cover moves on a swipe.
