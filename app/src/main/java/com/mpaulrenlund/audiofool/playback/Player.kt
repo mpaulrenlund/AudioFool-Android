@@ -62,11 +62,15 @@ class Player(
     private val settings: AppSettings,
 ) : OutputStage.Listener {
     private val main = Handler(Looper.getMainLooper())
+
+    /** The session the shared output plays in, announced to EQ apps such as Wavelet while playing (2026-11-23). */
+    private val effects = EffectsSession.create(context)
+
     private var engineMade = false
     private val engine: OutputStage by lazy {
         BassRuntime.initialise()
         engineMade = true
-        OutputStage(this, routes)
+        OutputStage(this, routes, effects.id)
     }
     private val audioManager = context.getSystemService(AudioManager::class.java)
 
@@ -491,6 +495,7 @@ class Player(
         // The end of the queue: back to its start, paused, so Play plays it again.
         engaged = false
         setPlaying(false)
+        effects.close()
         watchedTrack = null
         watchers.forEach { it.stopped() }
         val first = order.order.firstOrNull() ?: return@post
@@ -599,6 +604,7 @@ class Player(
         state.isPlaying = playing
         main.removeCallbacks(letGoOfDac)
         if (playing) {
+            effects.open()
             registerNoisy()
             main.removeCallbacks(periodicSave)
             main.postDelayed(periodicSave, SAVE_EVERY_MS)
@@ -623,6 +629,9 @@ class Player(
 
     /** Paused and the app swiped away (0.4.7) or out of sight (0.4.8): the DAC goes back to Android now rather than after the minute. */
     fun letGoOfDacNow() = letGoOfDac.run()
+
+    /** The service has gone (swiped away while paused): EQ apps let go of the session until the next Play. */
+    fun closeEffects() = effects.close()
 
     /** The driver took or gave back the DAC, or it came or went: the readout and BP's state. */
     fun usbChanged() = showRoute()

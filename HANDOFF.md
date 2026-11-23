@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-23 (0.23.4 released: Analyze from the quality line). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-23 (0.23.4 released; then EQ apps such as Wavelet, committed, not yet built). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -26,6 +26,13 @@ listed under *Other docs* at the end: read each only when the work touches it.
   the desktop's Liked and Recently Added, the heart in Repeat's place, saved in
   `no_backup/playlists.json`. Making other playlists is for later (the user's words). Details:
   `design/progress.md`, under 0.21.0.
+- **Committed since 0.23.4, not in a build yet: EQ apps such as Wavelet reach the shared output**
+  (the user's call, 2026-11-23; spec 6.1 *Equalizer apps*; `design/progress.md`, its newest
+  decision). One audio session (`playback/EffectsSession.kt`), announced to EQ apps while playing;
+  the Bit-Perfect ways never play in it. Checked on the emulator; Wavelet itself only on the S24
+  (*To test on the S24*, "Wavelet"). Still open if the user wants them: a built-in EQ ported from the
+  desktop (`C:\MusicPlayer\docs\equalizer-plan.md`; works with Bit-Perfect on), and the user's Peace
+  presets converted to Wavelet's GraphicEQ import format (a one-off).
 - **Next build:** 0.23.5 for fixes, 0.24.0 for new features (confirm the number with the user);
   **versionCode 73**. The emulator has 0.23.4. ThemeLab's menu pictures use a fixed "0.7.0", so a
   bump changes no picture.

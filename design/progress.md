@@ -88,6 +88,33 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-23, after 0.23.4 (committed, not yet in a build): **EQ apps such as Wavelet reach AudioFool's
+shared output** (the user's call: asked whether the desktop's Equalizer APO / Peace link could be
+done with Wavelet, offered (1) announcing the session to Wavelet or (2) porting the desktop's own EQ,
+and chose 1; spec 6.1, *Equalizer apps*). Why not the desktop's way: the desktop reads Peace's preset
+files and runs them itself, but Android keeps Wavelet's presets private and Wavelet's docs list no
+export, intents or API, so AudioFool can't read them. What was built: `EffectsSession` asks Android
+for one audio session at start; every shared `AudioTrack` is built in it, and when playing starts
+the app sends `ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION` (the session, the package, content type
+music), as Spotify and Poweramp do, so Wavelet attaches without its legacy mode or its DUMP-permission
+session detection. My calls, open to change: it stays announced through a pause (no drop and
+re-attach at every Play) and is closed when the queue ends or `PlaybackService` is destroyed; **only
+the shared path** plays in the session, so the Bit-Perfect ways (driver, USB mixer, rate-matched
+mixer, the M21's source rate) never get an EQ, and with BP on an EQ is heard only where the output is
+shared anyway. Tests: `EffectsSessionTest` (4: the extras, once per play, close then a new open, no
+announce without a session); all 634 core and 164 app tests, 420 screenshots unchanged, `tools/build.sh`
+passing (signer, no Last.fm key). On the emulator (subagent; logs in that session's scratchpad
+`eqcheck/`): one announce for a play with two pauses (session 537; the broadcast carried 537, the
+package and 0); the shared track stayed in 537 across 44.1 kHz 16-bit → 96 kHz float and a FLAC → Vorbis
+reopen inside a queue; Pretend USB + BP opened "(BitPerfect)" in session 561 and Pretend Headphones +
+BP "(SourceRate)" in 569, back in 537 once shared again; one close at the queue's end and a new
+announce at the next Play; Gapless Live 2 joins, 0 underruns, heard 11.945 and 11.992 s apart. The
+emulator's MusicFX received the announcement but attaches nothing while its per-app switch is off
+(and it can't be turned on from the shell), so an effect actually staying attached across a reopen is
+for the S24 with Wavelet. Not done: a built-in EQ (option 2, still open if the user wants EQ with
+Bit-Perfect on), and converting the user's Peace presets into Wavelet's GraphicEQ import format
+(offered as a one-off).
+
 2026-11-23, 0.23.4 (versionCode 72; released the same day as pre-release
 [`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4), APK attached, `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256
 `0c7637bd…7bfabd8a` matching `dist/` and GitHub's own digest; on the emulator it updated over 0.23.3
@@ -1652,6 +1679,19 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Wavelet (from the build after 0.23.4)
+
+- [ ] Wavelet's experimental session detection and legacy mode off: play in AudioFool with
+  Bit-Perfect off (speaker, Bluetooth, or the USB DAC); Wavelet shows AudioFool and its EQ is heard
+  (an AutoEq profile or a big bass boost makes it obvious).
+- [ ] Play an album that changes format mid-queue (16/44.1 then 24/96): the EQ stays on after the
+  change, with no extra click.
+- [ ] Pause a minute and play on: still EQ'd. Let the queue end and press Play: still EQ'd.
+- [ ] Bit-Perfect on with the USB DAC: the EQ is not heard (the driver plays), and the readout says
+  "Exclusive" as before.
+- [ ] If Samsung's own equalizer (Sound quality and effects) is set to anything but Normal, it may
+  now apply to AudioFool too; Wavelet's docs say the two can clash. Say if anything sounds doubled.
+
 ### Analyze from the quality line (from 0.23.4)
 
 - [ ] Now Playing: no Analyze button; Genius and Lyrics at the right of the names, a long artist
@@ -2055,6 +2095,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Wavelet (from the build after 0.23.4)
+
+- [ ] If Wavelet is on the M21: with Bit-Perfect off, Wavelet shows AudioFool and its EQ is heard
+  through the jack. With Bit-Perfect on (the source-rate way), it is not heard.
 
 ### Analyze from the quality line (from 0.23.4)
 

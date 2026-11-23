@@ -90,6 +90,10 @@ Traps worth not rediscovering: playback, the output stage, scanning, ThemeLab, J
   match. `OutputRoutes.MEDIA` is the one set of attributes for both the mixer and every track.
 - **`AudioFormat.Builder` throws above Android's rate limit** (192 kHz on the emulator; a
   hidden per-device value): wrap anything that builds one for a made-up rate.
+- **Only the shared output plays in the announced effects session** (`EffectsSession`, 2026-11-23):
+  an EQ app (Wavelet, Samsung's own) attaches to that session, so an `AudioTrack` for a
+  Bit-Perfect way (the USB mixer, the M21's source rate) built in it would get the EQ too. A new
+  path through `OutputStage.build` leaves `session` at its default unless it is shared.
 - **`setPreferredMixerAttributes` and the other mixer calls are Android 14+**: guard each call
   with `Build.VERSION.SDK_INT` inline (lint doesn't follow `OutputRoutes.MIXER_API`). The M21
   is Android 13.

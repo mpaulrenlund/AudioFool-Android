@@ -144,6 +144,7 @@ class PlaybackService : Service() {
 
     override fun onDestroy() {
         player.save()
+        player.closeEffects()
         getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
         if (running === this) running = null
         super.onDestroy()

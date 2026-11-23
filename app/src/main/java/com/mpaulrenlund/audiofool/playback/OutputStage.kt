@@ -1,6 +1,7 @@
 package com.mpaulrenlund.audiofool.playback
 
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioTrack
 import android.os.Process
 import android.os.SystemClock
@@ -48,11 +49,19 @@ import java.util.concurrent.TimeUnit
  * that goes away mid-song pauses ([Listener.onOutputLost]); [letGo] gives it back
  * while paused, and Resume opens the output again.
  *
+ * **Equalizer apps** (2026-11-23): the shared output plays in [effectsSession], the one
+ * session the app announces ([EffectsSession]), so an EQ such as Wavelet stays attached
+ * across reopens. The Bit-Perfect ways each get a session of their own, which no EQ knows.
+ *
  * Everything runs on one thread that owns BASS's streams and the output;
  * the rest of the app talks to it through commands, and hears back through the
  * [Listener], on that thread.
  */
-class OutputStage(private val listener: Listener, private val routes: OutputRoutes) {
+class OutputStage(
+    private val listener: Listener,
+    private val routes: OutputRoutes,
+    private val effectsSession: Int = AudioManager.AUDIO_SESSION_ID_GENERATE,
+) {
     interface Listener {
         /** The decoder has moved onto [track]: started, or joined on after the last. The next one is wanted now. */
         fun onDecoding(track: Track)
@@ -345,11 +354,12 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         // Shared: Android mixes in float, so a 24-bit track goes as float, which holds
         // its samples exactly. A 24-bit packed track came out as static on the M21
         // (Android 13, 0.1.1), though the emulator played it.
+        // In the announced session, so an EQ app reaches it (2026-11-23); the ways above never are.
         val encodings = listOf(format.encoding, AudioFormat.ENCODING_PCM_FLOAT, AudioFormat.ENCODING_PCM_16BIT)
             .filter { it != AudioFormat.ENCODING_PCM_24BIT_PACKED }.distinct()
         for (encoding in encodings) {
             val f = format.withEncoding(encoding)
-            if (use(build(f), f, format, OutputPath.Shared, track)) return true
+            if (use(build(f, session = effectsSession), f, format, OutputPath.Shared, track)) return true
         }
         return false
     }
@@ -396,8 +406,11 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
         return null
     }
 
-    /** Builds an `AudioTrack` for [format]; [exact] is a mixer entry's own format, used as it is. */
-    private fun build(format: PcmFormat, exact: AudioFormat? = null): PcmOutput? {
+    /**
+     * Builds an `AudioTrack` for [format]; [exact] is a mixer entry's own format, used as it is.
+     * [session]: the announced one for the shared output; otherwise Android gives it a new one.
+     */
+    private fun build(format: PcmFormat, exact: AudioFormat? = null, session: Int = AudioManager.AUDIO_SESSION_ID_GENERATE): PcmOutput? {
         // A mixer entry may give its channels as an index mask; the buffer size only needs the count.
         val mask = OutputRoutes.maskOf(format.channels)
         if (mask == AudioFormat.CHANNEL_INVALID) return null
@@ -407,12 +420,13 @@ class OutputStage(private val listener: Listener, private val routes: OutputRout
             if (min <= 0) return null
             // About half a second: room to open the next track while this one plays.
             val size = maxOf(min * 2, format.bytesPerFrame * format.sampleRate / 2)
-            val track = AudioTrack.Builder()
+            val builder = AudioTrack.Builder()
                 .setAudioAttributes(OutputRoutes.MEDIA)
                 .setAudioFormat(audioFormat)
                 .setBufferSizeInBytes(size - size % format.bytesPerFrame)
                 .setTransferMode(AudioTrack.MODE_STREAM)
-                .build()
+            if (session > 0) builder.setSessionId(session)
+            val track = builder.build()
             if (track.state == AudioTrack.STATE_INITIALIZED) AudioTrackOutput(track) else {
                 track.release()
                 null
