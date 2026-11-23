@@ -17,9 +17,9 @@ listed under *Other docs* at the end: read each only when the work touches it.
   `design/progress.md`, its newest decision). One audio session (`playback/EffectsSession.kt`),
   announced to EQ apps while playing; the Bit-Perfect ways never play in it. Built, published, on
   the emulator, committed (`4955fce`, bump `1238d2e`); Wavelet itself only on the S24 (*To test on
-  the S24*, "Wavelet"), not yet tried. Still open if the user wants them: a built-in EQ ported from
-  the desktop (`C:\MusicPlayer\docs\equalizer-plan.md`; works with Bit-Perfect on), and the user's
-  Peace presets converted to Wavelet's GraphicEQ import format (a one-off).
+  the S24*, "Wavelet"), not yet tried. Still open if the user wants it: a built-in EQ ported from
+  the desktop (`C:\MusicPlayer\docs\equalizer-plan.md`; works with Bit-Perfect on). The user's Peace
+  presets are converted for Wavelet's import (one-off, not tried yet): `dist/wavelet-presets/`.
 - **0.23.4** (72), 2026-11-23: a tap on Now Playing's quality line opens Analyze; no Analyze button.
   **0.23.3** (71), 2026-11-22: the UI/UX review's five quick wins (#1, #2, #6, #7, #8).
 - **0.23.2** (70), 2026-11-20: Now Playing's title 18 instead of 22.

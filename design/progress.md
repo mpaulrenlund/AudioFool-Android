@@ -89,6 +89,23 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-23, no build (a one-off on this PC, nothing in the app or the repo): **the user's Peace
+presets converted for Wavelet's import** (the user asked whether they would be in the APK: no, they
+are files the user imports in Wavelet, which keeps them privately; AudioFool can't hand them over).
+Wavelet's import page (pittvandewitt.github.io/Wavelet/Import) takes one line, `GraphicEQ: f g; …`,
+at exactly its 127 frequencies (20 to 19871 Hz; "Adding, changing or removing frequencies will lead to
+an incompatible file"), names the preset after the file, and normalizes the level, so a preamp doesn't
+carry over. A throwaway console app referencing the desktop's Release `AudioFool.Core.dll` read every
+`.peace` in Equalizer APO's config folder with `EqPresetLibrary` and wrote what the desktop's EQ menu
+offers (supported, not flat) as `EqDesign.For(preset, 48000).GainDbAt(f)`, preamp included, one
+decimal. Out: `dist/wavelet-presets/` (git-ignored): the user's four (HD650 Chat GPT, IER-M9 ChatGPT,
+Marcus Bass Boost, Tin P1's) and Peace's 11 stock ones in `Peace stock/`; Last Configuration left out
+(byte-identical to Marcus Bass Boost). Skipped as the desktop skips them: shelf filters (Bass Boost 2,
+Bass and High Boost 2, High Boost 2), Graphic EQ, routing, surround; nine flat ones. Checked: all 16
+files match the example's format and frequencies exactly; the 127 points stay within 0.32 dB of the
+desktop's curve for the user's four (worst at about 19.3 kHz; 0.9 dB for stock High Boost, 3.8 dB for
+Telephone at 19.5 kHz where it is already about −50 dB). Not tried in Wavelet yet.
+
 2026-11-23, 0.24.0 (versionCode 73; released the same day as pre-release
 [`v0.24.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.24.0), APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `3b755a02…1466e93a`
@@ -119,8 +136,8 @@ announce at the next Play; Gapless Live 2 joins, 0 underruns, heard 11.945 and 1
 emulator's MusicFX received the announcement but attaches nothing while its per-app switch is off
 (and it can't be turned on from the shell), so an effect actually staying attached across a reopen is
 for the S24 with Wavelet. Not done: a built-in EQ (option 2, still open if the user wants EQ with
-Bit-Perfect on), and converting the user's Peace presets into Wavelet's GraphicEQ import format
-(offered as a one-off).
+Bit-Perfect on); converting the user's Peace presets into Wavelet's GraphicEQ import format was done
+the same day as a one-off (the entry above).
 
 2026-11-23, 0.23.4 (versionCode 72; released the same day as pre-release
 [`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4), APK attached, `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256
