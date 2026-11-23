@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.24.0** (versionCode 73): EQ apps such as Wavelet reach the shared output; the Bit-Perfect ways stay out of their session (spec 6.1) — 2026-11-23, released as pre-release [`v0.24.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.24.0)
 - [x] **0.23.4** (versionCode 72): a tap on Now Playing's quality line opens Analyze; no Analyze button (spec 5, 5.1) — 2026-11-23, released as pre-release [`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4)
 - [x] **0.23.3** (versionCode 71): the UI/UX review's quick wins: network errors in plain words, Bit-Perfect "On"/"Off" in Settings, "Loading the library…", a faded Connect and the Last.fm field clear of the keyboard, Search's "No matches" (spec 2, 4.1, 4.4, 4.5) — 2026-11-22, released as pre-release [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3)
 - [x] **0.23.2** (versionCode 70): Now Playing's title 18 instead of 22 (spec 5) — 2026-11-20, released as pre-release [`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2)
@@ -88,7 +89,13 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-23, after 0.23.4 (committed, not yet in a build): **EQ apps such as Wavelet reach AudioFool's
+2026-11-23, 0.24.0 (versionCode 73; released the same day as pre-release
+[`v0.24.0`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.24.0), APK attached,
+`tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `3b755a02…1466e93a`
+matching `dist/` and GitHub's own digest; on the emulator it updated over 0.23.4 keeping the
+library, Version read 0.24.0, one announce per play (session 593) with the track in it, no second
+announce after a pause, one close at each queue end, the notification as before; the user took 0.24.0
+as proposed): **EQ apps such as Wavelet reach AudioFool's
 shared output** (the user's call: asked whether the desktop's Equalizer APO / Peace link could be
 done with Wavelet, offered (1) announcing the session to Wavelet or (2) porting the desktop's own EQ,
 and chose 1; spec 6.1, *Equalizer apps*). Why not the desktop's way: the desktop reads Peace's preset
@@ -1679,7 +1686,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Wavelet (from the build after 0.23.4)
+### Wavelet (from 0.24.0)
 
 - [ ] Wavelet's experimental session detection and legacy mode off: play in AudioFool with
   Bit-Perfect off (speaker, Bluetooth, or the USB DAC); Wavelet shows AudioFool and its EQ is heard
@@ -2096,7 +2103,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Wavelet (from the build after 0.23.4)
+### Wavelet (from 0.24.0)
 
 - [ ] If Wavelet is on the M21: with Bit-Perfect off, Wavelet shows AudioFool and its EQ is heard
   through the jack. With Bit-Perfect on (the source-rate way), it is not heard.
