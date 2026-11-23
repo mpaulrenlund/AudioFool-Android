@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-23 (Analyze from the quality line, not yet built; 0.23.3 is the latest build). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-23 (0.23.4 released: Analyze from the quality line). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -10,14 +10,12 @@ listed under *Other docs* at the end: read each only when the work touches it.
 
 - **Read:** `CLAUDE.md`, then this file. Before UI work, the "Decisions made for the build"
   section of `design/progress.md` from the top.
-- **Latest build: 0.23.3** (versionCode 71), published 2026-11-22 as the pre-release
-  [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3) (APK in
-  `dist/AudioFool-0.23.3.apk`, SHA-256 `083fd8ea…032e09a1`, notes in `dist/notes-0.23.3.md`):
-  **the UI/UX review's five quick wins**: network errors in plain words (#2; spec 2, *Shared
-  parts*), Settings' Bit-Perfect chip saying "On" / "Off" and a switch for a screen reader (#1;
-  spec 4.5), "Loading the library…" until the cache is read (#8; spec 4.1), a faded Connect until
-  Last.fm's form is filled in and its focused field clear of the keyboard (#7; spec 4.5), and
-  Search's "No matches", Search key and × (#6; spec 4.4). `design/progress.md`, its five newest decisions.
+- **Latest build: 0.23.4** (versionCode 72), published 2026-11-23 as the pre-release
+  [`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4) (APK in
+  `dist/AudioFool-0.23.4.apk`, SHA-256 `0c7637bd…7bfabd8a`, notes in `dist/notes-0.23.4.md`):
+  **a tap on Now Playing's quality line opens Analyze; the Analyze button is gone** (spec 5, 5.1;
+  `design/progress.md`, its newest decision).
+- **0.23.3** (71), 2026-11-22: the UI/UX review's five quick wins (#1, #2, #6, #7, #8).
 - **0.23.2** (70), 2026-11-20: Now Playing's title 18 instead of 22.
   **0.23.1** (69), 2026-11-20: the buttons beside the artist and album, and only the cover moves on a swipe.
   **0.23.0** (68), 2026-11-20: Analyze, Genius and Lyrics out of the cover menu, as buttons.
@@ -27,11 +25,8 @@ listed under *Other docs* at the end: read each only when the work touches it.
   the desktop's Liked and Recently Added, the heart in Repeat's place, saved in
   `no_backup/playlists.json`. Making other playlists is for later (the user's words). Details:
   `design/progress.md`, under 0.21.0.
-- **Not yet built (2026-11-23):** a tap on Now Playing's quality line opens Analyze, and the
-  Analyze button is gone (spec 5, 5.1; `design/progress.md`, its newest decision). Goes into the
-  next build.
-- **Next build:** 0.23.4 for fixes, 0.24.0 for new features (confirm the number with the user);
-  **versionCode 72**. The emulator has 0.23.3. ThemeLab's menu pictures use a fixed "0.7.0", so a
+- **Next build:** 0.23.5 for fixes, 0.24.0 for new features (confirm the number with the user);
+  **versionCode 73**. The emulator has 0.23.4. ThemeLab's menu pictures use a fixed "0.7.0", so a
   bump changes no picture.
 - **UI/UX review (2026-11-22): `design/ux-review-2026-11-22.md`**, 16 findings with a roadmap and
   screenshots beside it. The user picks which findings to build: the quick wins (1, 2, 6, 7, 8)
@@ -43,7 +38,7 @@ listed under *Other docs* at the end: read each only when the work touches it.
   Lyrics, below), 0.17.2 (55), 0.17.1 (54), 0.17.0 (53), 0.16.0 (52), 0.15.1 (51), 0.15.0 (50)
   and 0.14.0 (48); 49 went to the unpublished 0.14.1. Build by build: `design/progress.md` (Sessions).
 - **Waiting on the user's phone tests:** the unticked items in *To test on the S24* and *To test
-  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.23.3 has been
+  on the M21* in `design/progress.md`, newest build first. Nothing from 0.9.0 to 0.23.4 has been
   reported yet (the last report, on 0.8.1: "looks its working on both devices"). When the user
   says how a build feels, tick the matching items in both lists and push, leaving open what the
   sentence doesn't cover. What to listen for and ask for each build is in the archived handoff:

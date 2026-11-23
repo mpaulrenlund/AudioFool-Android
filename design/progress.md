@@ -14,6 +14,7 @@ Update this at the end of every session: tick off what's finished, note anything
 - [x] **0.1.3**: the M21 recognised by its speaker's name; unplug from the jack — 2026-10-25
 - [x] **0.1.4**: no click at a restart or a tap (the desktop's seek fade) — 2026-10-25
 - [x] **0.1.5**: unplug pauses on the M21; its readout goes by FiiO's reported rate (both checked on the M21 over adb) — 2026-10-25
+- [x] **0.23.4** (versionCode 72): a tap on Now Playing's quality line opens Analyze; no Analyze button (spec 5, 5.1) — 2026-11-23, released as pre-release [`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4)
 - [x] **0.23.3** (versionCode 71): the UI/UX review's quick wins: network errors in plain words, Bit-Perfect "On"/"Off" in Settings, "Loading the library…", a faded Connect and the Last.fm field clear of the keyboard, Search's "No matches" (spec 2, 4.1, 4.4, 4.5) — 2026-11-22, released as pre-release [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3)
 - [x] **0.23.2** (versionCode 70): Now Playing's title 18 instead of 22 (spec 5) — 2026-11-20, released as pre-release [`v0.23.2`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.2)
 - [x] **0.23.1** (versionCode 69): Analyze, Genius and Lyrics beside the artist and album; only the cover moves on a swipe (spec 5) — 2026-11-20, released as pre-release [`v0.23.1`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.1)
@@ -87,7 +88,11 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
-2026-11-23, not yet built: **a tap on Now Playing's quality line opens Analyze; the Analyze button
+2026-11-23, 0.23.4 (versionCode 72; released the same day as pre-release
+[`v0.23.4`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.4), APK attached, `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256
+`0c7637bd…7bfabd8a` matching `dist/` and GitHub's own digest; on the emulator it updated over 0.23.3
+keeping the library, Version read 0.23.4, no Analyze button, a tap on the quality line opened Analyze
+on the song and back returned, the track count did nothing, playback and the notification as before): **a tap on Now Playing's quality line opens Analyze; the Analyze button
 is gone** (the user's call: "instead of the Analyze button, let's make it so tapping on the Track
 Quality Info analyzes the track audio"; spec 5, items 2 and 4, and 5.1). Only the quality text
 ("FLAC · 1,901 kbps · …") is the target, not the track count beside it (offered both; the user
@@ -1645,7 +1650,7 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
-### Analyze from the quality line (next build)
+### Analyze from the quality line (from 0.23.4)
 
 - [ ] Now Playing: no Analyze button; Genius and Lyrics at the right of the names, a long artist
   or album name showing more before the "…".
@@ -2049,7 +2054,7 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 
 Sorted on 2026-10-30, as the S24's list above.
 
-### Analyze from the quality line (next build)
+### Analyze from the quality line (from 0.23.4)
 
 - [ ] As on the S24: a tap on the quality line opens Analyze; no Analyze button; the cover the
   same size as before (301 dp).
