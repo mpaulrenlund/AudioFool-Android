@@ -376,7 +376,7 @@
     "controlsLift": { "ofSpare": 0.46, "max": 56 },
     "$readoutLiftNote": "0.7.1 (the user's call: the S24's output readout sat awkwardly close to the bottom): readoutLift.ofSpare of the spare height, up to max, is taken out of the controlsLift gap and put under the readout, so the readout rises and the buttons stay put. Kept smaller than controlsLift. None on the M21.",
     "readoutLift": { "ofSpare": 0.17, "max": 20 },
-    "$toolsNote": "2026-11-20 (the user's request: Analyze, Genius and Lyrics out of the cover menu, as buttons, the same size as each other and not large): three round buttons toolButton across, toolGap apart, at the right of the artist and album lines, namesToTools after them, centred against the two lines; the icon is toolIconOfButton of the button (18 dp; 0.5 read too small for the brain on the M21). 0.23.0 had them in a row of their own above the quality line, which cost the M21 32 dp of cover (the user's call the same day: beside the names instead).",
+    "$toolsNote": "2026-11-20 (the user's request: Analyze, Genius and Lyrics out of the cover menu, as buttons, the same size as each other and not large): three round buttons toolButton across, toolGap apart, at the right of the artist and album lines, namesToTools after them, centred against the two lines; the icon is toolIconOfButton of the button (18 dp; 0.5 read too small for the brain on the M21). 0.23.0 had them in a row of their own above the quality line, which cost the M21 32 dp of cover (the user's call the same day: beside the names instead). 2026-11-23 (the user's call): Analyze left them, a tap on the quality line opening it instead; Genius and Lyrics remain.",
     "toolButton": 32,
     "toolIconOfButton": 0.56,
     "toolGap": 8,

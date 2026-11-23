@@ -47,7 +47,7 @@ sealed interface Route {
     @Serializable data object ListeningHistory : Route
     @Serializable data object Debug : Route
     @Serializable data object NowPlaying : Route
-    /** Analyze (0.6.0), from Now Playing's cover menu: the song named by its path, as albums are by name. */
+    /** Analyze (0.6.0), from a tap on Now Playing's quality line: the song named by its path, as albums are by name. */
     @Serializable data class Analysis(val path: String) : Route
     /** Genius (spec 5.2), from Now Playing's cover menu: the song by its path, so it stays on it when the next one plays. */
     @Serializable data class Genius(val path: String) : Route

@@ -1,6 +1,6 @@
 # AudioFool for Android — session handoff
 
-Updated 2026-11-22 (0.23.3 released: the review's five quick wins). This file holds only what a new session needs to start: the latest build,
+Updated 2026-11-23 (Analyze from the quality line, not yet built; 0.23.3 is the latest build). This file holds only what a new session needs to start: the latest build,
 what is open, what waits on the user, the next steps and where things live. How the app works
 is in `README.md`; every decision, newest first, and the lists of what to test on each device
 are in `design/progress.md`; the spec is `design/android-spec.md`. The rest is in the files
@@ -27,6 +27,9 @@ listed under *Other docs* at the end: read each only when the work touches it.
   the desktop's Liked and Recently Added, the heart in Repeat's place, saved in
   `no_backup/playlists.json`. Making other playlists is for later (the user's words). Details:
   `design/progress.md`, under 0.21.0.
+- **Not yet built (2026-11-23):** a tap on Now Playing's quality line opens Analyze, and the
+  Analyze button is gone (spec 5, 5.1; `design/progress.md`, its newest decision). Goes into the
+  next build.
 - **Next build:** 0.23.4 for fixes, 0.24.0 for new features (confirm the number with the user);
   **versionCode 72**. The emulator has 0.23.3. ThemeLab's menu pictures use a fixed "0.7.0", so a
   bump changes no picture.

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.mpaulrenlund.audiofool.core.model.Track
+import com.mpaulrenlund.audiofool.core.playback.QualityLines
 import com.mpaulrenlund.audiofool.playback.NowPlaying
 import com.mpaulrenlund.audiofool.theme.AppTheme
 import com.mpaulrenlund.audiofool.theme.AppTokens
@@ -195,56 +196,66 @@ class NowPlayingTouchTest {
         for (row in listOf("Library Statistics", "Listening History", "Rescan Library", "Settings", "Analyze", "Genius", "Lyrics")) compose.onNodeWithText(row).assertDoesNotExist()
     }
 
-    // ---- Analyze, Genius and Lyrics (2026-11-20): buttons beside the artist and album, out of the cover menu ----
+    // ---- Genius and Lyrics (2026-11-20): buttons beside the artist and album, out of the cover menu ----
 
     /** Each opens its screen on the song playing (Lyrics follows the song, so it is told none). */
-    @Test fun analyze_genius_and_lyrics_are_buttons_that_open_their_screens() {
+    @Test fun genius_and_lyrics_are_buttons_that_open_their_screens() {
         show()
-        for (name in listOf("Analyze", "Genius", "Lyrics")) compose.onNodeWithContentDescription(name).performClick()
+        for (name in listOf("Genius", "Lyrics")) compose.onNodeWithContentDescription(name).performClick()
         compose.waitForIdle()
-        assertEquals(listOf("analyze ${song.title}", "genius ${song.title}", "lyrics"), pressed)
+        assertEquals(listOf("genius ${song.title}", "lyrics"), pressed)
+    }
+
+    /** 2026-11-23, the user's call: a tap on the quality line opens Analyze, in place of its button; the count isn't part of it. */
+    @Test fun a_tap_on_the_quality_opens_analyze() {
+        show()
+        compose.onNodeWithContentDescription("Analyze").assertDoesNotExist()
+        compose.onNodeWithText("3 / 10").performClick()
+        compose.waitForIdle()
+        assertEquals(emptyList<String>(), pressed)
+        compose.onNodeWithText(QualityLines.of(song)).performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("analyze ${song.title}"), pressed)
     }
 
     private fun textBounds(text: String) = compose.onNodeWithText(text).fetchSemanticsNode().boundsInRoot
 
     /**
-     * The user's words: Analyze then Genius then Lyrics, the same size as each other, not large; in
+     * The user's words: Genius then Lyrics, the same size as each other, not large; in
      * the same rows as the artist and album names, the title still the full width (2026-11-20).
      */
     private fun checkToolButtons() {
         show()
         val screen = compose.onRoot().fetchSemanticsNode().boundsInRoot
-        val analyze = bounds("Analyze")
         val genius = bounds("Genius")
         val lyrics = bounds("Lyrics")
         val title = textBounds(song.title)
         val artist = textBounds(song.artist)
         val album = textBounds(song.album)
-        for (button in listOf(analyze, genius, lyrics)) {
+        for (button in listOf(genius, lyrics)) {
             assertEquals(32f, dp(button.width), 0.5f)
             assertEquals(32f, dp(button.height), 0.5f)
-            assertEquals(analyze.center.y, button.center.y, 0.5f, "on one line")
+            assertEquals(genius.center.y, button.center.y, 0.5f, "on one line")
         }
-        assertEquals((artist.top + album.bottom) / 2, analyze.center.y, with(compose.density) { 1.dp.toPx() }, "centred against the artist and album lines")
-        assertTrue(analyze.top >= title.bottom, "under the title, which keeps the full width")
-        assertTrue(dp(analyze.left - maxOf(artist.right, album.right)) >= 11.5f, "clear of the names")
-        assertTrue(analyze.right < genius.left && genius.right < lyrics.left, "Analyze, Genius, Lyrics from the left")
-        assertEquals(8f, dp(genius.left - analyze.right), 0.5f)
+        assertEquals((artist.top + album.bottom) / 2, genius.center.y, with(compose.density) { 1.dp.toPx() }, "centred against the artist and album lines")
+        assertTrue(genius.top >= title.bottom, "under the title, which keeps the full width")
+        assertTrue(dp(genius.left - maxOf(artist.right, album.right)) >= 11.5f, "clear of the names")
+        assertTrue(genius.right < lyrics.left, "Genius, Lyrics from the left")
         assertEquals(8f, dp(lyrics.left - genius.right), 0.5f)
         assertEquals(20f, dp(screen.right - lyrics.right), 0.5f, "Lyrics level with the cover's and the seekbar's right")
     }
 
-    @Test fun the_three_buttons_sit_beside_the_artist_and_album() = checkToolButtons()
+    @Test fun the_two_buttons_sit_beside_the_artist_and_album() = checkToolButtons()
 
     @Test @Config(qualifiers = ThemeLabTest.M21)
-    fun the_three_buttons_sit_beside_the_artist_and_album_on_the_m21() = checkToolButtons()
+    fun the_two_buttons_sit_beside_the_artist_and_album_on_the_m21() = checkToolButtons()
 
     /** Long names stop short of the buttons, with "…", rather than running under them. */
     @Test fun a_long_album_name_stops_short_of_the_buttons() {
         val long = song.copy(album = "A Very Long Album Name (Deluxe Remastered Anniversary Edition)")
         nowPlaying.showForPictures(long, index = 2, size = 10)
         show()
-        assertTrue(dp(bounds("Analyze").left - textBounds(long.album).right) >= 11.5f)
+        assertTrue(dp(bounds("Genius").left - textBounds(long.album).right) >= 11.5f)
     }
 
     /**

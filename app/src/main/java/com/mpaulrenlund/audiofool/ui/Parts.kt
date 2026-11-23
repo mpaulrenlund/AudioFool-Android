@@ -164,16 +164,21 @@ fun IconButton(icon: AppIcon, iconSize: Dp, colorPath: String, onClick: () -> Un
 /**
  * Shows a press: `state.hoverOverlay` over the [shape] while a finger is down, the
  * desktop's hover colour standing in for touch. Nothing when [onClick] is null.
+ * [label] is what a screen reader says the tap does, where the text doesn't say it.
  */
 @Composable
-fun Modifier.tappable(shape: Shape, onClick: (() -> Unit)?): Modifier {
+fun Modifier.tappable(shape: Shape, onClick: (() -> Unit)?): Modifier = tappable(shape, null, onClick)
+
+/** [tappable], with [label] for a screen reader. */
+@Composable
+fun Modifier.tappable(shape: Shape, label: String?, onClick: (() -> Unit)?): Modifier {
     if (onClick == null) return this
     val t = LocalAppTheme.current
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
     val overlay = t.color("color.state.hoverOverlay")
     return this
-        .clickable(interactionSource = source, indication = null, onClick = onClick)
+        .clickable(interactionSource = source, indication = null, onClickLabel = label, onClick = onClick)
         .drawWithContent {
             drawContent()
             if (pressed) drawOutline(shape.createOutline(size, layoutDirection, this), overlay)

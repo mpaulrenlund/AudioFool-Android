@@ -89,7 +89,7 @@ every decision and what is still to be checked on the phones.
   and secret: the first time on each phone, the form asks for the ones from your Last.fm API
   account (last.fm/api/accounts) and keeps them, encrypted, with the session. No build
   carries a key (`tools/build.sh` checks), so the repo and its releases can be public.
-- **Analyze.** Hold Now Playing's cover for its menu: the cover's resolution, and Analyze,
+- **Analyze.** Tap Now Playing's quality line ("FLAC · 1,901 kbps · …") for Analyze,
   which decodes the whole song in the background and shows its spectrogram and AudioFool's
   opinion of whether the audio matches the file's format (a lossy source in a lossless file,
   a re-encoded MP3, fake hi-res, fake 24-bit), as the desktop's Analyze does (its

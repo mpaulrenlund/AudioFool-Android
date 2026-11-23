@@ -87,6 +87,20 @@ The user made these while the mockups were designed (October 2026). The spec alr
 
 ## Decisions made for the build
 
+2026-11-23, not yet built: **a tap on Now Playing's quality line opens Analyze; the Analyze button
+is gone** (the user's call: "instead of the Analyze button, let's make it so tapping on the Track
+Quality Info analyzes the track audio"; spec 5, items 2 and 4, and 5.1). Only the quality text
+("FLAC · 1,901 kbps · …") is the target, not the track count beside it (offered both; the user
+took the quality alone). It shows the press as the artist and album do (`state.hoverOverlay`,
+`radius.row`) and otherwise looks as before: no underline or icon, so nothing on the screen says
+it can be tapped, as with the names. A screen reader hears it as the text with the action
+"Analyze" (`tappable`'s new `label`). The line stays outside the swipe-to-skip area, as before.
+Genius and Lyrics keep their size and place, Lyrics level with the cover's right, and the artist
+and album get the 40 dp Analyze had (about 260 dp on the S24, 251 on the M21). `AppIcons.ANALYZE`
+(the magnifier) is deleted with the button. Tests: `NowPlayingTouchTest`'s button checks are for
+two buttons, a new one taps the count (nothing) and the quality (Analyze); `SwipeToSkipTest`
+measures Genius instead.
+
 2026-11-22, 0.23.3 (versionCode 71; released the same day as pre-release
 [`v0.23.3`](https://github.com/mpaulrenlund/AudioFool-Android/releases/tag/v0.23.3), with the four decisions below, APK attached,
 `tools/build.sh` passing it (no Last.fm key), the downloaded APK's SHA-256 `083fd8ea…032e09a1`
@@ -1631,6 +1645,13 @@ Sorted on 2026-10-30, after 0.5.1. Only what is still open is here; the per-vers
 every result up to 0.5.1 are in [`progress-archive.md`](progress-archive.md). A new build adds
 its own section at the top, as before. (From …) says which build first asked.
 
+### Analyze from the quality line (next build)
+
+- [ ] Now Playing: no Analyze button; Genius and Lyrics at the right of the names, a long artist
+  or album name showing more before the "…".
+- [ ] A tap on the quality line ("FLAC · … kbps · …") opens Analyze on the song; back returns.
+  A tap on the track count "3 / 10" does nothing. Easy to hit without catching the seekbar.
+
 ### The UI/UX review's quick wins: #1, #2, #6, #7, #8 (from 0.23.3)
 
 - [ ] Settings → Playback: the Bit-Perfect chip says "Off", then "On" after a tap (and the cover
@@ -2027,6 +2048,11 @@ Only the phones have the Last.fm key, so this is its first run against the real 
 ## To test on the M21
 
 Sorted on 2026-10-30, as the S24's list above.
+
+### Analyze from the quality line (next build)
+
+- [ ] As on the S24: a tap on the quality line opens Analyze; no Analyze button; the cover the
+  same size as before (301 dp).
 
 ### Bit-Perfect On/Off; "Loading the library…" (from 0.23.3)
 

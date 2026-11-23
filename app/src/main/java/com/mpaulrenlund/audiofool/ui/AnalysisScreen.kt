@@ -75,7 +75,7 @@ sealed interface AnalysisState {
 }
 
 /**
- * Analyze (0.6.0, the user's call), from Now Playing's cover menu: the desktop's
+ * Analyze (0.6.0, the user's call), from a tap on Now Playing's quality line (2026-11-23; the cover menu's until 2026-11-20, then a button): the desktop's
  * Analysis window (`AnalysisWindow`, `AnalysisViewModel`) as a screen. The song's
  * title and "Artist · Album · FLAC · 24-bit · 96 kHz · 6:14" at the top, then the
  * SPECTRUM panel (the spectrogram, its frequency and time axes, the colour scale

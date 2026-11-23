@@ -203,13 +203,13 @@ class SwipeToSkipTest {
 
     /**
      * 2026-11-20, the user's call: a drag started on the names moves and fades the cover only;
-     * the names (and Analyze, Genius and Lyrics beside them) stay where they are.
+     * the names (and Genius and Lyrics beside them) stay where they are.
      */
     @Test fun only_the_cover_moves_with_the_finger() {
         show()
         val cover = coverLeft()
         val artist = artistLeft()
-        val analyze = compose.onNodeWithContentDescription("Analyze").getBoundsInRoot().left
+        val genius = compose.onNodeWithContentDescription("Genius").getBoundsInRoot().left
         compose.onNodeWithText("Aphelion Drive").performTouchInput {
             down(center)
             repeat(10) { moveBy(Offset(-8f, 0f), delayMillis = 40) }
@@ -217,7 +217,7 @@ class SwipeToSkipTest {
         compose.waitForIdle()
         assertTrue(coverLeft() < cover, "the cover follows the finger")
         assertEquals(artist, artistLeft())
-        assertEquals(analyze, compose.onNodeWithContentDescription("Analyze").getBoundsInRoot().left)
+        assertEquals(genius, compose.onNodeWithContentDescription("Genius").getBoundsInRoot().left)
         compose.onNodeWithText("Aphelion Drive").performTouchInput { up() }
         settle()
         assertEquals(cover, coverLeft())

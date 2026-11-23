@@ -108,7 +108,7 @@ class NowPlayingActions(
     val toggleShuffle: () -> Unit = {},
     /** The cover menu's Bit-Perfect row (spec 6.4; the BP button until 2026-11-10); not called while it is greyed out. */
     val toggleBitPerfect: () -> Unit = {},
-    /** The Analyze button (0.6.0; the cover menu's until 2026-11-20): opens the Analysis screen on the song. */
+    /** A tap on the quality line (since 2026-11-23; the Analyze button from 2026-11-20, the cover menu's from 0.6.0): opens the Analysis screen on the song. */
     val analyze: (Track) -> Unit = {},
     /** The cover menu's Resolution row (spec 5.3): opens the cover full screen, to zoom. */
     val openCover: (Track) -> Unit = {},
@@ -146,7 +146,7 @@ fun albumRouteFor(track: Track, library: MusicLibrary?): Route.Album? =
  * Now Playing (spec 5), opened from the mini player. No buttons at the top:
  * system back closes it. A sideways swipe on the art or the title block skips:
  * left for Next, right for the song before. From the top: the art, the title block
- * (Analyze, Genius and Lyrics at the right of the artist and album; 2026-11-20) with the track count, the quality lines, the waveform seekbar with the times,
+ * (Genius and Lyrics at the right of the artist and album; 2026-11-20) with the track count, the quality line (a tap opens Analyze; 2026-11-23), the waveform seekbar with the times,
  * the controls row (the heart at the left, Repeat's place until 2026-11-12, the transport
  * centred, Shuffle at the right; 2026-11-10) and the output readout. A tap on the art opens its menu (0.6.0; a long
  * press until 2026-11-10), which holds Bit-Perfect and ends with the logo menu's rows
@@ -214,7 +214,7 @@ fun NowPlayingScreen(
                 }
                 Spacer(Modifier.weight(aboveWeight))
                 Column(Modifier.padding(horizontal = padX)) {
-                    track?.let { Quality(nowPlaying, it) }
+                    track?.let { Quality(nowPlaying, it, actions.analyze) }
                     Seekbar(nowPlaying, actions.seek, t.dp("nowPlaying.waveformHeight") + waveformGrowth, accent, scrubForPictures)
                 }
                 Spacer(Modifier.weight(belowWeight + (aboveWeight - belowWeight) * evenness))
@@ -248,7 +248,7 @@ fun NowPlayingScreen(
  *
  * 2026-11-20 (the user's call): only the cover moves and fades. The swipe still
  * starts anywhere on the cover or the title block, but the title, the names and
- * Analyze, Genius and Lyrics stay put. [content] gets the moving part's modifier.
+ * Genius and Lyrics stay put. [content] gets the moving part's modifier.
  */
 @Composable
 private fun SwipeToSkip(track: Track?, art: Dp, actions: NowPlayingActions, content: @Composable ColumnScope.(moving: Modifier) -> Unit) {
@@ -509,7 +509,7 @@ private fun TitleBlock(track: Track?, accent: ThemeColor?, actions: NowPlayingAc
             track?.displayTitle ?: "",
             t.text("nowPlaying.titleSize", "color.text.heading", weight = t.number("nowPlaying.titleWeight").toInt(), lineHeight = t.number("nowPlaying.titleLineHeight")),
         )
-        // The names at the left, Analyze, Genius and Lyrics at the right, centred against the two lines
+        // The names at the left, Genius and Lyrics at the right, centred against the two lines
         // (2026-11-20, the user's call: above the quality line until then, which cost the M21 32 dp of cover).
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.lineGap"))) {
@@ -528,12 +528,13 @@ private fun TitleBlock(track: Track?, accent: ThemeColor?, actions: NowPlayingAc
 }
 
 /**
- * Analyze, Genius and Lyrics (spec 5; 2026-11-20, the user's request: out of the cover
- * menu, Analyze first, the same size as each other and not large): `toolButton` round
+ * Genius and Lyrics (spec 5; 2026-11-20, the user's request: out of the cover
+ * menu, the same size as each other and not large): `toolButton` round
  * buttons, `toolGap` apart, the icons in `control.iconNeutral`, at the right of the
  * artist and album lines ([TitleBlock]; above the quality line in 0.23.0). Compose
  * widens each touch area to 48 dp itself. With no song they are drawn but can't be
- * pressed, so the screen doesn't jump.
+ * pressed, so the screen doesn't jump. Analyze was the first of them until 2026-11-23,
+ * when a tap on the quality line took its place ([Quality]; the user's call).
  */
 @Composable
 private fun ToolButtons(track: Track?, actions: NowPlayingActions) {
@@ -542,7 +543,6 @@ private fun ToolButtons(track: Track?, actions: NowPlayingActions) {
     val icon = size * t.number("nowPlaying.toolIconOfButton").toFloat()
     val color = t.color("color.control.iconNeutral")
     Row(horizontalArrangement = Arrangement.spacedBy(t.dp("nowPlaying.toolGap"))) {
-        RoundButton(size, size, size, "Analyze", track?.let { { actions.analyze(it) } }) { Icon(AppIcons.ANALYZE, icon, color) }
         RoundButton(size, size, size, "Genius", track?.let { { actions.genius(it) } }) { Icon(AppIcons.GENIUS, icon, color) }
         RoundButton(size, size, size, "Lyrics", track?.let { actions.lyrics }) { Icon(AppIcons.LYRICS, icon, color) }
     }
@@ -552,10 +552,12 @@ private fun ToolButtons(track: Track?, actions: NowPlayingActions) {
  * The line over the seekbar (spec 5): the track count "3 / 10" at the left (2026-11-11,
  * the user's call; right of the title until then) and the quality, right-aligned:
  * "FLAC · 1,901 kbps · 24-Bit · 48 kHz" (0.2.2). On one baseline; the count keeps its
- * width and the quality ellipsizes if the two meet.
+ * width and the quality ellipsizes if the two meet. A tap on the quality opens Analyze
+ * on the song (2026-11-23, the user's call: in place of the Analyze button), showing the
+ * press as the artist and album do; the count isn't part of it.
  */
 @Composable
-private fun Quality(nowPlaying: NowPlaying, track: Track) {
+private fun Quality(nowPlaying: NowPlaying, track: Track, analyze: (Track) -> Unit) {
     val t = LocalAppTheme.current
     Row(
         Modifier.fillMaxWidth().padding(top = t.dp("nowPlaying.qualityTop")),
@@ -573,7 +575,7 @@ private fun Quality(nowPlaying: NowPlaying, track: Track) {
         Line(
             QualityLines.of(track),
             t.text("nowPlaying.qualitySize", "color.text.secondary").copy(textAlign = TextAlign.End),
-            Modifier.weight(1f).alignByBaseline(),
+            Modifier.weight(1f).alignByBaseline().tappable(RoundedCornerShape(t.radius("radius.row")), "Analyze") { analyze(track) },
         )
     }
 }
